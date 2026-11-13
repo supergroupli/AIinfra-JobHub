@@ -1,10 +1,16 @@
-# AI Infra Commons
+# 聘枢 · AI Infra JobHub
 
 **Learn. Build. Connect. / 学习、做作品、找到同行。**
 
 [Website / 网站](https://supergroupli.github.io/AIinfra-JobHub/) ·
 [Repository / 仓库](https://github.com/supergroupli/AIinfra-JobHub) ·
 [Discussions / 社区交流](https://github.com/supergroupli/AIinfra-JobHub/discussions)
+
+**Resume submissions / 简历投递：[career@yzinfra.com](mailto:career@yzinfra.com)**
+
+The resume link opens your email client. Emails are received by the mailbox operator
+and are not automatically published to GitHub. Public portfolio submissions are a separate opt-in.
+简历通过邮件客户端发送，由该邮箱运营方接收处理，不会自动发布到 GitHub；公开作品名片由本人另行选择提交。
 
 A community starter for people building AI infrastructure: guided learning paths,
 voluntary public portfolios and curated work opportunities. Independent, open and
@@ -20,6 +26,7 @@ free to participate. It is not affiliated with vLLM, SGLang or LMCache.
 - Self-reported learning progress saved in the current browser, plus a bilingual portfolio template.
 - Keyword, technology and work-arrangement filters over reviewed public records; skill overlap is not an ability or hiring score.
 - Public GitHub issue forms for opportunities and voluntary portfolios.
+- Resume submission links to `career@yzinfra.com` in the navigation and opportunities section.
 - Dependency-free static build, publication-rule tests and GitHub Pages Actions workflow.
 
 已实现中英切换、响应式页面、12 个学习任务、本地进度、作品模板、公开目录筛选、提交表单与部署工作流。

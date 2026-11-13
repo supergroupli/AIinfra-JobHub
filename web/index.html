@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="AI Infra Commons — an open community to learn AI infrastructure, share your work and find your people. 学习、展示作品、发现全球 AI Infra 机会。">
+  <meta name="description" content="AI Infra JobHub (聘枢) — an open community to learn AI infrastructure, share your work and find your people. 学习、展示作品、发现全球 AI Infra 机会。">
   <meta name="theme-color" content="#183c35">
-  <title>AI Infra Commons · Learn. Build. Connect.</title>
+  <title>聘枢 · AI Infra JobHub</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css">
   <script src="./app.js" defer></script>
@@ -13,12 +13,13 @@
 <body>
   <a class="skip-link" href="#main" data-i18n="skip">跳到内容</a>
   <header class="site-header">
-    <a class="brand" href="#" aria-label="AI Infra Commons home"><span class="brand-mark" aria-hidden="true">ic<span>·</span></span><span>AI Infra <strong>Commons</strong></span></a>
+    <a class="brand" href="#" aria-label="聘枢 · AI Infra JobHub home"><span class="brand-mark" aria-hidden="true">枢</span><span class="brand-wordmark"><strong data-i18n="brandName">聘枢</strong><small data-i18n="brandTagline">AI Infra JobHub</small></span></a>
     <nav aria-label="Main navigation">
       <a href="#learn" data-i18n="navLearn">学习路线</a>
       <a href="#opportunities" data-i18n="navJobs">机会广场</a>
       <a href="#people" data-i18n="navPeople">开发者</a>
       <a href="#community" data-i18n="navCommunity">社区</a>
+      <a href="mailto:career@yzinfra.com?subject=AI%20Infra%20JobHub%20-%20Resume" data-i18n="navResume">投简历 ↗</a>
     </nav>
     <button id="language-toggle" class="language-button" type="button" aria-label="Switch to English">EN <span aria-hidden="true">↗</span></button>
   </header>
@@ -51,6 +52,11 @@
     <section id="opportunities" class="opportunity-section" aria-labelledby="jobs-title"><div class="section-shell content-section">
       <div class="section-top"><div><div class="eyebrow muted">02 / FIND YOUR NEXT</div><h2 id="jobs-title" data-i18n="jobsTitle">找到值得投入的问题。</h2></div><button class="button primary" type="button" data-submit="job"><span data-i18n="postJob">发布机会</span> <span aria-hidden="true">＋</span></button></div>
       <p class="section-description" data-i18n="jobsDescription">全职、实习、研究与开源协作。先看技术方向，再确认工作地区、语言和远程范围。</p>
+      <aside class="resume-panel" aria-labelledby="resume-title">
+        <div class="resume-icon" aria-hidden="true">@</div>
+        <div class="resume-copy"><h3 id="resume-title" data-i18n="resumeTitle">让你的下一次机会，从一封邮件开始。</h3><p data-i18n="resumeDescription">欢迎发送简历与公开作品链接，并注明目标方向、工作地区和远程偏好。</p><a class="resume-address" href="mailto:career@yzinfra.com?subject=AI%20Infra%20JobHub%20-%20Resume">career@yzinfra.com</a><p class="resume-note" data-i18n="resumeNote">邮件投递不会自动公开到 GitHub；公开作品名片由你另行选择提交。</p></div>
+        <a class="button primary" href="mailto:career@yzinfra.com?subject=AI%20Infra%20JobHub%20-%20Resume"><span data-i18n="sendResume">发送简历</span> <span aria-hidden="true">↗</span></a>
+      </aside>
       <div class="filter-box">
         <div class="filter-fields"><div class="search-field"><label for="search" data-i18n="searchLabel">搜索职位与开发者</label><input id="search" type="search" placeholder="技术、公司、地区或关键词" autocomplete="off" data-placeholder="searchPlaceholder"></div><div><label for="work-mode" data-i18n="workModeLabel">协作方式</label><select id="work-mode"><option value="" data-i18n="anyMode">所有方式</option><option value="remote-global" data-i18n="remoteGlobal">全球远程</option><option value="remote-regional" data-i18n="remoteRegional">指定地区远程</option><option value="hybrid" data-i18n="hybrid">混合办公</option><option value="onsite" data-i18n="onsite">线下办公</option></select></div></div>
         <div class="tag-row" id="skill-filters" role="group" aria-label="Technology filters"></div>
@@ -70,7 +76,7 @@
       <div class="community-principles"><div><span>01</span><h3 data-i18n="principle1">开放的知识</h3><p data-i18n="principle1Note">链接官方资料，补充实践路径，让经验可以被复现。</p></div><div><span>02</span><h3 data-i18n="principle2">具体的机会</h3><p data-i18n="principle2Note">说清职责、报酬、地区和技术要求，减少双方的信息差。</p></div><div><span>03</span><h3 data-i18n="principle3">相互尊重的人</h3><p data-i18n="principle3Note">尊重不同背景与贡献形式，也欢迎刚进入这个领域的人。</p></div></div>
     </section>
   </main>
-  <footer class="site-footer section-shell"><div><a class="brand" href="#"><span class="brand-mark" aria-hidden="true">ic<span>·</span></span><span>AI Infra <strong>Commons</strong></span></a><p data-i18n="footerNote">独立社区项目，与所列开源项目无官方隶属关系。</p></div><div class="footer-links"><button class="text-button" type="button" data-submit="repository" data-i18n="sourceCode">项目仓库 ↗</button><button class="text-button" id="privacy-button" type="button" data-i18n="privacy">公开资料与隐私</button><span class="mono">LEARN. BUILD. CONNECT.</span></div></footer>
-  <dialog id="detail-dialog" aria-labelledby="dialog-title"><div class="dialog-header"><span class="mono">AI INFRA COMMONS</span><button class="close-button" id="close-dialog" type="button" aria-label="关闭 / Close">×</button></div><div id="dialog-content"></div></dialog>
+  <footer class="site-footer section-shell"><div><a class="brand" href="#"><span class="brand-mark" aria-hidden="true">枢</span><span class="brand-wordmark"><strong data-i18n="brandName">聘枢</strong><small data-i18n="brandTagline">AI Infra JobHub</small></span></a><p data-i18n="footerNote">独立社区项目，与所列开源项目无官方隶属关系。</p></div><div class="footer-links"><button class="text-button" type="button" data-submit="repository" data-i18n="sourceCode">项目仓库 ↗</button><button class="text-button" id="privacy-button" type="button" data-i18n="privacy">公开资料与隐私</button><span class="mono">LEARN. BUILD. CONNECT.</span></div></footer>
+  <dialog id="detail-dialog" aria-labelledby="dialog-title"><div class="dialog-header"><span class="mono">AI INFRA JOBHUB</span><button class="close-button" id="close-dialog" type="button" aria-label="关闭 / Close">×</button></div><div id="dialog-content"></div></dialog>
 </body>
 </html>

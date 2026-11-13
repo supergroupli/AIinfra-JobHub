@@ -19,7 +19,8 @@
 - 点击 **Create repository**，把仓库链接发给协作者。
 
 仓库名不是必须叫这个；工作流会自动读取实际账号和仓库名。
-项目显示名称暂为 AI Infra Commons，可以再修改，不表示名称已注册或独占。
+项目中文名为 **聘枢**，英文名为 **AI Infra JobHub**。
+简历投递入口使用 **career@yzinfra.com**；邮箱管理员需要确认该地址可接收外部邮件及简历附件。
 
 ## 2. 把本目录上传到 main
 
@@ -29,7 +30,7 @@
 ```sh
 git init -b main
 git add .
-git commit -m "Create AI Infra Commons community starter"
+git commit -m "Create 聘枢 · AI Infra JobHub community starter"
 git remote add origin https://github.com/YOUR-ACCOUNT/ai-infra-community.git
 git push -u origin main
 ```
