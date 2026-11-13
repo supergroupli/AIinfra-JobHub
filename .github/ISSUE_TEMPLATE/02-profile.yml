@@ -36,6 +36,11 @@ body:
       description: "Explain your own contribution, evidence and limitations. A merged upstream PR is not required. English or Chinese is welcome. / 说明本人贡献、证据和局限，不要求上游 PR 合入，可用中英文。"
     validations:
       required: true
+  - type: input
+    id: targetRole
+    attributes:
+      label: "Target role (optional) / 目标岗位（可选）"
+      description: "For example: inference internship, GPU performance, AI platform / 例如推理实习、GPU 性能优化、AI 平台工程"
   - type: dropdown
     id: technologies
     attributes:

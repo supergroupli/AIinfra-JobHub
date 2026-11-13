@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "evidence": "measured-ray-serve-local",
+  "ray": "2.60.0",
+  "python": "3.11.18",
+  "platform": "Linux-6.8.0-1070-azure-x86_64-with-glibc2.35",
+  "rows": [
+    {
+      "request": "{\"value\":7}",
+      "status": 200,
+      "response": {
+        "square": 49,
+        "evidence": "measured-ray-serve-local"
+      },
+      "elapsed_ms": 10.248475999986795
+    },
+    {
+      "request": "{\"value\":-3}",
+      "status": 200,
+      "response": {
+        "square": 9,
+        "evidence": "measured-ray-serve-local"
+      },
+      "elapsed_ms": 6.810932999997021
+    },
+    {
+      "request": "{\"value\":\"7\"}",
+      "status": 400,
+      "response": {
+        "error": "value must be an integer"
+      },
+      "elapsed_ms": 7.349733000012293
+    },
+    {
+      "request": "{\"value\":true}",
+      "status": 400,
+      "response": {
+        "error": "value must be an integer"
+      },
+      "elapsed_ms": 6.265638000002127
+    },
+    {
+      "request": "{\"value\":1000001}",
+      "status": 400,
+      "response": {
+        "error": "value outside teaching range"
+      },
+      "elapsed_ms": 8.153281999994988
+    },
+    {
+      "request": "invalid-json",
+      "status": 400,
+      "response": {
+        "error": "Expected JSON object"
+      },
+      "elapsed_ms": 6.330085000001873
+    }
+  ],
+  "started_at": "2026-11-13T15:42:47.785161+00:00",
+  "sources": {
+    "verify_serve.py": "b1c169922278c86332ee7473fec2dfbadf1f2c89e95014a226982954b5a4f0e2",
+    "real_serve.py": "40c2aafe822388bc9af1b214d4899723279dbb6c1145f4db6c8d45528def0cb1"
+  },
+  "boundary": "Local HTTP correctness only. No load, distributed deployment, GPU or production availability claim."
+}

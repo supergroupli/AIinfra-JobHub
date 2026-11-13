@@ -53,28 +53,38 @@ python3 check.py --reference
 
 ## 真实框架选做 / Optional actual framework
 
-CPU Gloo example: Linux x86_64, Python3.10–3.12. GPU option requires two compatible NVIDIA GPUs and a separate cu124 environment. / CPU Gloo需Linux；GPU选做另需两卡。
+CPU Gloo teaching target: Ubuntu22.04 x86_64, Python3.11 and torch2.6.0 CPU. GPU option requires two compatible NVIDIA GPUs and a separate cu124 environment. / CPU Gloo教学目标为Ubuntu22.04、Python3.11；GPU选做另需两卡。
 
-本示例选用固定教学基线而非宣称最新版本。GPU依赖安装会下载较大软件；没有环境直接完成标准库路线。真实框架脚本 `ddp_example.py` 已提供源代码，但**平台未安装/运行该框架或GPU脚本**；以下成功条件是预期验收，并非已测性能。
+2026-11-13平台CPU验证已通过：[run43455249219](https://github.com/supergroupli/AIinfra-JobHub/actions/runs/43455249219)，commit`28b14e7892a875cdee959ad8d8efb41408a3a3e9`。原始rank JSON和依赖快照保存在`validation/2026-11-13/`。这是平台运行样例，不是学员自己的运行或独立同伴复现。
 
-This is a pinned teaching baseline, not a claim about the latest release. Framework installs are larger downloads; use the stdlib path without the required environment. `ddp_example.py` is source-checked but **not framework/GPU-executed here**. Expected success is an acceptance condition, not a measured performance claim.
+Platform CPU validation passed on2026-11-13 in the linked run/commit. Original rank JSONs and dependency snapshots are included in validation/2026-11-13/. These are platform samples, not a student's execution or independent peer reproduction.
+
+本示例使用固定教学版本。`ddp_example.py`执行两个真实进程的DDP，逐步对照单进程全局batch基线，再从中途checkpoint恢复模型和SGD momentum，并运行漏恢复optimizer的反例。平台实际验证状态、运行commit和原始证据见 [验证记录](https://github.com/supergroupli/AIinfra-JobHub/blob/main/docs/FRAMEWORK_VALIDATION.md)。CPU Gloo验证不会同时证明GPU/NCCL、FSDP或多机环境通过。
+
+This pinned example runs two real DDP processes, compares each step with a single-process global batch, restores model and SGD momentum, and demonstrates an incomplete optimizer restore. See the [validation record](https://github.com/supergroupli/AIinfra-JobHub/blob/main/docs/FRAMEWORK_VALIDATION.md) for actual status, commit and raw evidence. CPU Gloo evidence does not establish GPU/NCCL, FSDP or multi-host validation.
 
 ```bash
-python3.12 -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
-torchrun --standalone --nproc-per-node=2 ddp_example.py --backend gloo
+torchrun --standalone --nproc-per-node=2 ddp_example.py --backend gloo --out out/real-ddp
 ```
 
-两个rank预期weight都为1.0。CPU Gloo不是NCCL；GPU选做另建环境安装上表cu124版torch2.6.0并使用 `torchrun --standalone --nproc-per-node=2 ddp_example.py --backend nccl`。不要在CPU环境中直接切换nccl。
+查看`out/real-ddp/rank-0.json`和`rank-1.json`：预期status=PASS、resume_matches=true；第一步weight_after=1.0，默认4步约为2.053，两个rank与全局基线一致。`missing_optimizer_control_weight`应与正确恢复的最终值不同。每步loss是该rank自己的局部loss，不应把它与全局均值混为一谈；averaged_gradient则经过DDP同步。文件还记录版本、平台、源码哈希和完整trace。
 
-Both ranks should report weight1.0. Gloo is not NCCL. For the GPU extension, create a separate cu124 torch2.6.0 environment and launch with --backend nccl on two GPUs.
+Inspect rank-0.json and rank-1.json: status=PASS, resume_matches=true, first weight_after=1.0 and final weight about2.053 for the default four steps. Both ranks match the global baseline; missing_optimizer_control_weight differs. Loss is local to each rank, while averaged_gradient is synchronized. Versions, platform, source hash and full traces are retained.
+
+独立改造：手算第一步−4和−16如何平均成−10；将`--steps`改为6（允许2–8步），解释正常恢复为何继续匹配基线；再阅读漏恢复optimizer的对照，解释为什么只保存权重不够。保留自己的源码差异和JSON，不能只提交status=PASS截图。
+
+Your extension: derive how local gradients−4 and−16 average to−10, try --steps 6 (range2–8), explain successful recovery and why weights alone are insufficient. Retain your code diff and JSON, not just a PASS screenshot.
+
+GPU NCCL选做需另建环境安装torch2.6.0 cu124版，并在两张兼容GPU上启动`torchrun --standalone --nproc-per-node=2 ddp_example.py --backend nccl --out out/real-nccl`。本轮不运行GPU环境。 / The optional NCCL command needs a separate torch2.6.0 cu124 environment and two compatible GPUs; GPU execution is not part of this validation.
 
 ## 证据与局限 / Evidence boundaries
 
-所有lab.py结果是标量代数/设计，非DDP或FSDP执行。真实DDP例验证一次更新，不能推出训练吞吐或收敛质量。
+所有lab.py结果是标量代数/设计，非DDP或FSDP执行。真实DDP例验证一个单权重模型的同步与恢复，不能推出大模型训练吞吐或收敛质量。
 
-lab.py uses scalar algebra/design, not DDP/FSDP. The actual example checks one update, not throughput or convergence.
+lab.py uses scalar algebra/design, not DDP/FSDP. The actual example checks synchronization and recovery of a one-weight model, not large-model throughput or convergence.
 
 JSON里的模拟/设计标签必须保留。manifest哈希检测文件变化，不证明GPU来源或个人身份。分享前填写REPORT.md中的TODO，附自己的代码差异与一条失败或无收益案例；尚未同伴复现就如实标记。
 

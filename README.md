@@ -3,12 +3,17 @@
 **Learn. Build. Connect. / 学习、做作品、找到同行。**
 
 [Website / 网站](https://supergroupli.github.io/AIinfra-JobHub/) ·
+[Career preparation / 求职准备](https://supergroupli.github.io/AIinfra-JobHub/career/) ·
+[Builders & reviews / 人才与评审](https://supergroupli.github.io/AIinfra-JobHub/talent/) ·
 [Projects / 实战项目](https://supergroupli.github.io/AIinfra-JobHub/projects/) ·
 [Portfolio / 作品档案](https://supergroupli.github.io/AIinfra-JobHub/portfolio/) ·
 [Repository / 仓库](https://github.com/supergroupli/AIinfra-JobHub) ·
 [Discussions / 社区交流](https://github.com/supergroupli/AIinfra-JobHub/discussions)
 
 **Resume submissions / 简历投递：[career@yzinfra.com](mailto:career@yzinfra.com)**
+
+**项目发起人：李超群｜所属公司：元智引擎公司。**
+Project initiator: Li Chaoqun (李超群), 元智引擎公司.
 
 The resume link opens your email client. Emails are received by the mailbox operator
 and are not automatically published to GitHub. Public portfolio submissions are a separate opt-in.
@@ -29,10 +34,15 @@ free to participate. It is not affiliated with vLLM, SGLang or LMCache.
 - Eleven guided courses: 110 illustrated lessons, step-by-step lab commands, expected results, troubleshooting and at least 220 explained quiz questions. Thirteen browser teaching models cover request timing, caches, transfer, scheduling, GPU allocation, kernels, training memory and collectives; every course uses at least three different models.
 - Downloadable Python lab kits with CPU exercises, boundary checks and evidence/report exports. The vLLM GPU path pins its engine and model revision; GPU commands are documented, not claimed as hardware-tested here.
 - Three career-oriented paths with role-specific core and elective courses, searchable/filterable catalog, shareable course URLs and downloadable Chinese/English handbooks.
+- Three seven-day career preparation plans with 27 capstone acceptance checks, clearly labeled teaching examples, role-specific local progress and downloadable briefs. The plan prepares a portfolio and applications; it does not promise employment.
+- A recruiter-facing builder directory with contribution/evidence cards, filters and a browser-local reading shortlist. Reviews have explicit states and evidence requirements; both directories currently contain no invented records.
+- Real Ray 2.60.0 Core/Serve and PyTorch 2.6.0 CPU/Gloo experiments verified on Ubuntu 22.04 / Python 3.11.18. Permanent JSON results, dependency snapshots, source hashes and the [actual run](https://github.com/supergroupli/AIinfra-JobHub/actions/runs/43455249219) are linked in the courses. These verify small CPU correctness cases, not GPU performance.
 - Self-reported progress, daily notes and evidence links saved in the current browser, with learning-record export and a bilingual portfolio template.
+- Importable JSON backups for each course's progress/notes and the current portfolio draft: preview before applying, preserve current nonempty fields by default, or explicitly replace that record. Markdown remains a readable export, not an import format.
 - Eight bilingual practice projects with pinned-environment expectations, deliverables, acceptance criteria, source links and explicit evidence boundaries.
 - A browser-local portfolio builder: editable engineering records, draft recovery, Markdown preview, copy and export. Project suggestions never overwrite a draft.
 - A public feedback form for blockers, content corrections and independent project reproductions.
+- Daily lesson help links prefill the course/day/source-check date, and a separate opt-in public project-review form supports the curated review queue.
 - Keyword, technology and work-arrangement filters over reviewed public records; skill overlap is not an ability or hiring score.
 - Public GitHub issue forms for opportunities and voluntary portfolios.
 - Resume submission links to `career@yzinfra.com` in the navigation and opportunities section.
@@ -94,14 +104,20 @@ Do not open `index.html` directly as a `file://` URL: the page fetches `data.jso
 | `content/paths.json` | Three career-oriented course sequences |
 | `web/projects/` | Bilingual practice-project data and searchable project library |
 | `web/portfolio/` | Browser-local project portfolio editor and Markdown export |
+| `web/career/` | Seven-day preparation plans, three capstones and annotated teaching examples |
+| `web/talent/` | Public builder filters, local reading shortlist and curated review queue |
+| `web/backup.js` | Validated local JSON backup/import for course records and portfolio drafts |
 | `web/labs/` | Downloadable CPU lab source, learner exercises and reference checks; ZIPs are built automatically |
 | `web/learning-widgets.js`, `web/engineering-models.js` | Browser quizzes, copy controls and explicit teaching simulations |
 | `scripts/teaching_models.py` | Bilingual model labels, assumptions, formulas and static fallback results |
 | `content/jobs.json` | Reviewed opportunity records; starts empty |
 | `content/people.json` | Voluntary public portfolios; starts empty |
+| `content/reviews.json` | Consented public review requests with source, state and expiry; starts empty |
+| `content/framework-checks.json` | Actual framework-run evidence tied to exact source hashes |
 | `scripts/build.py`, `scripts/learning.py` | Validation; course HTML, Markdown and sitemap generation to ignored `dist/` |
 | `.github/ISSUE_TEMPLATE/` | Public submission forms |
 | `.github/workflows/pages.yml` | PR checks and deployment from `main` |
+| `.github/workflows/framework-labs.yml` | Manually triggered real CPU framework checks and raw evidence artifacts |
 
 Read [DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md) for the development roadmap,
 [COMPETITIVE_STRATEGY.md](docs/COMPETITIVE_STRATEGY.md) for differentiation and validation priorities,

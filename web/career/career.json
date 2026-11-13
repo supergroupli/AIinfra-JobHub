@@ -1,0 +1,947 @@
+{
+  "schemaVersion": 1,
+  "roles": [
+    {
+      "id": "inference-engineer",
+      "title": {
+        "zh": "推理与服务工程师",
+        "en": "Inference & serving engineer"
+      },
+      "project": "serving-baseline",
+      "capstone": {
+        "zh": "能解释失败的推理请求回放器",
+        "en": "An inference replayer that accounts for failures"
+      },
+      "summary": {
+        "zh": "从协议、请求计时和失败记录开始，独立补完客户端与指标模块，再把同一套工具连接真实引擎。",
+        "en": "Start with protocol handling, timing and failure records. Implement the client and metrics yourself, then connect the same tools to a real engine."
+      },
+      "scope": {
+        "zh": "必做：本机 mock + 标准库客户端；选做：兼容 GPU 上的真实 vLLM。模拟服务结果必须标明 mock，不能写成模型推理性能。",
+        "en": "Required: a local mock and standard-library client. Optional: actual vLLM on a compatible GPU. Label mock records explicitly; they do not measure model inference performance."
+      },
+      "skills": {
+        "zh": [
+          "HTTP 与流式响应",
+          "延迟与失败口径",
+          "受控对照实验"
+        ],
+        "en": [
+          "HTTP and streaming responses",
+          "Latency and failure accounting",
+          "Controlled comparisons"
+        ]
+      },
+      "days": [
+        {
+          "day": 1,
+          "title": {
+            "zh": "选定目标岗位与问题",
+            "en": "Pick a role and a question"
+          },
+          "action": {
+            "zh": "找一份真实职位，提取3项必需技能；写下“并发增加时，失败率和响应时间如何变化”。准备Python环境并跑通一次本机请求。",
+            "en": "Read a real opening, extract three required skills and ask how concurrency changes failures and response time. Prepare Python and complete one local request."
+          },
+          "artifact": {
+            "zh": "岗位技能对照表 + 第一次请求原始结果。",
+            "en": "A role-to-skill map and the first raw request record."
+          },
+          "check": {
+            "zh": "能指出每项技能对应的项目文件；没有职位时先记录目标岗位，后续补官方链接。",
+            "en": "Map each skill to a project file. If no opening is available, record the target role and add an official link later."
+          },
+          "course": "vllm",
+          "lesson": 1
+        },
+        {
+          "day": 2,
+          "title": {
+            "zh": "实现请求与失败记录",
+            "en": "Implement requests and failure records"
+          },
+          "action": {
+            "zh": "补完客户端：超时、HTTP错误、空响应和截断流都保留为失败。不要删掉失败样本后再算“成功率”。",
+            "en": "Implement timeout, HTTP-error, empty-response and truncated-stream handling. Preserve failed rows in the success-rate denominator."
+          },
+          "artifact": {
+            "zh": "可运行客户端、至少4种错误用例、带request_id的JSONL。",
+            "en": "A runnable client, at least four failure cases and request-ID-tagged JSONL."
+          },
+          "check": {
+            "zh": "错误请求不会被算成成功；单次失败不会让整批结果丢失。",
+            "en": "Failures are not counted as successes and one failed request does not lose the batch."
+          },
+          "course": "vllm",
+          "lesson": 2
+        },
+        {
+          "day": 3,
+          "title": {
+            "zh": "自己计算指标",
+            "en": "Calculate the metrics yourself"
+          },
+          "action": {
+            "zh": "自己实现成功率与nearest-rank p95；区分首个内容到达和请求全部完成。用手工小数组验证分位数。",
+            "en": "Implement success rate and nearest-rank p95. Distinguish first content arrival from final completion and check percentiles by hand."
+          },
+          "artifact": {
+            "zh": "指标函数、边界测试、注明分母和单位的summary.json。",
+            "en": "Metric functions, edge-case tests and summary.json with units and denominators."
+          },
+          "check": {
+            "zh": "全失败时p95为null；一个成功样本时p95就是该样本。",
+            "en": "With no successes p95 is null; with one success p95 equals that observation."
+          },
+          "course": "foundations",
+          "lesson": 3
+        },
+        {
+          "day": 4,
+          "title": {
+            "zh": "做一次有边界的对照",
+            "en": "Run a controlled comparison"
+          },
+          "action": {
+            "zh": "固定请求集、服务模式和超时，只改变并发；保存两个目录。至少重复3次，解释样本量与波动；CPU模拟不解释GPU吞吐。",
+            "en": "Hold workload, server mode and timeout fixed, vary only concurrency and keep separate run directories. Repeat at least three times and discuss sample size and variability; mock results do not explain GPU throughput."
+          },
+          "artifact": {
+            "zh": "基线/改造两组原始记录、配置与对比表。",
+            "en": "Baseline and modified raw records, configurations and a comparison table."
+          },
+          "check": {
+            "zh": "能重算每个汇总值；失败更多时不会只突出成功请求的延迟。",
+            "en": "Every summary can be recomputed; lower successful-request latency does not hide increased failures."
+          },
+          "course": "vllm",
+          "lesson": 4
+        },
+        {
+          "day": 5,
+          "title": {
+            "zh": "整理可复现作品",
+            "en": "Package reproducible work"
+          },
+          "action": {
+            "zh": "写一条从干净目录开始的复现路径；注明自己的代码改动与上游来源。请同伴尝试或记录“尚未独立复现”。",
+            "en": "Write clean-directory reproduction steps and separate your changes from upstream code. Invite a peer to try them or explicitly record no independent reproduction yet."
+          },
+          "artifact": {
+            "zh": "README、环境快照、原始数据、代码commit及作品档案。",
+            "en": "README, environment snapshot, raw records, source commit and portfolio."
+          },
+          "check": {
+            "zh": "没有凭据或私有请求；作品的测量/模拟类别与证据一致。",
+            "en": "No credentials or private requests are included; evidence labels match the actual work."
+          },
+          "course": "vllm",
+          "lesson": 10
+        },
+        {
+          "day": 6,
+          "title": {
+            "zh": "练习解释工程取舍",
+            "en": "Practice explaining engineering tradeoffs"
+          },
+          "action": {
+            "zh": "用3分钟讲清问题、本人贡献、一次失败和局限；回答“为什么这个p95不能代表所有请求”。在简历中写可核查事实。",
+            "en": "Explain the question, your contribution, one failure and limitations in three minutes. Answer why this p95 does not represent all requests; use verifiable resume claims."
+          },
+          "artifact": {
+            "zh": "项目摘要、面试讲解提纲、一个自己回答不了的问题。",
+            "en": "A project summary, interview outline and one question you cannot yet answer."
+          },
+          "check": {
+            "zh": "没有把mock写成vLLM实测，也没有把课程完成当成生产经验。",
+            "en": "Mock results are not labelled actual vLLM measurements; course completion is not production experience."
+          },
+          "course": "vllm",
+          "lesson": 9
+        },
+        {
+          "day": 7,
+          "title": {
+            "zh": "有针对性地投递与复盘",
+            "en": "Apply selectively and reflect"
+          },
+          "action": {
+            "zh": "挑选符合当前条件的职位，逐项对应作品证据，检查申请渠道后自行投递。记录待补技能和下一次实验，按反馈调整。",
+            "en": "Choose openings compatible with your situation, map requirements to evidence and submit yourself through the reviewed application channel. Record gaps and the next experiment, then adapt to feedback."
+          },
+          "artifact": {
+            "zh": "一份针对岗位的简历与作品链接；私人的投递记录。",
+            "en": "A role-specific resume, portfolio link and private application record."
+          },
+          "check": {
+            "zh": "可以解释适配点与缺口；投递及结果由自己记录，不公开私人求职信息。",
+            "en": "Explain both fit and gaps. Keep applications and outcomes in your own private record."
+          },
+          "course": "foundations",
+          "lesson": 10
+        }
+      ],
+      "rubric": [
+        {
+          "id": "basic",
+          "title": {
+            "zh": "基础通过",
+            "en": "Baseline checks"
+          },
+          "items": [
+            {
+              "zh": "从干净目录可运行客户端与mock，附完整命令和固定环境。",
+              "en": "The client and mock run from a clean directory with exact commands and environment."
+            },
+            {
+              "zh": "成功、错误、超时、截断都保留原始记录，汇总与原始计数一致。",
+              "en": "Successes, errors, timeouts and truncated streams remain in raw records; summaries agree."
+            },
+            {
+              "zh": "独立实现并验证分位数、失败率和空样本行为。",
+              "en": "Independently implement and test percentiles, failure rates and empty-sample behavior."
+            }
+          ]
+        },
+        {
+          "id": "independent",
+          "title": {
+            "zh": "独立改造",
+            "en": "Independent change"
+          },
+          "items": [
+            {
+              "zh": "本人新增一项有测试的功能，例如有界并发、取消处理或流结束校验。",
+              "en": "Add and test your own feature: bounded concurrency, cancellation or stream-termination validation."
+            },
+            {
+              "zh": "对照只改变一个变量，保留至少一次失败或无收益结果并解释。",
+              "en": "Change one variable per comparison; preserve and explain a failure or non-improvement."
+            },
+            {
+              "zh": "报告列出本人改动、实测范围及尚未验证的GPU/引擎结论。",
+              "en": "Document your diff, measured scope and unverified engine/GPU claims."
+            }
+          ]
+        },
+        {
+          "id": "reproduced",
+          "title": {
+            "zh": "同伴复现",
+            "en": "Peer reproduction"
+          },
+          "items": [
+            {
+              "zh": "另一人使用明确commit复现，记录其环境、步骤与差异。",
+              "en": "Another person reproduces an identified commit and records environment, steps and differences."
+            },
+            {
+              "zh": "作品链接到其实际评审/复现记录；未发生就保持未勾选。",
+              "en": "Link their actual review/reproduction record; leave unchecked until it exists."
+            },
+            {
+              "zh": "根据评审修复一项问题或记录合理分歧。",
+              "en": "Resolve a review issue or document a reasoned disagreement."
+            }
+          ]
+        }
+      ],
+      "good": [
+        {
+          "label": {
+            "zh": "问题",
+            "en": "Question"
+          },
+          "value": {
+            "zh": "如何让请求失败不被汇总掩盖？以下是手工构造的报告结构示例，不是真实运行。",
+            "en": "How can a summary retain request failures? This is a hand-constructed report example, not an actual run."
+          }
+        },
+        {
+          "label": {
+            "zh": "环境与来源",
+            "en": "Environment and origin"
+          },
+          "value": {
+            "zh": "证据类别：教学数据；计划使用Python标准库客户端和本机mock。真实作品须补实际Python版本、OS和commit，未填写前不能声称可复现完成。",
+            "en": "Evidence type: teaching data. Planned environment: standard-library Python client and local mock. A real submission must include actual Python version, OS and commit before claiming reproducibility."
+          }
+        },
+        {
+          "label": {
+            "zh": "方法与本人贡献",
+            "en": "Method and contribution"
+          },
+          "value": {
+            "zh": "示例作者负责状态归类与nearest-rank p95函数；构造4行：ok/10ms、ok/20ms、timeout/null、error/null。失败的响应延迟不进入成功延迟统计。",
+            "en": "The example author owns status classification and nearest-rank p95. Four constructed rows: ok/10ms, ok/20ms, timeout/null and error/null. Failed-response latency is excluded from successful-request latency."
+          }
+        },
+        {
+          "label": {
+            "zh": "证据与结果",
+            "en": "Evidence and result"
+          },
+          "value": {
+            "zh": "报告应附client.py、tests、requests.jsonl和summary.json。手算成功率2/4=50%，成功请求p95=20ms；没有运行总时长，不能计算吞吐。文件名是交付约定，不表示本站存在这份实测工件。",
+            "en": "Deliver client.py, tests, requests.jsonl and summary.json. Hand calculation: success rate 2/4=50%, successful-request p95=20ms. Without run duration, throughput cannot be computed. These are artifact requirements, not hosted measurement files."
+          }
+        },
+        {
+          "label": {
+            "zh": "限制与下一步",
+            "en": "Limits and next step"
+          },
+          "value": {
+            "zh": "4行构造数据仅用于验证统计口径；不支持生产延迟结论。下一步用真实客户端采集重复实验，再请同伴用同一commit复算。",
+            "en": "Four constructed rows validate accounting only, not production latency. Next collect repeated actual-client runs and ask a peer to recompute an identified commit."
+          }
+        }
+      ],
+      "bad": {
+        "zh": "“我熟练掌握vLLM，吞吐提升10倍，所有请求p95=20ms。”只附一个summary截图，没有环境、分母或失败记录。",
+        "en": "“I mastered vLLM, improved throughput 10× and all requests have p95=20ms.” Only a summary screenshot is provided, with no environment, denominator or failed rows."
+      },
+      "critique": {
+        "zh": [
+          "成功请求分位数不能自动代表失败请求；应写清样本集合。",
+          "10倍提升缺少相同条件的基线、原始记录与测量时长。",
+          "把可核查贡献写成“实现失败归类和指标测试”，再补真实运行证据。"
+        ],
+        "en": [
+          "Successful-request percentiles do not automatically describe failures; specify the sample set.",
+          "A 10× claim lacks a comparable baseline, raw records and run duration.",
+          "Describe the verifiable contribution—failure classification and metric tests—then add actual run evidence."
+        ]
+      }
+    },
+    {
+      "id": "performance-engineer",
+      "title": {
+        "zh": "GPU 与分布式性能工程师",
+        "en": "GPU & distributed performance engineer"
+      },
+      "project": "distributed-training",
+      "capstone": {
+        "zh": "能验证正确性与恢复的训练基线",
+        "en": "A training baseline with correctness and recovery checks"
+      },
+      "summary": {
+        "zh": "先用小模型验证数据覆盖、梯度语义和恢复，再讨论通信和扩展效率。无需先购买多卡设备。",
+        "en": "Verify data coverage, gradient semantics and recovery on a tiny model before discussing communication or scaling. Start without purchasing multiple GPUs."
+      },
+      "scope": {
+        "zh": "必做：标准库语义实验；进阶：真实CPU Gloo双进程训练。GPU/NCCL性能是另一个扩展，CPU数值正确不能证明GPU加速。",
+        "en": "Required: standard-library semantics. Extension: actual two-process CPU Gloo training. GPU/NCCL performance is separate; CPU correctness does not establish GPU speedup."
+      },
+      "skills": {
+        "zh": [
+          "梯度与数据分片",
+          "同步与恢复",
+          "性能测量口径"
+        ],
+        "en": [
+          "Gradients and data partitioning",
+          "Synchronization and recovery",
+          "Performance measurement scope"
+        ]
+      },
+      "days": [
+        {
+          "day": 1,
+          "title": {
+            "zh": "把性能问题缩小",
+            "en": "Narrow the performance question"
+          },
+          "action": {
+            "zh": "选一个分布式训练岗位，列出必需技能；用小型确定性数据保存单进程参数更新，先明确容差。",
+            "en": "Read a distributed-training opening and list required skills. Save one single-process update on tiny deterministic data and define tolerance."
+          },
+          "artifact": {
+            "zh": "岗位对照、固定数据与单进程基线。",
+            "en": "Role mapping, fixed data and a single-process baseline."
+          },
+          "check": {
+            "zh": "知道参数更新应是多少，能说明均值损失的分母。",
+            "en": "Know the expected update and the denominator of mean loss."
+          },
+          "course": "pytorch-distributed",
+          "lesson": 1
+        },
+        {
+          "day": 2,
+          "title": {
+            "zh": "验证数据覆盖",
+            "en": "Verify data coverage"
+          },
+          "action": {
+            "zh": "给每个样本加ID，记录各rank实际消费的ID。比较整除、不整除、drop与padding；分别说明重复与缺失。",
+            "en": "Assign sample IDs and record consumption per rank. Compare divisible/non-divisible sizes, dropping and padding, explaining duplication and omission."
+          },
+          "artifact": {
+            "zh": "每rank样本ID表及两种边界用例。",
+            "en": "Per-rank sample-ID records and two edge cases."
+          },
+          "check": {
+            "zh": "能指出额外样本来自哪里，不用“随机打乱了”解释覆盖错误。",
+            "en": "Identify where extra samples come from rather than attributing coverage errors to shuffling."
+          },
+          "course": "pytorch-distributed",
+          "lesson": 4
+        },
+        {
+          "day": 3,
+          "title": {
+            "zh": "验证梯度与同步",
+            "en": "Verify gradients and synchronization"
+          },
+          "action": {
+            "zh": "实现样本数加权梯度检查；在真实Gloo环境可用时运行双进程并比较参数更新。保存每rank日志，避免只看rank0的loss。",
+            "en": "Implement sample-count-weighted gradient checks. When Gloo is available, compare a two-process update. Preserve per-rank logs instead of only rank-0 loss."
+          },
+          "artifact": {
+            "zh": "梯度测试、全局样本数、环境与参数差异记录。",
+            "en": "Gradient tests, global sample count, environment and parameter-difference records."
+          },
+          "check": {
+            "zh": "对等量和不等量样本分别验证；清楚标准DDP默认按rank平均的前提。",
+            "en": "Test equal and unequal sample counts and explain the assumptions of default rank-averaged DDP."
+          },
+          "course": "pytorch-distributed",
+          "lesson": 3
+        },
+        {
+          "day": 4,
+          "title": {
+            "zh": "实现恢复检查",
+            "en": "Implement a recovery check"
+          },
+          "action": {
+            "zh": "在固定步骤保存参数、优化器状态和随机状态；比较连续运行与中断恢复。先排正确性，再测耗时。",
+            "en": "Save weights, optimizer and random state at a fixed step; compare uninterrupted and resumed runs. Establish correctness before timing."
+          },
+          "artifact": {
+            "zh": "checkpoint清单、恢复命令、参数差异及容差。",
+            "en": "Checkpoint inventory, resume command, parameter differences and tolerance."
+          },
+          "check": {
+            "zh": "不只验证文件存在，要验证恢复后的下一步更新。",
+            "en": "Validate the next resumed update, not merely checkpoint-file existence."
+          },
+          "course": "pytorch-distributed",
+          "lesson": 9
+        },
+        {
+          "day": 5,
+          "title": {
+            "zh": "建立受控测量",
+            "en": "Build a controlled measurement"
+          },
+          "action": {
+            "zh": "固定全局batch和数据量，记录预热、计时范围及重复次数；区分“多进程可运行”与“更快”。如果只跑语义模型，输出验证报告而非性能表。",
+            "en": "Fix global batch and data volume; record warmup, timing scope and repetitions. Distinguish working multiprocessing from faster execution. With semantics only, submit validation evidence instead of a performance table."
+          },
+          "artifact": {
+            "zh": "正确性报告；有真实运行时再附原始耗时。",
+            "en": "A correctness report and raw timings only when actually measured."
+          },
+          "check": {
+            "zh": "CPU Gloo数据不会写成NCCL基准；没有计时就不输出速度提升。",
+            "en": "CPU Gloo records are not labelled NCCL benchmarks; no speedup is emitted without timings."
+          },
+          "course": "pytorch-distributed",
+          "lesson": 7
+        },
+        {
+          "day": 6,
+          "title": {
+            "zh": "把判断写进作品",
+            "en": "Write down the engineering judgment"
+          },
+          "action": {
+            "zh": "用三分钟解释一个采样反例、一项恢复错误及修复；准备能链接到源代码的简历条目。",
+            "en": "Explain one sampling counterexample, one recovery error and its fix in three minutes. Prepare a resume claim linked to source code."
+          },
+          "artifact": {
+            "zh": "作品档案、本人diff与讲解提纲。",
+            "en": "Portfolio, your diff and an explanation outline."
+          },
+          "check": {
+            "zh": "读者能分清模板、本人实现、真实运行和未验证扩展。",
+            "en": "Readers can distinguish template, your implementation, actual runs and unverified extensions."
+          },
+          "course": "pytorch-distributed",
+          "lesson": 10
+        },
+        {
+          "day": 7,
+          "title": {
+            "zh": "按证据准备申请",
+            "en": "Prepare an evidence-backed application"
+          },
+          "action": {
+            "zh": "选合适职位，把数据覆盖、恢复、测试等已完成证据逐项对应；缺少GPU经验时如实写明计划与CPU成果。通过官方入口自行申请。",
+            "en": "Map completed sampling, recovery and testing evidence to suitable openings. State GPU experience gaps and CPU results accurately, then apply yourself through official channels."
+          },
+          "artifact": {
+            "zh": "岗位专用项目摘要与私人申请记录。",
+            "en": "A role-specific project summary and private application log."
+          },
+          "check": {
+            "zh": "不以模拟结果或进程数冒充分布式性能提升。",
+            "en": "Do not present simulations or process counts as distributed speedups."
+          },
+          "course": "nccl",
+          "lesson": 5
+        }
+      ],
+      "rubric": [
+        {
+          "id": "basic",
+          "title": {
+            "zh": "基础通过",
+            "en": "Baseline checks"
+          },
+          "items": [
+            {
+              "zh": "固定种子、数据与全局batch，保存单进程预期更新。",
+              "en": "Fix seeds, data and global batch; preserve the expected single-process update."
+            },
+            {
+              "zh": "样本ID覆盖检查包含不整除情况，梯度检查包含不等量样本。",
+              "en": "Coverage tests include non-divisible datasets and gradient checks include unequal sample counts."
+            },
+            {
+              "zh": "连续/恢复两条路径在明确容差内一致；保存完整状态清单。",
+              "en": "Uninterrupted and resumed paths agree within stated tolerance; retain the state inventory."
+            }
+          ]
+        },
+        {
+          "id": "independent",
+          "title": {
+            "zh": "独立改造",
+            "en": "Independent change"
+          },
+          "items": [
+            {
+              "zh": "自己实现一个采样、梯度校验或恢复检查模块，并提供反例测试。",
+              "en": "Implement a sampling, gradient-validation or recovery-check module with counterexample tests."
+            },
+            {
+              "zh": "解释一次故障的因果链：现象、最小复现、修复和回归验证。",
+              "en": "Explain a failure through symptoms, minimal reproduction, fix and regression check."
+            },
+            {
+              "zh": "真实性能结论固定batch/样本数/计时范围；未测量则仅报告正确性。",
+              "en": "Performance claims fix batch, sample count and timing scope; otherwise report correctness only."
+            }
+          ]
+        },
+        {
+          "id": "reproduced",
+          "title": {
+            "zh": "同伴复现",
+            "en": "Peer reproduction"
+          },
+          "items": [
+            {
+              "zh": "另一人运行同一commit，记录CPU/GPU后端、进程数与实际结果。",
+              "en": "A peer runs the same commit and records backend, processes and actual results."
+            },
+            {
+              "zh": "复现记录明确是否验证恢复与样本覆盖，不能只写“能启动”。",
+              "en": "The record names recovery and coverage checks; startup alone is insufficient."
+            },
+            {
+              "zh": "差异与未解决问题公开在作者自愿分享的评审记录中。",
+              "en": "Record differences and unresolved issues in the review the author chooses to share."
+            }
+          ]
+        }
+      ],
+      "good": [
+        {
+          "label": {
+            "zh": "问题",
+            "en": "Question"
+          },
+          "value": {
+            "zh": "两rank本地batch不等量时，直接平均本地均值梯度会得到什么？这是手工构造的教学记录。",
+            "en": "What happens if two unequal local batches have their mean gradients averaged directly? This is a hand-constructed teaching record."
+          }
+        },
+        {
+          "label": {
+            "zh": "环境与证据",
+            "en": "Environment and evidence"
+          },
+          "value": {
+            "zh": "证据类别：梯度算术模型；没有运行PyTorch/Gloo/NCCL。真实作品需附实际环境、源码commit与每rank日志。",
+            "en": "Evidence: a gradient arithmetic model; PyTorch/Gloo/NCCL were not run. Real work must include environment, commit and per-rank logs."
+          }
+        },
+        {
+          "label": {
+            "zh": "方法与本人贡献",
+            "en": "Method and contribution"
+          },
+          "value": {
+            "zh": "构造local_mean=[2,8]、sample_count=[3,1]。示例作者实现加权聚合并测试零总样本非法；下一步再验证真实DDP的loss缩放。",
+            "en": "Construct local_mean=[2,8], sample_count=[3,1]. The example author implements weighted aggregation and rejects zero total count. Next verify loss scaling with actual DDP."
+          }
+        },
+        {
+          "label": {
+            "zh": "结果与交付",
+            "en": "Result and artifacts"
+          },
+          "value": {
+            "zh": "等rank平均是5；按样本加权是(2×3+8×1)/4=3.5。交付要求：gradient_check.py、tests、输入与预期JSON、恢复检查计划。该结果指出默认rank平均的使用前提，不证明实际DDP实现错误。",
+            "en": "Equal-rank average is 5; sample-weighted average is (2×3+8×1)/4=3.5. Deliver gradient_check.py, tests, input/expected JSON and a recovery-check plan. This illustrates a default averaging assumption, not a DDP implementation bug."
+          }
+        },
+        {
+          "label": {
+            "zh": "限制与下一步",
+            "en": "Limits and next step"
+          },
+          "value": {
+            "zh": "目前没有框架运行或计时证据。下一步固定全局batch，运行真实Gloo并对齐单进程参数更新，再验证恢复；GPU通信优化仍待单独测量。",
+            "en": "No framework run or timings exist yet. Next fix global batch, run actual Gloo, match the single-process update and verify recovery. GPU communication optimization requires separate measurements."
+          }
+        }
+      ],
+      "bad": {
+        "zh": "“用了两个rank，所以训练速度翻倍，结果和单卡一样。”只给loss曲线，没有全局batch、样本ID或计时范围。",
+        "en": "“Two ranks doubled training speed with the same result as one GPU.” Only loss curves are shown, without global batch, sample IDs or timing scope."
+      },
+      "critique": {
+        "zh": [
+          "rank数不等于速度提升；需要相同工作量的实际计时。",
+          "loss相近不能证明采样覆盖、参数更新或恢复正确。",
+          "补样本ID、参数对照、全局batch和恢复验证；暂时删去无证据的速度结论。"
+        ],
+        "en": [
+          "Rank count is not speedup; measure equal work.",
+          "Similar loss does not establish data coverage, matching updates or correct recovery.",
+          "Add sample IDs, parameter comparisons, global batch and recovery checks; remove unsupported speed claims."
+        ]
+      }
+    },
+    {
+      "id": "platform-engineer",
+      "title": {
+        "zh": "AI 平台工程师",
+        "en": "AI platform engineer"
+      },
+      "project": "ray-backpressure",
+      "capstone": {
+        "zh": "有界任务队列与故障记录",
+        "en": "A bounded task queue with failure records"
+      },
+      "summary": {
+        "zh": "实现可控的提交窗口、结果归位和错误隔离，再用真实Ray任务验证相同契约。",
+        "en": "Implement a bounded submission window, ordered result mapping and failure isolation, then validate the same contract with real Ray tasks."
+      },
+      "scope": {
+        "zh": "必做：本机Python线程或标准库模型；进阶：固定版本Ray Core。任务数上限不是内存上限，多节点恢复与生产可靠性需另行验证。",
+        "en": "Required: local Python threads or standard-library models. Extension: pinned Ray Core. A task-count limit is not a memory limit; multi-node recovery and production reliability need separate validation."
+      },
+      "skills": {
+        "zh": [
+          "并发与背压",
+          "任务身份与失败",
+          "资源和可观测性"
+        ],
+        "en": [
+          "Concurrency and backpressure",
+          "Task identity and failures",
+          "Resources and observability"
+        ]
+      },
+      "days": [
+        {
+          "day": 1,
+          "title": {
+            "zh": "定义平台问题",
+            "en": "Define the platform problem"
+          },
+          "action": {
+            "zh": "找一个平台岗位，选“生产任务太快导致pending增长”这个小问题。给任务定义ID、输入、结果、状态和超时。",
+            "en": "Read a platform opening and choose uncontrolled pending-task growth as the small problem. Define task ID, input, result, status and timeout."
+          },
+          "artifact": {
+            "zh": "岗位对照与任务输入/输出契约。",
+            "en": "Role mapping and task input/output contract."
+          },
+          "check": {
+            "zh": "能区分提交数、运行数、完成数和待处理数。",
+            "en": "Distinguish submitted, running, completed and pending counts."
+          },
+          "course": "ray",
+          "lesson": 1
+        },
+        {
+          "day": 2,
+          "title": {
+            "zh": "实现有界提交",
+            "en": "Implement bounded submission"
+          },
+          "action": {
+            "zh": "自己实现pending窗口；完成一个再补一个。保留输入顺序与任务ID，构造空输入和window=1的测试。",
+            "en": "Implement a pending window that refills after completions. Preserve input order and IDs; test empty input and window=1."
+          },
+          "artifact": {
+            "zh": "有界执行函数、单元测试与peak_pending记录。",
+            "en": "A bounded executor, tests and peak_pending records."
+          },
+          "check": {
+            "zh": "任意时刻pending不超过窗口；结果按ID正确归位。",
+            "en": "Pending never exceeds the window and results map correctly by ID."
+          },
+          "course": "ray",
+          "lesson": 2
+        },
+        {
+          "day": 3,
+          "title": {
+            "zh": "加入失败隔离",
+            "en": "Add failure isolation"
+          },
+          "action": {
+            "zh": "让一个任务显式失败；记录错误，不丢掉其他结果。说明重试次数与副作用，并为重复任务构造反例。",
+            "en": "Make one task fail explicitly, preserve other results and record its error. Explain retries and side effects using a duplicate-task counterexample."
+          },
+          "artifact": {
+            "zh": "失败原始记录、重复请求测试及重试边界说明。",
+            "en": "Raw failure records, duplicate-request test and retry boundaries."
+          },
+          "check": {
+            "zh": "一次失败不伪装成成功，重试也不等于恰好执行一次。",
+            "en": "Failures are not disguised as successes; retrying does not imply exactly-once effects."
+          },
+          "course": "ray",
+          "lesson": 9
+        },
+        {
+          "day": 4,
+          "title": {
+            "zh": "比较不同窗口",
+            "en": "Compare submission windows"
+          },
+          "action": {
+            "zh": "固定任务输入、worker数和任务函数，只改窗口；记录峰值pending、完成/失败数、实际耗时。可用真实Ray时重复相同契约。",
+            "en": "Fix inputs, workers and task function; vary only the window. Record peak pending, successes, failures and actual elapsed time. Repeat the contract with actual Ray when available."
+          },
+          "artifact": {
+            "zh": "两组配置与原始JSON，注明本机线程或Ray。",
+            "en": "Two configurations and raw JSON labelled local threads or Ray."
+          },
+          "check": {
+            "zh": "任务上限与worker数没有混用；不把估计对象大小当成内存实测。",
+            "en": "Window and worker count remain distinct; estimated payload size is not measured memory."
+          },
+          "course": "ray",
+          "lesson": 6
+        },
+        {
+          "day": 5,
+          "title": {
+            "zh": "写资源与排障手册",
+            "en": "Write a resource and failure runbook"
+          },
+          "action": {
+            "zh": "写出CPU资源请求和并发限制的区别；用状态计数定位“未提交、等待、失败”三种问题。把清理步骤写进README。",
+            "en": "Explain logical CPU requests versus concurrency limits. Use counters to distinguish not submitted, waiting and failed tasks. Document cleanup steps."
+          },
+          "artifact": {
+            "zh": "资源预算表、排障树和退出/清理命令。",
+            "en": "Resource budget, diagnostic tree and exit/cleanup commands."
+          },
+          "check": {
+            "zh": "没有把Ray num_cpus当成操作系统强制CPU限额。",
+            "en": "Ray num_cpus is not presented as an OS-enforced CPU cap."
+          },
+          "course": "ray",
+          "lesson": 5
+        },
+        {
+          "day": 6,
+          "title": {
+            "zh": "形成可评审的作品",
+            "en": "Prepare reviewable work"
+          },
+          "action": {
+            "zh": "整理输入、代码diff、原始结果与局限；用3分钟解释为什么“更大的窗口”不总是更好。请同伴运行一个失败用例。",
+            "en": "Package inputs, your diff, raw results and limitations. Explain in three minutes why larger windows are not always better. Invite a peer to run a failure case."
+          },
+          "artifact": {
+            "zh": "作品档案、讲解提纲、实际存在的评审链接或待评审标记。",
+            "en": "Portfolio, explanation outline and an actual review link or pending-review label."
+          },
+          "check": {
+            "zh": "复现者与作者区分；没有评审记录就不写已复现。",
+            "en": "Distinguish author and reproducer; do not claim reproduction without a record."
+          },
+          "course": "ray",
+          "lesson": 10
+        },
+        {
+          "day": 7,
+          "title": {
+            "zh": "对应岗位开始申请",
+            "en": "Match the project to openings"
+          },
+          "action": {
+            "zh": "选择需要任务调度、平台可靠性或数据流水线的机会。用作品回答职责，补齐简历与自荐说明，自行通过官方入口投递。",
+            "en": "Choose task-orchestration, platform-reliability or data-pipeline opportunities. Map the project to responsibilities, prepare your resume and introduction, then apply through official channels."
+          },
+          "artifact": {
+            "zh": "岗位专用摘要、作品链接与私人投递记录。",
+            "en": "A role-specific summary, portfolio link and private application record."
+          },
+          "check": {
+            "zh": "真实集群规模、可用性和吞吐承诺均有证据；未做的保持明确。",
+            "en": "Claims about cluster scale, availability and throughput have evidence; unfinished work stays explicit."
+          },
+          "course": "kubernetes",
+          "lesson": 9
+        }
+      ],
+      "rubric": [
+        {
+          "id": "basic",
+          "title": {
+            "zh": "基础通过",
+            "en": "Baseline checks"
+          },
+          "items": [
+            {
+              "zh": "pending始终不超过窗口，空输入与window=1都通过。",
+              "en": "Pending stays within the window; empty-input and window=1 tests pass."
+            },
+            {
+              "zh": "输入/输出按任务ID对应；失败保留状态与错误原因。",
+              "en": "Inputs and outputs match by task ID; failures retain state and reason."
+            },
+            {
+              "zh": "固定环境、启动/退出命令、原始记录和资源边界齐全。",
+              "en": "Include environment, startup/exit commands, raw records and resource boundaries."
+            }
+          ]
+        },
+        {
+          "id": "independent",
+          "title": {
+            "zh": "独立改造",
+            "en": "Independent change"
+          },
+          "items": [
+            {
+              "zh": "本人实现背压/错误隔离中的至少一项，提交能触发旧问题的测试。",
+              "en": "Implement backpressure or failure isolation yourself with a test that exposes the old issue."
+            },
+            {
+              "zh": "固定worker及负载比较两个窗口，不把理想预算当成实测内存。",
+              "en": "Compare two windows with fixed workers/workload; do not relabel ideal budgets as measured memory."
+            },
+            {
+              "zh": "记录重试副作用或取消未完成任务的边界，解释资源回收。",
+              "en": "Document retry side effects or cancellation boundaries and explain resource cleanup."
+            }
+          ]
+        },
+        {
+          "id": "reproduced",
+          "title": {
+            "zh": "同伴复现",
+            "en": "Peer reproduction"
+          },
+          "items": [
+            {
+              "zh": "另一人用明确commit验证峰值pending与一个失败场景。",
+              "en": "A peer verifies peak pending and one failure scenario at a named commit."
+            },
+            {
+              "zh": "其记录包含实际后端和输入配置，不能用作者自己的输出替代。",
+              "en": "Their record includes actual backend and inputs, not the author’s output reused as a reproduction."
+            },
+            {
+              "zh": "把评审中发现的顺序、状态或清理问题写进修订记录。",
+              "en": "Log ordering, state or cleanup corrections found during review."
+            }
+          ]
+        }
+      ],
+      "good": [
+        {
+          "label": {
+            "zh": "问题",
+            "en": "Question"
+          },
+          "value": {
+            "zh": "能否把提交窗口限制为2，同时保留失败任务？以下状态轨迹为教学构造，不是Ray实测。",
+            "en": "Can a submission window stay at two while retaining failures? The following trace is constructed teaching data, not a Ray measurement."
+          }
+        },
+        {
+          "label": {
+            "zh": "契约与贡献",
+            "en": "Contract and contribution"
+          },
+          "value": {
+            "zh": "输入ID=[a,b,c]；示例作者负责补窗与按ID归位。轨迹：提交a/b→a完成→提交c→b失败→c完成；每次事件后pending=[2,1,2,1,0]。",
+            "en": "Input IDs=[a,b,c]; the example author owns window refill and ID mapping. Trace: submit a/b → a completes → submit c → b fails → c completes. Pending after events=[2,1,2,1,0]."
+          }
+        },
+        {
+          "label": {
+            "zh": "结果与交付",
+            "en": "Result and artifacts"
+          },
+          "value": {
+            "zh": "peak_pending=2；成功2、失败1、总任务3。交付要求：executor.py、failure_test.py、事件JSONL和按ID结果表。没有时间戳就不能推断吞吐；未分配大对象就不能声称节省了多少内存。",
+            "en": "peak_pending=2; two successes and one failure out of three. Deliver executor.py, failure_test.py, event JSONL and an ID-indexed result table. No timestamps means no throughput claim; without allocating large objects no memory saving is measured."
+          }
+        },
+        {
+          "label": {
+            "zh": "环境与复现",
+            "en": "Environment and reproduction"
+          },
+          "value": {
+            "zh": "当前只验证轨迹不变量；真实提交需加Python/Ray版本、OS、worker数、源码commit及启动/停止命令，并保留同伴自己的输出。",
+            "en": "This example validates trace invariants only. Actual work must add Python/Ray version, OS, workers, commit and startup/shutdown commands; preserve the peer’s own output."
+          }
+        },
+        {
+          "label": {
+            "zh": "限制与下一步",
+            "en": "Limits and next step"
+          },
+          "value": {
+            "zh": "窗口只限制未完成任务数；对象可能大小不同，失败任务可能有副作用。下一步运行真实Ray，增加慢任务、失败和重复ID测试，记录真实队列峰值。",
+            "en": "The window limits incomplete task count; object sizes differ and failures may have side effects. Next run actual Ray with slow tasks, failures and duplicate-ID tests, recording the real queue peak."
+          }
+        }
+      ],
+      "bad": {
+        "zh": "“把max_workers设成2，系统就永远只保存2个任务，内存下降90%，自动重试保证不重复。”没有pending曲线或对象大小。",
+        "en": "“Setting max_workers=2 stores at most two tasks forever, cuts memory 90% and retries guarantee no duplicates.” No pending trace or object-size evidence is supplied."
+      },
+      "critique": {
+        "zh": [
+          "worker数只限制执行并发，未必限制已提交队列。",
+          "任务计数不能直接推出内存节省比例。",
+          "重试可能重复副作用；需明确幂等设计与实际失败记录。"
+        ],
+        "en": [
+          "Worker count limits executing concurrency, not necessarily the submitted queue.",
+          "Task counts alone do not establish a memory-saving percentage.",
+          "Retries can repeat side effects; describe idempotency and actual failure records."
+        ]
+      }
+    }
+  ]
+}

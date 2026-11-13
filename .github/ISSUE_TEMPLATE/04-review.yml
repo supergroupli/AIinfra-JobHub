@@ -1,0 +1,52 @@
+name: "Request a project review / 申请作品评审"
+description: "Ask a focused question about work you choose to share publicly / 为自愿公开的作品申请具体反馈"
+title: "[Review] Project — Question"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提交后立即成为公开 Issue。请只提交本人的公开作品，并删除令牌、简历附件和私密数据。
+        本表单是评审申请，不是招聘申请或能力认证。维护者确认后手工收录；回复时间取决于志愿评审者。
+        This issue is public immediately. Share only your own public work and remove secrets or private data.
+        This requests feedback, not employment or certification. Inclusion is curated; response depends on volunteer availability.
+  - type: input
+    id: author
+    attributes:
+      label: "Author / 作者"
+      description: "Display name and your GitHub profile / 显示名与本人 GitHub 主页"
+    validations:
+      required: true
+  - type: input
+    id: target
+    attributes:
+      label: "Course or career path / 课程或职业路线"
+  - type: input
+    id: portfolio
+    attributes:
+      label: "Public work / 公开作品"
+      description: "Repository and exact commit or report URL / 仓库及具体 commit 或报告链接"
+    validations:
+      required: true
+  - type: textarea
+    id: contribution
+    attributes:
+      label: "My contribution and review question / 本人贡献与评审问题"
+      description: "Name what you implemented and one question a reviewer can answer / 说明自己实现的部分，以及一个评审者能够回答的问题"
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: "Reproduction and evidence / 复现方法与证据"
+      description: "Versions, environment, commands, raw results, known failures; label simulations and unrun steps / 版本、环境、命令、原始记录、已知失败；标明模拟与未运行步骤"
+    validations:
+      required: true
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: "Public display consent / 公开确认"
+      options:
+        - label: "This is my own work, I agree to public display and understand the issue is public immediately. / 这是本人的作品，我同意公开展示，并理解 Issue 提交后立即公开。"
+          required: true
+        - label: "I removed credentials and private information; a review is not a certification or job offer. / 我已删除凭据与私密信息；评审不代表能力认证或录用。"
+          required: true

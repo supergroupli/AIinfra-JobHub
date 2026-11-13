@@ -426,6 +426,21 @@
             "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
             "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
           }
+        },
+        {
+          "title": {
+            "zh": "真实Ray CPU扩展（先按README安装）",
+            "en": "Actual Ray CPU extension (install using README first)"
+          },
+          "body": {
+            "zh": "选做：Ubuntu22.04、Python3.11和ray[serve]==2.60.0。在已激活的独立环境、实验包目录执行，依赖安装见README。平台实际验证状态及原始证据也由README链接提供；不能将标准库数据改标签当成SDK结果。",
+            "en": "Optional: Ubuntu22.04, Python3.11 and ray[serve]==2.60.0. Run in the activated isolated environment and lab directory after following the README. The README links actual platform validation evidence; do not relabel standard-library data as SDK execution."
+          },
+          "command": "python real_ray.py --out out/real-core.json",
+          "expected": {
+            "zh": "真实Ray应输出8个结果，sum=140、peak_pending≤2，并保留一个错误输入。JSON记录版本、源码哈希和边界。",
+            "en": "Actual Ray should emit eight rows, sum=140, peak_pending≤2 and a retained invalid-input failure. JSON includes versions, source hash and boundaries."
+          }
         }
       ],
       "troubleshooting": [
@@ -1631,6 +1646,21 @@
           "expected": {
             "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
             "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        },
+        {
+          "title": {
+            "zh": "真实Ray CPU扩展（先按README安装）",
+            "en": "Actual Ray CPU extension (install using README first)"
+          },
+          "body": {
+            "zh": "选做：Ubuntu22.04、Python3.11和ray[serve]==2.60.0。在已激活的独立环境、实验包目录执行，依赖安装见README。平台实际验证状态及原始证据也由README链接提供；不能将标准库数据改标签当成SDK结果。",
+            "en": "Optional: Ubuntu22.04, Python3.11 and ray[serve]==2.60.0. Run in the activated isolated environment and lab directory after following the README. The README links actual platform validation evidence; do not relabel standard-library data as SDK execution."
+          },
+          "command": "python verify_serve.py --out out/real-serve.json",
+          "expected": {
+            "zh": "真实Serve应保留6个HTTP请求/响应：两个200，四个400；脚本退出前自动清理专用服务。",
+            "en": "Actual Serve should retain six HTTP request/response rows: two200 and four400; the script cleans up its dedicated service."
           }
         }
       ],

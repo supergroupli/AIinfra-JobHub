@@ -1,0 +1,77 @@
+{
+  "status": "PASS",
+  "rank": 0,
+  "world_size": 2,
+  "backend": "gloo",
+  "torch": "2.6.0+cpu",
+  "python": "3.11.18",
+  "platform": "Linux-6.8.0-1070-azure-x86_64-with-glibc2.35",
+  "started_at": "2026-11-13T15:42:42.287015+00:00",
+  "evidence": "measured-pytorch-gloo",
+  "source_sha256": "8104dc8e4bf147738a289f518a84128229a786f964e82ea7a77cca67dcf6982a",
+  "boundary": "One host, two ranks, one scalar weight. Correctness and optimizer recovery only; not training throughput or model quality.",
+  "trace": [
+    {
+      "step": 1,
+      "weight_before": 0.0,
+      "local_input": 1,
+      "local_loss": 4.0,
+      "averaged_gradient": -10.0,
+      "weight_after": 1.0,
+      "global_batch_reference": 1.0
+    },
+    {
+      "step": 2,
+      "weight_before": 1.0,
+      "local_input": 1,
+      "local_loss": 1.0,
+      "averaged_gradient": -5.0,
+      "weight_after": 1.7000000476837158,
+      "global_batch_reference": 1.7000000476837158
+    },
+    {
+      "step": 3,
+      "weight_before": 1.7000000476837158,
+      "local_input": 1,
+      "local_loss": 0.0899999737739563,
+      "averaged_gradient": -1.499999761581421,
+      "weight_after": 1.9900000095367432,
+      "global_batch_reference": 1.9900000095367432
+    },
+    {
+      "step": 4,
+      "weight_before": 1.9900000095367432,
+      "local_input": 1,
+      "local_loss": 9.999980829888955e-05,
+      "averaged_gradient": -0.04999995231628418,
+      "weight_after": 2.052999973297119,
+      "global_batch_reference": 2.052999973297119
+    }
+  ],
+  "resumed_trace": [
+    {
+      "step": 3,
+      "weight": 1.9900000095367432,
+      "global_batch_reference": 1.9900000095367432
+    },
+    {
+      "step": 4,
+      "weight": 2.052999973297119,
+      "global_batch_reference": 2.052999973297119
+    }
+  ],
+  "weight": 2.052999973297119,
+  "resumed_weight": 2.052999973297119,
+  "resume_matches": true,
+  "baseline_weights": [
+    1.0,
+    1.7000000476837158,
+    1.9900000095367432,
+    2.052999973297119
+  ],
+  "missing_optimizer_control_weight": 1.9550000429153442,
+  "rank_weights": [
+    2.052999973297119,
+    2.052999973297119
+  ]
+}

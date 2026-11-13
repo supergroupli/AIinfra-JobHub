@@ -2,6 +2,7 @@
 import html
 import json
 import re
+from urllib.parse import urlencode
 
 if __package__:
     from .teaching_models import MODELS
@@ -70,8 +71,20 @@ def course_hero(course):
         label("a", "作品记录模板 ↗", "Portfolio template ↗", 'class="text-link" href="../../resources/portfolio-template.md" download') + '</div>' +
         label("p", f'资料核对：{course["lastVerified"]}。目标是完成一轮系统学习与可复现作品；实际命令需匹配你锁定的版本。资料核对不代表所有硬件实验已在本平台运行。',
               f'Sources checked: {course["lastVerified"]}. Complete a structured learning cycle and a reproducible project. Match commands to your pinned release. Source review does not mean all hardware experiments were run by this platform.', 'class="course-research-note"') +
-        '<p id="storage-status" class="course-research-note" role="status" hidden></p>'
+        verification_card(course) +
+        '<p id="storage-status" class="course-research-note" role="status" hidden></p><details id="backup-panel" class="backup-panel"></details>'
     )
+
+
+def verification_card(course):
+    record = course.get("verification")
+    if not record:
+        return ""
+    return ('<aside class="verification-card">' + label("strong", "真实 CPU 框架实验已验证", "Real CPU framework experiment verified") +
+            localized("p", record["scope"]) + f'<p>{esc(record["environment"])} · {esc(record["checkedAt"])}</p>' +
+            label("a", "查看原始结果与文件校验值 ↗", "View raw results & file checksums ↗", f'class="text-link" href="../../{esc(record["manifest"])}" target="_blank" rel="noopener noreferrer"') + ' · ' +
+            label("a", "查看实际运行日志 ↗", "View the actual run logs ↗", f'class="text-link" href="{esc(record["runUrl"])}" target="_blank" rel="noopener noreferrer"') +
+            label("p", "这是平台验证样例，只验证所列正确性；不代表 GPU 吞吐、生产能力或学员作品认证。原始结果也包含在实验 ZIP 中。", "This is a platform verification sample for the stated correctness checks, not GPU throughput, production capability or certification of a learner. Raw results are also included in the lab ZIP.") + '</aside>')
 
 
 def course_nav(course):
@@ -251,7 +264,7 @@ def feedback_blocks(step):
     return "".join(chunks)
 
 
-def course_body(course):
+def course_body(course, repository=""):
     sections = []
     for step in course["steps"]:
         day = step["day"]
@@ -283,7 +296,14 @@ def course_body(course):
             chunks.append(label("a", "下一天 →", "Next day →", f'class="button primary" href="#day-{day+1}"'))
         else:
             chunks.append(label("a", "整理我的作品 ↗", "Build my portfolio ↗", 'class="button primary" href="../../resources/portfolio-template.md" download'))
-        chunks += ['</nav></section>']
+        chunks.append('</nav>')
+        if repository and re.fullmatch(r"[A-Za-z0-9-]+/[A-Za-z0-9_.-]+", repository):
+            query = urlencode({"template": "03-project-feedback.yml", "title": f'[Learning] {course["id"]} Day {day}', "target": f'{course["id"]} Day {day} | sources checked {course["lastVerified"]}'})
+            chunks += ['<aside class="lesson-help">', label("strong", "卡在这一步？", "Stuck on this step?"),
+                       label("p", "提问入口已填入课程、天数和资料核对日期。提交前补上实际版本、命令和报错，删除私密数据。Issue 提交后公开；不会附带你的私人笔记。", "The draft includes the course, day and source-check date. Add your actual versions, command and error; remove private data. Submitted issues are public. Your private notes are not included."),
+                       label("a", "打开求助草稿 ↗", "Open a help request draft ↗", f'class="button outline" href="https://github.com/{esc(repository)}/issues/new?{esc(query)}" target="_blank" rel="noopener noreferrer"'),
+                       label("a", "查看作品评审队列 ↗", "View the project review queue ↗", 'class="text-link" href="../../talent/#reviews"'), '</aside>']
+        chunks.append('</section>')
         sections.append("".join(chunks))
     meta = {"id": course["id"], "title": course["title"], "steps": [{"day": x["day"], "title": x["title"]} for x in course["steps"]]}
     safe_meta = json.dumps(meta, ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")

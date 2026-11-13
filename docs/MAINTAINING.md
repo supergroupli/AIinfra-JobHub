@@ -2,6 +2,26 @@
 
 ## 实战项目与作品档案
 
+`web/career/` 是三条 7 天作品与投递准备路线，关联现有项目与课程。示例必须显著标为教学构造；本地勾选不转成能力认证、第三方评审或真实人才。`web/talent/` 展示已审核、未过期的自愿公开名片，阅读清单仅存本机 ID，不发送消息。名片可增加双语 `targetRole`，其他字段沿用原 schema。
+
+## 作品评审队列
+
+`04-review.yml` 接收本人主动公开的作品评审请求。提交立即公开；维护者确认同意、源码与具体问题后，手工编辑 `content/reviews.json`，经构建发布到人才页。不要把未发生的评审写入队列。
+
+每条记录包含：唯一 `id`、双语 `title`/`summary`、`author`、公开 `portfolio`、本仓库 Issue 的 `source`、`consent:true`、`updatedAt`、`expiresAt`（确认后 1–90 天）。`status` 为 `queued`（待领取）、`in-review`（评审中）、`changes-requested`（需修改）、`reproduced`（已复现）；后三项需要实际 `reviewer`。已复现还需 `evidence` 指向具体 GitHub Issue 或完整 commit；维护者应核对其版本、环境、执行步骤和边界。链接存在本身不证明内容真实。
+
+没有人领取时保持待领取；不承诺固定答疑时限。撤回请求时删除当前记录并重新发布；公开 Issue 与 Git 历史不会随目录删除而自动消失。
+
+## 真实框架验证与备份
+
+Ray 与 PyTorch Gloo 的真实 CPU 检查使用手动 `framework-labs.yml`。步骤与已测范围见 [FRAMEWORK_VALIDATION.md](FRAMEWORK_VALIDATION.md)。运行成功后保存最小必要的原始 JSON、依赖快照、run URL、commit 与 SHA-256 清单到实验目录的 `validation/日期/`，不用即将过期的 Actions artifact 作为唯一证据。
+
+课程验证标记来自 `content/framework-checks.json`。构建核对当前脚本与证据文件哈希；脚本改变后，必须重跑并更新证据，或移除已失效的验证条目。平台运行记录不等于学员独立作品、同伴复现、GPU 测试或生产性能结论。
+
+课程和作品页支持带版本的 JSON 备份；导入只在浏览器进行，先检查类型/课程/长度再预览。默认合并保留已有非空字段，课程完成记录取并集；替换仅影响当前课程或当前作品草稿。学习 Markdown、求职路线 Markdown 都是可阅读副本，不能自动导回；本机清单与七天路线进度当前没有 JSON 导入。
+
+逐日求助链接只预填课程、天数与资料核对日期，不包含私人笔记；用户补上自己的真实环境和报错后自行提交。查询参数采用 [GitHub 官方的 Issue 表单预填机制](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/creating-an-issue)。
+
 `web/projects/projects.json` 维护双语项目。构建会检查日期、双语步骤、交付与验收条目、HTTPS 官方来源和真实课程引用；不要把尚未运行的方案写成实测成果。项目详情通过 `projects/?project=ID` 分享，并将相同 ID 传给作品档案页提供写作提示。
 
 `web/portfolio/` 是浏览器内的编辑与导出工具。作品草稿不属于公开目录，不进入 GitHub 仓库，不自动上传或发邮件；清除浏览器数据会丢失本地草稿。公开作品名片仍走本人主动提交与人工审核。学习与项目反馈使用 `03-project-feedback.yml`，独立复现记录要明确版本、环境、差异和原始结果。

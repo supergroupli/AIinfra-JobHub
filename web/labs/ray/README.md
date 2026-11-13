@@ -57,19 +57,32 @@ Initial NOT YET is expected; REFERENCE ONLY is not personal completion. Complete
 
 ## 可选真实 Ray 2.60.0 / Optional real Ray 2.60.0
 
-目标环境：Ubuntu 22.04 x86_64、Python 3.11、2 个可用 CPU、建议 4 GiB 以上内存。需要联网安装，固定 `ray[serve]==2.60.0`。这些真实 SDK 路线已核对官方接口，但未在本仓库执行；失败时保留完整日志和版本，不能用主线线程数据替代。使用专用本机学习环境；不暴露集群控制端口。
+目标环境：Ubuntu 22.04 x86_64、Python 3.11、2 个可用 CPU、建议 4 GiB 以上内存。需要联网安装，固定 `ray[serve]==2.60.0`。2026-11-13 已在 GitHub Ubuntu CPU runner 实际执行并通过，运行和源码版本见下方记录。失败时保留完整日志和版本，不能用主线线程数据替代。使用专用本机学习环境；不暴露集群控制端口。
 
-Target: Ubuntu 22.04 x86_64, Python 3.11, two available CPUs and preferably at least 4 GiB RAM. These SDK examples follow official interfaces but were not executed in this repository. Save version/logs and keep their evidence separate from the standard-library route.
+Target: Ubuntu 22.04 x86_64, Python 3.11, two available CPUs and preferably at least 4 GiB RAM. These SDK examples passed on a GitHub Ubuntu CPU runner on 2026-11-13; exact run and commit are recorded below. Save your own version/logs separately from the standard-library route.
+
+已验证样例 / Verified platform sample: [run43455249219](https://github.com/supergroupli/AIinfra-JobHub/actions/runs/43455249219), commit`28b14e7892a875cdee959ad8d8efb41408a3a3e9`。原始JSON与依赖快照随包保存在`validation/2026-11-13/`；这是平台小型CPU正确性记录，不是学员自己的运行、同伴复现或Ray集群性能证明。
+
+The original JSON and dependency snapshot are included in validation/2026-11-13/. This is platform CPU correctness evidence, not your own execution, independent peer reproduction or Ray cluster performance.
 
 ```sh
 python3.11 -m venv .venv-ray
 .venv-ray/bin/python -m pip install 'ray[serve]==2.60.0'
-.venv-ray/bin/python real_ray.py
+.venv-ray/bin/python real_ray.py --out out/real-core.json
+.venv-ray/bin/python verify_serve.py --out out/real-serve.json
 ```
 
-预期 sum=140，evidence 为 `measured-ray-local`。脚本使用 `ray.wait` 限制 pending≤2，最后 shutdown。对象存储启动报内存不足时，先检查机器内存、容器共享内存和其他进程，不应删去容量约束来掩盖问题。
+Core 预期 JSON 的 status=PASS、sum=140、peak_pending≤2，并保留一次字符串输入导致的 ValueError。每个任务的 input 和 square 都保存在 rows；这次错误是明确安排的反例，不能删掉后再统计全部成功。脚本使用 ray.wait 限制待完成任务，并在 finally 中关闭自己启动的 Ray。
 
-Expect sum=140 and `measured-ray-local`. The script uses `ray.wait` to bound pending tasks and shuts down afterwards. If the object store cannot start, inspect available/shared memory and existing processes.
+Core JSON should have status=PASS, sum=140, peak_pending≤2, all eight input/output rows and one expected ValueError for a string input. The failure is retained rather than silently removed. The script bounds pending tasks with ray.wait and always shuts down its dedicated Ray instance.
+
+`verify_serve.py`自动启动本机专用 Serve，向127.0.0.1:18080发送6个真实HTTP请求，记录原始请求、响应和状态码，最后关闭服务。预期两个合法请求返回200（49、9），字符串、布尔值、超范围整数、非法JSON返回400。端口已占用时用`--port 18081`；不要改成连接共享集群。此处elapsed_ms包含客户端、网络和处理过程，只是单次正确性记录，不能当成压测结论。
+
+`verify_serve.py` starts a dedicated local Serve instance on 127.0.0.1:18080, checks six actual HTTP requests, saves request/response/status rows and shuts down. Expect two 200 responses (49 and 9) and four 400 responses for string, boolean, out-of-range and malformed JSON inputs. Use --port 18081 if occupied. Recorded elapsed_ms includes client/network/processing and is not a load-test result.
+
+若启动失败，先检查Python版本、机器内存、容器共享内存和服务日志；脚本失败退出时仍尝试保留status=FAILED和错误信息。平台的真实运行状态与原始证据见仓库 [验证记录](https://github.com/supergroupli/AIinfra-JobHub/blob/main/docs/FRAMEWORK_VALIDATION.md)；仅下载源码不代表你已经运行。
+
+On startup failure, inspect Python version, machine/shared memory and logs. Failed runs attempt to preserve status=FAILED and error details. Consult the repository [validation record](https://github.com/supergroupli/AIinfra-JobHub/blob/main/docs/FRAMEWORK_VALIDATION.md) for actual platform evidence; downloading source does not mean you ran it.
 
 真实 Serve，终端 A（持续前台；在 ray/ 目录） / Serve terminal A (foreground, in ray/):
 

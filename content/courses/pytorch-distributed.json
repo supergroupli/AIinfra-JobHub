@@ -695,13 +695,13 @@
             "en": "Optional: install CPU PyTorch and run actual DDP"
           },
           "body": {
-            "zh": "Linux x86_64、Python3.10–3.12，使用独立环境。此脚本确实调用Gloo/DDP，但平台未安装运行；标准库路线已可独立完成。GPU NCCL扩展见README。",
-            "en": "Use Linux x86_64 and Python3.10–3.12 in an isolated environment. This script invokes actual Gloo/DDP but was not installed/run here. The standard-library path is independent; see README for optional GPU NCCL."
+            "zh": "Ubuntu22.04 x86_64、Python3.11，使用独立CPU环境。脚本实际调用Gloo/DDP，逐步比较全局batch基线并验证checkpoint与optimizer恢复；平台运行证据见实验包README链接，GPU扩展单独说明。",
+            "en": "Use Ubuntu22.04 x86_64 and Python3.11 in a separate CPU environment. This invokes actual Gloo/DDP, compares a global-batch baseline and checks checkpoint/optimizer recovery. See the lab README for platform evidence and the separate GPU extension."
           },
-          "command": "python3.12 -m venv .venv\nsource .venv/bin/activate\npython -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu\ntorchrun --standalone --nproc-per-node=2 ddp_example.py --backend gloo",
+          "command": "python3.11 -m venv .venv\nsource .venv/bin/activate\npython -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu\ntorchrun --standalone --nproc-per-node=2 ddp_example.py --backend gloo --out out/real-ddp",
           "expected": {
-            "zh": "两个rank分别打印weight=1.0、expected=1.0、backend=gloo。只证明本次同步更新，不证明训练吞吐。",
-            "en": "Both ranks print weight=1.0, expected=1.0 and backend=gloo. This checks one update, not training throughput."
+            "zh": "两个rank JSON预期status=PASS、resume_matches=true，第一步权重1.0，默认四步约2.053；漏恢复optimizer对照应不同。此处验收正确性和恢复，不验收吞吐。",
+            "en": "Both rank JSONs should show status=PASS and resume_matches=true; first weight1.0, default four-step final about2.053. The missing-optimizer control should differ. These check correctness/recovery, not throughput."
           }
         }
       ],

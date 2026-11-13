@@ -7,9 +7,9 @@
   <meta name="theme-color" content="#183c35">
   <title>聘枢 · AI Infra JobHub</title>
   <link rel="icon" href="./assets/logo-mark.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=20261113-curriculum">
+  <link rel="stylesheet" href="./styles.css?v=20261113-growth">
   <script src="./curriculum.js" defer></script>
-  <script src="./app.js?v=20261113-curriculum-2" defer></script>
+  <script src="./app.js?v=20261113-growth" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main" data-i18n="skip">跳到内容</a>
@@ -17,8 +17,8 @@
     <a class="brand" href="#" aria-label="聘枢 · AI Infra JobHub home"><img class="brand-mark" src="./assets/logo-mark.svg" width="40" height="40" alt=""><span class="brand-wordmark"><strong data-i18n="brandName">聘枢</strong><small data-i18n="brandTagline">AI Infra JobHub</small></span></a>
     <nav aria-label="Main navigation">
       <a href="#learn" data-i18n="navLearn">学习路线</a>
-      <a href="./projects/" data-i18n="navProjects">实战项目</a>
-      <a href="./portfolio/" data-i18n="navPortfolio">作品档案</a>
+      <a href="./career/" data-i18n="navCareer">求职准备</a>
+      <a href="./talent/" data-i18n="navTalent">人才速览</a>
       <a href="#opportunities" data-i18n="navJobs">机会广场</a>
       <a href="mailto:career@yzinfra.com?subject=AI%20Infra%20JobHub%20-%20Resume" data-i18n="navResume">投简历 ↗</a>
     </nav>
@@ -51,10 +51,10 @@
       </div>
     </section>
     <section class="launchpad section-shell" aria-labelledby="build-title">
-      <div class="launchpad-heading"><div class="eyebrow" data-i18n="buildEyebrow">THE NEXT STEP / 从学习走向实践</div><h2 id="build-title" data-i18n="buildTitle">把学过的，变成做过的。</h2><p data-i18n="buildIntro">选一个工程问题，留下可复现的过程，再让作品替你介绍自己。</p></div>
+      <div class="launchpad-heading"><div class="eyebrow" data-i18n="buildEyebrow">THE NEXT STEP / 从学习走向实践</div><h2 id="build-title" data-i18n="growthTitle">选择你的下一步。</h2><p data-i18n="growthIntro">围绕一个作品准备求职，或从具体贡献认识下一位工程伙伴。</p></div>
       <div class="launchpad-grid">
-        <article class="launchpad-card"><div class="launchpad-number">01 / BUILD</div><h3 data-i18n="projectsTitle">做一份可复现的工程项目</h3><p data-i18n="projectsIntro">从推理负载、缓存实验到 GPU 算子，每个项目都有任务边界、交付物和验收清单，也有可从 CPU 起步的选择。</p><div class="launchpad-examples"><a href="./projects/?project=vllm-cache">vLLM · KV cache ↗</a><a href="./projects/?project=mooncake-transfer">Mooncake · TCP ↗</a><a href="./projects/?project=ray-backpressure">Ray · Backpressure ↗</a></div><a class="button primary" href="./projects/" data-i18n="exploreProjects">进入实战项目库 ↗</a></article>
-        <article class="launchpad-card portfolio-launch"><div class="launchpad-number">02 / SHOW YOUR WORK</div><h3 data-i18n="portfolioTitle">让招聘方看懂你的贡献</h3><p data-i18n="portfolioIntro">把问题、环境、方法、原始证据和局限整理成一份工程档案。保留草稿，导出 Markdown，再选择如何分享。</p><div class="launchpad-examples"><span data-i18n="portfolioLocal">草稿仅保存在本浏览器</span><span data-i18n="portfolioEvidence">实测、模拟、设计分别说明</span></div><a class="button outline" href="./portfolio/" data-i18n="createPortfolio">制作我的作品档案 ↗</a></article>
+        <article class="launchpad-card"><div class="launchpad-number">01 / FOR BUILDERS</div><h3 data-i18n="growthBuilderTitle">我在准备下一次机会</h3><p data-i18n="growthBuilderBody">按岗位安排 7 天作品与投递准备：独立实现、检查证据、整理简历，再发起有针对性的申请。已有作品可直接进入结课自评。</p><div class="launchpad-examples"><a href="./projects/" data-i18n="navProjects">实战项目</a><a href="./portfolio/" data-i18n="navPortfolio">作品档案</a></div><a class="button primary" href="./career/" data-i18n="growthBuilderAction">打开求职准备路线 ↗</a></article>
+        <article class="launchpad-card portfolio-launch"><div class="launchpad-number">02 / FOR TEAMS</div><h3 data-i18n="growthTeamTitle">我在寻找工程人才</h3><p data-i18n="growthTeamBody">按技术、地区、语言与协作方式浏览自愿公开的名片，查看本人贡献和作品证据，把想进一步了解的人加入本机阅读清单。</p><div class="launchpad-examples"><a href="./talent/#reviews" data-i18n="growthReviews">作品评审队列</a><a href="#opportunities" data-i18n="growthOpportunities">发布真实机会</a></div><a class="button outline" href="./talent/" data-i18n="growthTeamAction">进入人才速览 ↗</a></article>
       </div>
     </section>
     <div id="load-error" class="notice section-shell" role="alert" hidden></div>
@@ -105,7 +105,7 @@
       <div class="community-principles"><div><span>01</span><h3 data-i18n="principle1">开放的知识</h3><p data-i18n="principle1Note">链接官方资料，补充实践路径，让经验可以被复现。</p></div><div><span>02</span><h3 data-i18n="principle2">具体的机会</h3><p data-i18n="principle2Note">说清职责、报酬、地区和技术要求，减少双方的信息差。</p></div><div><span>03</span><h3 data-i18n="principle3">相互尊重的人</h3><p data-i18n="principle3Note">尊重不同背景与贡献形式，也欢迎刚进入这个领域的人。</p></div></div>
     </section>
   </main>
-  <footer class="site-footer section-shell"><div><a class="brand" href="#"><img class="brand-mark" src="./assets/logo-mark.svg" width="40" height="40" alt=""><span class="brand-wordmark"><strong data-i18n="brandName">聘枢</strong><small data-i18n="brandTagline">AI Infra JobHub</small></span></a><p data-i18n="footerNote">独立社区项目，与所列开源项目无官方隶属关系。</p></div><div class="footer-links"><button class="text-button" type="button" data-submit="repository" data-i18n="sourceCode">项目仓库 ↗</button><button class="text-button" id="privacy-button" type="button" data-i18n="privacy">公开资料与隐私</button><span class="mono">LEARN. BUILD. CONNECT.</span></div></footer>
+  <footer class="site-footer section-shell" id="site-footer"><div><a class="brand" href="#"><img class="brand-mark" src="./assets/logo-mark.svg" width="40" height="40" alt=""><span class="brand-wordmark"><strong data-i18n="brandName">聘枢</strong><small data-i18n="brandTagline">AI Infra JobHub</small></span></a><p class="founder-credit"><strong data-i18n="founderName">项目发起人：李超群</strong><span data-i18n="founderCompany">所属公司：元智引擎公司</span></p><p data-i18n="footerNote">独立社区项目，与所列开源项目无官方隶属关系。</p></div><div class="footer-links"><a class="text-link" href="./career/" data-i18n="navCareer">求职准备</a><a class="text-link" href="./talent/" data-i18n="navTalent">人才速览</a><button class="text-button" type="button" data-submit="repository" data-i18n="sourceCode">项目仓库 ↗</button><button class="text-button" id="privacy-button" type="button" data-i18n="privacy">公开资料与隐私</button><span class="mono">LEARN. BUILD. CONNECT.</span></div></footer>
   <dialog id="detail-dialog" aria-labelledby="dialog-title"><div class="dialog-header"><span class="mono">AI INFRA JOBHUB</span><button class="close-button" id="close-dialog" type="button" aria-label="关闭 / Close">×</button></div><div id="dialog-content"></div></dialog>
 </body>
 </html>

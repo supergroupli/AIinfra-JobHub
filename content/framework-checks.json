@@ -1,0 +1,28 @@
+[
+  {
+    "courseId": "ray",
+    "checkedAt": "2026-11-13",
+    "scope": {"zh": "Ray 2.60.0：8 个真实任务、错误输入处理，以及 6 次 Serve HTTP 请求的正确性检查。", "en": "Ray 2.60.0: eight actual tasks, invalid-input handling and correctness checks for six Serve HTTP requests."},
+    "environment": "Ubuntu 22.04 x86_64 · Python 3.11.18 · CPU",
+    "runUrl": "https://github.com/supergroupli/AIinfra-JobHub/actions/runs/43455249219",
+    "commit": "28b14e7892a875cdee959ad8d8efb41408a3a3e9",
+    "manifest": "labs/ray/validation/2026-11-13/manifest.json",
+    "sources": {
+      "real_ray.py": "f14c47bd7e62efcb1697ed3dc6f7848ad2a4329d086f0ba98cd1810317ee0529",
+      "verify_serve.py": "b1c169922278c86332ee7473fec2dfbadf1f2c89e95014a226982954b5a4f0e2",
+      "real_serve.py": "40c2aafe822388bc9af1b214d4899723279dbb6c1145f4db6c8d45528def0cb1"
+    }
+  },
+  {
+    "courseId": "pytorch-distributed",
+    "checkedAt": "2026-11-13",
+    "scope": {"zh": "PyTorch 2.6.0+cpu / Gloo：两个 rank 的 4 步训练匹配全局基线；含动量恢复与漏恢复优化器状态的反例。", "en": "PyTorch 2.6.0+cpu / Gloo: two ranks match a four-step global baseline, including momentum recovery and a missing-optimizer-state counterexample."},
+    "environment": "Ubuntu 22.04 x86_64 · Python 3.11.18 · CPU",
+    "runUrl": "https://github.com/supergroupli/AIinfra-JobHub/actions/runs/43455249219",
+    "commit": "28b14e7892a875cdee959ad8d8efb41408a3a3e9",
+    "manifest": "labs/pytorch-distributed/validation/2026-11-13/manifest.json",
+    "sources": {
+      "ddp_example.py": "8104dc8e4bf147738a289f518a84128229a786f964e82ea7a77cca67dcf6982a"
+    }
+  }
+]

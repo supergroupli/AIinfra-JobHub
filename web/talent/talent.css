@@ -1,0 +1,76 @@
+.talent-page { background: #f6f8f1; }
+.talent-main { padding-top: 55px; padding-bottom: 70px; }
+.talent-hero { display: grid; grid-template-columns: 1.45fr 1fr; gap: 70px; align-items: center; }
+.talent-hero h1 { font-size: clamp(30px, 3.8vw, 51px); line-height: 1.3; letter-spacing: -1.5px; max-width: 700px; margin: 22px 0; }
+.talent-intro { font-size: 16px; line-height: 1.9; max-width: 660px; color: #607263; }
+.talent-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin-top: 24px; }
+.talent-evidence-card { background: #e8efdc; border: 1px solid #ced9bf; border-radius: 18px; padding: 28px; }
+.talent-evidence-card ol { list-style: none; padding: 0; margin: 18px 0 0; }
+.talent-evidence-card li { display: flex; gap: 18px; align-items: center; padding: 15px 0; border-top: 1px solid #ccd8be; }
+.talent-evidence-card li > span { font: 12px monospace; color: #728363; }
+.talent-evidence-card strong, .talent-evidence-card small { display: block; }
+.talent-evidence-card strong { font-size: 16px; }
+.talent-evidence-card small { color: #6b7b61; margin-top: 5px; font-size: 12px; }
+.talent-stats { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 20px; margin: 38px 0 65px; padding: 25px 0; border-block: 1px solid var(--line); }
+.talent-stats > div { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 14px; row-gap: 5px; }
+.talent-stats strong { font-size: 28px; letter-spacing: -1px; }
+.talent-stats span { font-size: 12px; color: #657460; }
+.talent-section-top { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 22px; }
+.talent-section-top h2 { font-size: 30px; margin: 13px 0 0; line-height: 1.4; }
+.talent-section-note { color: #697969; line-height: 1.9; font-size: 13px; margin: 18px 0 25px; max-width: 900px; }
+.talent-filters { display: grid; grid-template-columns: 1.7fr 1fr 1fr; gap: 18px; border: 1px solid var(--line); padding: 22px; border-radius: 12px; background: #fffefa; }
+.talent-filters > div { min-width: 0; }
+.talent-filters label, .review-controls label { font-size: 12px; font-weight: 700; display: block; margin-bottom: 9px; }
+.talent-filters input, .talent-filters select, .review-controls select { width: 100%; min-width: 0; padding: 12px; border: 1px solid #cbd7c7; border-radius: 7px; background: white; font: inherit; font-size: 13px; color: #254b3d; }
+.talent-list-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px; align-items: center; margin: 22px 0; font-size: 12px; color: #62735e; }
+.talent-list-heading > div { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
+.talent-selected-filter { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+.talent-selected-filter input, .talent-page input[type=checkbox] { accent-color: #315943; }
+.talent-grid, .review-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.talent-card, .review-card { min-width: 0; border: 1px solid #d5decf; border-radius: 14px; background: white; padding: 27px; }
+.talent-card.is-selected { border-color: #5d8250; box-shadow: inset 0 0 0 1px #5d8250; }
+.talent-card-top { display: flex; align-items: start; justify-content: space-between; gap: 15px; }
+.talent-card h3, .review-card h3 { font-size: 22px; line-height: 1.45; margin: 0; overflow-wrap: anywhere; }
+.talent-role { color: #56734d; line-height: 1.6; font-size: 13px; margin: 8px 0 15px; }
+.talent-select { flex-shrink: 0; font: inherit; font-size: 12px; cursor: pointer; color: #315943; background: #eef3e6; border: 1px solid #cad9be; border-radius: 6px; padding: 9px 11px; }
+.talent-select[aria-pressed=true] { background: #315943; color: white; }
+.talent-card-label { display: block; font-size: 11px; font-weight: 700; color: #6d7c64; margin: 20px 0 7px; }
+.talent-contribution, .review-summary { line-height: 1.85; font-size: 14px; color: #405b4b; overflow-wrap: anywhere; white-space: pre-line; }
+.talent-card .tags { margin-top: 12px; }
+.talent-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 22px 0; padding-block: 20px; border-block: 1px solid #e5ebdf; }
+.talent-facts div { min-width: 0; }
+.talent-facts dt { font-size: 11px; color: #7a8973; margin-bottom: 5px; }
+.talent-facts dd { font-size: 13px; line-height: 1.7; margin: 0; overflow-wrap: anywhere; }
+.talent-card-links { display: flex; flex-wrap: wrap; align-items: center; gap: 15px; font-size: 13px; font-weight: 600; }
+.talent-dates { margin: 16px 0 0; color: #78846f; font-size: 11px; line-height: 1.8; overflow-wrap: anywhere; }
+.talent-empty { text-align: center; padding: 45px 30px; background: #eef2e7; border: 1px dashed #c7d1bd; border-radius: 15px; }
+.talent-empty-symbol { color: #7f946b; font: 28px monospace; }
+.talent-empty h3 { font-size: 22px; margin: 16px 0 12px; line-height: 1.5; }
+.talent-empty p { font-size: 14px; color: #6b7b63; max-width: 680px; line-height: 1.9; margin: 0 auto; }
+.talent-empty .talent-actions { justify-content: center; }
+.shortlist-panel { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 25px; background: #e7eef0; border: 1px solid #ccdadd; border-radius: 13px; padding: 26px; margin-top: 26px; }
+.shortlist-panel h3 { font-size: 20px; margin: 10px 0; }
+.shortlist-panel p { font-size: 12px; color: #577078; line-height: 1.9; max-width: 760px; margin: 7px 0 0; }
+.shortlist-actions { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.talent-page button:disabled { opacity: .45; cursor: not-allowed; }
+.shortlist-status, #shortlist-source { grid-column: 1 / -1; }
+.shortlist-status:empty { display: none; }
+#shortlist-source { font-size: 13px; min-width: 0; }
+#shortlist-source summary { cursor: pointer; }
+#shortlist-markdown { box-sizing: border-box; width: 100%; height: 250px; padding: 15px; margin-top: 12px; resize: vertical; font: 12px/1.7 monospace; border: 1px solid #bfced1; border-radius: 8px; }
+.review-section { margin-top: 80px; }
+.review-process { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 18px 22px; margin: 24px 0; background: #f1eadf; border: 1px solid #e2d7c8; border-radius: 10px; font-size: 12px; color: #7a674b; }
+.review-process span:not([aria-hidden]) { font-weight: 700; }
+.review-controls { display: flex; gap: 25px; flex-wrap: wrap; justify-content: space-between; align-items: end; margin: 22px 0; }
+.review-controls > div { width: min(100%, 300px); }
+.review-controls > span { color: #697969; font-size: 12px; }
+.review-badge { display: inline-block; font-size: 11px; padding: 6px 9px; border-radius: 5px; color: #5d7055; background: #eef2e7; margin-bottom: 18px; }
+.review-badge.reproduced { background: #dfebd4; color: #34542b; }
+.review-badge.changes-requested { background: #f6e7d4; color: #865b21; }
+.review-badge.in-review { background: #e4edf3; color: #365e77; }
+.review-author, .reviewer { font-size: 12px; line-height: 1.8; color: #657660; margin-top: 10px; overflow-wrap: anywhere; }
+.review-card .talent-card-links { margin-top: 20px; }
+.review-empty .text-link { display: inline-block; margin-top: 20px; }
+@media (max-width: 960px) { .talent-hero { gap: 30px; } .talent-filters { grid-template-columns: 1fr 1fr; } .talent-search { grid-column: 1 / -1; } }
+@media (max-width: 720px) { .talent-main { padding-top: 35px; } .talent-hero { grid-template-columns: 1fr; } .talent-hero h1 { letter-spacing: -.8px; } .talent-intro { font-size: 14px; } .talent-evidence-card { padding: 23px; } .talent-stats { grid-template-columns: 1fr 1fr; margin-bottom: 42px; } .talent-stats > div:last-child { grid-column: 1 / -1; } .talent-stats strong { font-size: 24px; } .talent-grid, .review-grid { grid-template-columns: 1fr; } .talent-section-top h2 { font-size: 26px; } .shortlist-panel { grid-template-columns: 1fr; gap: 18px; padding: 22px; } .shortlist-actions { align-items: start; } .talent-filters { padding: 17px; gap: 15px; } .talent-card, .review-card { padding: 22px; } .review-section { margin-top: 55px; } }
+@media (max-width: 440px) { .talent-filters { grid-template-columns: 1fr; } .talent-facts { grid-template-columns: 1fr; gap: 12px; } .talent-empty { padding: 28px 18px; } .talent-card h3 { font-size: 20px; } .talent-actions .button { font-size: 12px; } }

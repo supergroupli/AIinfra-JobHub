@@ -264,6 +264,14 @@
       .catch(() => { projectLoadState = "projectUnavailable"; renderProject(); })
       .finally(() => { if (timeout !== null) clearTimeout(timeout); });
   }
+  if (typeof JobHubBackup !== "undefined") JobHubBackup.mount({
+    element:document.getElementById("backup-panel"), kind:"portfolio", language:()=>lang, read:values,
+    apply:data=>{
+      for(const field of fields) field.value=data[field.dataset.field] || "";
+      renderPreview(); saveDraft();
+      return saveState!=="saveError";
+    }
+  });
   translate();
   ["save-draft", "copy-markdown", "download-markdown"].forEach(id => { document.getElementById(id).disabled = false; });
 })();

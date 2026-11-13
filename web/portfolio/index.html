@@ -7,9 +7,10 @@
   <meta name="theme-color" content="#183c35">
   <title>作品档案生成器 · 聘枢 AI Infra JobHub</title>
   <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../styles.css?v=20261113-curriculum">
+  <link rel="stylesheet" href="../styles.css?v=20261113-growth">
   <link rel="stylesheet" href="./portfolio.css">
-  <script src="./portfolio.js" defer></script>
+  <script src="../backup.js?v=20261113-growth" defer></script>
+  <script src="./portfolio.js?v=20261113-growth" defer></script>
 </head>
 <body class="portfolio-page">
   <a class="skip-link" href="#portfolio-form" data-i18n="skip">跳到作品表单</a>
@@ -31,6 +32,7 @@
       <div class="portfolio-context-detail"><div><h3 data-i18n="promptEvidence">可整理的证据</h3><ul id="project-context-evidence"></ul></div><div><h3 data-i18n="promptBoundary">证据边界</h3><p id="project-context-boundary"></p></div></div>
     </aside>
     <p id="project-load-status" class="portfolio-project-status" role="status" hidden></p>
+    <details id="backup-panel" class="backup-panel"></details>
     <div class="portfolio-workspace">
       <div class="portfolio-editor">
         <div class="portfolio-panel-heading"><div><span class="eyebrow">01 / YOUR RECORD</span><h2 data-i18n="editorTitle">记录项目</h2></div><p id="draft-status" class="portfolio-save-status" role="status" aria-live="polite"></p></div>

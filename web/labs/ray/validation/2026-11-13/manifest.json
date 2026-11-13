@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "date": "2026-11-13",
+  "commit": "28b14e7892a875cdee959ad8d8efb41408a3a3e9",
+  "run_url": "https://github.com/supergroupli/AIinfra-JobHub/actions/runs/43455249219",
+  "environment": {
+    "runner": "ubuntu-22.04",
+    "architecture": "x86_64",
+    "python": "3.11.18"
+  },
+  "files": {
+    "core.json": "ce13db6ed379a5470ec2998ea5bb3c23d668b8677ab0a96e6cabc28558bd1881",
+    "serve.json": "12c384a05d1743d1f60ccb5aed40abbece1a93b708ad51dccc7c60e5b6a168db",
+    "environment.txt": "b389d24b199d091d6a1c06dda833e7cef96a030ae14a008e02e0ee35f999cfc5"
+  },
+  "boundary": "Platform CI sample, not a student run or independent peer reproduction. CPU correctness only; no GPU or throughput claim."
+}
