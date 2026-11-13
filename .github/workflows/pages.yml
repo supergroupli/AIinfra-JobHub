@@ -23,8 +23,8 @@ jobs:
           persist-credentials: false
       - name: Test publication rules
         run: python3 -m unittest discover -s tests -v
-      - name: Test learning progress and notes
-        run: node --test tests/frontend.test.cjs
+      - name: Test learning progress and portfolio drafts
+        run: node --test tests/*.test.cjs
       - name: Validate data and build static site
         run: python3 scripts/build.py
       - name: Configure Pages

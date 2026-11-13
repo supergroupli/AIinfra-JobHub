@@ -18,11 +18,21 @@ Validate locally with Python 3.9+:
 ```sh
 python3 -m unittest discover -s tests -v
 python3 scripts/build.py
+node --test tests/*.test.cjs
 ```
 
 See `docs/MAINTAINING.md` for directory schemas and review. Keep technology tags
 consistent across the build script, filters and Issue forms. Provide English and
 Chinese summaries when changing a learning path; maintainers can help translate submissions.
+
+Practice projects live in `web/projects/projects.json`. Include a concrete problem,
+pinned environment, raw evidence, personal contribution, limitations and a useful next step.
+Link prerequisite courses by their existing IDs. Keep Chinese and English lists aligned.
+For a blocker or independent reproduction, use the learning and project feedback Issue form;
+state whether a result was measured, simulated or only designed.
+
+实战项目必须能交付代码、原始记录或明确的设计分析；不得虚构实测结果、就业承诺或认证。
+作品生成器只保存浏览器草稿，不会自动把填写内容变成公开 Issue。
 
 Be respectful. No harassment, discrimination, spam, demands for candidate fees,
 or publication of confidential information. Discuss technical work and evidence.

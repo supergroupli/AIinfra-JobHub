@@ -3,6 +3,8 @@
 **Learn. Build. Connect. / 学习、做作品、找到同行。**
 
 [Website / 网站](https://supergroupli.github.io/AIinfra-JobHub/) ·
+[Projects / 实战项目](https://supergroupli.github.io/AIinfra-JobHub/projects/) ·
+[Portfolio / 作品档案](https://supergroupli.github.io/AIinfra-JobHub/portfolio/) ·
 [Repository / 仓库](https://github.com/supergroupli/AIinfra-JobHub) ·
 [Discussions / 社区交流](https://github.com/supergroupli/AIinfra-JobHub/discussions)
 
@@ -26,6 +28,9 @@ free to participate. It is not affiliated with vLLM, SGLang or LMCache.
 - 110 bilingual days with concept explanations, practice, deliverables, acceptance checks, official reading and alternatives for learners without the required hardware.
 - Three career-oriented paths, searchable/filterable catalog, shareable course URLs and downloadable Chinese/English handbooks.
 - Self-reported progress, daily notes and evidence links saved in the current browser, with learning-record export and a bilingual portfolio template.
+- Eight bilingual practice projects with pinned-environment expectations, deliverables, acceptance criteria, source links and explicit evidence boundaries.
+- A browser-local portfolio builder: editable engineering records, draft recovery, Markdown preview, copy and export. Project suggestions never overwrite a draft.
+- A public feedback form for blockers, content corrections and independent project reproductions.
 - Keyword, technology and work-arrangement filters over reviewed public records; skill overlap is not an ability or hiring score.
 - Public GitHub issue forms for opportunities and voluntary portfolios.
 - Resume submission links to `career@yzinfra.com` in the navigation and opportunities section.
@@ -54,7 +59,7 @@ API key, database or extra domain is required. Check the repository's Actions ta
 ## Local preview / 本地预览
 
 Python 3.9 or newer is enough to build and preview; no Python dependencies to install.
-For the browser-state regression tests, run `node --test tests/frontend.test.cjs` with Node.js. CI runs both suites.
+For the browser-state regression tests, run `node --test tests/*.test.cjs` with Node.js. CI runs both suites.
 
 ```sh
 python3 -m unittest discover -s tests -v
@@ -73,6 +78,8 @@ Do not open `index.html` directly as a `file://` URL: the page fetches `data.jso
 | `web/` | Static HTML, CSS, JavaScript and portfolio template |
 | `content/courses/*.json` | Ten-day bilingual courses with primary-source reading |
 | `content/paths.json` | Three career-oriented course sequences |
+| `web/projects/` | Bilingual practice-project data and searchable project library |
+| `web/portfolio/` | Browser-local project portfolio editor and Markdown export |
 | `content/jobs.json` | Reviewed opportunity records; starts empty |
 | `content/people.json` | Voluntary public portfolios; starts empty |
 | `scripts/build.py`, `scripts/learning.py` | Validation; course HTML, Markdown and sitemap generation to ignored `dist/` |
@@ -80,6 +87,7 @@ Do not open `index.html` directly as a `file://` URL: the page fetches `data.jso
 | `.github/workflows/pages.yml` | PR checks and deployment from `main` |
 
 Read [DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md) for the development roadmap,
+[COMPETITIVE_STRATEGY.md](docs/COMPETITIVE_STRATEGY.md) for differentiation and validation priorities,
 [RESEARCH.md](docs/RESEARCH.md) for technology selection, [BRAND.md](docs/BRAND.md) for the original SVG logo,
 [PRODUCT.md](docs/PRODUCT.md) for product scope and [MAINTAINING.md](docs/MAINTAINING.md)
 for schemas, review, expiry and removal. Contributions follow [CONTRIBUTING.md](CONTRIBUTING.md).

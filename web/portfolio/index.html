@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="把 AI Infra 项目的问题、实验、证据与局限整理成可分享的 Markdown 作品档案。草稿仅保存在本浏览器。">
+  <meta name="theme-color" content="#183c35">
+  <title>作品档案生成器 · 聘枢 AI Infra JobHub</title>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="./portfolio.css">
+  <script src="./portfolio.js" defer></script>
+</head>
+<body class="portfolio-page">
+  <a class="skip-link" href="#portfolio-form" data-i18n="skip">跳到作品表单</a>
+  <header class="site-header">
+    <a class="brand" href="../" aria-label="聘枢 · AI Infra JobHub"><img class="brand-mark" src="../assets/logo-mark.svg" width="40" height="40" alt=""><span class="brand-wordmark"><strong data-i18n="brandName">聘枢</strong><small data-i18n="brandTagline">AI Infra JobHub</small></span></a>
+    <nav aria-label="Main navigation"><a href="../#learn" data-i18n="navLearn">学习库</a><a href="../projects/" data-i18n="navProjects">项目实战</a><a href="../#opportunities" data-i18n="navJobs">工作与合作</a></nav>
+    <button id="portfolio-language" class="language-button" type="button" aria-label="Switch to English">EN ↗</button>
+  </header>
+  <main class="section-shell portfolio-shell">
+    <section class="portfolio-intro" aria-labelledby="portfolio-title">
+      <div class="portfolio-intro-copy"><a class="portfolio-back" href="../projects/" data-i18n="backProjects">← 返回项目实战</a><div class="eyebrow">BUILD YOUR EVIDENCE</div><h1 id="portfolio-title" data-i18n="title">让作品，说清你的贡献。</h1><p data-i18n="intro">把真实问题、复现过程和结果边界，整理成一份可带走的项目档案。用于开源 README、作品集或求职沟通。</p></div>
+      <ol class="portfolio-flow" aria-label="Workflow"><li><span>01</span><strong data-i18n="flow1">记录真实过程</strong></li><li><span>02</span><strong data-i18n="flow2">导出 Markdown</strong></li><li><span>03</span><strong data-i18n="flow3">由你选择分享</strong></li></ol>
+    </section>
+    <div class="portfolio-local-note"><span aria-hidden="true">◈</span><p data-i18n="localNote">表单内容不会上传，也不会自动公开或发邮件。草稿仅保存在本浏览器；清除浏览器数据会丢失草稿，请下载备份。</p></div>
+    <noscript><p class="notice">作品编辑、保存与导出需要启用 JavaScript。This editor needs JavaScript to save and export your work. <a href="../resources/portfolio-template.md" download>下载静态模板 / Download template</a></p></noscript>
+    <aside id="project-context" class="portfolio-project-context" aria-labelledby="project-context-title" hidden>
+      <div class="portfolio-context-heading"><span class="eyebrow" data-i18n="projectPrompt">来自项目库的写作提示</span><span class="portfolio-context-tag" data-i18n="promptOnly">仅供参考 · 不填入草稿</span></div>
+      <h2 id="project-context-title"></h2><p id="project-context-goal"></p>
+      <div class="portfolio-context-detail"><div><h3 data-i18n="promptEvidence">可整理的证据</h3><ul id="project-context-evidence"></ul></div><div><h3 data-i18n="promptBoundary">证据边界</h3><p id="project-context-boundary"></p></div></div>
+    </aside>
+    <p id="project-load-status" class="portfolio-project-status" role="status" hidden></p>
+    <div class="portfolio-workspace">
+      <div class="portfolio-editor">
+        <div class="portfolio-panel-heading"><div><span class="eyebrow">01 / YOUR RECORD</span><h2 data-i18n="editorTitle">记录项目</h2></div><p id="draft-status" class="portfolio-save-status" role="status" aria-live="polite"></p></div>
+        <form id="portfolio-form" novalidate tabindex="-1">
+          <fieldset class="portfolio-fieldset"><legend><span>01</span><span data-i18n="sectionIdentity">项目与证据范围</span></legend>
+            <div class="portfolio-field"><label for="project-title" data-i18n="fieldTitle">项目名称</label><input id="project-title" name="projectTitle" data-field="projectTitle" type="text" autocomplete="off" aria-describedby="hint-title"><p id="hint-title" class="portfolio-hint" data-i18n="hintTitle">用具体系统与问题命名，例如「vLLM 共享前缀负载的缓存实验」。</p></div>
+            <div class="portfolio-field"><label for="target-role" data-i18n="fieldRole">目标岗位 / 协作方向</label><input id="target-role" name="targetRole" data-field="targetRole" type="text" autocomplete="off" aria-describedby="hint-role"><p id="hint-role" class="portfolio-hint" data-i18n="hintRole">写你希望参与的工程问题，例如推理系统、GPU 性能优化、平台工程。</p></div>
+            <div class="portfolio-field-row"><div class="portfolio-field"><label for="evidence-type" data-i18n="fieldEvidence">主要证据类型</label><select id="evidence-type" name="evidenceType" data-field="evidenceType" aria-describedby="hint-evidence"><option value="" data-i18n="evidenceChoose">请选择证据类型</option><option value="measured" data-i18n="evidenceMeasured">实测 · 实际运行所得</option><option value="simulated" data-i18n="evidenceSimulated">模拟 · 简化模型或仿真</option><option value="design" data-i18n="evidenceDesign">设计 · 尚未执行的方案</option></select></div><div class="portfolio-field"><label for="record-date" data-i18n="fieldDate">记录日期</label><input id="record-date" name="recordDate" data-field="recordDate" type="date"></div></div>
+            <p id="hint-evidence" class="portfolio-hint portfolio-evidence-hint" data-i18n="hintEvidence">三种形式都可记录。混合项目请在结果中逐条标注，只有实际运行的测量才称为实测。</p>
+          </fieldset>
+          <fieldset class="portfolio-fieldset"><legend><span>02</span><span data-i18n="sectionOwnership">问题与本人贡献</span></legend>
+            <div class="portfolio-field"><label for="project-problem" data-i18n="fieldProblem">要解决的问题</label><textarea id="project-problem" name="problem" data-field="problem" rows="4" aria-describedby="hint-problem"></textarea><p id="hint-problem" class="portfolio-hint" data-i18n="hintProblem">说明使用场景、约束和问题为何重要。先描述问题，再描述工具。</p></div>
+            <div class="portfolio-field"><label for="project-contribution" data-i18n="fieldContribution">我的具体贡献</label><textarea id="project-contribution" name="contribution" data-field="contribution" rows="4" aria-describedby="hint-contribution"></textarea><p id="hint-contribution" class="portfolio-hint" data-i18n="hintContribution">区分你写的代码、执行的实验、分析与团队或上游已有工作。</p></div>
+          </fieldset>
+          <fieldset class="portfolio-fieldset"><legend><span>03</span><span data-i18n="sectionReproduce">可复现的过程</span></legend>
+            <div class="portfolio-field"><label for="project-environment" data-i18n="fieldEnvironment">环境与固定版本</label><textarea id="project-environment" name="environment" data-field="environment" rows="4" aria-describedby="hint-environment"></textarea><p id="hint-environment" class="portfolio-hint" data-i18n="hintEnvironment">记录硬件、系统、驱动、库版本 / commit、模型 revision 与工作负载。未运行的环境请写「计划」。</p></div>
+            <div class="portfolio-field"><label for="project-method" data-i18n="fieldMethod">方法与对照</label><textarea id="project-method" name="method" data-field="method" rows="4" aria-describedby="hint-method"></textarea><p id="hint-method" class="portfolio-hint" data-i18n="hintMethod">写清基线、变量、运行命令、样本量、预热与重复次数，让别人能复查你的比较。</p></div>
+            <div class="portfolio-field"><label for="evidence-links" data-i18n="fieldEvidenceLinks">原始证据 / 日志 / 结果链接</label><textarea id="evidence-links" name="evidenceLinks" data-field="evidenceLinks" rows="3" inputmode="url" spellcheck="false" aria-describedby="hint-links evidence-links-error"></textarea><p id="hint-links" class="portfolio-hint" data-i18n="hintLinks">每行一个公开 HTTPS 链接，指向运行记录、原始结果、图表或代码。分享前检查是否包含凭据或非公开数据。</p><p id="evidence-links-error" class="portfolio-field-error" hidden></p></div>
+          </fieldset>
+          <fieldset class="portfolio-fieldset"><legend><span>04</span><span data-i18n="sectionResults">结果、边界与下一步</span></legend>
+            <div class="portfolio-field"><label for="project-results" data-i18n="fieldResults">观察到的结果</label><textarea id="project-results" name="results" data-field="results" rows="5" aria-describedby="hint-results"></textarea><p id="hint-results" class="portfolio-hint" data-i18n="hintResults">写数值、单位、测量条件与不确定性；也可以记录未改善或失败的尝试。模拟结果和预期收益请明确标注。</p></div>
+            <div class="portfolio-field"><label for="project-limitations" data-i18n="fieldLimitations">限制与尚未验证的部分</label><textarea id="project-limitations" name="limitations" data-field="limitations" rows="4" aria-describedby="hint-limitations"></textarea><p id="hint-limitations" class="portfolio-hint" data-i18n="hintLimitations">例如缺少多节点环境、负载覆盖有限、无法复现的结果。不把单次实验推广为生产结论。</p></div>
+            <div class="portfolio-field"><label for="project-next" data-i18n="fieldNext">下一步 / 待复现项</label><textarea id="project-next" name="nextSteps" data-field="nextSteps" rows="3" aria-describedby="hint-next"></textarea><p id="hint-next" class="portfolio-hint" data-i18n="hintNext">列出最值得继续验证的假设、工程改进，或希望获得的协作帮助。</p></div>
+            <div class="portfolio-field"><label for="project-repository" data-i18n="fieldRepository">公开仓库链接</label><input id="project-repository" name="repository" data-field="repository" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://github.com/…" aria-describedby="hint-repository repository-error"><p id="hint-repository" class="portfolio-hint" data-i18n="hintRepository">仅支持 HTTPS。暂未公开可以留空；有固定 commit 或 release 链接更方便复查。</p><p id="repository-error" class="portfolio-field-error" hidden></p></div>
+          </fieldset>
+          <div class="portfolio-editor-footer"><button id="save-draft" class="button outline" type="button" disabled data-i18n="saveDraft">保存草稿</button><p data-i18n="autosaveNote">编辑时自动保存；保存失败时可在此重试。切换语言不会翻译或更改你的输入。</p></div>
+        </form>
+      </div>
+      <aside class="portfolio-preview-column" aria-labelledby="preview-title">
+        <div class="portfolio-preview-card"><div class="portfolio-panel-heading"><div><span class="eyebrow">02 / READY TO TAKE AWAY</span><h2 id="preview-title" data-i18n="previewTitle">作品预览</h2></div><span class="portfolio-live-label"><span aria-hidden="true"></span><span data-i18n="livePreview">实时更新</span></span></div>
+          <p class="portfolio-preview-note" data-i18n="previewNote">输入会原样呈现，不生成未经验证的成果。空白字段会标为「未记录」。</p>
+          <div id="portfolio-preview" class="portfolio-document"></div>
+          <div class="portfolio-export-actions"><button id="copy-markdown" class="button primary" type="button" disabled data-i18n="copyMarkdown">复制 Markdown</button><button id="download-markdown" class="button outline" type="button" disabled data-i18n="downloadMarkdown">下载 .md ↓</button></div>
+          <p id="export-status" class="portfolio-export-status" role="status" aria-live="polite"></p>
+          <details id="markdown-details" class="portfolio-markdown-details"><summary data-i18n="markdownSource">查看 Markdown 源文 / 手动复制</summary><label class="portfolio-source-label" for="markdown-source" data-i18n="markdownLabel">可选择并复制的 Markdown</label><textarea id="markdown-source" rows="12" readonly spellcheck="false"></textarea></details>
+        </div>
+      </aside>
+    </div>
+    <section class="portfolio-next-card" aria-labelledby="portfolio-next-title"><div><span class="eyebrow">03 / YOUR NEXT CHAPTER</span><h2 id="portfolio-next-title" data-i18n="nextTitle">作品准备好，再选择下一步。</h2><p data-i18n="nextNote">先将档案放入你选择的公开仓库或作品集，再主动提交名片。邮件投递由你在邮件客户端中确认。</p></div><div class="portfolio-next-actions"><a class="portfolio-next-link" href="../#people"><span data-i18n="shareProfile">主动公开作品名片</span><span aria-hidden="true">↗</span></a><a class="portfolio-next-link" href="mailto:career@yzinfra.com?subject=AI%20Infra%20JobHub%20-%20Portfolio"><span data-i18n="emailPortfolio">投递简历与作品</span><span aria-hidden="true">↗</span></a><span class="portfolio-email">career@yzinfra.com</span></div></section>
+  </main>
+  <footer class="site-footer section-shell"><p data-i18n="footerNote">聘枢 · AI Infra JobHub。用真实的工程记录，连接下一次合作。</p><a class="text-link" href="../#learn" data-i18n="backLearning">继续学习 ↗</a></footer>
+</body>
+</html>

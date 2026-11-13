@@ -1,0 +1,64 @@
+name: 学习与项目反馈 / Learning and project feedback
+description: 报告阻塞、提交复现记录或建议课程改进 / Report a blocker or share a reproduction.
+title: "[Learning] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢帮助下一位学习者。此表单提交后公开；请清理令牌、私有数据和个人联系信息。
+        This issue will be public. Remove credentials, private data and personal contact details.
+  - type: dropdown
+    id: type
+    attributes:
+      label: 反馈类型 / Feedback type
+      options:
+        - 学习阻塞 / Blocker
+        - 独立复现记录 / Independent reproduction
+        - 内容或链接修正 / Content or link correction
+        - 项目建议 / Project suggestion
+    validations:
+      required: true
+  - type: input
+    id: target
+    attributes:
+      label: 课程、天数或项目链接 / Course, day or project URL
+      placeholder: vLLM Day 5 / projects/?project=vllm-cache
+    validations:
+      required: true
+  - type: dropdown
+    id: evidence
+    attributes:
+      label: 记录类型 / Evidence type
+      options:
+        - 尚未运行 / Not run
+        - 设计或源码分析 / Design or source analysis
+        - CPU 或合成模拟 / CPU or synthetic simulation
+        - 实际目标环境运行 / Run on the target environment
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境与固定版本 / Environment and pinned versions
+      description: OS、CPU/GPU、框架版本或 commit、模型 revision；不适用可写 N/A。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 步骤、预期与实际结果 / Steps, expected and actual result
+      description: 写清阻塞在哪一步；复现记录请说明与原方案有哪些差异。
+    validations:
+      required: true
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: 公开证据与限制 / Public evidence and limitations
+      description: 可公开的代码、已清理日志或原始结果链接；没有实测时请明确写出。
+  - type: checkboxes
+    id: disclosure
+    attributes:
+      label: 公开确认 / Public disclosure
+      options:
+        - label: 我确认愿意公开这些内容，且已移除凭据、私有数据及他人个人信息。 / I am comfortable publishing this sanitized information.
+          required: true

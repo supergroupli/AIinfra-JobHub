@@ -133,12 +133,42 @@ def public_site_url(repository):
     return f"https://{owner}.github.io/" + ("" if repo.lower() == f"{owner.lower()}.github.io" else f"{repo}/")
 
 
-def write_course_pages(courses, out, repository):
+def validate_projects(document, courses):
+    require(isinstance(document, dict) and document.get("schemaVersion") == 1, "Unsupported project library schema")
+    require(iso_date(document.get("updatedAt")) <= datetime.now(timezone.utc).date(), "Project review date cannot be in the future")
+    projects = document.get("projects")
+    require(isinstance(projects, list) and projects, "Project library cannot be empty")
+    course_ids = {course["id"] for course in courses}
+    ids = set()
+    for project in projects:
+        ident = project.get("id")
+        require(isinstance(ident, str) and re.fullmatch(r"[a-z0-9-]+", ident) and ident not in ids, "Invalid or duplicate project id")
+        ids.add(ident)
+        for key in ("title", "summary", "level", "duration", "problem", "scenario", "environment", "evidenceBoundary"):
+            require(bilingual(project.get(key)), f"{ident}: missing bilingual {key}")
+        require(nonempty(project.get("category")) and isinstance(project.get("cpuStart"), bool), f"{ident}: invalid project filters")
+        require(isinstance(project.get("tags"), list) and project["tags"] and all(nonempty(tag) for tag in project["tags"]), f"{ident}: missing project tags")
+        for key in ("roles", "deliverables", "acceptance"):
+            value = project.get(key)
+            require(isinstance(value, dict) and all(isinstance(value.get(lang), list) and value[lang] and all(nonempty(item) for item in value[lang]) for lang in ("zh", "en")), f"{ident}: missing bilingual {key}")
+            require(len(value["zh"]) == len(value["en"]), f"{ident}: translated {key} must align")
+        steps = project.get("steps")
+        require(isinstance(steps, list) and 3 <= len(steps) <= 6 and all(bilingual(step.get("title")) and bilingual(step.get("body")) for step in steps), f"{ident}: incomplete project steps")
+        prerequisites = project.get("prerequisites")
+        require(isinstance(prerequisites, list) and prerequisites and all(item.get("id") in course_ids and bilingual(item.get("title")) for item in prerequisites), f"{ident}: unknown prerequisite course")
+        sources = project.get("sources")
+        require(isinstance(sources, list) and sources and all(nonempty(item.get("title")) and https_url(item.get("url")) for item in sources), f"{ident}: invalid official source")
+    return projects
+
+
+def write_course_pages(courses, out, repository, projects):
     template = (ROOT / "web/course.html").read_text(encoding="utf-8")
     base = public_site_url(repository)
     for course in courses:
         folder = out / "learn" / course["id"]
         folder.mkdir(parents=True)
+        project = next((item for item in projects if any(ref["id"] == course["id"] for ref in item["prerequisites"])), None)
+        project_query = f'?project={project["id"]}' if project else ""
         replacements = {
             "__COURSE_TITLE__": esc(course["title"]["zh"]),
             "__COURSE_DESCRIPTION__": esc(course["description"]["zh"]),
@@ -147,6 +177,8 @@ def write_course_pages(courses, out, repository):
             "__COURSE_HERO__": course_hero(course),
             "__COURSE_NAV__": course_nav(course),
             "__COURSE_CONTENT__": course_body(course),
+            "__PROJECT_URL__": esc(f"../../projects/{project_query}"),
+            "__PORTFOLIO_URL__": esc(f"../../portfolio/{project_query}"),
         }
         page = template
         for key, value in replacements.items():
@@ -155,7 +187,7 @@ def write_course_pages(courses, out, repository):
         for lang in ("zh", "en"):
             (folder / f"{course['id']}.{lang}.md").write_text(course_markdown(course, lang), encoding="utf-8")
     if base:
-        locations = [base] + [f"{base}learn/{course['id']}/" for course in courses]
+        locations = [base, f"{base}projects/", f"{base}portfolio/"] + [f"{base}learn/{course['id']}/" for course in courses]
         (out / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + "".join(f"<url><loc>{esc(location)}</loc></url>" for location in locations) + "</urlset>\n", encoding="utf-8")
 
 
@@ -168,6 +200,7 @@ def build():
     validate_tracks(tracks)
     paths = read_json("content/paths.json")
     validate_paths(paths, tracks)
+    projects = validate_projects(read_json("web/projects/projects.json"), tracks)
     summaries = [{**{key: value for key, value in course.items() if key != "steps"}, "steps": [{"day": step["day"], "title": step["title"]} for step in course["steps"]]} for course in tracks]
     data = {
         "repository": repository,
@@ -185,10 +218,10 @@ def build():
     if out.exists():
         shutil.rmtree(out)
     shutil.copytree(ROOT / "web", out, ignore=shutil.ignore_patterns("course.html"))
-    write_course_pages(tracks, out, repository)
+    write_course_pages(tracks, out, repository, projects)
     (out / "data.json").write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (out / ".nojekyll").touch()
-    print(f"Built dist/: {len(tracks)} tracks, {len(data['jobs'])} jobs, {len(data['people'])} public profiles.")
+    print(f"Built dist/: {len(tracks)} tracks, {len(projects)} practice projects, {len(data['jobs'])} jobs, {len(data['people'])} public profiles.")
     if not repository:
         print("Local preview: submission links activate when deployed from a GitHub repository.")
 

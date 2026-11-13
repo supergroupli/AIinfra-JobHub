@@ -10,9 +10,11 @@
   };
   const strings = {
     zh: {
+      projects: "实战项目", createPortfolio: "制作作品档案 ↗",
       brandName: "聘枢", brandTagline: "AI Infra JobHub", skip: "跳到课程正文", library: "学习库", opportunities: "工作与合作", community: "社区讨论 ↗", syllabus: "10 天学习目录", yourProgress: "我的进度", progressNote: "进度与笔记保存在本浏览器，可导出备份。勾选是自我记录，不是认证。", nextChapter: "下一步 · 把学习变成作品", nextTitle: "让别人看见你解决问题的过程。", nextDescription: "整理代码、实验记录和局限，带着作品认识同行或寻找工作。名片由你主动选择公开。", sharePortfolio: "分享作品名片 ↗", findWork: "寻找工作与合作", footerNote: "聘枢 · AI Infra JobHub，独立社区学习手册。", backLibrary: "返回学习库 ↗", unsaved: "浏览器暂时无法保存。当前页面仍保留你的输入，请导出学习记录后再离开。", saved: "已保存在本浏览器。", record: "学习记录", selfReported: "进度为本人自我记录，不是技能认证。请在作品中区分实测、模拟和未执行计划。", complete: "已完成自查", incomplete: "待完成", noNotes: "尚未填写笔记或作品链接。", exportDate: "导出时间（UTC）"
     },
     en: {
+      projects: "Practice projects", createPortfolio: "Build my portfolio ↗",
       brandName: "AI Infra JobHub", brandTagline: "聘枢 · Learn. Build. Connect.", skip: "Skip to the lesson", library: "Learning library", opportunities: "Work & collaboration", community: "Community ↗", syllabus: "10-day syllabus", yourProgress: "My progress", progressNote: "Progress and notes stay in this browser and can be exported. Checkmarks are self-reported, not a certification.", nextChapter: "NEXT CHAPTER · MAKE YOUR WORK VISIBLE", nextTitle: "Show how you solve a problem.", nextDescription: "Bring code, experiment records and limitations to the community or your next application. Sharing a public profile is your choice.", sharePortfolio: "Share my portfolio ↗", findWork: "Find work & collaboration", footerNote: "聘枢 · AI Infra JobHub. An independent community learning guide.", backLibrary: "Back to the library ↗", unsaved: "Your browser could not save this change. Your input is still on this page; export your learning record before leaving.", saved: "Saved in this browser.", record: "Learning record", selfReported: "Progress is self-reported, not a skills certification. Distinguish measurements, simulations and unexecuted plans in your portfolio.", complete: "Self-check complete", incomplete: "To do", noNotes: "No notes or evidence links yet.", exportDate: "Exported at (UTC)"
     }
   };
@@ -79,7 +81,14 @@
     document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
     document.title = `${meta.title[lang]} · ${lang === "zh" ? "10 天实战 · 聘枢" : "10-day guide · AI Infra JobHub"}`;
     document.querySelectorAll("[data-zh][data-en]").forEach(el => { el.textContent = el.dataset[lang]; });
-    document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = text(el.dataset.i18n); });
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      el.textContent = text(el.dataset.i18n);
+      if (el.tagName === "A" && ["createPortfolio", "projects"].includes(el.dataset.i18n)) {
+        const url = new URL(el.href);
+        url.searchParams.set("lang", lang);
+        el.href = url.href;
+      }
+    });
     const toggle = document.getElementById("course-language");
     toggle.textContent = lang === "zh" ? "EN ↗" : "中文 ↗";
     toggle.setAttribute("aria-label", lang === "zh" ? "Switch to English" : "切换为中文");

@@ -1,0 +1,1221 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-13",
+  "projects": [
+    {
+      "id": "serving-baseline",
+      "category": "inference",
+      "title": {
+        "zh": "推理服务的第一份可信基线",
+        "en": "A trustworthy serving baseline"
+      },
+      "summary": {
+        "zh": "从 CPU 模拟服务开始，构建能复核延迟、吞吐与失败率的请求回放工具。",
+        "en": "Start with a CPU mock service and build a request replayer with auditable latency, throughput and failure metrics."
+      },
+      "level": {
+        "zh": "入门",
+        "en": "Starter"
+      },
+      "duration": {
+        "zh": "6–10 小时",
+        "en": "6–10 hours"
+      },
+      "cpuStart": true,
+      "tags": [
+        "Serving",
+        "Benchmarking",
+        "Python"
+      ],
+      "problem": {
+        "zh": "只有一张平均延迟截图，很难判断服务是否稳定。你需要保留每个请求的时间点、状态和负载定义，让别人能重算结论。",
+        "en": "A screenshot of average latency says little about reliability. Preserve each request's timestamps, status and workload definition so another person can recompute your conclusions."
+      },
+      "scenario": {
+        "zh": "为一个内部问答服务设计小规模验收：低并发、突发流量、超时与失败都需要被看见。",
+        "en": "Design a small acceptance run for an internal Q&A service, including low concurrency, bursts, timeouts and failures."
+      },
+      "roles": {
+        "zh": [
+          "推理工程师",
+          "性能工程师",
+          "AI 平台 SRE"
+        ],
+        "en": [
+          "Inference engineer",
+          "Performance engineer",
+          "AI platform SRE"
+        ]
+      },
+      "prerequisites": [
+        {
+          "id": "foundations",
+          "title": {
+            "zh": "AI Infra 系统基础",
+            "en": "AI Infra foundations"
+          }
+        }
+      ],
+      "environment": {
+        "zh": "普通电脑、Python 标准库即可完成模拟路线。服务仅监听本机；固定延迟与失败注入由你实现。真实模型测试是另一个可选实验，需自备兼容环境。",
+        "en": "A laptop and the Python standard library are enough for the mock route. Bind the service to localhost and implement explicit delays and injected failures. Testing a real model is a separate optional experiment requiring compatible hardware."
+      },
+      "steps": [
+        {
+          "title": {
+            "zh": "定义请求与时间口径",
+            "en": "Define requests and clocks"
+          },
+          "body": {
+            "zh": "建立含 request_id、输入规模、预期输出规模与到达时间的 30 条固定请求；写明随机种子、超时和最大并发。使用单调时钟记录发送、首块响应与完成时间。",
+            "en": "Create 30 fixed requests with IDs, input size, expected output size and arrival time. Document the seed, timeout and concurrency cap. Use a monotonic clock for send, first response chunk and completion timestamps."
+          }
+        },
+        {
+          "title": {
+            "zh": "建立可解释的模拟服务",
+            "en": "Build an explainable mock service"
+          },
+          "body": {
+            "zh": "提供短、长、失败三类响应；逐块输出模拟数据并显式标注 chunk 不是模型 token。保留一个串行客户端作为校对基准，再加入有上限的并发回放。",
+            "en": "Provide short, long and failing responses. Stream synthetic chunks and explicitly state that chunks are not model tokens. Keep a serial client as a reference, then add bounded concurrent replay."
+          }
+        },
+        {
+          "title": {
+            "zh": "保留分母，重算指标",
+            "en": "Keep denominators and recompute"
+          },
+          "body": {
+            "zh": "逐请求导出 JSONL，统计成功数、失败数、超时数、成功请求延迟分位数和总墙钟时间。若报告吞吐，写清是成功请求数还是实际 token 数除以哪段时间；零成功时显示无数据。",
+            "en": "Export per-request JSONL and calculate success, error and timeout counts, successful-request latency percentiles and total wall time. Define throughput's numerator and timing window. Display no data when no request succeeds."
+          }
+        },
+        {
+          "title": {
+            "zh": "加入可复核的反例",
+            "en": "Add an auditable counterexample"
+          },
+          "body": {
+            "zh": "注入一次超时和一次错误，确认它们不会被静默丢弃。用独立汇总脚本重算结果，并请同伴从 README 复现一个小样本；尚未有人复现就明确写未验证。",
+            "en": "Inject one timeout and one error and confirm neither disappears. Recompute results with a separate summary script. Ask a peer to reproduce a small sample from the README; mark peer reproduction as unverified until it happens."
+          }
+        }
+      ],
+      "deliverables": {
+        "zh": [
+          "固定版本与运行参数清单",
+          "模拟服务、回放客户端和独立汇总脚本",
+          "请求集、逐请求原始 JSONL 与汇总 CSV",
+          "README：问题、本人贡献、模拟边界、下一步和复现命令"
+        ],
+        "en": [
+          "Pinned versions and run configuration",
+          "Mock service, replay client and independent summary script",
+          "Request dataset, raw per-request JSONL and summary CSV",
+          "README: problem, own contribution, mock limitations, next step and reproduction commands"
+        ]
+      },
+      "acceptance": {
+        "zh": [
+          "同一请求集可重复运行，所有 request_id 在结果中可追溯；成功、失败与超时计数之和等于总请求数。",
+          "原始日志能重算报告中的分位数与吞吐，单位、样本量和统计范围明确。",
+          "新读者能按 README 运行小样本；CPU 模拟指标不被标为模型 TTFT 或 token/s 实测。"
+        ],
+        "en": [
+          "The same request set can be rerun; every request ID is traceable and success, failure and timeout counts sum to the total.",
+          "Raw logs reproduce reported percentiles and throughput, with units, sample size and aggregation scope stated.",
+          "A new reader can run the small example from the README; CPU mock metrics are not labeled as measured model TTFT or token/s."
+        ]
+      },
+      "evidenceBoundary": {
+        "zh": "模拟路线验证测量工具与错误处理，不证明 vLLM、SGLang 或任一模型的性能。首个数据块延迟只有在确认实际流式 token 语义后才能作为模型 TTFT；不将字符数当 token 数。",
+        "en": "The mock route validates instrumentation and error handling, not vLLM, SGLang or model performance. First-chunk latency represents model TTFT only after actual streaming token semantics are verified. Character counts are not token counts."
+      },
+      "sources": [
+        {
+          "title": "vLLM · Benchmark suites",
+          "url": "https://docs.vllm.ai/en/latest/benchmarking/"
+        },
+        {
+          "title": "vLLM · Production metrics",
+          "url": "https://docs.vllm.ai/en/latest/usage/metrics/"
+        },
+        {
+          "title": "Prometheus · Metric types",
+          "url": "https://prometheus.io/docs/concepts/metric_types/"
+        }
+      ]
+    },
+    {
+      "id": "vllm-cache",
+      "category": "inference",
+      "title": {
+        "zh": "前缀缓存，什么时候真的有效？",
+        "en": "When does prefix caching help?"
+      },
+      "summary": {
+        "zh": "用冷启动、共享前缀与无共享前缀三组实验，解释缓存收益与代价。",
+        "en": "Use cold, shared-prefix and unique-prefix experiments to explain cache benefits and costs."
+      },
+      "level": {
+        "zh": "进阶",
+        "en": "Intermediate"
+      },
+      "duration": {
+        "zh": "8–12 小时",
+        "en": "8–12 hours"
+      },
+      "cpuStart": false,
+      "tags": [
+        "vLLM",
+        "KV Cache",
+        "Benchmarking"
+      ],
+      "problem": {
+        "zh": "开启缓存不等于所有流量都变快。请求的 token 前缀、缓存状态与输出长度变化，都可能让一次对比失去解释力。",
+        "en": "Enabling caching does not improve every workload. Token prefixes, cache state and output-length changes can make a comparison misleading."
+      },
+      "scenario": {
+        "zh": "一个文档问答服务有重复系统提示，也有完全独立的问题。决定是否启用前缀缓存，并给团队可复查的依据。",
+        "en": "A document Q&A service mixes repeated system prompts with unrelated questions. Decide whether prefix caching helps and leave evidence the team can inspect."
+      },
+      "roles": {
+        "zh": [
+          "LLM 推理工程师",
+          "推理性能工程师"
+        ],
+        "en": [
+          "LLM inference engineer",
+          "Inference performance engineer"
+        ]
+      },
+      "prerequisites": [
+        {
+          "id": "foundations",
+          "title": {
+            "zh": "AI Infra 系统基础",
+            "en": "AI Infra foundations"
+          }
+        },
+        {
+          "id": "vllm",
+          "title": {
+            "zh": "vLLM 推理工程",
+            "en": "vLLM inference engineering"
+          }
+        }
+      ],
+      "environment": {
+        "zh": "兼容当前所选 vLLM 版本的 GPU 与驱动，能容纳所选小模型及 KV cache。先固定 vLLM、模型 revision、tokenizer 和启动参数，再执行有限请求；无 GPU 可交付实验设计与 token 前缀分析，不能标记性能验收完成。",
+        "en": "Use a GPU and driver supported by the pinned vLLM version, with enough memory for a small model and KV cache. Pin the engine, model revision, tokenizer and launch arguments. Without a GPU, deliver the experiment design and token-prefix analysis, leaving performance acceptance incomplete."
+      },
+      "steps": [
+        {
+          "title": {
+            "zh": "固定可比较的负载",
+            "en": "Freeze a comparable workload"
+          },
+          "body": {
+            "zh": "构造共享 token 前缀和独立前缀两组请求，记录 tokenizer 后的实际长度与前缀相等条件；固定模型、采样参数、输出上限和并发。保留一小组输出质量检查样例。",
+            "en": "Create shared-token-prefix and unique-prefix groups. Record tokenized lengths and the exact prefix-equality condition. Fix the model, sampling settings, output cap and concurrency, and keep a small output-quality check set."
+          }
+        },
+        {
+          "title": {
+            "zh": "显式控制缓存状态",
+            "en": "Control cache state explicitly"
+          },
+          "body": {
+            "zh": "按所选版本文档确认前缀缓存开关。分别运行关闭缓存、开启但冷缓存、开启且预热三种条件；用隔离服务进程控制冷态并记录预热请求，避免把模型加载时间混入稳态延迟。",
+            "en": "Check the pinned version's prefix-cache setting. Compare disabled, enabled-cold and enabled-warm conditions. Use isolated server processes to control cold state and record warm-up requests. Keep model loading separate from steady-state latency."
+          }
+        },
+        {
+          "title": {
+            "zh": "保存指标与失败",
+            "en": "Preserve metrics and failures"
+          },
+          "body": {
+            "zh": "每个条件至少重复 3 次小规模运行，保存逐请求 TTFT、端到端延迟、实际生成 token 数、错误以及可用的缓存指标。按共享和独立前缀分别汇总，记录显存与测试顺序。",
+            "en": "Repeat each small condition at least three times. Preserve per-request TTFT, end-to-end latency, actual generated tokens, errors and available cache metrics. Summarize shared and unique prefixes separately and record memory and run order."
+          }
+        },
+        {
+          "title": {
+            "zh": "解释无收益的情况",
+            "en": "Explain the no-benefit cases"
+          },
+          "body": {
+            "zh": "提供一张可从原始结果重新生成的对比表，说明预热成本、长输出对总延迟的影响与可能的缓存压力。收益为零或变差也保留，不把特定负载的结果写成通用结论。",
+            "en": "Produce a comparison table regenerated from raw results. Discuss warm-up cost, long outputs' effect on total latency and possible cache pressure. Retain neutral or worse results and limit conclusions to the tested workload."
+          }
+        }
+      ],
+      "deliverables": {
+        "zh": [
+          "锁定版本、模型 revision 与完整配置",
+          "两组请求数据与 token 前缀核验脚本",
+          "每次运行的原始日志、请求结果和汇总图表脚本",
+          "README：本人改动、复现步骤、失败样例、局限与下一次实验"
+        ],
+        "en": [
+          "Pinned versions, model revision and full configuration",
+          "Two request datasets and a token-prefix validation script",
+          "Raw run logs, request results and chart-generation scripts",
+          "README: own changes, reproduction, failure examples, limitations and next experiment"
+        ]
+      },
+      "acceptance": {
+        "zh": [
+          "关闭、冷态、热态三种条件及预热请求都有记录，至少各 3 次重复；其他实验变量保持一致或解释差异。",
+          "TTFT、总延迟和成功生成 token 口径分开，错误率、样本量及显存条件没有省略。",
+          "第二人能从版本清单、请求集和脚本复现表格；任何加速结论都指向实测记录。"
+        ],
+        "en": [
+          "Disabled, cold and warm conditions and warm-up requests are recorded with at least three repeats; other variables are controlled or differences explained.",
+          "TTFT, end-to-end latency and successful generated-token counts remain distinct; errors, sample size and memory conditions are reported.",
+          "A second person can reproduce the table from pinned versions, requests and scripts; every speed claim points to measured evidence."
+        ]
+      },
+      "evidenceBoundary": {
+        "zh": "此挑战必须运行真实 vLLM 服务才能宣称测得缓存收益。CPU 上的 token 分析或队列模拟只证明设计与分析能力；前缀命中不能直接推导生成阶段加速。",
+        "en": "Actual vLLM runs are required to claim measured cache gains. CPU token analysis or queue simulation demonstrates design and analysis only. Prefix hits do not directly imply faster decoding."
+      },
+      "sources": [
+        {
+          "title": "vLLM · Automatic prefix caching",
+          "url": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/"
+        },
+        {
+          "title": "vLLM · Benchmark CLI",
+          "url": "https://docs.vllm.ai/en/latest/benchmarking/cli/"
+        },
+        {
+          "title": "vLLM · Reproducibility",
+          "url": "https://docs.vllm.ai/en/latest/usage/reproducibility/"
+        }
+      ]
+    },
+    {
+      "id": "sglang-workload",
+      "category": "inference",
+      "title": {
+        "zh": "SGLang 混合负载画像",
+        "en": "Profile a mixed SGLang workload"
+      },
+      "summary": {
+        "zh": "把短问答、长上下文和共享前缀分开测量，找到延迟开始恶化的条件。",
+        "en": "Measure short Q&A, long contexts and shared prefixes separately to find where latency degrades."
+      },
+      "level": {
+        "zh": "进阶",
+        "en": "Intermediate"
+      },
+      "duration": {
+        "zh": "8–12 小时",
+        "en": "8–12 hours"
+      },
+      "cpuStart": false,
+      "tags": [
+        "SGLang",
+        "Serving",
+        "Observability"
+      ],
+      "problem": {
+        "zh": "一个总体平均值会掩盖长请求对短请求的影响。你需要区分负载类别，并理解请求到达率与最大并发不是同一个控制变量。",
+        "en": "An overall average hides how long requests affect short ones. Separate workload classes and distinguish request arrival rate from maximum concurrency."
+      },
+      "scenario": {
+        "zh": "同一推理端点同时服务聊天和文档总结。给出一个有证据支持的小规模流量配置建议。",
+        "en": "One inference endpoint serves both chat and document summaries. Recommend a small-scale traffic configuration supported by evidence."
+      },
+      "roles": {
+        "zh": [
+          "推理服务工程师",
+          "AI 平台性能工程师"
+        ],
+        "en": [
+          "Inference serving engineer",
+          "AI platform performance engineer"
+        ]
+      },
+      "prerequisites": [
+        {
+          "id": "foundations",
+          "title": {
+            "zh": "AI Infra 系统基础",
+            "en": "AI Infra foundations"
+          }
+        },
+        {
+          "id": "sglang",
+          "title": {
+            "zh": "10 天实战 SGLang",
+            "en": "SGLang in 10 Days"
+          }
+        }
+      ],
+      "environment": {
+        "zh": "兼容所选 SGLang 版本的 GPU、固定模型与 tokenizer；使用官方 benchmark 文档对应的工具版本。本地或已授权测试端点，先从低请求率和小样本开始。无 GPU 先做负载生成器与离线统计。",
+        "en": "Use a GPU supported by the pinned SGLang version, a fixed model and tokenizer, and the benchmark tool for that version. Test a local or authorized endpoint, starting with low rates and small samples. Without a GPU, build the workload generator and offline analysis."
+      },
+      "steps": [
+        {
+          "title": {
+            "zh": "建立三类请求集",
+            "en": "Build three workload classes"
+          },
+          "body": {
+            "zh": "生成短输入短输出、长输入短输出、共享前缀三类固定请求，每类至少 20 条；保存 token 长度分布、seed 与 JSONL。混合负载要保留类别标签。",
+            "en": "Generate at least 20 fixed requests per class: short input/short output, long input/short output and shared prefix. Save token-length distributions, seed and JSONL. Keep class labels in the mixed workload."
+          }
+        },
+        {
+          "title": {
+            "zh": "校对测量接口",
+            "en": "Verify the measurement interface"
+          },
+          "body": {
+            "zh": "确认所选 API、流式行为和 benchmark backend 一致。以单请求核对生成结果与时间字段；记录缓存设置、预热方式和模型 revision，避免对不同接口的数值直接排名。",
+            "en": "Match the API, streaming behavior and benchmark backend. Check output and timing fields with a single request. Record cache settings, warm-up and model revision; do not rank results from incompatible interfaces."
+          }
+        },
+        {
+          "title": {
+            "zh": "一次只改变一个负载变量",
+            "en": "Vary one load control at a time"
+          },
+          "body": {
+            "zh": "先固定并发上限，以 3 档有界到达率测试；再固定到达率改变并发上限。保存每类 TTFT、请求总延迟、生成 token 数与错误，预先定义内存或失败率停止条件。",
+            "en": "First hold the concurrency cap fixed and test three bounded arrival rates; then hold the rate fixed and vary the cap. Save per-class TTFT, request latency, generated tokens and errors. Define memory or failure-rate stop conditions in advance."
+          }
+        },
+        {
+          "title": {
+            "zh": "写出服务边界",
+            "en": "Describe the operating boundary"
+          },
+          "body": {
+            "zh": "用原始数据重画各类请求的延迟分布，解释混合后哪类受影响。提出下一步缓存或调度实验，并明确这次没有验证的并行、量化或多节点配置。",
+            "en": "Regenerate per-class latency distributions from raw data and explain which class changes in the mix. Propose a follow-up cache or scheduling experiment and state which parallelism, quantization or multi-node settings were not tested."
+          }
+        }
+      ],
+      "deliverables": {
+        "zh": [
+          "锁定版本、模型 revision、启动与 benchmark 参数",
+          "带类别与长度统计的 JSONL 请求集",
+          "逐请求结果、服务日志、各类延迟分布的生成脚本",
+          "工程复盘：本人贡献、停止条件、已测范围和下一步"
+        ],
+        "en": [
+          "Pinned versions, model revision, server and benchmark settings",
+          "Labeled JSONL requests with token-length statistics",
+          "Per-request results, server logs and distribution-generation scripts",
+          "Engineering note: own contribution, stop conditions, tested scope and next step"
+        ]
+      },
+      "acceptance": {
+        "zh": [
+          "三类请求的 token 长度与混合比例可复现；到达率与并发上限在配置中分别出现。",
+          "每个已测条件都保留原始数据与错误数，不能只给全体平均延迟。",
+          "分析覆盖至少一个性能未改善或失败的条件；未运行的 GPU 条件明确列为待验证。"
+        ],
+        "en": [
+          "Token lengths and mix proportions are reproducible; arrival rate and concurrency cap appear as separate settings.",
+          "Every tested condition retains raw data and error counts, not only an overall average latency.",
+          "Analysis includes a neutral, worse or failed condition; GPU conditions that were not run are explicitly pending."
+        ]
+      },
+      "evidenceBoundary": {
+        "zh": "离线数据生成与统计可以在 CPU 完成，但不能证明 SGLang 的服务吞吐。指标只适用于已记录的模型、硬件与流量；此项目不产生跨框架排行榜。",
+        "en": "Dataset generation and offline analysis run on CPUs but do not establish SGLang serving throughput. Results apply only to the recorded model, hardware and traffic. This project does not produce a cross-framework ranking."
+      },
+      "sources": [
+        {
+          "title": "SGLang · Bench Serving",
+          "url": "https://docs.sglang.io/docs/developer_guide/bench_serving"
+        },
+        {
+          "title": "SGLang · Hyperparameter Tuning",
+          "url": "https://docs.sglang.io/docs/advanced_features/hyperparameter_tuning"
+        },
+        {
+          "title": "SGLang · Observability",
+          "url": "https://docs.sglang.io/docs/advanced_features/observability"
+        }
+      ]
+    },
+    {
+      "id": "mooncake-transfer",
+      "category": "distributed",
+      "title": {
+        "zh": "Mooncake TCP 数据搬运实验",
+        "en": "A Mooncake TCP transfer lab"
+      },
+      "summary": {
+        "zh": "用两进程与 CPU 内存建立数据传输、完整性校验和故障证据链。",
+        "en": "Use two processes and CPU memory to demonstrate transfer, integrity checks and failure handling."
+      },
+      "level": {
+        "zh": "进阶",
+        "en": "Intermediate"
+      },
+      "duration": {
+        "zh": "8–14 小时",
+        "en": "8–14 hours"
+      },
+      "cpuStart": true,
+      "tags": [
+        "Mooncake",
+        "TCP",
+        "KV Cache"
+      ],
+      "problem": {
+        "zh": "数据搬运成功不能只看进程退出码。需要核对源与目标内容、计时边界、缓冲区生命周期，并区分 TCP 与 RDMA 的证据。",
+        "en": "A zero exit code does not establish a correct transfer. Check source and destination contents, timing boundaries and buffer lifetimes, while keeping TCP evidence separate from RDMA claims."
+      },
+      "scenario": {
+        "zh": "在没有 RDMA 网卡的开发机上理解 Mooncake 的传输层，为后续远端 KV cache 工作留下一个小而可信的工程样本。",
+        "en": "Understand Mooncake's transfer layer without an RDMA NIC and leave a small, trustworthy example for later remote KV-cache work."
+      },
+      "roles": {
+        "zh": [
+          "分布式系统工程师",
+          "KV Cache 工程师",
+          "存储与网络工程师"
+        ],
+        "en": [
+          "Distributed systems engineer",
+          "KV-cache engineer",
+          "Storage and networking engineer"
+        ]
+      },
+      "prerequisites": [
+        {
+          "id": "foundations",
+          "title": {
+            "zh": "AI Infra 系统基础",
+            "en": "AI Infra foundations"
+          }
+        },
+        {
+          "id": "mooncake",
+          "title": {
+            "zh": "10 天实战 Mooncake",
+            "en": "Mooncake in 10 Days"
+          }
+        }
+      ],
+      "environment": {
+        "zh": "受所选版本支持的 Linux CPU 环境，Python 3.10+ 与官方 Non-CUDA 安装路径所需依赖；不是所有桌面系统都能原生运行。两进程优先使用本机地址、TCP 和小型 DRAM 缓冲区；不需要 RDMA 或 GPU。",
+        "en": "Use a Linux CPU environment supported by the selected release, Python 3.10+ and the dependencies for the official non-CUDA installation path. Not every desktop OS runs it natively. Start with two local processes, TCP and small DRAM buffers; no GPU or RDMA NIC is needed."
+      },
+      "steps": [
+        {
+          "title": {
+            "zh": "固定传输路径与版本",
+            "en": "Pin the transfer path and version"
+          },
+          "body": {
+            "zh": "按官方 Quick Start 的 Non-CUDA 路径准备隔离环境，记录 wheel 或 commit 与依赖。画出两个进程、元数据机制和 DRAM 缓冲区的关系，明确选择经典 Transfer Engine 的 TCP 路径。",
+            "en": "Prepare an isolated environment using the official non-CUDA quick start and record the wheel or commit and dependencies. Diagram two processes, metadata and DRAM buffers. Explicitly choose the classic Transfer Engine's TCP path."
+          }
+        },
+        {
+          "title": {
+            "zh": "先证明字节正确",
+            "en": "Prove byte-level correctness"
+          },
+          "body": {
+            "zh": "基于该版本官方示例完成一次小数据传输；记录缓冲区注册、传输完成确认与释放顺序。对 4 KiB、64 KiB、1 MiB 的已知模式数据逐一比较接收字节或校验和。",
+            "en": "Adapt that release's official example for one small transfer. Record registration, completion confirmation and cleanup order. Compare received bytes or checksums for known patterns of 4 KiB, 64 KiB and 1 MiB."
+          }
+        },
+        {
+          "title": {
+            "zh": "明确测量范围",
+            "en": "Make timing boundaries explicit"
+          },
+          "body": {
+            "zh": "预热后重复小批次实验，分别记录准备时间和传输完成等待时间；保存大小、重复次数、协议、进程地址和失败状态。吞吐用成功有效载荷字节除以对应墙钟时间，注明 MiB/s 或 MB/s。",
+            "en": "After warm-up, repeat small batches and separate preparation from transfer-completion timing. Save size, repeats, protocol, process addresses and failures. Divide successfully transferred payload bytes by the matching wall time and state MiB/s or MB/s."
+          }
+        },
+        {
+          "title": {
+            "zh": "记录一个可控失败",
+            "en": "Record a controlled failure"
+          },
+          "body": {
+            "zh": "仅在自有本地实验中让接收端退出，记录发送端的实际错误与等待行为；为实验客户端设置有界等待并清理资源。保留复现步骤，不将未知失败归因于网络或 RDMA。",
+            "en": "In your local experiment, stop the receiver and record the sender's actual error and waiting behavior. Bound client waits and clean up resources. Keep reproduction steps without attributing unknown failures to networking or RDMA."
+          }
+        }
+      ],
+      "deliverables": {
+        "zh": [
+          "Linux、Mooncake 与依赖版本清单和拓扑图",
+          "发送端、接收端与内容完整性检查脚本",
+          "逐次传输 JSONL/CSV、校验结果及故障原始日志",
+          "README：本人修改、TCP/回环限制、复现步骤和后续 RDMA 验证计划"
+        ],
+        "en": [
+          "Linux, Mooncake and dependency manifest with a topology diagram",
+          "Sender, receiver and data-integrity check scripts",
+          "Per-transfer JSONL/CSV, integrity results and raw failure logs",
+          "README: own changes, TCP/loopback limitations, reproduction and a future RDMA validation plan"
+        ]
+      },
+      "acceptance": {
+        "zh": [
+          "三种大小的已知数据均核对内容，只有已确认完成的成功传输进入吞吐分子。",
+          "两进程、协议、地址、计时区间与版本完整记录，第二人能复现实验条件。",
+          "接收端退出时的真实行为被记录；CPU TCP、回环与跨机结果在标题和图表中明确区分。"
+        ],
+        "en": [
+          "Known contents are checked for all three sizes; only confirmed successful transfers contribute to the throughput numerator.",
+          "Processes, protocol, addresses, timing windows and versions are recorded so a second person can recreate the conditions.",
+          "Actual receiver-exit behavior is documented; CPU TCP, loopback and inter-host results are clearly labeled in titles and charts."
+        ]
+      },
+      "evidenceBoundary": {
+        "zh": "这是实际 Mooncake CPU/TCP 小实验，不是 RDMA、GPUDirect 或端到端 KV cache 服务性能。回环结果包含本机内存与调度影响，不能当作网卡带宽；若安装失败，仅提交排障记录并标记尚未完成运行。",
+        "en": "This is a real small Mooncake CPU/TCP experiment, not evidence for RDMA, GPUDirect or end-to-end KV-cache serving. Loopback includes local memory and scheduling effects and is not NIC bandwidth. If installation fails, submit troubleshooting evidence and mark execution incomplete."
+      },
+      "sources": [
+        {
+          "title": "Mooncake · Quick Start",
+          "url": "https://kvcache-ai.github.io/Mooncake/getting_started/quick-start.html"
+        },
+        {
+          "title": "Mooncake · Transfer Engine",
+          "url": "https://kvcache-ai.github.io/Mooncake/design/transfer-engine/index.html"
+        },
+        {
+          "title": "Mooncake · Source repository",
+          "url": "https://github.com/kvcache-ai/Mooncake"
+        }
+      ]
+    },
+    {
+      "id": "triton-kernel",
+      "category": "kernels",
+      "title": {
+        "zh": "先正确，再加速：Triton Softmax",
+        "en": "Correctness before speed: Triton softmax"
+      },
+      "summary": {
+        "zh": "为行级 Softmax 写清支持范围、边界测试和可复核的 GPU 计时。",
+        "en": "Build a row-wise softmax with explicit supported inputs, edge cases and auditable GPU timing."
+      },
+      "level": {
+        "zh": "深入",
+        "en": "Advanced"
+      },
+      "duration": {
+        "zh": "10–16 小时",
+        "en": "10–16 hours"
+      },
+      "cpuStart": false,
+      "tags": [
+        "Triton",
+        "GPU Kernels",
+        "Numerics"
+      ],
+      "problem": {
+        "zh": "单个整齐形状上的加速很容易掩盖越界或数值错误。算子作品必须说明 dtype、shape、stride 和误差范围。",
+        "en": "A speedup on one convenient shape can hide out-of-bounds access or numerical errors. A kernel portfolio needs a contract for dtype, shape, strides and tolerances."
+      },
+      "scenario": {
+        "zh": "为固定推理算子提供一个可替换的行级 Softmax 实现，重点展示测试与性能分析能力。",
+        "en": "Provide a replaceable row-wise softmax for a bounded inference use case, demonstrating testing and performance analysis."
+      },
+      "roles": {
+        "zh": [
+          "GPU 内核工程师",
+          "推理优化工程师",
+          "AI 编译器工程师"
+        ],
+        "en": [
+          "GPU kernel engineer",
+          "Inference optimization engineer",
+          "AI compiler engineer"
+        ]
+      },
+      "prerequisites": [
+        {
+          "id": "foundations",
+          "title": {
+            "zh": "AI Infra 系统基础",
+            "en": "AI Infra foundations"
+          }
+        },
+        {
+          "id": "triton",
+          "title": {
+            "zh": "Triton GPU 内核",
+            "en": "Triton GPU kernels"
+          }
+        }
+      ],
+      "environment": {
+        "zh": "受所选 Triton 与 PyTorch 版本支持的 GPU、驱动与运行时。先限定连续二维浮点张量和小型 shape 集合。无 GPU 可以写数学参考、测试向量与接口契约；解释器结果不作为 GPU 速度证据。",
+        "en": "Use a GPU, driver and runtime supported by the pinned Triton and PyTorch versions. Initially support contiguous 2D floating-point tensors and a small shape set. Without a GPU, write the mathematical reference, test vectors and interface contract; interpreter results are not GPU timing evidence."
+      },
+      "steps": [
+        {
+          "title": {
+            "zh": "定义一个可检验的契约",
+            "en": "Define a testable contract"
+          },
+          "body": {
+            "zh": "写明输入 dtype、连续性、最大列数与不支持输入的处理方式。准备 PyTorch 参考实现、固定 seed、不同 dtype 的误差容限和 NaN/Inf 策略；明确只做前向。",
+            "en": "Specify dtype, contiguity, maximum width and handling of unsupported inputs. Prepare a PyTorch reference, fixed seed, per-dtype tolerances and a NaN/Inf policy. State that only the forward operation is implemented."
+          }
+        },
+        {
+          "title": {
+            "zh": "实现与覆盖边界",
+            "en": "Implement and cover boundaries"
+          },
+          "body": {
+            "zh": "按行分配 program，使用减行最大值的稳定 Softmax，并对末尾元素做掩码。覆盖列数 1、31、128、513、1024、大小不同的输入以及较大正负值；对超范围输入给出错误或回退。",
+            "en": "Assign a program per row, use max-subtracted stable softmax and mask tail elements. Cover widths 1, 31, 128, 513 and 1024, varied values and large positive/negative inputs. Reject or fall back for unsupported inputs."
+          }
+        },
+        {
+          "title": {
+            "zh": "把编译与计时分开",
+            "en": "Separate compilation and timing"
+          },
+          "body": {
+            "zh": "通过正确性后再预热，用官方计时工具记录多个 shape 的参考与自定义耗时，注明毫秒、重复与分位数设置；编译成本单独报告。保留无加速的 shape 和失败测试。",
+            "en": "After correctness passes, warm up and use the official timing helper for reference and custom kernels across shapes. State milliseconds, repetition and quantile settings, and report compilation separately. Retain shapes with no speedup and failed tests."
+          }
+        },
+        {
+          "title": {
+            "zh": "交付可维护的算子样本",
+            "en": "Deliver a maintainable kernel example"
+          },
+          "body": {
+            "zh": "添加检查输入契约的 Python 包装器和参考回退；将所有结果由脚本生成。说明本人改动相对官方教程在哪里，并列出反向、非连续输入与更多 GPU 尚未覆盖的范围。",
+            "en": "Add a Python wrapper that checks the input contract and a reference fallback. Generate all results from scripts. Explain your changes beyond the official tutorial and list untested backward, noncontiguous and additional-GPU cases."
+          }
+        }
+      ],
+      "deliverables": {
+        "zh": [
+          "GPU、驱动、Triton/PyTorch 版本与输入契约",
+          "内核、包装器、参考实现与自动化正确性测试",
+          "原始计时 CSV、失败记录和可重画图表",
+          "README：本人贡献、支持矩阵、数值局限与下一步"
+        ],
+        "en": [
+          "GPU, driver, Triton/PyTorch versions and input contract",
+          "Kernel, wrapper, reference and automated correctness tests",
+          "Raw timing CSV, failure records and reproducible charts",
+          "README: own contribution, support matrix, numerical limitations and next step"
+        ]
+      },
+      "acceptance": {
+        "zh": [
+          "声明支持的每个 dtype 与边界 shape 都有参考对照；误差容限及 NaN/Inf 行为明确。",
+          "不支持的 shape 或 stride 被显式拒绝或回退，不能静默返回错误数据。",
+          "只有通过正确性的 GPU 运行才进入性能表，编译与预热口径、原始计时和测试脚本均可复查。"
+        ],
+        "en": [
+          "Every supported dtype and boundary shape has a reference comparison, with explicit tolerances and NaN/Inf behavior.",
+          "Unsupported shapes or strides are explicitly rejected or use a fallback, never silently returning incorrect data.",
+          "Only correctness-passing GPU runs enter performance tables; compilation, warm-up, raw timing and test scripts are inspectable."
+        ]
+      },
+      "evidenceBoundary": {
+        "zh": "此处 Triton 指 GPU 编程语言，不是 Triton Inference Server。解释器与 CPU 参考用于理解和校验，不能代表设备端时序、占用率或加速；无需为了完成作品承诺超过 PyTorch。",
+        "en": "Triton here means the GPU programming language, not Triton Inference Server. Interpreter and CPU references support understanding and validation, not device timing, occupancy or acceleration. Beating PyTorch is not required."
+      },
+      "sources": [
+        {
+          "title": "Triton · Fused Softmax",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html"
+        },
+        {
+          "title": "Triton · Debugging and interpreter",
+          "url": "https://triton-lang.org/main/programming-guide/chapter-3/debugging.html"
+        },
+        {
+          "title": "Triton · do_bench",
+          "url": "https://triton-lang.org/main/python-api/generated/triton.testing.do_bench.html"
+        }
+      ]
+    },
+    {
+      "id": "distributed-training",
+      "category": "distributed",
+      "title": {
+        "zh": "从 Gloo 正确性到 NCCL 通信诊断",
+        "en": "From Gloo correctness to NCCL diagnosis"
+      },
+      "summary": {
+        "zh": "先用 CPU 两进程核对 DDP 更新，再把通信测量作为独立的 GPU 扩展。",
+        "en": "Verify two-process DDP updates on CPUs, then treat GPU communication measurement as a separate extension."
+      },
+      "level": {
+        "zh": "进阶",
+        "en": "Intermediate"
+      },
+      "duration": {
+        "zh": "10–16 小时",
+        "en": "10–16 hours"
+      },
+      "cpuStart": true,
+      "tags": [
+        "PyTorch",
+        "DDP",
+        "NCCL"
+      ],
+      "problem": {
+        "zh": "训练跑起来不代表数据分片和梯度缩放正确；训练吞吐也不能直接等同集合通信带宽。需要先证明更新一致，再分析通信。",
+        "en": "A running job does not establish correct data partitioning or gradient scaling, and training throughput is not collective bandwidth. Verify equivalent updates before profiling communication."
+      },
+      "scenario": {
+        "zh": "为一个小型训练任务做分布式改造评审：先确认结果正确，再解释增加设备是否值得。",
+        "en": "Review a distributed version of a small training task: establish correctness before deciding whether more devices help."
+      },
+      "roles": {
+        "zh": [
+          "分布式训练工程师",
+          "GPU 通信工程师",
+          "训练平台工程师"
+        ],
+        "en": [
+          "Distributed training engineer",
+          "GPU communication engineer",
+          "Training platform engineer"
+        ]
+      },
+      "prerequisites": [
+        {
+          "id": "pytorch-distributed",
+          "title": {
+            "zh": "PyTorch 分布式训练",
+            "en": "PyTorch distributed training"
+          }
+        },
+        {
+          "id": "nccl",
+          "title": {
+            "zh": "NCCL 集合通信（GPU 扩展）",
+            "en": "NCCL collectives (GPU extension)"
+          }
+        }
+      ],
+      "environment": {
+        "zh": "CPU 路线用支持 Gloo 的 PyTorch、两本地进程、小型固定数据与无随机层模型。NCCL 扩展需兼容的至少两块 NVIDIA GPU；没有时保留测量计划，不将 Gloo 结果改名为 NCCL。",
+        "en": "The CPU route uses PyTorch with Gloo, two local processes, a small fixed dataset and a model without stochastic layers. The NCCL extension requires at least two compatible NVIDIA GPUs; otherwise keep a measurement plan and never relabel Gloo results as NCCL."
+      },
+      "steps": [
+        {
+          "title": {
+            "zh": "建立单进程更新参考",
+            "en": "Establish a single-process reference"
+          },
+          "body": {
+            "zh": "固定 seed、模型初始化、优化器、全局 batch 和均值 loss，保存一次更新前后的参数及样本 ID。使用可被两进程均分的数据，先排除 sampler 补齐和随机层的干扰。",
+            "en": "Fix the seed, initialization, optimizer, global batch and mean-reduced loss. Save parameters before and after one update and the sample IDs. Use data divisible across two processes to avoid sampler-padding and stochastic-layer confounders."
+          }
+        },
+        {
+          "title": {
+            "zh": "核对两进程 DDP",
+            "en": "Check two-process DDP"
+          },
+          "body": {
+            "zh": "用 Gloo 完成两进程 DDP，每个 rank 处理全局 batch 的一半，核对样本覆盖和更新后参数。为更一般的数据集记录 DistributedSampler 的补齐/drop 行为，并在跨 epoch 时设置 epoch。",
+            "en": "Run two-process DDP with Gloo, each rank processing half the global batch. Check sample coverage and updated parameters. For general datasets document DistributedSampler padding/drop behavior and set the epoch across epochs."
+          }
+        },
+        {
+          "title": {
+            "zh": "加入一个诊断案例",
+            "en": "Add a diagnosis case"
+          },
+          "body": {
+            "zh": "保留一次人为制造的样本重复或错误 loss 缩放对照，展示检查如何发现差异；所有正常和异常进程都要有退出与清理路径。保存 rank 日志及比较误差，不把预期失败留在默认运行中。",
+            "en": "Keep a deliberately duplicated-sample or incorrect-loss-scaling comparison showing how validation catches the difference. Ensure normal and failing processes have exit and cleanup paths. Preserve rank logs and parameter errors; keep the expected failure out of the default run."
+          }
+        },
+        {
+          "title": {
+            "zh": "可选：独立测 NCCL",
+            "en": "Optional: measure NCCL separately"
+          },
+          "body": {
+            "zh": "有两块兼容 GPU 时，记录拓扑与 NCCL/CUDA 版本，用官方 nccl-tests 做有界消息大小扫描，分别解释 algbw 和 busbw；再查看训练 profiler。无 GPU 时提交空结果表与具体执行计划。",
+            "en": "With two compatible GPUs, record topology and NCCL/CUDA versions, then use official nccl-tests for a bounded message-size sweep. Interpret algbw and busbw separately before examining the training profiler. Without GPUs, submit an empty result table and a concrete execution plan."
+          }
+        }
+      ],
+      "deliverables": {
+        "zh": [
+          "PyTorch、Gloo/NCCL、设备与运行配置清单",
+          "单进程参考、DDP 脚本、样本覆盖与参数比较测试",
+          "每 rank 原始日志、参数误差和故障对照记录",
+          "可选 GPU 扩展的原始 nccl-tests 输出，或明确待执行的计划",
+          "README：本人贡献、CPU/GPU 边界、复现步骤与下一步"
+        ],
+        "en": [
+          "PyTorch, Gloo/NCCL, device and run manifest",
+          "Single-process reference, DDP script, sample-coverage and parameter tests",
+          "Raw per-rank logs, parameter errors and a controlled failure comparison",
+          "Optional raw nccl-tests output, or an explicitly unexecuted GPU plan",
+          "README: own contribution, CPU/GPU boundary, reproduction and next step"
+        ]
+      },
+      "acceptance": {
+        "zh": [
+          "相同有效全局 batch 下，单进程与两进程参数更新在声明容限内一致，样本 ID 覆盖可检查。",
+          "至少一个故意错误被检查器发现；默认脚本可以干净退出并保留分 rank 日志。",
+          "CPU/Gloo 与 GPU/NCCL 证据分开；未测带宽保持为空，algbw、busbw 与训练吞吐没有混用。"
+        ],
+        "en": [
+          "Under the same effective global batch, single-process and two-process updates agree within a declared tolerance, with inspectable sample coverage.",
+          "At least one deliberate error is detected; the default script exits cleanly and preserves per-rank logs.",
+          "CPU/Gloo and GPU/NCCL evidence remain separate; unmeasured bandwidth stays empty and algbw, busbw and training throughput are not conflated."
+        ]
+      },
+      "evidenceBoundary": {
+        "zh": "CPU 双进程能验证部分分布式语义，不验证 CUDA stream、NCCL、GPU 拓扑或多节点扩展。两块 GPU 的一次实验也不能证明大集群稳定性；GPU 扩展是独立验收项。",
+        "en": "Two CPU processes validate part of distributed semantics, not CUDA streams, NCCL, GPU topology or multi-node scaling. One two-GPU experiment cannot establish large-cluster reliability. The GPU extension has separate acceptance evidence."
+      },
+      "sources": [
+        {
+          "title": "PyTorch · Getting started with DDP",
+          "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
+        },
+        {
+          "title": "PyTorch · DistributedSampler",
+          "url": "https://docs.pytorch.org/docs/stable/data.html"
+        },
+        {
+          "title": "NVIDIA · nccl-tests",
+          "url": "https://github.com/NVIDIA/nccl-tests"
+        },
+        {
+          "title": "nccl-tests · Performance metrics",
+          "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
+        }
+      ]
+    },
+    {
+      "id": "ray-backpressure",
+      "category": "platform",
+      "title": {
+        "zh": "给 Ray 任务队列加上背压",
+        "en": "Bound a Ray task queue"
+      },
+      "summary": {
+        "zh": "用可控 CPU 任务比较一次性提交与有界在途任务，记录内存、吞吐与失败。",
+        "en": "Compare eager submission with bounded in-flight CPU tasks, recording memory, throughput and failures."
+      },
+      "level": {
+        "zh": "入门 → 进阶",
+        "en": "Starter → intermediate"
+      },
+      "duration": {
+        "zh": "6–10 小时",
+        "en": "6–10 hours"
+      },
+      "cpuStart": true,
+      "tags": [
+        "Ray",
+        "Backpressure",
+        "Python"
+      ],
+      "problem": {
+        "zh": "提交任务很快，处理结果可能很慢。无限积累 pending tasks 和 ObjectRef 会给内存带来压力，单纯增加 worker 不能代替背压。",
+        "en": "Submission can outpace processing. Accumulating pending tasks and object references puts pressure on memory; adding workers is not a substitute for backpressure."
+      },
+      "scenario": {
+        "zh": "构建一条小型数据预处理流水线，让生产者在消费者跟不上时减速，同时保留每个输入的可追踪结果。",
+        "en": "Build a small preprocessing pipeline whose producer slows when consumers fall behind while retaining traceable results for every input."
+      },
+      "roles": {
+        "zh": [
+          "AI 平台工程师",
+          "分布式应用工程师",
+          "数据基础设施工程师"
+        ],
+        "en": [
+          "AI platform engineer",
+          "Distributed application engineer",
+          "Data infrastructure engineer"
+        ]
+      },
+      "prerequisites": [
+        {
+          "id": "foundations",
+          "title": {
+            "zh": "AI Infra 系统基础",
+            "en": "AI Infra foundations"
+          }
+        },
+        {
+          "id": "ray",
+          "title": {
+            "zh": "Ray 分布式 AI 应用",
+            "en": "Distributed AI applications with Ray"
+          }
+        }
+      ],
+      "environment": {
+        "zh": "普通多核电脑、受所选 Ray 版本支持的 Python 环境。仅运行本机 Ray，固定 CPU 数、任务总量与小型返回值；设置总量和内存预算，不刻意耗尽机器资源。",
+        "en": "Use a multicore laptop and a Python environment supported by the pinned Ray version. Run Ray locally with fixed CPU allocation, task count and small results. Set workload and memory budgets rather than intentionally exhausting the machine."
+      },
+      "steps": [
+        {
+          "title": {
+            "zh": "建立确定性的 CPU 工作负载",
+            "en": "Create a deterministic CPU workload"
+          },
+          "body": {
+            "zh": "生成 100 个带 ID 的小任务，以固定计算或显式 sleep 模拟服务时间并标注类型。保存串行参考结果，设定重试策略，单独加入一个可控失败任务。",
+            "en": "Create 100 small tasks with IDs, using fixed computation or explicit sleep to model service time and labeling which is used. Save serial reference results, define retries and include a separate controlled failing task."
+          }
+        },
+        {
+          "title": {
+            "zh": "建立有界比较",
+            "en": "Build a bounded comparison"
+          },
+          "body": {
+            "zh": "先在安全的小任务总量下测试一次性提交。再用 ray.wait 维护不超过 K 的在途集合，完成一项就处理并释放其引用后补充任务；分别测试 K 为 2、4、8。",
+            "en": "Use a safe small total for eager submission. Then maintain at most K in-flight tasks with ray.wait: consume completed results, release their references and submit replacements. Test K values of 2, 4 and 8."
+          }
+        },
+        {
+          "title": {
+            "zh": "记录队列和内存口径",
+            "en": "Record queue and memory semantics"
+          },
+          "body": {
+            "zh": "周期记录 submitted、completed、pending 与总墙钟时间；若记录 driver RSS 和 object store 内存，要注明来源并分开展示。固定任务输入、CPU 配额和统计方式，保存原始 CSV。",
+            "en": "Periodically log submitted, completed and pending counts and total wall time. If recording driver RSS and object-store memory, state the source and show them separately. Fix task inputs, CPU allocation and aggregation, preserving raw CSV."
+          }
+        },
+        {
+          "title": {
+            "zh": "处理失败并解释取舍",
+            "en": "Handle failures and explain trade-offs"
+          },
+          "body": {
+            "zh": "验证失败任务不会导致客户端无限等待，成功结果按 ID 与串行参考一致。比较不同 K 的内存和吞吐取舍，明确 sleep 工作负载无法代表实际数据处理计算性能。",
+            "en": "Verify that the failed task cannot leave the client waiting forever and that successful results match the serial reference by ID. Compare memory and throughput trade-offs across K values; sleep workloads do not represent real processing compute performance."
+          }
+        }
+      ],
+      "deliverables": {
+        "zh": [
+          "Ray/Python 版本、CPU 配额和任务参数",
+          "串行、一次性提交与 ray.wait 背压实现",
+          "任务输入、结果、队列时间序列与原始内存记录",
+          "README：本人改动、失败策略、数据边界与复现步骤"
+        ],
+        "en": [
+          "Ray/Python versions, CPU allocation and task settings",
+          "Serial, eager-submission and ray.wait backpressure implementations",
+          "Task inputs, results, queue time series and raw memory records",
+          "README: own changes, failure policy, evidence boundaries and reproduction"
+        ]
+      },
+      "acceptance": {
+        "zh": [
+          "有界版本任一观测时刻的在途任务数不超过 K，成功任务结果与串行参考一致且 ID 无重复。",
+          "失败任务可被记录并结束处理；正常路径释放已消费的结果引用。",
+          "比较保留原始时间序列、总量、CPU 配额和内存口径；不会把 sleep 模拟宣称为真实计算加速。"
+        ],
+        "en": [
+          "The bounded version never exceeds K in-flight tasks at observation points; successful results match the serial reference and IDs are unique.",
+          "The failed task is recorded and processing terminates; the normal path releases consumed result references.",
+          "Comparisons preserve raw time series, totals, CPU allocation and memory definitions; sleep simulation is not claimed as real compute acceleration."
+        ]
+      },
+      "evidenceBoundary": {
+        "zh": "本机 Ray 结果验证任务管理与背压机制，不证明多节点容错或集群扩展。Ray 的逻辑资源声明不是物理 CPU/内存隔离；内存曲线若未采集就明确缺失，不凭任务数推算实测峰值。",
+        "en": "Local Ray results demonstrate task management and backpressure, not multi-node fault tolerance or cluster scaling. Logical Ray resource declarations do not enforce physical CPU/memory isolation. Missing memory measurements stay missing rather than being inferred as measured peaks."
+      },
+      "sources": [
+        {
+          "title": "Ray · Limit pending tasks",
+          "url": "https://docs.ray.io/en/latest/ray-core/patterns/limit-pending-tasks.html"
+        },
+        {
+          "title": "Ray · Memory management",
+          "url": "https://docs.ray.io/en/latest/ray-core/scheduling/memory-management.html"
+        },
+        {
+          "title": "Ray · Resources",
+          "url": "https://docs.ray.io/en/latest/ray-core/scheduling/resources.html"
+        },
+        {
+          "title": "Ray · Task fault tolerance",
+          "url": "https://docs.ray.io/en/latest/ray-core/fault_tolerance/tasks.html"
+        }
+      ]
+    },
+    {
+      "id": "kubernetes-serving",
+      "category": "platform",
+      "title": {
+        "zh": "一份可评审的 GPU 服务部署方案",
+        "en": "A reviewable GPU serving deployment"
+      },
+      "summary": {
+        "zh": "先在 CPU 本地集群验证探针与滚动更新，再补充独立的 GPU 部署配置。",
+        "en": "Validate probes and rolling updates in a local CPU cluster, then provide a separate GPU deployment configuration."
+      },
+      "level": {
+        "zh": "进阶",
+        "en": "Intermediate"
+      },
+      "duration": {
+        "zh": "8–12 小时",
+        "en": "8–12 hours"
+      },
+      "cpuStart": true,
+      "tags": [
+        "Kubernetes",
+        "GPU Scheduling",
+        "SRE"
+      ],
+      "problem": {
+        "zh": "YAML 能通过解析，不代表模型就绪前不会收流量，也不代表 GPU 能被调度。要把配置校验、控制面行为和真机推理验证分开。",
+        "en": "Parsable YAML does not establish readiness gating or GPU schedulability. Separate configuration validation, control-plane behavior and real model execution."
+      },
+      "scenario": {
+        "zh": "为一个加载较慢的推理服务准备部署评审，解释何时接流量、何时重启，以及更新失败后如何恢复。",
+        "en": "Prepare a deployment review for a slow-loading inference service, explaining when it receives traffic, when it restarts and how a failed update is recovered."
+      },
+      "roles": {
+        "zh": [
+          "AI 平台工程师",
+          "Kubernetes 工程师",
+          "AI 平台 SRE"
+        ],
+        "en": [
+          "AI platform engineer",
+          "Kubernetes engineer",
+          "AI platform SRE"
+        ]
+      },
+      "prerequisites": [
+        {
+          "id": "kubernetes",
+          "title": {
+            "zh": "Kubernetes AI 平台",
+            "en": "Kubernetes for AI"
+          }
+        },
+        {
+          "id": "vllm",
+          "title": {
+            "zh": "vLLM 推理工程（GPU 扩展）",
+            "en": "vLLM inference engineering (GPU extension)"
+          }
+        }
+      ],
+      "environment": {
+        "zh": "普通电脑、容器运行时与 kind 本地集群可完成 CPU mock 路线。GPU 配置需匹配驱动、运行时、设备插件和真实 GPU 节点才能实测。所有演练限定自建学习集群及独立 namespace。",
+        "en": "A laptop, container runtime and local kind cluster support the CPU mock route. GPU validation additionally needs matching drivers, runtime, device plugin and a real GPU node. Keep exercises in your own learning cluster and a dedicated namespace."
+      },
+      "steps": [
+        {
+          "title": {
+            "zh": "画出启动与服务状态",
+            "en": "Map startup and serving states"
+          },
+          "body": {
+            "zh": "定义加载中、就绪、暂时不可用和进程失效四个状态，分别说明 startup、readiness、liveness 探针的职责。实现可控延迟的 CPU mock 服务，使用固定镜像版本。",
+            "en": "Define loading, ready, temporarily unavailable and failed-process states and assign responsibilities to startup, readiness and liveness probes. Implement a CPU mock with controlled startup delay and a pinned image version."
+          }
+        },
+        {
+          "title": {
+            "zh": "在本地验证流量行为",
+            "en": "Verify local traffic behavior"
+          },
+          "body": {
+            "zh": "为 CPU mock 提供 Deployment 和 Service，限制资源与副本数。观察启动期间 EndpointSlice 的就绪状态，随后让 readiness 失败，记录流量移除与进程是否重启；不以 liveness 替代 readiness。",
+            "en": "Create a resource-limited Deployment and Service for the CPU mock. Observe EndpointSlice readiness during startup, then trigger a readiness failure and record traffic removal and whether the process restarts. Do not substitute liveness for readiness."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次小范围更新演练",
+            "en": "Rehearse one small update"
+          },
+          "body": {
+            "zh": "更改 mock 版本并记录 rollout 状态、Pod 事件及探针变化；再用一个预期不能就绪的版本验证更新停滞和恢复步骤。保存事件与说明，不只提交 dashboard 截图。",
+            "en": "Update the mock version and record rollout status, Pod events and probe changes. Use a deliberately unready version to observe stalled rollout and recovery steps. Preserve events and explanations, not only dashboard screenshots."
+          }
+        },
+        {
+          "title": {
+            "zh": "补充独立 GPU 配置",
+            "en": "Add a separate GPU configuration"
+          },
+          "body": {
+            "zh": "提供单副本推理服务 GPU 配置，写清扩展资源请求、模型 revision、显存需求估计和启动探针预算。解释设备插件与实际节点前提；无 GPU 时仅标记静态审阅，列出真实部署验收计划。",
+            "en": "Provide a single-replica GPU serving configuration specifying extended-resource requests, model revision, estimated memory and startup-probe budget. Explain device-plugin and node prerequisites. Without a GPU, label it statically reviewed and list real-deployment acceptance steps."
+          }
+        }
+      ],
+      "deliverables": {
+        "zh": [
+          "kind/Kubernetes、容器镜像与 mock 版本清单",
+          "CPU 部署清单、GPU 部署清单及二者差异说明",
+          "探针、EndpointSlice、rollout 和恢复的原始事件记录",
+          "README：本人设计、实验 namespace、复现步骤、未测硬件与下一步"
+        ],
+        "en": [
+          "kind/Kubernetes, container image and mock version manifest",
+          "CPU and GPU manifests with an explanation of their differences",
+          "Raw probe, EndpointSlice, rollout and recovery event records",
+          "README: own design, experiment namespace, reproduction, untested hardware and next step"
+        ]
+      },
+      "acceptance": {
+        "zh": [
+          "本地 CPU 服务加载期间不被标为 ready；readiness 失败与 liveness 重启的不同效果有事件证据。",
+          "一次正常更新和一次不能就绪的更新都有记录，恢复步骤能在相同学习环境重现。",
+          "GPU 资源声明、镜像/模型版本和节点前提明确；静态校验不被写成 GPU 调度或推理成功。"
+        ],
+        "en": [
+          "The local CPU service is not ready during loading; events distinguish readiness failure from liveness-triggered restart.",
+          "A normal update and an unready update are documented, with recovery reproducible in the same learning environment.",
+          "GPU resource declarations, image/model versions and node prerequisites are explicit; static checks are not reported as successful GPU scheduling or inference."
+        ]
+      },
+      "evidenceBoundary": {
+        "zh": "kind 上的 CPU mock 可以验证部分 Kubernetes 行为，不验证 GPU 分配、驱动、模型加载或推理性能。客户端 dry-run 仅做本地对象处理，不能代替 API server 校验或真实部署。",
+        "en": "A CPU mock on kind demonstrates part of Kubernetes behavior, not GPU allocation, drivers, model loading or inference performance. Client-side dry-run only processes local objects; it does not replace API-server validation or a real deployment."
+      },
+      "sources": [
+        {
+          "title": "Kubernetes · Schedule GPUs",
+          "url": "https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/"
+        },
+        {
+          "title": "Kubernetes · Startup, readiness and liveness probes",
+          "url": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"
+        },
+        {
+          "title": "kind · Quick Start",
+          "url": "https://kind.sigs.k8s.io/docs/user/quick-start/"
+        }
+      ]
+    }
+  ]
+}
