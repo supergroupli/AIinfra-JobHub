@@ -31,6 +31,7 @@
         <p class="hero-description" data-i18n="heroDescription">从第一份学习笔记，到可复现的工程作品，再到下一次合作。让技术、机会和做技术的人，在这里连接。</p>
         <div class="hero-actions"><a class="button primary" href="#learn"><span data-i18n="startLearning">探索 10 天学习库</span> <span aria-hidden="true">↗</span></a><a class="button outline" href="#opportunities" data-i18n="exploreJobs">发现工作与合作</a></div>
         <p class="hero-note" data-i18n="heroNote">社区驱动 · 免费参与 · 用作品表达能力</p>
+        <a class="text-link hero-contact-link" href="#wechat-contact" data-i18n="wechatEntry">求职与技术交流 · 添加企业微信 ↗</a>
         <div class="hero-metrics"><div><strong id="metric-courses">—</strong><span data-i18n="metricCourses">门 10 天课程</span></div><div><strong id="metric-days">—</strong><span data-i18n="metricDays">个每日学习任务</span></div><div><strong>中 / EN</strong><span data-i18n="metricLanguages">双语学习手册</span></div></div>
       </div>
       <div class="journey" aria-label="Learn, build, connect">
@@ -42,6 +43,12 @@
       </div>
     </section>
     <div class="ecosystem section-shell"><span data-i18n="ecosystem">从推理生态出发</span><span>vLLM</span><span>SGLang</span><span>LMCache</span><span>Mooncake</span><span>Triton</span><span class="ecosystem-next" data-i18n="ecosystemNext">更多方向，由社区一起补全 ↗</span></div>
+    <section class="wechat-section section-shell" id="wechat-contact" aria-labelledby="wechat-title">
+      <div class="wechat-card">
+        <div class="wechat-copy"><div class="eyebrow">LET’S CONNECT / 元智引擎</div><h2 id="wechat-title" data-i18n="wechatTitle">AI Infra 求职与技术交流</h2><p data-i18n="wechatDescription">正在寻找 AI Infra 工作，或希望交流推理、缓存、GPU 与平台工程？扫码添加「元智引擎」企业微信，聊聊你的技术方向和合作意向。</p><p class="wechat-intro-note" data-i18n="wechatIntro">添加时可备注：技术方向 / 求职或合作意向 / 作品链接。</p><p class="wechat-phone-note" data-i18n="wechatPhone">手机浏览可打开原图保存，再在微信中识别二维码。</p></div>
+        <a class="wechat-qr" href="./assets/wecom-contact.png" target="_blank" rel="noopener noreferrer"><span class="wechat-qr-window"><img src="./assets/wecom-contact.png" width="1006" height="591" alt="元智引擎企业微信二维码 / WeCom contact QR code" decoding="async"></span><strong data-i18n="wechatScan">扫码添加企业微信</strong><span data-i18n="wechatOriginal">打开二维码原图 ↗</span></a>
+      </div>
+    </section>
     <section class="launchpad section-shell" aria-labelledby="build-title">
       <div class="launchpad-heading"><div class="eyebrow" data-i18n="buildEyebrow">THE NEXT STEP / 从学习走向实践</div><h2 id="build-title" data-i18n="buildTitle">把学过的，变成做过的。</h2><p data-i18n="buildIntro">选一个工程问题，留下可复现的过程，再让作品替你介绍自己。</p></div>
       <div class="launchpad-grid">
@@ -73,6 +80,7 @@
         <div class="resume-copy"><h3 id="resume-title" data-i18n="resumeTitle">让你的下一次机会，从一封邮件开始。</h3><p data-i18n="resumeDescription">欢迎发送简历与公开作品链接，并注明目标方向、工作地区和远程偏好。</p><a class="resume-address" href="mailto:career@yzinfra.com?subject=AI%20Infra%20JobHub%20-%20Resume">career@yzinfra.com</a><p class="resume-note" data-i18n="resumeNote">邮件投递不会自动公开到 GitHub；公开作品名片由你另行选择提交。</p></div>
         <a class="button primary" href="mailto:career@yzinfra.com?subject=AI%20Infra%20JobHub%20-%20Resume"><span data-i18n="sendResume">发送简历</span> <span aria-hidden="true">↗</span></a>
       </aside>
+      <aside class="wechat-card wechat-card-compact" aria-labelledby="wechat-jobs-title"><div class="wechat-copy"><div class="eyebrow">元智引擎 / WECOM</div><h3 id="wechat-jobs-title" data-i18n="wechatJobsTitle">带着你的技术与作品，聊聊下一次机会。</h3><p data-i18n="wechatJobsDescription">除了邮件投递，也可以扫码添加企业微信，介绍你的目标岗位、技术方向和到岗时间。</p><p class="wechat-phone-note" data-i18n="wechatPhone">手机浏览可打开原图保存，再在微信中识别二维码。</p></div><a class="wechat-qr" href="./assets/wecom-contact.png" target="_blank" rel="noopener noreferrer"><span class="wechat-qr-window"><img src="./assets/wecom-contact.png" width="1006" height="591" alt="元智引擎企业微信二维码 / WeCom contact QR code" loading="lazy" decoding="async"></span><strong data-i18n="wechatScan">扫码添加企业微信</strong><span data-i18n="wechatOriginal">打开二维码原图 ↗</span></a></aside>
       <div class="filter-box">
         <div class="filter-fields"><div class="search-field"><label for="search" data-i18n="searchLabel">搜索职位与开发者</label><input id="search" type="search" placeholder="技术、公司、地区或关键词" autocomplete="off" data-placeholder="searchPlaceholder"></div><div><label for="work-mode" data-i18n="workModeLabel">协作方式</label><select id="work-mode"><option value="" data-i18n="anyMode">所有方式</option><option value="remote-global" data-i18n="remoteGlobal">全球远程</option><option value="remote-regional" data-i18n="remoteRegional">指定地区远程</option><option value="hybrid" data-i18n="hybrid">混合办公</option><option value="onsite" data-i18n="onsite">线下办公</option></select></div></div>
         <div class="tag-row" id="skill-filters" role="group" aria-label="Technology filters"></div>
