@@ -11,8 +11,8 @@
     "en": "Write, validate and measure your first fused operator in 10 days"
   },
   "description": {
-    "zh": "从块级编程、边界 mask 和数值正确性开始，进入 softmax、归约与矩阵乘法。以一个前向算子的测试与基准作为结课成果；这里的 Triton 是 GPU 编程语言，不是同名推理服务器。",
-    "en": "Start with block programming, masks and numerical correctness, then explore softmax, reductions and matrix multiplication. Finish by testing and benchmarking a forward operator. This is the Triton GPU language, not the similarly named inference server."
+    "zh": "从块级编程、边界 mask 和数值正确性开始，进入 softmax、归约与矩阵乘法。以一个前向算子的测试与基准作为结课成果；这里的 Triton 是 GPU 编程语言，不是同名推理服务器。 每日补充图解、可运行CPU实验、预期输出、排错和解析题；保留真实框架选做路线。",
+    "en": "Start with block programming, masks and numerical correctness, then explore softmax, reductions and matrix multiplication. Finish by testing and benchmarking a forward operator. This is the Triton GPU language, not the similarly named inference server. Every day includes diagrams, runnable CPU exercises, expected outputs, troubleshooting and explained quizzes, with an optional real-framework path."
   },
   "level": "intermediate",
   "hoursPerDay": {
@@ -24,10 +24,10 @@
     "en": "Know NumPy/PyTorch tensors, broadcasting, matrix multiplication and floating-point basics. Be comfortable reading Python and the foundations path's memory/performance material."
   },
   "hardware": {
-    "zh": "性能实验需要当前 Triton release 支持的 GPU、驱动与系统。无 GPU 可用 CPU 参考实现；部分语义可在可用的 interpreter 中研究，但它有类型/访存限制且不能用于 GPU 性能测量。",
-    "en": "Performance work needs a GPU, driver and OS supported by your Triton release. CPU reference implementations cover the alternative path. A working interpreter can explore supported semantics, but has type/access limitations and cannot measure GPU performance."
+    "zh": "普通电脑可完成Python 3.9+标准库的数值/系统语义实验；真实框架路线见实验包README，须另备对应环境。CPU模型与GPU实测分开标记。",
+    "en": "A laptop runs Python 3.9+ standard-library numerical/system exercises. Optional real-framework routes require the environment in the lab README. Label CPU models and hardware measurements separately."
   },
-  "hardwareTier": "gpu-required",
+  "hardwareTier": "gpu-optional",
   "tags": [
     "Triton",
     "CUDA",
@@ -51,6 +51,18 @@
   },
   "lastVerified": "2026-11-13",
   "resources": [
+    {
+      "title": "Triton v3.2.0 release",
+      "url": "https://github.com/triton-lang/triton/releases/tag/v3.2.0"
+    },
+    {
+      "title": "Triton vector addition tutorial",
+      "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
+    },
+    {
+      "title": "Triton fused softmax tutorial",
+      "url": "https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html"
+    },
     {
       "title": "Triton · Installation",
       "url": "https://triton-lang.org/main/getting-started/installation.html"
@@ -104,37 +116,196 @@
         "en": "Triton expresses GPU work through block-level tensor operations that the compiler maps to a target device. A program instance handles a block of data; it is not a Python thread. Host code allocates tensors, chooses the launch grid and supplies arguments. Distinguishing host work, compilation and device execution prevents first-use JIT compilation from being mistaken for steady-state kernel latency."
       },
       "task": {
-        "zh": "按选定 release 核对系统和硬件兼容性，阅读向量加法示例。画出 host wrapper、grid、program id 和数据块的关系；记录 Triton、PyTorch、设备与驱动版本。",
-        "en": "Check platform and hardware support for a pinned release, then study vector addition. Diagram the host wrapper, grid, program ID and data blocks. Record Triton, PyTorch, device and driver versions."
+        "zh": "手工画出三个块，将block改为8并预测覆盖；保存自己的索引图。",
+        "en": "Draw all three blocks, predict the block=8 coverage and retain your own diagram."
       },
       "evidence": {
-        "zh": "kernel-map.md、环境记录与一个完整示例的逐段注释。",
-        "en": "kernel-map.md, an environment record and an annotated example."
+        "zh": "day01.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day01.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "能区分 program instance、张量元素和主机线程",
-          "明确哪些数据在 CPU，哪些在目标 GPU"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Distinguish program instances, tensor elements and host threads",
-          "Identify which data lives on the CPU or target GPU"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "用纸笔与 Python 列表模拟分块。安装不适配时不要强行运行 GPU 示例，保留环境兼容报告。",
-        "en": "Simulate blocks with diagrams and Python lists. If installation is unsupported, keep a compatibility report instead of forcing GPU examples to run."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "Triton · Installation",
-          "url": "https://triton-lang.org/main/getting-started/installation.html"
+          "title": "Triton v3.2.0 release",
+          "url": "https://github.com/triton-lang/triton/releases/tag/v3.2.0"
         },
         {
-          "title": "Triton · Vector addition",
+          "title": "Triton vector addition tutorial",
           "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "程序块不是单个线程",
+            "en": "A program block is not one thread"
+          },
+          "body": {
+            "zh": "一个 Triton program 处理一块逻辑元素，编译器再映射到设备线程。n=10、block=4 时启动 3 个 program，逻辑索引覆盖 0–11，最后 2 个位置不属于输入。用索引表理解覆盖范围，比先猜线程数更可靠。",
+            "en": "One program processes a logical block, which the compiler maps to hardware threads. For n=10 and block=4, three programs cover logical offsets 0–11; the last two are outside the input. Inspect the coverage table before reasoning about hardware threads."
+          }
+        },
+        {
+          "title": {
+            "zh": "先把地址算对",
+            "en": "Get addresses right first"
+          },
+          "body": {
+            "zh": "第 p 个块的起点是 p×block；块内位置从 0 到 block−1。CPU 练习只生成索引和有效标记，不运行 Triton。将 block 改为 8，比较 program 数量减少与无效位置增加，不能直接据此判断性能。",
+            "en": "Block p begins at p×block; local offsets range from zero to block−1. The CPU exercise generates offsets and validity flags only. Change block to eight and compare program count with unused lanes; neither directly predicts speed."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "10个元素、块长4，需要几个program？",
+            "en": "How many programs cover 10 elements with block size 4?"
+          },
+          "options": [
+            {
+              "zh": "2",
+              "en": "2"
+            },
+            {
+              "zh": "3",
+              "en": "3"
+            },
+            {
+              "zh": "4",
+              "en": "4"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "向上取整10/4为3，尾块仍需mask。",
+            "en": "Ceil(10/4)=3; the tail still needs masking."
+          }
+        },
+        {
+          "question": {
+            "zh": "CPU索引表证明了什么？",
+            "en": "What does the CPU offset table establish?"
+          },
+          "options": [
+            {
+              "zh": "实际GPU加速比",
+              "en": "Measured GPU speedup"
+            },
+            {
+              "zh": "GPU线程数",
+              "en": "Hardware thread count"
+            },
+            {
+              "zh": "逻辑覆盖与越界位置",
+              "en": "Logical coverage and invalid offsets"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "它验证地址推理，不涉及GPU执行。",
+            "en": "It validates address reasoning, not GPU execution."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：建立 GPU 内核的编程模型",
+          "en": "Lesson flow: Build a mental model of a GPU kernel"
+        },
+        "nodes": [
+          {
+            "zh": "输入10元素",
+            "en": "10 input elements"
+          },
+          {
+            "zh": "计算program数",
+            "en": "Compute grid size"
+          },
+          {
+            "zh": "生成块内索引",
+            "en": "Generate offsets"
+          },
+          {
+            "zh": "标记有效范围",
+            "en": "Mark valid range"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "先下载并解压实验ZIP，在终端进入 triton 文件夹（父目录执行 cd triton）。需要Python 3.9+，Windows可将python3换为py -3。",
+            "en": "Download and extract the ZIP; enter triton (cd triton from its parent). Use Python3.9+; Windows can substitute py -3."
+          },
+          "command": "python3 lab.py day1",
+          "expected": {
+            "zh": "programs=3，第三块 valid=[true,true,false,false]。",
+            "en": "programs=3; the third block has valid=[true,true,false,false]."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "手工画出三个块，将block改为8并预测覆盖；保存自己的索引图。",
+            "en": "Draw all three blocks, predict the block=8 coverage and retain your own diagram."
+          },
+          "command": "python3 -c \"from lab import tiles; print(tiles(10,8))\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把program当成一个GPU线程",
+            "en": "Treating a program as a GPU thread"
+          },
+          "fix": {
+            "zh": "program是逻辑块；线程映射属于编译和硬件层，CPU索引表不能证明线程布局。",
+            "en": "A program is a logical block. Mapping is a compiler/hardware concern, not established by this table."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "blocks用整除漏掉尾部",
+            "en": "Floor division drops the tail"
+          },
+          "fix": {
+            "zh": "网格采用(n+block-1)//block；10//4只启动两块会漏2个元素。",
+            "en": "Use ceiling division (n+block-1)//block. Floor division would omit two elements."
+          }
+        }
+      ],
+      "interactive": "tile-waste"
     },
     {
       "day": 2,
@@ -147,37 +318,226 @@
         "en": "Vector lengths are often not multiples of block size. A kernel converts program IDs into global offsets and masks out-of-range loads and stores. Protecting only stores still permits invalid reads. The launch grid must cover every element without conflicting writes. Vector addition is useful because it isolates indexing and memory correctness; the challenge is mapping work safely, not making addition more complicated."
       },
       "task": {
-        "zh": "独立写一个前向向量加法，测试长度 1、127、128、129 和一个较大非整块长度。用 CPU/PyTorch 参考输出比较；为空输入设计主机端明确行为。",
-        "en": "Write a forward vector-add kernel and test lengths 1, 127, 128, 129 and one larger nonmultiple. Compare with a CPU/PyTorch reference and define host-side behavior for empty input."
+        "zh": "实现student.masked_sum，添加一个全部mask为false的测试，再检查真实GPU示例的load和store。",
+        "en": "Implement student.masked_sum, add an all-false test, then inspect the real GPU example’s load/store masks."
       },
       "evidence": {
-        "zh": "vector_add.py、边界用例与 offsets 示意图。",
-        "en": "vector_add.py, boundary tests and an offsets diagram."
+        "zh": "day02.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day02.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "加载和写入都处理尾部边界",
-          "每个有效输出只由预期的工作实例写入"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Mask both loads and stores at boundaries",
-          "Each valid output is written by the intended work instance"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "在 CPU 上生成同样的 offsets 与 mask，检查覆盖和越界；若 interpreter 可用，再验证受支持的程序语义，不运行计时比较。",
-        "en": "Generate offsets and masks on CPU and inspect coverage and bounds. If the interpreter works, validate supported semantics without timing comparisons."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "Triton · Vector addition",
-          "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
+          "title": "Triton v3.2.0 release",
+          "url": "https://github.com/triton-lang/triton/releases/tag/v3.2.0"
         },
         {
-          "title": "Triton · Debugging and interpreter limits",
-          "url": "https://triton-lang.org/main/programming-guide/chapter-3/debugging.html"
+          "title": "Triton vector addition tutorial",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "每次内存访问都考虑边界",
+            "en": "Guard every memory access"
+          },
+          "body": {
+            "zh": "只对输出store加mask仍可能在load时读取越界地址。向量加法必须同时保护两个输入读取和结果写入。n=5、block=4的第二块只有索引4有效；把未命中的load填0只服务于计算，中间值也不能越界写回。",
+            "en": "Masking stores alone does not prevent out-of-bounds loads. Guard both input loads and the output store. With n=5 and block=4, only offset four in the second block is valid. A zero fallback is a computation value, not permission to write invalid addresses."
+          }
+        },
+        {
+          "title": {
+            "zh": "用边界形状覆盖错误",
+            "en": "Test boundary shapes"
+          },
+          "body": {
+            "zh": "测试长度0、1、4、5和10，分别覆盖空输入、单元素、整块与尾块。student.py要求你独立实现masked_sum：值和mask长度不同应报错，全部无效应返回0。先用两个小样例手算，再运行check.py。",
+            "en": "Lengths 0, 1, 4, 5 and 10 cover empty input, one element, exact blocks and tails. Implement masked_sum in student.py: mismatched lengths raise an error and an entirely false mask sums to zero. Hand-calculate small examples before running check.py."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "n=5，block=4，第二块有几个有效位置？",
+            "en": "How many valid lanes are in the second block for n=5, block=4?"
+          },
+          "options": [
+            {
+              "zh": "1",
+              "en": "1"
+            },
+            {
+              "zh": "3",
+              "en": "3"
+            },
+            {
+              "zh": "4",
+              "en": "4"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "第二块索引4到7，只有4小于5。",
+            "en": "Only offset four is below five."
+          }
+        },
+        {
+          "question": {
+            "zh": "只给store加mask足够吗？",
+            "en": "Is masking stores sufficient?"
+          },
+          "options": [
+            {
+              "zh": "足够",
+              "en": "Yes"
+            },
+            {
+              "zh": "load也需要保护",
+              "en": "Loads need protection too"
+            },
+            {
+              "zh": "只需要调大显存",
+              "en": "Only more memory is needed"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "读取越界同样是错误，输出mask不能补救。",
+            "en": "An output mask cannot repair an invalid input load."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：用 mask 处理向量边界",
+          "en": "Lesson flow: Use masks to handle vector boundaries"
+        },
+        "nodes": [
+          {
+            "zh": "加载索引",
+            "en": "Load offsets"
+          },
+          {
+            "zh": "计算valid",
+            "en": "Compute valid mask"
+          },
+          {
+            "zh": "保护load",
+            "en": "Guard loads"
+          },
+          {
+            "zh": "保护store",
+            "en": "Guard stores"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day2",
+          "expected": {
+            "zh": "lengths中5个元素的输出为[1,2,3,4,5]；10元素有2个填充位置。",
+            "en": "The five-element output is [1,2,3,4,5]; the ten-element case has two padded lanes."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "实现student.masked_sum，添加一个全部mask为false的测试，再检查真实GPU示例的load和store。",
+            "en": "Implement student.masked_sum, add an all-false test, then inspect the real GPU example’s load/store masks."
+          },
+          "command": "python3 check.py",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        },
+        {
+          "title": {
+            "zh": "可选：准备固定版本GPU环境",
+            "en": "Optional: prepare the pinned GPU environment"
+          },
+          "body": {
+            "zh": "Linux x86_64、兼容NVIDIA GPU、Python3.10–3.12与支持CUDA12.4的驱动。另建环境执行；没有GPU跳过。本平台仅核对来源与代码，未运行GPU。",
+            "en": "Use Linux x86_64, compatible NVIDIA GPU, Python3.10–3.12 and a CUDA12.4-compatible driver. Use an isolated environment; skip without hardware. Source/code checked here, not GPU-run."
+          },
+          "command": "python3.12 -m venv .venv\nsource .venv/bin/activate\npython -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124\npython -m pip install triton==3.2.0",
+          "expected": {
+            "zh": "安装成功后torch=2.6.0、triton=3.2.0；安装失败不影响CPU练习。",
+            "en": "After installation, torch2.6.0 and Triton3.2.0; failure does not block CPU labs."
+          }
+        },
+        {
+          "title": {
+            "zh": "可选：运行真实GPU正确性例",
+            "en": "Optional: run GPU correctness examples"
+          },
+          "body": {
+            "zh": "在同一已激活环境执行kernel_gpu.py。它测试向量尾部和稳定softmax；不输出未验证的性能倍数。",
+            "en": "Run kernel_gpu.py in the activated environment. It checks vector tails and stable softmax without claiming speedup."
+          },
+          "command": "python kernel_gpu.py",
+          "expected": {
+            "zh": "成功时status=PASS，打印真实设备与版本；这只是正确性验证。",
+            "en": "On success status=PASS with actual device/versions; this verifies correctness only."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "check.py显示NOT YET",
+            "en": "check.py says NOT YET"
+          },
+          "fix": {
+            "zh": "这是学生实现占位，打开student.py按提示填写；--reference只核验参考解法。",
+            "en": "Complete student.py. --reference validates the supplied solution, not your work."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "尾部出现None或丢元素",
+            "en": "Tail contains None or missing values"
+          },
+          "fix": {
+            "zh": "检查grid是否向上取整，mask比较是否为i<n，结果列表是否完整写入。",
+            "en": "Check ceiling grid size, i<n rather than i<=n, and complete writes."
+          }
+        }
+      ],
+      "interactive": "tile-waste"
     },
     {
       "day": 3,
@@ -190,35 +550,193 @@
         "en": "Operation order, accumulation precision and input range affect floating-point error. Passing one random test is insufficient: boundary shapes, extremes, noncontiguous inputs and unsupported dtypes need explicit contracts. Relative error can be misleading near zero, so define absolute and relative tolerances. Unsupported inputs should fail clearly or take a fallback path rather than silently returning plausible-looking results."
       },
       "task": {
-        "zh": "为第 2 天内核设计测试矩阵，覆盖边界形状、不同 dtype、重复运行、全零和大幅值。写清支持的 layout；如果只支持连续输入，加入显式检查或转换，并计入转换成本。",
-        "en": "Build a test matrix for boundary shapes, dtypes, repeated calls, zero inputs and large values. State supported layouts. If only contiguous input is supported, check or convert it explicitly and account for conversion cost."
+        "zh": "自己增加零值、大数值和NaN输入案例；解释容差选取的依据。",
+        "en": "Add zero, large-value and NaN cases and explain your tolerance choice."
       },
       "evidence": {
-        "zh": "test_vector_add.py 与输入契约、容差选择说明。",
-        "en": "test_vector_add.py, an input contract and tolerance rationale."
+        "zh": "day03.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day03.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "容差具有理由而非为了让测试通过随意放宽",
-          "未支持的 shape、layout 或 dtype 有明确行为"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Justify tolerances rather than relaxing them until tests pass",
-          "Define behavior for unsupported shapes, layouts and dtypes"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "在 CPU 参考实现上先运行完整测试矩阵。interpreter 不能代表目标 GPU 数值行为，尤其应核对其类型限制。",
-        "en": "Run the complete matrix on a CPU reference first. Interpreter results do not establish GPU numerical behavior; check its datatype limitations."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "Triton · Debugging and interpreter limits",
-          "url": "https://triton-lang.org/main/programming-guide/chapter-3/debugging.html"
+          "title": "Triton v3.2.0 release",
+          "url": "https://github.com/triton-lang/triton/releases/tag/v3.2.0"
         },
         {
-          "title": "Triton · Vector addition",
+          "title": "Triton vector addition tutorial",
           "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "误差应参照输出尺度",
+            "en": "Scale the tolerance"
+          },
+          "body": {
+            "zh": "浮点计算的归约次序可能不同，逐位相等不是一般的正确性标准。示例采用abs(actual−reference)≤atol+rtol×abs(reference)。小结果依赖atol，大结果还需rtol；必须同时排除NaN和Inf。",
+            "en": "Floating-point reduction order can vary. Use abs(actual−reference)≤atol+rtol×abs(reference) with justified absolute and relative tolerances; check NaN/Inf separately. Near zero relies on atol while larger values also need rtol."
+          }
+        },
+        {
+          "title": {
+            "zh": "容差不能掩盖逻辑错误",
+            "en": "Tolerance is not a repair"
+          },
+          "body": {
+            "zh": "示例给[0.1,0.2,0.3]各加1e−7，exact_equal为false但allclose为true。把扰动改为0.1应失败。若用很大的容差把漏算元素也判为成功，就失去了正确性验证的意义。",
+            "en": "Adding 1e−7 to [0.1,0.2,0.3] fails exact equality but passes the supplied tolerance. A 0.1 perturbation should fail. A tolerance that hides missing elements invalidates the correctness test."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "abs误差1e−7一定代表错误吗？",
+            "en": "Does absolute error 1e−7 necessarily mean a bug?"
+          },
+          "options": [
+            {
+              "zh": "一定",
+              "en": "Always"
+            },
+            {
+              "zh": "取决于约定容差与尺度",
+              "en": "Depends on tolerance and scale"
+            },
+            {
+              "zh": "永远正确",
+              "en": "Always correct"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "应按公式和数据尺度判断，不能单看非零差值。",
+            "en": "Use the stated criterion and data scale."
+          }
+        },
+        {
+          "question": {
+            "zh": "NaN需要怎么处理？",
+            "en": "How should NaN be handled?"
+          },
+          "options": [
+            {
+              "zh": "忽略",
+              "en": "Ignore it"
+            },
+            {
+              "zh": "放宽rtol",
+              "en": "Increase rtol"
+            },
+            {
+              "zh": "单独检查并说明允许与否",
+              "en": "Explicitly check and define whether allowed"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "非有限值不能靠调容差解释。",
+            "en": "Tolerance does not explain non-finite values."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：先定义正确性，再讨论速度",
+          "en": "Lesson flow: Define correctness before speed"
+        },
+        "nodes": [
+          {
+            "zh": "构建参考",
+            "en": "Build reference"
+          },
+          {
+            "zh": "检查有限值",
+            "en": "Check finiteness"
+          },
+          {
+            "zh": "计算误差",
+            "en": "Measure error"
+          },
+          {
+            "zh": "使用约定容差",
+            "en": "Apply tolerances"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day3",
+          "expected": {
+            "zh": "exact_equal=false，allclose=true，finite=true。",
+            "en": "exact_equal=false, allclose=true, finite=true."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "自己增加零值、大数值和NaN输入案例；解释容差选取的依据。",
+            "en": "Add zero, large-value and NaN cases and explain your tolerance choice."
+          },
+          "command": "python3 -c \"import math; print(math.isfinite(float('nan')))\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "NaN比较看起来没触发错误",
+            "en": "NaN slips through comparison logic"
+          },
+          "fix": {
+            "zh": "显式检查isfinite；不要只依赖某个大于阈值的布尔表达式。",
+            "en": "Check isfinite explicitly instead of relying on one threshold comparison."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "所有dtype使用同一容差",
+            "en": "One tolerance for every dtype"
+          },
+          "fix": {
+            "zh": "先确定参考精度和目标dtype，再基于误差实验设阈值并保留失败样本。",
+            "en": "Specify reference precision and target dtype; select thresholds from error experiments and retain failures."
+          }
         }
       ]
     },
@@ -233,37 +751,206 @@
         "en": "Softmax combines exponentiation, reduction and normalization. Subtracting the row maximum reduces overflow risk. Keeping intermediate values on chip can avoid global-memory round trips, but consumes on-chip resources. Row width, layout and target hardware determine whether one program can handle a row efficiently. Fusion is not a universal speedup: oversized blocks or unsuitable inputs can reduce performance."
       },
       "task": {
-        "zh": "先写稳定的 CPU softmax 参考，再按官方示例实现受限行宽的 Triton 前向版本。测试极大输入、重复值和非二次幂行宽；比较行和与参考误差。",
-        "en": "Write a stable CPU softmax reference, then implement a Triton forward version for a declared range of row widths. Test large inputs, repeated values and non-power-of-two widths. Compare row sums and reference error."
+        "zh": "对输入同时加或减1000验证平移不变，再读kernel_gpu.py的尾部填充值。",
+        "en": "Shift all inputs by ±1000, verify invariance and inspect the GPU kernel tail fill."
       },
       "evidence": {
-        "zh": "softmax.py、输入范围声明、误差表与一次小型基准。",
-        "en": "softmax.py, supported input ranges, an error table and a small benchmark."
+        "zh": "day04.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day04.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "减最大值与尾部 mask 正确，输出无意外 NaN/Inf",
-          "注明未支持的超宽行处理方式"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Handle max subtraction and tail masks without unexpected NaN/Inf",
-          "Specify behavior for unsupported wide rows"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "完成稳定参考、误差分析和块内归约模拟。可验证数值思路，不将 CPU 运行速度解释成融合 GPU 收益。",
-        "en": "Complete the stable reference, error analysis and block-reduction simulation. Validate the numerical method without claiming GPU fusion benefits from CPU timings."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "Triton · Fused softmax",
-          "url": "https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html"
+          "title": "Triton v3.2.0 release",
+          "url": "https://github.com/triton-lang/triton/releases/tag/v3.2.0"
         },
         {
-          "title": "Triton · Debugging and interpreter limits",
-          "url": "https://triton-lang.org/main/programming-guide/chapter-3/debugging.html"
+          "title": "Triton vector addition tutorial",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "减去最大值保持概率不变",
+            "en": "Subtract the maximum"
+          },
+          "body": {
+            "zh": "直接exp(1002)会溢出，而exp(x−max(x))的最大指数为0。分子和分母同时乘同一个常数，概率不变。对[1000,1001,1002]，稳定结果约为[0.09003,0.24473,0.66524]。",
+            "en": "Direct exp(1002) overflows. Subtracting the row maximum makes the largest exponent zero without changing probabilities. [1000,1001,1002] yields approximately [0.09003,0.24473,0.66524]."
+          }
+        },
+        {
+          "title": {
+            "zh": "归约的mask中性值",
+            "en": "Choose the reduction identity"
+          },
+          "body": {
+            "zh": "真实Triton示例把无效load填−inf，避免尾部影响max；经过exp后无效项变为0，不进入sum。若填0且有效logit都是负数，max会被改变，错误还可能不容易从总和看出来。",
+            "en": "The Triton example fills invalid logits with −inf so they cannot affect max; after exp they contribute zero to sum. Filling with zero can alter the maximum for all-negative inputs and introduce subtle errors."
+          }
+        },
+        {
+          "title": {
+            "zh": "融合怎样影响算术强度",
+            "en": "How fusion changes arithmetic intensity"
+          },
+          "body": {
+            "zh": "算术强度=FLOPs/搬运字节。若假设强度10 FLOP/byte、带宽100 GB/s，带宽给出的上界是1 TFLOP/s；再与峰值算力取较小者。融合可能减少中间张量写回，但roofline只是上界模型，不包含启动、缓存和调度成本。",
+            "en": "Arithmetic intensity is FLOPs per transferred byte. At10 FLOP/byte and100 GB/s, the bandwidth bound is1 TFLOP/s; take the smaller of this and peak compute. Fusion can reduce intermediate writes, but roofline is a bound excluding startup, caching and scheduling."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "稳定softmax首先做什么？",
+            "en": "What is the first stabilization step?"
+          },
+          "options": [
+            {
+              "zh": "加最大值",
+              "en": "Add max"
+            },
+            {
+              "zh": "减最大值",
+              "en": "Subtract max"
+            },
+            {
+              "zh": "乘元素个数",
+              "en": "Multiply by row length"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "减max不会改变概率比例，能避免大正数指数溢出。",
+            "en": "Subtracting max preserves ratios and avoids large positive exponents."
+          }
+        },
+        {
+          "question": {
+            "zh": "GPU尾部logit通常填什么以做max？",
+            "en": "What is the neutral tail value for a max over logits?"
+          },
+          "options": [
+            {
+              "zh": "−inf",
+              "en": "−inf"
+            },
+            {
+              "zh": "1",
+              "en": "1"
+            },
+            {
+              "zh": "任意大正数",
+              "en": "A large positive number"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "−inf不参与最大值，exp后为0。",
+            "en": "−inf cannot win max and contributes zero after exp."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：实现数值稳定的融合 softmax",
+          "en": "Lesson flow: Implement a numerically stable fused softmax"
+        },
+        "nodes": [
+          {
+            "zh": "按行load",
+            "en": "Load a row"
+          },
+          {
+            "zh": "减最大值",
+            "en": "Subtract max"
+          },
+          {
+            "zh": "指数与求和",
+            "en": "Exponentiate and sum"
+          },
+          {
+            "zh": "归一化store",
+            "en": "Normalize and store"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day4",
+          "expected": {
+            "zh": "sum约为1，shift_invariant=true；概率约0.09003/0.24473/0.66524。",
+            "en": "sum≈1, shift_invariant=true; probabilities≈0.09003/0.24473/0.66524."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "对输入同时加或减1000验证平移不变，再读kernel_gpu.py的尾部填充值。",
+            "en": "Shift all inputs by ±1000, verify invariance and inspect the GPU kernel tail fill."
+          },
+          "command": "python3 -c \"from lab import softmax; print(softmax([-1000,-999,-998]))\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "math range error",
+            "en": "math range error"
+          },
+          "fix": {
+            "zh": "检查是否先减max；不要通过截断logit来悄悄改变问题。",
+            "en": "Subtract max before exponentiation; do not silently clip logits."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "空行或Inf被拒绝",
+            "en": "Empty or infinite rows rejected"
+          },
+          "fix": {
+            "zh": "本教程契约要求非空有限值；全masked行需要额外定义，不能直接套用此函数。",
+            "en": "The tutorial requires nonempty finite rows. Fully masked rows need a separately defined behavior."
+          }
+        }
+      ],
+      "interactive": "roofline"
     },
     {
       "day": 5,
@@ -276,35 +963,193 @@
         "en": "A reduction combines elements into a statistic, and its order can change rounding error. Normalization adds mean, variance and epsilon, making constant inputs, tiny variance and low precision important tests. Today implements only the forward path; backward propagation and gradient correctness are separate engineering tasks. Declaring that boundary makes the operator more trustworthy than vaguely claiming support for a complete training stack."
       },
       "task": {
-        "zh": "实现一个小范围前向 layer normalization 或 RMS normalization，声明准确公式。分别测试常数行、接近常数行与随机行，比较不同累加精度的误差。",
-        "en": "Implement a limited forward layer-normalization or RMS-normalization operator and state its exact formula. Test constant, nearly constant and random rows, comparing error under different accumulation precision."
+        "zh": "把epsilon改为1和1e−8，比较常数行与非恒定行；记录前向范围。",
+        "en": "Compare eps=1 and 1e−8 on constant/nonconstant rows; state the forward-only scope."
       },
       "evidence": {
-        "zh": "normalization.py、公式与输入契约、数值边界测试。",
-        "en": "normalization.py, formula and input contract, plus numerical edge tests."
+        "zh": "day05.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day05.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "方差/均方和 epsilon 的定义与参考一致",
-          "明确前向限定，不声称已实现或验证梯度"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Match variance/mean-square and epsilon definitions to the reference",
-          "State the forward-only boundary; do not claim verified gradients"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "使用 NumPy 或 PyTorch CPU 比较公式和累加精度；将真实 GPU 内核验证留为待执行步骤。",
-        "en": "Use NumPy or PyTorch CPU to compare formulas and accumulation precision. Mark GPU-kernel validation as unexecuted."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "Triton · Layer normalization",
-          "url": "https://triton-lang.org/main/getting-started/tutorials/05-layer-norm.html"
+          "title": "Triton v3.2.0 release",
+          "url": "https://github.com/triton-lang/triton/releases/tag/v3.2.0"
         },
         {
-          "title": "Triton · Debugging and interpreter limits",
-          "url": "https://triton-lang.org/main/programming-guide/chapter-3/debugging.html"
+          "title": "Triton vector addition tutorial",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "均值与方差的口径",
+            "en": "Mean and variance convention"
+          },
+          "body": {
+            "zh": "本课归一化使用总体方差：sum((x−mean)²)/N，随后除以sqrt(var+eps)。[1,2,3]均值2、方差2/3。与统计学无偏样本方差N−1不是同一个契约。",
+            "en": "Use population variance sum((x−mean)²)/N, followed by division by sqrt(var+eps). [1,2,3] has mean two and variance 2/3. This differs from an unbiased sample variance using N−1."
+          }
+        },
+        {
+          "title": {
+            "zh": "常数行是必测边界",
+            "en": "Constant rows are essential"
+          },
+          "body": {
+            "zh": "[7,7,7]方差为0，正epsilon避免除零，输出应为[0,0,0]。真实归一化还可能包含weight/bias、不同归约精度和反向传播；本实验只验证前向数值语义。",
+            "en": "[7,7,7] has zero variance. Positive epsilon prevents division by zero and produces zeros. Real normalization may add affine parameters, precision choices and backward behavior; this exercise covers forward semantics only."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "本实验方差的分母是什么？",
+            "en": "What variance divisor is used here?"
+          },
+          "options": [
+            {
+              "zh": "N",
+              "en": "N"
+            },
+            {
+              "zh": "N−1",
+              "en": "N−1"
+            },
+            {
+              "zh": "2N",
+              "en": "2N"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "这是前向归一化使用的总体方差定义。",
+            "en": "The forward normalization uses population variance."
+          }
+        },
+        {
+          "question": {
+            "zh": "epsilon主要解决哪个边界？",
+            "en": "What boundary does epsilon address?"
+          },
+          "options": [
+            {
+              "zh": "程序数不足",
+              "en": "Too few programs"
+            },
+            {
+              "zh": "方差接近零",
+              "en": "Near-zero variance"
+            },
+            {
+              "zh": "网络延迟",
+              "en": "Network latency"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "它使分母在常数行也保持非零。",
+            "en": "It keeps the denominator nonzero for constant rows."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：从归约走向前向归一化",
+          "en": "Lesson flow: Move from reductions to forward normalization"
+        },
+        "nodes": [
+          {
+            "zh": "行均值",
+            "en": "Row mean"
+          },
+          {
+            "zh": "总体方差",
+            "en": "Population variance"
+          },
+          {
+            "zh": "加epsilon",
+            "en": "Add epsilon"
+          },
+          {
+            "zh": "中心化缩放",
+            "en": "Center and scale"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day5",
+          "expected": {
+            "zh": "constant=[0,0,0]；normal约[-1.22474,0,1.22474]。",
+            "en": "constant=[0,0,0]; normal≈[-1.22474,0,1.22474]."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "把epsilon改为1和1e−8，比较常数行与非恒定行；记录前向范围。",
+            "en": "Compare eps=1 and 1e−8 on constant/nonconstant rows; state the forward-only scope."
+          },
+          "command": "python3 -c \"from lab import layer_norm; print(layer_norm([1,2,3],1))\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "常数行除零",
+            "en": "Division by zero on a constant row"
+          },
+          "fix": {
+            "zh": "要求epsilon为正；检查它在开根号内部。",
+            "en": "Use positive epsilon inside the square root."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "与参考结果不一致",
+            "en": "Reference mismatch"
+          },
+          "fix": {
+            "zh": "核对N还是N−1、是否包含affine参数及归约精度。",
+            "en": "Check N versus N−1, affine parameters and reduction precision."
+          }
         }
       ]
     },
@@ -319,33 +1164,196 @@
         "en": "Matrix multiplication is as much about reuse as its formula. Tiling M, N and K lets loaded subblocks participate in multiple multiply-add operations, while strides, edge tiles and accumulation precision still need handling. Larger tiles may improve reuse or consume too many registers and shared resources. Begin by tracing indices and partial sums for a small matrix before attempting hardware-specific optimization."
       },
       "task": {
-        "zh": "手工跟踪一个带尾块的小型矩阵乘法，说明每个 load 的坐标。改写官方教学实现的受支持形状集合，测试非整块 M/N/K，并与 PyTorch 参考结果比较。",
-        "en": "Trace a small matrix multiplication with edge tiles by hand and explain each loaded coordinate. Adapt the official teaching implementation for a declared shape set. Test nonmultiple M/N/K dimensions against a PyTorch reference."
+        "zh": "将block改为1和4，确认结果不变；再用手工计算一个非方阵案例。",
+        "en": "Try blocks one and four, verify identical results, then hand-check another rectangular case."
       },
       "evidence": {
-        "zh": "matmul.py、分块索引图、形状测试与数值报告。",
-        "en": "matmul.py, tile-index diagrams, shape tests and a numerical report."
+        "zh": "day06.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day06.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "尾块覆盖 M/N/K 边界，stride 假设清楚",
-          "解释输入精度与累加精度，避免用一次结果概括全部形状"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Cover edge tiles in M/N/K and document stride assumptions",
-          "Explain input and accumulation precision without generalizing from one shape"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "在 CPU 上写分块矩阵乘法，并记录每个 tile 的读取与复用次数；这能检验索引，不代表 GPU tiling 性能。",
-        "en": "Implement tiled matrix multiplication on CPU and count tile loads/reuse. This validates indexing, not GPU tiling performance."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "Triton · Matrix multiplication",
-          "url": "https://triton-lang.org/main/getting-started/tutorials/03-matrix-multiplication.html"
+          "title": "Triton v3.2.0 release",
+          "url": "https://github.com/triton-lang/triton/releases/tag/v3.2.0"
+        },
+        {
+          "title": "Triton vector addition tutorial",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "三个维度分别管什么",
+            "en": "Understand M, N and K"
+          },
+          "body": {
+            "zh": "A形状2×3、B形状3×2，结果2×2。M/N决定输出位置，K是累加维。block=2时最后一个K块只有一个有效元素；漏掉它会得到形状正确但数值错误的结果。",
+            "en": "A is 2×3 and B is 3×2, producing 2×2. M/N index output positions; K is reduced. With block=2 the final K tile has one valid element. Omitting it gives the right shape but wrong values."
+          }
+        },
+        {
+          "title": {
+            "zh": "用手算参考定位错误",
+            "en": "Use hand calculation"
+          },
+          "body": {
+            "zh": "C[0,0]=1×1+2×0+3×1=4；C[1,1]=4×0+5×1+6×1=11。CPU分块实现模拟访问顺序；不模拟GPU共享内存、寄存器占用或Tensor Core吞吐。",
+            "en": "C[0,0]=1×1+2×0+3×1=4 and C[1,1]=4×0+5×1+6×1=11. CPU tiling models indexing order, not GPU shared memory, registers or Tensor Core throughput."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "2×3乘3×2结果形状？",
+            "en": "What is the output shape of 2×3 times 3×2?"
+          },
+          "options": [
+            {
+              "zh": "2×2",
+              "en": "2×2"
+            },
+            {
+              "zh": "3×3",
+              "en": "3×3"
+            },
+            {
+              "zh": "2×3",
+              "en": "2×3"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "外侧维度保留，内部K被累加。",
+            "en": "Outer dimensions remain; K is reduced."
+          }
+        },
+        {
+          "question": {
+            "zh": "改变块大小应首先保持什么？",
+            "en": "What must survive a tile-size change?"
+          },
+          "options": [
+            {
+              "zh": "相同耗时",
+              "en": "Identical latency"
+            },
+            {
+              "zh": "数值正确性",
+              "en": "Numerical correctness"
+            },
+            {
+              "zh": "相同寄存器数",
+              "en": "Identical register count"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "分块是实现策略，不应改变算子语义。",
+            "en": "Tiling changes implementation, not operator semantics."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：用 tiling 理解矩阵乘法",
+          "en": "Lesson flow: Understand matrix multiplication through tiling"
+        },
+        "nodes": [
+          {
+            "zh": "M/N输出块",
+            "en": "M/N output tile"
+          },
+          {
+            "zh": "遍历K块",
+            "en": "Iterate K tiles"
+          },
+          {
+            "zh": "mask边缘",
+            "en": "Mask edges"
+          },
+          {
+            "zh": "累加写回",
+            "en": "Accumulate and store"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day6",
+          "expected": {
+            "zh": "product=[[4,5],[10,11]]，与reference一致。",
+            "en": "product=[[4,5],[10,11]], matching reference."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "将block改为1和4，确认结果不变；再用手工计算一个非方阵案例。",
+            "en": "Try blocks one and four, verify identical results, then hand-check another rectangular case."
+          },
+          "command": "python3 -c \"from lab import matmul; print(matmul([[1,2,3]],[[1],[2],[3]],4))\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "matrix shape报错",
+            "en": "Matrix shape error"
+          },
+          "fix": {
+            "zh": "A每行长度必须等于B行数，B每行也须等长。",
+            "en": "A row length must match B row count and both matrices must be rectangular."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "最后一块结果变小",
+            "en": "Final tile contributes too little"
+          },
+          "fix": {
+            "zh": "检查K循环和min(k,k0+block)，不要用整除丢掉尾块。",
+            "en": "Check the K loop and tail bound rather than floor-dividing away the final tile."
+          }
+        }
+      ],
+      "interactive": "tile-waste"
     },
     {
       "day": 7,
@@ -358,37 +1366,196 @@
         "en": "Different shapes and devices may prefer different tile and warp settings. Autotuning runs candidates multiple times, so kernels that accumulate or mutate input need careful state reset. Search time is also a cost and should be separated from steady-state latency. Use a small, explainable search space and check correctness before comparing performance, otherwise an incorrect fast path can be selected as the apparent winner."
       },
       "task": {
-        "zh": "为一个已通过测试的算子定义 3–6 个配置和明确的调参 key。保存各 shape 的选中配置、调参耗时与稳定运行时间，并测试重复调用是否改变结果。",
-        "en": "Define 3–6 configurations and explicit tuning keys for a tested operator. Preserve selected settings, search time and steady-state latency for each shape. Check that repeated calls do not corrupt results."
+        "zh": "改n=16和n=33，解释浪费比例变化；不能给未测配置写速度排名。",
+        "en": "Try n=16 and n=33 and explain padding changes without inventing speed rankings."
       },
       "evidence": {
-        "zh": "autotune-configs.py、配置选择表与状态重置测试。",
-        "en": "autotune-configs.py, a configuration-selection table and state-reset tests."
+        "zh": "day07.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day07.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "每个候选先通过正确性检查",
-          "编译/调参开销和稳定运行时间分别报告"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Validate each candidate before comparing speed",
-          "Report compilation/search costs separately from steady-state latency"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "设计搜索空间并用 CPU 参考测试状态重置；不在 interpreter 上选 GPU 最优参数。",
-        "en": "Design the search space and test state reset with a CPU reference. Do not select GPU-optimal settings using interpreter timings."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "Triton · autotune",
-          "url": "https://triton-lang.org/main/python-api/generated/triton.autotune.html"
+          "title": "Triton v3.2.0 release",
+          "url": "https://github.com/triton-lang/triton/releases/tag/v3.2.0"
         },
         {
-          "title": "Triton · Matrix multiplication",
-          "url": "https://triton-lang.org/main/getting-started/tutorials/03-matrix-multiplication.html"
+          "title": "Triton vector addition tutorial",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "调参前先剔除错误配置",
+            "en": "Reject incorrect candidates first"
+          },
+          "body": {
+            "zh": "n=17，block=4/8/16时分配逻辑位置为20/24/32，浪费3/7/15。三个候选都先通过向量加法正确性检查。较少program可能减少调度开销，也可能增加资源压力；填充量不能直接排名真实速度。",
+            "en": "For n=17, blocks 4/8/16 allocate 20/24/32 logical lanes, wasting 3/7/15. Every candidate first passes correctness. Fewer programs may reduce overhead but increase resource pressure; padding alone cannot rank real speed."
+          }
+        },
+        {
+          "title": {
+            "zh": "参数空间有边界",
+            "en": "Bound the search"
+          },
+          "body": {
+            "zh": "只扫描自己理解的候选，记录shape、dtype和设备。保存失败配置及原因，不把单一形状下的赢家应用到所有尺寸。真实GPU基准还要隔离编译与首次运行开销。",
+            "en": "Scan a bounded candidate set, record shape/dtype/device, and retain failed configurations. A winner at one shape need not generalize. Separate compilation and first-use costs from GPU benchmarking."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "17元素、block16分配多少逻辑位置？",
+            "en": "How many logical lanes for 17 elements with block16?"
+          },
+          "options": [
+            {
+              "zh": "17",
+              "en": "17"
+            },
+            {
+              "zh": "32",
+              "en": "32"
+            },
+            {
+              "zh": "48",
+              "en": "48"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "需要2个块，每块16。",
+            "en": "Two blocks of 16 are needed."
+          }
+        },
+        {
+          "question": {
+            "zh": "哪个候选可以参与速度比较？",
+            "en": "Which candidate belongs in a performance comparison?"
+          },
+          "options": [
+            {
+              "zh": "所有候选",
+              "en": "All candidates"
+            },
+            {
+              "zh": "只有正确性通过的候选",
+              "en": "Only correct candidates"
+            },
+            {
+              "zh": "只有最大块",
+              "en": "Only the largest tile"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "错误算子的速度没有可比性。",
+            "en": "The speed of an incorrect operator is not useful."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：有边界地自动调参",
+          "en": "Lesson flow: Autotune within a clear boundary"
+        },
+        "nodes": [
+          {
+            "zh": "列候选",
+            "en": "List candidates"
+          },
+          {
+            "zh": "正确性筛选",
+            "en": "Check correctness"
+          },
+          {
+            "zh": "记录资源假设",
+            "en": "Record assumptions"
+          },
+          {
+            "zh": "真机再测",
+            "en": "Then measure hardware"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day7",
+          "expected": {
+            "zh": "wasted_lanes依次为3/7/15，correct均true。",
+            "en": "wasted_lanes are 3/7/15; all correctness checks pass."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "改n=16和n=33，解释浪费比例变化；不能给未测配置写速度排名。",
+            "en": "Try n=16 and n=33 and explain padding changes without inventing speed rankings."
+          },
+          "command": "python3 -c \"from lab import tiles; print(len(tiles(33,16))*16-33)\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "最快候选没过正确性",
+            "en": "Fast candidate fails correctness"
+          },
+          "fix": {
+            "zh": "先排除错误候选，再谈性能；不能放宽校验使它过关。",
+            "en": "Exclude incorrect candidates before performance comparison."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "把浪费lane数当显存大小",
+            "en": "Treating padded lanes as allocated bytes"
+          },
+          "fix": {
+            "zh": "逻辑lane估算不是物理分配统计，实际布局由编译器和dtype决定。",
+            "en": "Logical lanes are not a measured memory allocation; layout and dtype matter."
+          }
+        }
+      ],
+      "interactive": "tile-waste"
     },
     {
       "day": 8,
@@ -401,37 +1568,206 @@
         "en": "GPU work is usually asynchronous, so a naive CPU timer may measure task submission rather than completion. Benchmarks need suitable device timing or synchronization, warm-up and repetitions. State whether allocation, transfers and compilation are included. Effective bandwidth depends on a declared byte-traffic model and is not simply the device's total bandwidth. Preserve samples and quantiles to assess whether small differences are meaningful."
       },
       "task": {
-        "zh": "用当前版本 triton.testing.do_bench 测量一个算子，明确毫秒单位与分位数设置。比较算子本身和包含 wrapper 的端到端调用，记录多个 shape；解释一个没有加速的案例。",
-        "en": "Use your release's triton.testing.do_bench for one operator, stating milliseconds and quantile settings. Compare the kernel-focused measurement with an end-to-end wrapper call across several shapes. Explain one case that does not improve."
+        "zh": "重复到另一输出目录，比较中位数；写出GPU验证需要补的同步步骤。",
+        "en": "Repeat in another directory, compare medians and document missing GPU synchronization steps."
       },
       "evidence": {
-        "zh": "bench.py、环境清单、原始样本与两种计时口径的图表。",
-        "en": "bench.py, environment manifest, raw samples and plots for both timing scopes."
+        "zh": "day08.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day08.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "未将异步提交时间误写成设备执行时间",
-          "字节模型、计时范围与冷/热状态都明确"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Do not mistake asynchronous submission time for device execution",
-          "Document byte model, timing scope and cold/warm state"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "审查基准代码并用合成样本验证汇总。没有目标 GPU 就不填设备延迟、带宽或加速比。",
-        "en": "Review the harness and validate summaries with synthetic samples. Without the target GPU, leave device latency, bandwidth and speedup unmeasured."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "Triton · do_bench",
-          "url": "https://triton-lang.org/main/python-api/generated/triton.testing.do_bench.html"
+          "title": "Triton v3.2.0 release",
+          "url": "https://github.com/triton-lang/triton/releases/tag/v3.2.0"
         },
         {
-          "title": "Triton · Vector addition",
+          "title": "Triton vector addition tutorial",
           "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "计时对象必须说清",
+            "en": "Name the timed work"
+          },
+          "body": {
+            "zh": "day8在CPU执行Python列表构建和加法，输出5次计时及中位数。它是实际CPU测量，却不是Triton内核速度。每次可能因操作系统负载和分配器不同而变化，因此网页不规定固定毫秒数。",
+            "en": "Day8 measures Python list construction and addition on the CPU, five times with a median. These are real CPU observations, not Triton kernel latency. OS load and allocation vary, so no fixed timing is promised."
+          }
+        },
+        {
+          "title": {
+            "zh": "GPU异步需要同步边界",
+            "en": "GPU timing needs synchronization"
+          },
+          "body": {
+            "zh": "GPU调用可能只把工作排入队列；CPU墙钟立即停止会漏掉执行时间。实际测量可用CUDA events或官方benchmark工具，在明确stream中预热并同步。不要把首次JIT编译混入稳态内核延迟。",
+            "en": "GPU calls may enqueue work and return before completion. Use CUDA events or official benchmark tools with explicit streams, warmup and synchronization. Separate first-time JIT compilation from steady-state kernel latency."
+          }
+        },
+        {
+          "title": {
+            "zh": "搬运成本也是计时预算",
+            "en": "Transfers belong in the timing budget"
+          },
+          "body": {
+            "zh": "下方交互用数据量除带宽再加固定开销说明搬运预算。它不测PCIe或显存带宽；GPU内核基准应说明是否包含主机到设备拷贝。比较两个算子时，不能只让其中一个包含传输。",
+            "en": "The transfer model divides bytes by bandwidth and adds fixed overhead. It measures neither PCIe nor device memory. State whether host-device copies are included in a kernel benchmark and apply the same boundary to both operators."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "这里day8测量了什么？",
+            "en": "What does day8 measure?"
+          },
+          "options": [
+            {
+              "zh": "GPU kernel",
+              "en": "GPU kernel"
+            },
+            {
+              "zh": "CPU Python工作",
+              "en": "CPU Python work"
+            },
+            {
+              "zh": "NCCL带宽",
+              "en": "NCCL bandwidth"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "代码未调用GPU，不能改写证据类型。",
+            "en": "No GPU is called; preserve that evidence boundary."
+          }
+        },
+        {
+          "question": {
+            "zh": "GPU异步调用后立即停止CPU计时会怎样？",
+            "en": "What can happen if CPU timing ends immediately after enqueue?"
+          },
+          "options": [
+            {
+              "zh": "漏计执行时间",
+              "en": "Miss execution time"
+            },
+            {
+              "zh": "自动精确同步",
+              "en": "Automatically synchronize"
+            },
+            {
+              "zh": "保证更准确",
+              "en": "Guarantee more accuracy"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "入队完成与设备工作完成不同。",
+            "en": "Enqueue completion differs from device completion."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：测量内核，而不是启动误差",
+          "en": "Lesson flow: Measure the kernel instead of timing artifacts"
+        },
+        "nodes": [
+          {
+            "zh": "预热与准备",
+            "en": "Warm up and prepare"
+          },
+          {
+            "zh": "重复计时",
+            "en": "Repeat timing"
+          },
+          {
+            "zh": "明确同步点",
+            "en": "Define synchronization"
+          },
+          {
+            "zh": "报告分布",
+            "en": "Report distribution"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day8",
+          "expected": {
+            "zh": "samples_ms包含5个非负数；minimum≤median，具体数值随机器变化。",
+            "en": "Five nonnegative samples; minimum≤median. Exact values depend on the machine."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "重复到另一输出目录，比较中位数；写出GPU验证需要补的同步步骤。",
+            "en": "Repeat in another directory, compare medians and document missing GPU synchronization steps."
+          },
+          "command": "python3 lab.py day8 --out repeat-day8",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "CPU计时几乎为0",
+            "en": "CPU timings almost zero"
+          },
+          "fix": {
+            "zh": "小任务接近计时开销，增加重复和工作规模；不宣称无限吞吐。",
+            "en": "Small tasks approach timer overhead. Increase work/repeats, not claims of infinite throughput."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "首次GPU运行特别慢",
+            "en": "First GPU run is slow"
+          },
+          "fix": {
+            "zh": "区分编译、初始化和真正内核执行，分别报告。",
+            "en": "Separate compilation, initialization and kernel execution."
+          }
+        }
+      ],
+      "interactive": "transfer-cost"
     },
     {
       "day": 9,
@@ -444,35 +1780,193 @@
         "en": "A kernel becomes useful through host-side validation, error handling and fallbacks. Device, dtype, shape, layout and training/inference mode are part of its API. Copies needed to satisfy constraints also count as application cost. Integration with systems such as torch.compile must follow the selected version's contract. Establish a reliable eager forward call first, then treat compiled integration as an optional extension."
       },
       "task": {
-        "zh": "包装一个已验证内核：支持条件走 Triton，不支持条件走明确的参考路径或报错。测试调用方不会得到错误设备或形状的输出；选做当前 PyTorch 版本的编译集成。",
-        "en": "Wrap one validated kernel: supported inputs use Triton; unsupported inputs use a documented reference path or fail clearly. Test output shape/device behavior. Optionally integrate with compilation using the current PyTorch guide."
+        "zh": "写一份接口说明，列出长度、dtype、device、stride四个约束，并实现额外拒绝用例。",
+        "en": "Write an interface contract for length/dtype/device/stride and add rejection cases."
       },
       "evidence": {
-        "zh": "operator.py、集成测试、回退规则与端到端成本说明。",
-        "en": "operator.py, integration tests, fallback rules and end-to-end cost notes."
+        "zh": "day09.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day09.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "支持条件可以通过测试复核，不默默改变数值契约",
-          "声明 autograd、compile 与跨设备支持的实际边界"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Test supported conditions and preserve the numerical contract",
-          "State actual autograd, compilation and cross-device support boundaries"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "在 CPU 上实现并测试 wrapper 与参考回退路径；GPU 分支用显式未执行标记，不用假的成功返回值。",
-        "en": "Implement and test the CPU wrapper/reference path. Mark the GPU branch unexecuted rather than returning a fake success."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "PyTorch · User-defined Triton kernels",
-          "url": "https://docs.pytorch.org/tutorials/recipes/torch_compile_user_defined_triton_kernel_tutorial.html"
+          "title": "Triton v3.2.0 release",
+          "url": "https://github.com/triton-lang/triton/releases/tag/v3.2.0"
         },
         {
-          "title": "Triton · Debugging and interpreter limits",
-          "url": "https://triton-lang.org/main/programming-guide/chapter-3/debugging.html"
+          "title": "Triton vector addition tutorial",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "算子有输入契约",
+            "en": "An operator has a contract"
+          },
+          "body": {
+            "zh": "向量加法要求两个输入长度相同；GPU示例还假设连续内存、相同设备与dtype。先明确哪些情况拒绝、哪些支持，调用方才不会把静默错误当成可接受行为。",
+            "en": "Vector addition requires equal lengths. The GPU example also assumes contiguous storage and matching device/dtype. Define accepted and rejected inputs so callers do not mistake silent errors for valid behavior."
+          }
+        },
+        {
+          "title": {
+            "zh": "空输入不是越界运行",
+            "en": "Empty input is not an invalid launch"
+          },
+          "body": {
+            "zh": "CPU函数对空输入返回[]；真实GPU包装器应避免不必要的零网格启动并明确输出形状。非连续tensor要么支持stride参数，要么在接口层拒绝或转换，同时说明复制成本。",
+            "en": "The CPU function returns [] for empty input. A GPU wrapper should define empty-output behavior and avoid needless zero-grid launches. Noncontiguous tensors require stride support or explicit rejection/conversion with copy costs stated."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "zip能自动检查长度相等吗？",
+            "en": "Does zip enforce equal lengths?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能，会截断",
+              "en": "No, it truncates"
+            },
+            {
+              "zh": "只在GPU能",
+              "en": "Only on GPU"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "需显式长度检查。",
+            "en": "Length validation must be explicit."
+          }
+        },
+        {
+          "question": {
+            "zh": "连续内存示例能默认处理所有stride吗？",
+            "en": "Does a contiguous-layout kernel support every stride?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能，需契约或stride实现",
+              "en": "No; define a contract or stride support"
+            },
+            {
+              "zh": "只改变block即可",
+              "en": "Only change block size"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "索引公式必须匹配布局。",
+            "en": "Address arithmetic must match layout."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：给内核一个可用的调用契约",
+          "en": "Lesson flow: Give the kernel a usable integration contract"
+        },
+        "nodes": [
+          {
+            "zh": "验证输入",
+            "en": "Validate inputs"
+          },
+          {
+            "zh": "处理空输入",
+            "en": "Handle empty input"
+          },
+          {
+            "zh": "选择内核",
+            "en": "Select kernel"
+          },
+          {
+            "zh": "返回约定输出",
+            "en": "Return contracted output"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day9",
+          "expected": {
+            "zh": "mismatched_lengths_rejected=true，empty_output=[]。",
+            "en": "mismatched_lengths_rejected=true; empty_output=[]."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "写一份接口说明，列出长度、dtype、device、stride四个约束，并实现额外拒绝用例。",
+            "en": "Write an interface contract for length/dtype/device/stride and add rejection cases."
+          },
+          "command": "python3 check.py",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "长度不同却截断返回",
+            "en": "Different lengths silently truncate"
+          },
+          "fix": {
+            "zh": "zip默认截断；必须在使用zip前检查长度。",
+            "en": "zip truncates silently; check lengths first."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "非连续tensor结果错",
+            "en": "Noncontiguous tensor is wrong"
+          },
+          "fix": {
+            "zh": "简单示例按连续地址访问；检查is_contiguous或设计stride-aware内核。",
+            "en": "The sample assumes contiguous addresses; validate layout or implement stride-aware indexing."
+          }
         }
       ]
     },
@@ -487,39 +1981,206 @@
         "en": "Choose a capstone small enough to validate carefully: forward normalization, a fused elementwise chain or softmax for a defined shape range. Explain its mathematics, supported inputs, correctness and performance boundary. Shapes that are slower than the reference are valuable findings and should remain visible. Complex attention kernels can be a next reading goal; ten days does not establish expertise in every training operator or hardware architecture."
       },
       "task": {
-        "zh": "选一个融合算子，从干净环境复跑测试和基准，整理支持矩阵、误差边界、完整计时协议与失败案例。写一页工程复盘，说明最有价值的优化和一个没有奏效的尝试。",
-        "en": "Choose a fused operator and rerun tests/benchmarks from a clean environment. Package the support matrix, error bounds, timing protocol and failure cases. Write a one-page review of a useful optimization and one unsuccessful attempt."
+        "zh": "从新目录重跑，完成自己的挑战并写一页技术说明；请同伴按README复现一个边界案例。",
+        "en": "Reproduce in a fresh directory, complete your challenge and write a one-page explanation; ask a peer to replay a boundary case."
       },
       "evidence": {
-        "zh": "可审查的算子仓库、测试报告、基准报告与后续学习计划。",
-        "en": "A reviewable operator repository, test and benchmark reports, and a next-learning plan."
+        "zh": "day10.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day10.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "每项速度结论指向具体设备、shape、dtype 与原始结果",
-          "接口限制和前向/反向边界完整披露",
-          "无 GPU 路径明确标出所有尚未测量项"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Tie each speed claim to a device, shape, dtype and raw data",
-          "Disclose interface limits and forward/backward scope",
-          "The no-GPU path identifies every unmeasured claim"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "交付 CPU 参考、索引推导、测试矩阵、wrapper 与待运行基准；获得真实设备验证后再增加 GPU 速度结论。",
-        "en": "Deliver CPU references, index derivations, tests, wrapper and an unexecuted benchmark plan. Add GPU speed claims only after real-device validation."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "Triton · do_bench",
-          "url": "https://triton-lang.org/main/python-api/generated/triton.testing.do_bench.html"
+          "title": "Triton v3.2.0 release",
+          "url": "https://github.com/triton-lang/triton/releases/tag/v3.2.0"
         },
         {
-          "title": "Triton · Fused attention",
-          "url": "https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html"
+          "title": "Triton vector addition tutorial",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "作品先证明正确",
+            "en": "A portfolio starts with correctness"
+          },
+          "body": {
+            "zh": "结课保留空输入、尾块、大logit、常数行和非方阵结果，用原始JSON解释你解决的边界。manifest记录原始文件哈希，帮助别人确认报告引用的是同一组数据，哈希本身不证明执行来源。",
+            "en": "Preserve empty inputs, tails, large logits, constant rows and rectangular products. Explain the boundaries using raw JSON. The manifest links a report to its files; hashes do not independently prove execution provenance."
+          }
+        },
+        {
+          "title": {
+            "zh": "将示例变成自己的工作",
+            "en": "Make your own contribution explicit"
+          },
+          "body": {
+            "zh": "运行day10会导出报告骨架。必须填写student.py实现、自己改动的参数与反例；下载的参考代码不能写成独立实现。有GPU时追加实际环境与正确性日志，没有GPU时写明待验证。",
+            "en": "day10 exports a report scaffold. Fill in your student.py implementation, changed parameters and counterexamples. Downloaded examples are not independent work. Add real device logs only after running; otherwise mark hardware validation pending."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "manifest哈希证明什么？",
+            "en": "What does a manifest hash establish?"
+          },
+          "options": [
+            {
+              "zh": "GPU跑过",
+              "en": "That a GPU ran"
+            },
+            {
+              "zh": "引用文件是否变化",
+              "en": "Whether referenced files changed"
+            },
+            {
+              "zh": "算法一定最快",
+              "en": "That it is fastest"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "它检查文件一致性，不证明设备或人员身份。",
+            "en": "It checks file consistency, not device or author identity."
+          }
+        },
+        {
+          "question": {
+            "zh": "最终报告必须补什么？",
+            "en": "What must you add to the report?"
+          },
+          "options": [
+            {
+              "zh": "自己的贡献、证据与局限",
+              "en": "Your contribution, evidence and limits"
+            },
+            {
+              "zh": "只有排名",
+              "en": "Only rankings"
+            },
+            {
+              "zh": "省略失败",
+              "en": "Omit failures"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "作品价值来自可复核过程和个人判断。",
+            "en": "Reviewable process and personal reasoning make the portfolio useful."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：交付一个有证据的融合算子",
+          "en": "Lesson flow: Ship a fused operator with evidence"
+        },
+        "nodes": [
+          {
+            "zh": "重跑实验",
+            "en": "Replay labs"
+          },
+          {
+            "zh": "通过独立挑战",
+            "en": "Pass own challenge"
+          },
+          {
+            "zh": "整理证据",
+            "en": "Collect evidence"
+          },
+          {
+            "zh": "解释限制",
+            "en": "Explain limits"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day10 --out final-work",
+          "expected": {
+            "zh": "生成9个day JSON、manifest.csv、REPORT.md；报告仍需填写TODO。",
+            "en": "Nine daily JSON files, manifest.csv and REPORT.md are generated; fill all TODOs."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "从新目录重跑，完成自己的挑战并写一页技术说明；请同伴按README复现一个边界案例。",
+            "en": "Reproduce in a fresh directory, complete your challenge and write a one-page explanation; ask a peer to replay a boundary case."
+          },
+          "command": "python3 check.py",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "只有PASS没有个人实现",
+            "en": "PASS without personal work"
+          },
+          "fix": {
+            "zh": "--reference只证明参考解法，交付时附自己的diff和check.py输出。",
+            "en": "--reference only validates the reference; include your diff and own check output."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "报告把CPU时间写成GPU结果",
+            "en": "Report labels CPU time as GPU latency"
+          },
+          "fix": {
+            "zh": "保持day8的CPU标签；GPU记录单独保存设备、版本、同步方法。",
+            "en": "Keep CPU labels. Store GPU device/version/synchronization evidence separately."
+          }
         }
       ]
     }
-  ]
+  ],
+  "lab": {
+    "path": "triton",
+    "title": {
+      "zh": "下载逐日实验与独立挑战",
+      "en": "Download daily labs and independent challenges"
+    },
+    "description": {
+      "zh": "Python 3.9+ 标准库CPU实验；解压后在 triton 目录执行。另附真实框架可选示例与明确环境，GPU示例未在平台真机运行。",
+      "en": "Python 3.9+ standard-library CPU labs. Extract and run inside triton. Optional real-framework examples include explicit environments; GPU examples are not hardware-tested here."
+    }
+  }
 }

@@ -14,13 +14,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class GuidedLearningTest(unittest.TestCase):
     def courses(self):
-        return [json.loads((ROOT / f"content/courses/{name}.json").read_text())
-                for name in ("foundations", "vllm")]
+        return [json.loads(path.read_text()) for path in sorted((ROOT / "content/courses").glob("*.json"))]
 
-    def test_both_guided_courses_are_complete(self):
+    def test_all_guided_courses_are_complete(self):
+        self.assertEqual(len(self.courses()), 11)
         for course in self.courses():
             self.assertEqual(course["lab"]["path"], course["id"])
             validate_tracks([course])
+            self.assertGreaterEqual(len({step["interactive"] for step in course["steps"] if step.get("interactive")}), 3)
             for step in course["steps"]:
                 validate_teaching_step(step, course["id"], required=True)
                 self.assertTrue(any(item.get("command") for item in step["walkthrough"]))

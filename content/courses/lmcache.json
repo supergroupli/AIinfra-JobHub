@@ -11,8 +11,8 @@
     "en": "Make KV reuse measurable and reproducible"
   },
   "description": {
-    "zh": "从缓存身份、独立缓存服务到分层存储和故障回退，用对照实验回答 LMCache 何时有价值。10 天完成一个有边界、有原始证据的工程作品，不承诺生产精通。",
-    "en": "Study cache identity, the standalone cache service, storage tiers, and failure handling. Build controlled experiments that explain when LMCache is useful, ending with an evidence-backed portfolio rather than a promise of production mastery."
+    "zh": "10天逐步拆解LMCache：每天有原理图、可运行CPU实验、对照结果、排错和测验。用带原始记录的工程作品连接学习与求职；真实引擎扩展和教学模拟分别说明。",
+    "en": "Ten guided days for LMCache: diagrams, runnable CPU models, controls, troubleshooting and quizzes, culminating in an evidence-backed portfolio. Real-engine extensions are clearly separate from simulations."
   },
   "level": "intermediate",
   "hoursPerDay": {
@@ -24,8 +24,8 @@
     "en": "Understand prefill/decode, KV cache, and basic Python. Be comfortable with one inference engine and container logs. Complete the vLLM or SGLang course first."
   },
   "hardware": {
-    "zh": "真实引擎集成需受所选版本支持、能容纳模型的设备及足够主机内存。无 GPU 可完成缓存模拟、身份测试和配置审查；CPU-only MP/共享内存路径以当前官方支持为准。网络缓存实验额外需要两个本地进程或受控节点。",
-    "en": "Real engine integration needs a supported device that fits the model and sufficient host memory. Without a GPU, complete cache simulations, identity tests, and configuration reviews; consult current support for CPU-only MP/shared-memory paths. Network experiments need two local processes or controlled nodes."
+    "zh": "CPU教学实验：Python3.9+标准库和普通电脑。真实框架/模型/GPU扩展见实验包README的版本、环境和步骤；当前发布未做GPU实测。",
+    "en": "CPU exercises: Python3.9+ standard library and a laptop. See lab README for versions, environments and steps for real-framework/GPU extensions; this publication did not run GPU benchmarks."
   },
   "hardwareTier": "gpu-optional",
   "tags": [
@@ -46,11 +46,23 @@
     ]
   },
   "outcome": {
-    "zh": "交付固定版本的集成清单、冷/热对照实验、缓存身份测试、分层容量模型与故障报告；明确区分真实推理、缓存服务实验和模拟结果。",
-    "en": "Deliver a pinned integration manifest, cold/warm comparisons, cache identity tests, a tier-capacity model, and a failure report. Clearly separate real inference, cache-service experiments, and simulations."
+    "zh": "一个包含逐日原始JSON、对照CSV、独立函数挑战、文件哈希与个人分析报告的工程作品；清楚区分模拟和真实框架记录。",
+    "en": "A portfolio containing daily raw JSON, comparison CSV, an independent function challenge, file hashes and your analysis, separating simulation from actual framework records."
   },
   "lastVerified": "2026-11-13",
   "resources": [
+    {
+      "title": "LMCache quickstart",
+      "url": "https://docs.lmcache.ai/getting_started/quickstart.html"
+    },
+    {
+      "title": "LMCache compatibility",
+      "url": "https://docs.lmcache.ai/getting_started/compatibility.html"
+    },
+    {
+      "title": "LMCache 0.5.7.post1 release",
+      "url": "https://github.com/LMCache/LMCache/releases/tag/v0.5.7.post1"
+    },
     {
       "title": "LMCache documentation",
       "url": "https://docs.lmcache.ai/"
@@ -80,90 +92,398 @@
         "en": "Draw the cache boundary"
       },
       "lesson": {
-        "zh": "LMCache 复用的是模型计算产生的 KV 状态，不是通用的回答文本缓存。推理引擎仍负责计算与调度，缓存组件负责把可复用状态取回或存到合适位置。先区分引擎内的本地前缀缓存、独立 LMCache 服务和后端存储，才能解释命中来自哪里。当前主线文档围绕独立 MP 服务展开，旧的进程内教程不能直接拼接到新部署中。",
-        "en": "LMCache reuses KV state produced by model computation; it is not a generic cache of answer text. The inference engine still owns computation and scheduling, while the cache component retrieves or stores reusable state. Distinguish the engine's local prefix cache, the standalone LMCache service, and storage backends before attributing any speedup. Current mainline documentation centers on the MP service, so legacy in-process examples should not be mixed into a new deployment without checking their compatibility."
+        "zh": "LMCache帮助推理引擎存取KV状态。Connector负责适配引擎内存布局，服务端负责存储和管理，后端决定数据放在哪里。即使两个问题文字相同，也不能忽略模型、revision和缓存格式。",
+        "en": "LMCache stores KV state for inference engines. A connector adapts engine layouts; the server manages storage, and backends place data. Identical text does not remove model, revision or format dependencies."
       },
       "task": {
-        "zh": "画一张请求、token、KV 状态在引擎与 MP 服务之间的流向图。选定一个引擎、模型与文档版本，列出三个可能的缓存命中位置及各自可观察的证据。",
-        "en": "Draw request, token, and KV-state flows between the engine and MP service. Choose one engine, model, and documentation version; list three possible cache-hit locations and the evidence available for each."
+        "zh": "给每个组件补一项故障，解释为什么答案缓存与KV缓存不是一回事。",
+        "en": "Add a failure per component and distinguish answer caching from KV caching."
       },
       "evidence": {
-        "zh": "architecture.md：组件图、责任表、版本选择与三个可证伪的缓存假设。",
-        "en": "architecture.md with a component diagram, responsibilities, version choices, and three falsifiable cache hypotheses."
+        "zh": "day01.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day01.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "明确区分文本响应缓存与 KV 缓存",
-          "图中标注本地缓存、MP 服务、存储后端",
-          "记录尚未验证的兼容性假设"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Distinguish response-text caching from KV caching",
-          "Label local cache, MP service, and storage backend",
-          "Record compatibility assumptions that remain unverified"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "用箭头图和一个 token→KV 键值字典演示读写流程；标注字典只是教学模型，未执行推理。",
-        "en": "Use a diagram and a token-to-KV dictionary to illustrate reads and writes. Label the dictionary as a teaching model, not executed inference."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "LMCache MP architecture",
-          "url": "https://docs.lmcache.ai/mp/index.html"
-        },
-        {
           "title": "LMCache quickstart",
           "url": "https://docs.lmcache.ai/getting_started/quickstart.html"
+        },
+        {
+          "title": "LMCache compatibility",
+          "url": "https://docs.lmcache.ai/getting_started/compatibility.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "缓存的是状态，不是答案",
+            "en": "Cache model state, not answers"
+          },
+          "body": {
+            "zh": "LMCache帮助推理引擎存取KV状态。Connector负责适配引擎内存布局，服务端负责存储和管理，后端决定数据放在哪里。即使两个问题文字相同，也不能忽略模型、revision和缓存格式。",
+            "en": "LMCache stores KV state for inference engines. A connector adapts engine layouts; the server manages storage, and backends place data. Identical text does not remove model, revision or format dependencies."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "基线列出引擎、connector、缓存服务和后端四个组件。changed要求同文本不同revision失配。组件地图不能证明恢复出的KV正确；实际验证还要比较输出和引擎日志。",
+            "en": "Baseline names four components. The changed case requires a miss for identical text with another revision. The map does not establish restored-KV correctness; actual output and engine logs are still needed."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "缓存的是状态，不是答案 · 流程",
+          "en": "Cache model state, not answers · flow"
+        },
+        "nodes": [
+          {
+            "zh": "引擎",
+            "en": "Engine"
+          },
+          {
+            "zh": "连接器",
+            "en": "Connector"
+          },
+          {
+            "zh": "缓存服务",
+            "en": "Cache server"
+          },
+          {
+            "zh": "存储后端",
+            "en": "Backend"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "点击上方下载实验包；在终端进入ZIP所在目录后执行下列命令。Windows可右键解压，再在lmcache文件夹打开终端，将python3换为py -3。后续每天都在同一个实验目录运行。Python3.9+无需pip安装。",
+            "en": "Download the lab ZIP above and open a terminal in its download directory. Run the commands below. On Windows, extract with the file manager, open a terminal in lmcache and replace python3 with py -3. Run subsequent days in this same lab directory. Python3.9+ needs no pip packages."
+          },
+          "command": "unzip lmcache.zip\ncd lmcache\npython3 --version\npython3 lab.py selfcheck\npython3 lab.py day1 --out out/day01-base",
+          "expected": {
+            "zh": "components四项，payload为KV tensors。 文件为out/day01-base/day01.json。",
+            "en": "Four components; payload is KV tensors. File:out/day01-base/day01.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "给每个组件补一项故障，解释为什么答案缓存与KV缓存不是一回事。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Add a failure per component and distinguish answer caching from KV caching. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day1 --variant changed --out out/day01-changed",
+          "expected": {
+            "zh": "case强调revision不同不能复用。",
+            "en": "The case rejects reuse across revisions."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "误把缓存结果当完成推理",
+            "en": "Mistaking retrieval for completed inference"
+          },
+          "fix": {
+            "zh": "恢复KV后仍有未缓存输入与decode，检查完整请求链。",
+            "en": "After restoring KV, uncached input and decoding remain."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "无法运行lab.py",
+            "en": "Cannot run lab.py"
+          },
+          "fix": {
+            "zh": "解压并进入lmcache目录，用Python3.9+，CPU实验不需安装LMCache。",
+            "en": "Extract into lmcache and use Python3.9+; CPU exercises need no LMCache install."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "LMCache主要复用什么？",
+            "en": "What does LMCache primarily reuse?"
+          },
+          "options": [
+            {
+              "zh": "KV状态",
+              "en": "KV state"
+            },
+            {
+              "zh": "最终回答字符串",
+              "en": "Final answer strings"
+            },
+            {
+              "zh": "招聘信息",
+              "en": "Job listings"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "KV缓存保存模型中间状态；输出仍需按请求生成。",
+            "en": "KV caches hold intermediate model state; output must still be generated."
+          }
+        },
+        {
+          "question": {
+            "zh": "相同文本足以作为唯一缓存身份吗？",
+            "en": "Is identical text a sufficient cache identity?"
+          },
+          "options": [
+            {
+              "zh": "足够",
+              "en": "Yes"
+            },
+            {
+              "zh": "不够",
+              "en": "No"
+            },
+            {
+              "zh": "只要文件名相同",
+              "en": "Only the filename matters"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "模型、版本、token和布局也影响状态语义。",
+            "en": "Model, revision, tokens and layout affect state semantics."
+          }
         }
       ]
     },
     {
       "day": 2,
       "title": {
-        "zh": "先固定兼容组合",
-        "en": "Pin the integration tuple"
+        "zh": "拆分版本、ABI 与模型兼容检查",
+        "en": "Separate version, ABI and model checks"
       },
       "lesson": {
-        "zh": "集成可用性不能只用两个包的版本号判断。设备运行时与二进制 ABI、引擎加载连接器的方式、模型和并行布局的支持情况都要匹配。一次安装成功只证明进程能启动；一次请求成功也不证明缓存写入和取回生效。先把环境固定，再分别验证健康、普通推理和缓存链路，后续才能把性能变化归因到实验变量。",
-        "en": "Compatibility is more than a pair of package version numbers. Device runtime and binary ABI, connector loading, and support for the model and parallel layout must all align. A successful installation proves only that processes can start; one successful request does not prove cache storage or retrieval. Pin the environment first, then validate health, ordinary inference, and cache activity separately. This makes later performance changes attributable to experimental variables instead of an unnoticed environment change."
+        "zh": "Python可导入并不表示CUDA扩展ABI、connector协议和模型布局都兼容。LMCache官方将这些检查分开。今天用元数据夹具练习拒绝不一致组合，不宣称它等价于真的加载CUDA扩展。",
+        "en": "A successful Python import does not establish CUDA ABI, connector protocol or model-layout compatibility. The official guide separates these checks. This metadata fixture rejects mismatches but does not load CUDA extensions."
       },
       "task": {
-        "zh": "按官方 quickstart 选择一条支持的 MP 集成路径。保存运行时、引擎、LMCache、连接器路径、模型 revision、dtype、block size 与并行配置；逐项验证启动与一次请求。",
-        "en": "Choose one supported MP integration path from the quickstart. Record runtime, engine, LMCache, connector path, model revision, dtype, block size, and parallel configuration; verify startup and one request separately."
+        "zh": "为你的目标环境列出四项探针与通过证据；不具备GPU就写待验证。",
+        "en": "List four probes and passing evidence for your target environment; mark GPU checks pending if unavailable."
       },
       "evidence": {
-        "zh": "environment.json、脱敏启动日志与最小复现说明；失败也需记录错误阶段。",
-        "en": "environment.json, redacted startup logs, and a minimal reproduction guide; record the failure stage if setup fails."
+        "zh": "day02.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day02.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "版本与模型 revision 均具体可复现",
-          "分别记录健康检查、请求结果和缓存链路状态",
-          "不把未运行的配置写成已验证"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Pin exact versions and model revision",
-          "Record health, request outcome, and cache-path status separately",
-          "Never mark an unexecuted configuration as verified"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "审查官方配置与依赖清单，生成兼容性检查表；环境支持时运行官方 CPU-only 服务路径，否则用配置审查代替并写明限制。",
-        "en": "Review the official configuration and dependency manifest. Use the documented CPU-only service path when supported; otherwise submit a configuration review with explicit limitations."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "LMCache compatibility",
-          "url": "https://docs.lmcache.ai/getting_started/compatibility.html"
-        },
-        {
-          "title": "LMCache installation",
-          "url": "https://docs.lmcache.ai/getting_started/installation.html"
-        },
-        {
           "title": "LMCache quickstart",
           "url": "https://docs.lmcache.ai/getting_started/quickstart.html"
+        },
+        {
+          "title": "LMCache compatibility",
+          "url": "https://docs.lmcache.ai/getting_started/compatibility.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "兼容性是多层检查",
+            "en": "Compatibility has multiple layers"
+          },
+          "body": {
+            "zh": "Python可导入并不表示CUDA扩展ABI、connector协议和模型布局都兼容。LMCache官方将这些检查分开。今天用元数据夹具练习拒绝不一致组合，不宣称它等价于真的加载CUDA扩展。",
+            "en": "A successful Python import does not establish CUDA ABI, connector protocol or model-layout compatibility. The official guide separates these checks. This metadata fixture rejects mismatches but does not load CUDA extensions."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "基线torch字段2.14.0匹配；changed改成2.13.0时compatible=false。真实扩展应保存pip freeze、导入探针和模型smoke test。各版本独立发布，因此不能仅看两个版本号都较新。",
+            "en": "Torch2.14.0 matches the baseline fixture; changing to2.13.0 yields false. Real extensions require a lockfile, import probe and model smoke test. Independently released version numbers being recent is insufficient."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "兼容性是多层检查 · 流程",
+          "en": "Compatibility has multiple layers · flow"
+        },
+        "nodes": [
+          {
+            "zh": "固定依赖",
+            "en": "Pin dependencies"
+          },
+          {
+            "zh": "导入扩展",
+            "en": "Import extension"
+          },
+          {
+            "zh": "加载connector",
+            "en": "Load connector"
+          },
+          {
+            "zh": "模型小测",
+            "en": "Model smoke test"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的lmcache目录，先阅读lab.py中day2函数，预测结果再运行。",
+            "en": "Inside the extracted lmcache directory, read day2 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day2 --out out/day02-base",
+          "expected": {
+            "zh": "compatible_in_this_fixture=true。 文件为out/day02-base/day02.json。",
+            "en": "compatible_in_this_fixture=true. File:out/day02-base/day02.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "为你的目标环境列出四项探针与通过证据；不具备GPU就写待验证。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "List four probes and passing evidence for your target environment; mark GPU checks pending if unavailable. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day2 --variant changed --out out/day02-changed",
+          "expected": {
+            "zh": "torch变为2.13.0，compatible=false。",
+            "en": "Torch becomes2.13.0; compatible=false."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "import成功但实际调用失败",
+            "en": "Import succeeds but execution fails"
+          },
+          "fix": {
+            "zh": "区分Python导入、CUDA扩展和模型smoke test，逐层保存错误。",
+            "en": "Separate Python import, CUDA extensions and model smoke tests; retain each error."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "升级一个包破坏依赖",
+            "en": "A package upgrade breaks dependencies"
+          },
+          "fix": {
+            "zh": "新建环境复现，保留旧lock，不在运行服务中盲目升级。",
+            "en": "Use a new environment and retain the old lockfile rather than upgrading a live service blindly."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "本夹具匹配能证明CUDA ABI兼容吗？",
+            "en": "Does the fixture prove CUDA ABI compatibility?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能",
+              "en": "No"
+            },
+            {
+              "zh": "能证明所有模型",
+              "en": "It proves every model"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "字符串比较只验证声明一致；实际二进制还需加载和执行。",
+            "en": "String comparison validates declared metadata; binaries must still load and execute."
+          }
+        },
+        {
+          "question": {
+            "zh": "发现ABI不匹配首先应该？",
+            "en": "What should you do first after an ABI mismatch?"
+          },
+          "options": [
+            {
+              "zh": "强行忽略错误",
+              "en": "Ignore the error"
+            },
+            {
+              "zh": "随机升级所有包",
+              "en": "Upgrade every package randomly"
+            },
+            {
+              "zh": "回到固定环境核对依赖和扩展",
+              "en": "Inspect dependencies/extensions in the pinned environment"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "可追溯的环境让问题能定位和回滚。",
+            "en": "A traceable environment enables diagnosis and rollback."
+          }
         }
       ]
     },
@@ -174,77 +494,32 @@
         "en": "Design reliable cache identity"
       },
       "lesson": {
-        "zh": "相同文字不一定产生相同 token，相同 token 也不代表可跨任意模型共享 KV。模型权重、分词方式、布局和影响计算的配置可能改变状态含义。缓存身份的职责是让正确状态被复用，并让不兼容状态隔离；它也不是用户授权机制。先建立正例与负例，再对照当前实现的身份字段，避免把自制哈希当成生产协议。",
-        "en": "Identical text does not always produce identical tokens, and identical tokens do not make KV state portable across arbitrary models. Weights, tokenization, layout, and computation-affecting settings can change what the state means. Cache identity enables compatible reuse and separates incompatible state; it is not a user authorization mechanism. Start with positive and negative examples, then compare them with the current implementation's identity fields rather than treating a homemade hash as a production protocol."
+        "zh": "教学缓存键对模型、revision、namespace和token数组做规范JSON编码后SHA-256。它防止漏掉这些字段，却不是LMCache真实格式的完整替代；布局、精度和连接器配置同样需要兼容。",
+        "en": "The teaching key hashes canonical JSON containing model, revision, namespace and tokens. This prevents omitting those fields but is not the full LMCache format; layout, precision and connector settings also matter."
       },
       "task": {
-        "zh": "制作身份测试矩阵：相同输入重复、单个 token 改变、模型 revision 改变、布局改变、租户授权变化。逐项写明应命中、应隔离或需要额外访问控制，并与文档核对。",
-        "en": "Build an identity matrix covering repeated input, one changed token, a changed model revision, layout changes, and tenant authorization changes. Classify expected reuse, required separation, or additional access control, and check against the documentation."
+        "zh": "在副本里去掉revision，构造误命中，再恢复字段并验证隔离。",
+        "en": "Remove revision in a copy, demonstrate false reuse, then restore the field and verify isolation."
       },
       "evidence": {
-        "zh": "identity-cases.csv，至少 8 个用例；附上实现字段与课程假设的差异说明。",
-        "en": "identity-cases.csv with at least eight cases and a note separating implementation fields from course assumptions."
+        "zh": "day03.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day03.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "至少包含 3 个不能安全复用的反例",
-          "区分状态兼容与访问授权",
-          "未把教学哈希宣称为 LMCache 的实际键格式"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Include at least three unsafe-reuse counterexamples",
-          "Separate state compatibility from access authorization",
-          "Do not present a teaching hash as LMCache's actual key format"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "实现只操作字符串与字节的身份测试器，给每个预期结果写断言；结果只能证明测试器行为。",
-        "en": "Implement an identity checker using strings and bytes, with assertions for expected outcomes. Its results demonstrate only the checker."
-      },
-      "reading": [
-        {
-          "title": "LMCache cache identity",
-          "url": "https://docs.lmcache.ai/developer_guide/cache_identity.html"
-        },
-        {
-          "title": "LMCache compatibility",
-          "url": "https://docs.lmcache.ai/getting_started/compatibility.html"
-        }
-      ]
-    },
-    {
-      "day": 4,
-      "title": {
-        "zh": "证明命中确实来自 LMCache",
-        "en": "Prove where a hit came from"
-      },
-      "lesson": {
-        "zh": "第二次请求更快，可能来自模型预热、内核缓存或引擎内部的前缀缓存，不能单独证明 LMCache 生效。实验需要冷态、可复用热态和明确绕开本地命中的状态，并结合取回计数、字节量及时间线。先验证返回正确性，再看 TTFT。不同引擎清理缓存的接口不同，必须采用所选版本的官方方式，不能把清理请求失败当成冷态。",
-        "en": "A faster second request may reflect model warmup, kernel caches, or the engine's own prefix cache rather than LMCache. Design cold, reusable-warm, and local-cache-bypass conditions, then combine retrieval counters, byte counts, and a timeline. Verify response correctness before interpreting TTFT. Cache-clearing interfaces differ across engines and versions; use the documented method for the selected release. A failed clearing request does not establish a cold condition, and a missing metric does not automatically mean zero activity."
-      },
-      "task": {
-        "zh": "固定输入 token 长度、输出上限与并发，比较冷态、普通重复、清理引擎本地缓存后重复三组，每组至少 3 次。保存服务取回证据；若接口不支持清理，用文档允许的隔离进程方案并说明代价。",
-        "en": "Fix input token length, output cap, and concurrency. Compare cold, ordinary repeated, and repeated-after-local-cache-clear conditions at least three times each. Save server retrieval evidence; if clearing is unsupported, use a documented isolated-process approach and explain its cost."
-      },
-      "evidence": {
-        "zh": "runs.csv、缓存状态重置步骤与证据截图或日志；结论允许是没有收益。",
-        "en": "runs.csv, cache-reset steps, and metric or log evidence; a valid conclusion may be no benefit."
-      },
-      "checklist": {
-        "zh": [
-          "三组实验只有缓存状态这一主要变量",
-          "每次运行有取回证据或明确的证据缺口",
-          "报告至少 3 次重复的分布及正确性检查"
-        ],
-        "en": [
-          "Use cache state as the main variable across the three conditions",
-          "Record retrieval evidence or its absence for every run",
-          "Report at least three repeats and correctness checks"
-        ]
-      },
-      "noGpu": {
-        "zh": "用三层字典和固定访问序列模拟命中归因，输出各层 hit/miss；标注延迟为自设参数，不报告真实 TTFT。",
-        "en": "Simulate hit attribution with three dictionaries and a fixed request trace. Report per-layer hits and misses; label latency as assumed and do not claim real TTFT."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
@@ -252,14 +527,378 @@
           "url": "https://docs.lmcache.ai/getting_started/quickstart.html"
         },
         {
-          "title": "LMCache benchmarking",
-          "url": "https://docs.lmcache.ai/getting_started/benchmarking.html"
+          "title": "LMCache compatibility",
+          "url": "https://docs.lmcache.ai/getting_started/compatibility.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "缓存键必须包含语义身份",
+            "en": "Keys need semantic identity"
+          },
+          "body": {
+            "zh": "教学缓存键对模型、revision、namespace和token数组做规范JSON编码后SHA-256。它防止漏掉这些字段，却不是LMCache真实格式的完整替代；布局、精度和连接器配置同样需要兼容。",
+            "en": "The teaching key hashes canonical JSON containing model, revision, namespace and tokens. This prevents omitting those fields but is not the full LMCache format; layout, precision and connector settings also matter."
+          }
         },
         {
-          "title": "LMCache observability",
-          "url": "https://docs.lmcache.ai/mp/observability/index.html"
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "两个完全相同输入得到相同哈希。changed只改revision-a到revision-b，equal=false。不要用Python内置hash存长期跨进程身份，因为它不提供此处需要的稳定序列化协议。",
+            "en": "Identical inputs yield identical digests. Changing only revision-a to revision-b makes equal false. Python’s built-in hash is not the stable cross-process serialization protocol needed here."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "缓存键必须包含语义身份 · 流程",
+          "en": "Keys need semantic identity · flow"
+        },
+        "nodes": [
+          {
+            "zh": "模型与revision",
+            "en": "Model and revision"
+          },
+          {
+            "zh": "命名空间",
+            "en": "Namespace"
+          },
+          {
+            "zh": "token序列",
+            "en": "Token sequence"
+          },
+          {
+            "zh": "规范编码与摘要",
+            "en": "Canonical encoding and digest"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的lmcache目录，先阅读lab.py中day3函数，预测结果再运行。",
+            "en": "Inside the extracted lmcache directory, read day3 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day3 --out out/day03-base",
+          "expected": {
+            "zh": "equal=true，两次SHA-256相同。 文件为out/day03-base/day03.json。",
+            "en": "equal=true; digests match. File:out/day03-base/day03.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "在副本里去掉revision，构造误命中，再恢复字段并验证隔离。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Remove revision in a copy, demonstrate false reuse, then restore the field and verify isolation. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day3 --variant changed --out out/day03-changed",
+          "expected": {
+            "zh": "equal=false，只有revision变化。",
+            "en": "equal=false; only revision changes."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "相同输入跨运行哈希不同",
+            "en": "Digest changes between runs"
+          },
+          "fix": {
+            "zh": "使用固定字段顺序的JSON编码和SHA-256，不使用内置hash。",
+            "en": "Use fixed JSON serialization and SHA-256, not built-in hash."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "不同模型意外命中",
+            "en": "Different models unexpectedly hit"
+          },
+          "fix": {
+            "zh": "检查键是否包含模型、revision和namespace；不要仅保存token长度。",
+            "en": "Include model, revision and namespace, not merely token length."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "只改revision，正确结果应为？",
+            "en": "What should changing only revision produce?"
+          },
+          "options": [
+            {
+              "zh": "同一缓存身份",
+              "en": "Same identity"
+            },
+            {
+              "zh": "不同身份",
+              "en": "Different identity"
+            },
+            {
+              "zh": "忽略变化",
+              "en": "Ignore it"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "revision可能改变权重和状态语义，不能直接复用旧状态。",
+            "en": "A revision can change weights and state semantics; old state cannot be reused blindly."
+          }
+        },
+        {
+          "question": {
+            "zh": "哈希碰撞概率低是否意味着字段可省略？",
+            "en": "Does low collision probability let you omit fields?"
+          },
+          "options": [
+            {
+              "zh": "不能，遗漏字段是语义冲突",
+              "en": "No, omitted fields cause semantic collisions"
+            },
+            {
+              "zh": "可以",
+              "en": "Yes"
+            },
+            {
+              "zh": "只保留长度即可",
+              "en": "Keep only length"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "不同语义被编码成同一输入时，再强的哈希也无法区分。",
+            "en": "Even a strong hash cannot distinguish different semantics encoded as the same input."
+          }
         }
       ]
+    },
+    {
+      "day": 4,
+      "title": {
+        "zh": "用存取轨迹识别缓存复用",
+        "en": "Identify cache reuse through retrieval traces"
+      },
+      "lesson": {
+        "zh": "一次请求更快不一定来自缓存，可能只是模型预热或流量减少。本模型明确记录每条请求检索到的token数和需要prefill的工作量，关闭缓存作为对照。真实实验还要看对应进程的存储/检索日志。",
+        "en": "A faster request can result from warm-up or less traffic, not caching. The model records retrieved tokens and remaining prefill work, with disabled caching as a control. Real experiments also require server store/retrieve logs."
+      },
+      "task": {
+        "zh": "给第三条请求换一个前缀，保留前两条不变，预测检索总量下降到多少。",
+        "en": "Change only the third prefix, retain the first two, and predict the new retrieval total."
+      },
+      "evidence": {
+        "zh": "day04.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day04.json records, your code diff and an explanation of the comparison."
+      },
+      "checklist": {
+        "zh": [
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
+        ],
+        "en": [
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
+      },
+      "reading": [
+        {
+          "title": "LMCache quickstart",
+          "url": "https://docs.lmcache.ai/getting_started/quickstart.html"
+        },
+        {
+          "title": "LMCache compatibility",
+          "url": "https://docs.lmcache.ai/getting_started/compatibility.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "用存取证据验证复用",
+            "en": "Verify reuse with store/retrieve evidence"
+          },
+          "body": {
+            "zh": "一次请求更快不一定来自缓存，可能只是模型预热或流量减少。本模型明确记录每条请求检索到的token数和需要prefill的工作量，关闭缓存作为对照。真实实验还要看对应进程的存储/检索日志。",
+            "en": "A faster request can result from warm-up or less traffic, not caching. The model records retrieved tokens and remaining prefill work, with disabled caching as a control. Real experiments also require server store/retrieve logs."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "三条相同前缀请求中，第一次检索0、后两次各256，总计512；关闭缓存后三次都0。这里假设整前缀可复用，16个后续token仍需要处理，不能把所有计算都删掉。",
+            "en": "Three requests retrieve0,256,256 tokens, totaling512. Disabling caching retrieves zero throughout. The model assumes a reusable prefix but retains16 additional tokens of work."
+          }
+        },
+        {
+          "title": {
+            "zh": "动手调参：连接图解与实验",
+            "en": "Change parameters: connect widget and lab"
+          },
+          "body": {
+            "zh": "拖动共享前缀比例观察可省去的prefill；再运行changed把外部缓存完全禁用。交互模型假定可复用，脚本的retrieved_tokens则体现一次具体存取轨迹。没有取回计数时不能仅凭更快就归因外部缓存。",
+            "en": "Vary shared-prefix fraction to inspect potential saved prefill, then disable external caching with changed. The widget assumes reuse; retrieved_tokens describes a concrete trace. Faster responses alone do not attribute reuse to an external cache."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "用存取证据验证复用 · 流程",
+          "en": "Verify reuse with store/retrieve evidence · flow"
+        },
+        "nodes": [
+          {
+            "zh": "关闭对照",
+            "en": "Disabled control"
+          },
+          {
+            "zh": "首次填充",
+            "en": "Initial population"
+          },
+          {
+            "zh": "重复检索",
+            "en": "Repeated retrieval"
+          },
+          {
+            "zh": "保留计数",
+            "en": "Retain counters"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的lmcache目录，先阅读lab.py中day4函数，预测结果再运行。",
+            "en": "Inside the extracted lmcache directory, read day4 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day4 --out out/day04-base",
+          "expected": {
+            "zh": "retrieved_total=512。 文件为out/day04-base/day04.json。",
+            "en": "retrieved_total=512. File:out/day04-base/day04.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "给第三条请求换一个前缀，保留前两条不变，预测检索总量下降到多少。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Change only the third prefix, retain the first two, and predict the new retrieval total. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day4 --variant changed --out out/day04-changed",
+          "expected": {
+            "zh": "retrieved_total=0，三条均未命中。",
+            "en": "retrieved_total=0; all three miss."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "没有看到检索日志",
+            "en": "No retrieval logs"
+          },
+          "fix": {
+            "zh": "确认日志来自LMCache服务进程，核对connector地址、块对齐和前缀。",
+            "en": "Inspect the LMCache server process and connector address, chunk alignment and prefix."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "关闭LMCache后仍变快",
+            "en": "Still faster with LMCache disabled"
+          },
+          "fix": {
+            "zh": "记录引擎自带前缀缓存和预热状态，分别控制。",
+            "en": "Record and separately control engine-local prefix caching and warm-up."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "三条基线请求共检索多少token？",
+            "en": "How many tokens are retrieved across baseline requests?"
+          },
+          "options": [
+            {
+              "zh": "768",
+              "en": "768"
+            },
+            {
+              "zh": "512",
+              "en": "512"
+            },
+            {
+              "zh": "16",
+              "en": "16"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "第一次填充不命中，后两次各256。",
+            "en": "The first populates the cache; the next two retrieve256 each."
+          }
+        },
+        {
+          "question": {
+            "zh": "只有延迟降低能证明LMCache命中吗？",
+            "en": "Can lower latency alone prove an LMCache hit?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "只有足够快才可以",
+              "en": "Only if very fast"
+            },
+            {
+              "zh": "不能，还需存取和配置证据",
+              "en": "No, storage/retrieval and configuration evidence are needed"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "需要排除引擎内置缓存、预热和负载差异。",
+            "en": "Rule out engine-local caching, warm-up and workload differences."
+          }
+        }
+      ],
+      "interactive": "prefix-cache"
     },
     {
       "day": 5,
@@ -268,47 +907,210 @@
         "en": "Understand chunks and capacity"
       },
       "lesson": {
-        "zh": "缓存通常按块组织状态。块越小，部分复用可能更灵活，但键、查找、传输和管理开销也可能增加；块越大，可能减少请求数，却让短前缀的复用受到边界影响。容量预算不能只用模型参数量推算，还要考虑 token 数、层数、KV 头、元素字节、并行分片与元数据。先给出假设，再用实际指标校正估算。",
-        "en": "Cached state is organized into chunks. Smaller chunks can make partial reuse more flexible but may add key, lookup, transfer, and management overhead. Larger chunks can reduce request counts while changing reuse at prefix boundaries. Capacity estimates need token counts, layer counts, KV heads, element bytes, parallel sharding, and metadata rather than model parameter count alone. State the assumptions first, then calibrate them with observed storage usage. A theoretical estimate is useful even when it does not predict every implementation detail."
+        "zh": "本练习只存完整对齐块。完整块数=floor(tokens/chunk)，余数是未存尾部；较小块减少尾部浪费，但增加元数据和操作数量。这是一个教学策略，不能假定所有LMCache后端都只支持这种方式。",
+        "en": "This exercise stores full aligned chunks only. Full chunks=floor(tokens/chunk); the remainder is an uncached tail. Smaller chunks reduce tail waste but increase metadata/operations. This is a teaching policy, not a claim about every backend."
       },
       "task": {
-        "zh": "制作 KV 容量计算表，写明每个维度的来源。仅在当前连接器支持的范围内比较两个块配置，或者模拟块边界下可复用 token 数；记录容量、命中与请求开销。",
-        "en": "Create a KV-capacity worksheet with sources for each dimension. Compare two chunk configurations only where the current connector supports them, or simulate reusable tokens at chunk boundaries. Record capacity, hits, and request overhead."
+        "zh": "实现student.py的full_chunks并处理tokens=0、chunk=0；计算更小块需要多少元数据条目。",
+        "en": "Implement full_chunks, handling tokens0 and chunk0; count metadata entries for smaller chunks."
       },
       "evidence": {
-        "zh": "capacity.csv 与一页块大小决策；至少包含一个短前缀和一个长前缀案例。",
-        "en": "capacity.csv and a one-page chunk-size decision, including both a short-prefix and a long-prefix case."
+        "zh": "day05.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day05.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "计算注明单位与分片假设",
-          "变化的配置先通过兼容性检查",
-          "能解释命中率提高却未必更快的原因"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "State units and sharding assumptions",
-          "Check compatibility before changing configuration",
-          "Explain why a higher hit rate may not be faster"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "为长度为 120、1000、8000 token 的访问序列模拟块边界，分别计数可用 token、键数量和假定元数据开销。",
-        "en": "Simulate chunk boundaries for traces of 120, 1,000, and 8,000 tokens; count usable tokens, keys, and assumed metadata overhead."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "LMCache MP configuration",
-          "url": "https://docs.lmcache.ai/mp/configuration.html"
+          "title": "LMCache quickstart",
+          "url": "https://docs.lmcache.ai/getting_started/quickstart.html"
         },
         {
-          "title": "LMCache cache identity",
-          "url": "https://docs.lmcache.ai/developer_guide/cache_identity.html"
-        },
-        {
-          "title": "LMCache benchmarking",
-          "url": "https://docs.lmcache.ai/getting_started/benchmarking.html"
+          "title": "LMCache compatibility",
+          "url": "https://docs.lmcache.ai/getting_started/compatibility.html"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "块边界决定可复用尾部",
+            "en": "Chunk boundaries determine reusable tails"
+          },
+          "body": {
+            "zh": "本练习只存完整对齐块。完整块数=floor(tokens/chunk)，余数是未存尾部；较小块减少尾部浪费，但增加元数据和操作数量。这是一个教学策略，不能假定所有LMCache后端都只支持这种方式。",
+            "en": "This exercise stores full aligned chunks only. Full chunks=floor(tokens/chunk); the remainder is an uncached tail. Smaller chunks reduce tail waste but increase metadata/operations. This is a teaching policy, not a claim about every backend."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "1000token、chunk256可用3块768token，尾部232；chunk128可用7块896token，尾部104。若每token12288bytes，256块是3145728bytes。",
+            "en": "1000tokens with chunk256 yield3 chunks/768tokens and232tail tokens. Chunk128 yields7 chunks/896tokens and104tail tokens. At12288bytes/token, a256-token chunk occupies3145728bytes."
+          }
+        },
+        {
+          "title": {
+            "zh": "动手调参：连接图解与实验",
+            "en": "Change parameters: connect widget and lab"
+          },
+          "body": {
+            "zh": "交互图估算KV容量，按层数、KV头、head维度与dtype字节算单token大小；本日脚本固定12288字节/token，只研究块尾浪费。先手算字节，再把chunk从256改为128，对比尾部减少与块数增加。",
+            "en": "The widget estimates KV capacity from layers, KV heads, head dimension and dtype bytes. The script fixes12288bytes/token to study incomplete tails. Compute bytes first, then compare256/128-token chunks: less tail waste means more blocks."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "块边界决定可复用尾部 · 流程",
+          "en": "Chunk boundaries determine reusable tails · flow"
+        },
+        "nodes": [
+          {
+            "zh": "token总数",
+            "en": "Token count"
+          },
+          {
+            "zh": "向下取整",
+            "en": "Round down"
+          },
+          {
+            "zh": "完整块",
+            "en": "Full chunks"
+          },
+          {
+            "zh": "未缓存尾部",
+            "en": "Uncached tail"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的lmcache目录，先阅读lab.py中day5函数，预测结果再运行。",
+            "en": "Inside the extracted lmcache directory, read day5 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day5 --out out/day05-base",
+          "expected": {
+            "zh": "full_chunks=3，tail=232。 文件为out/day05-base/day05.json。",
+            "en": "full_chunks=3; tail232. File:out/day05-base/day05.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "实现student.py的full_chunks并处理tokens=0、chunk=0；计算更小块需要多少元数据条目。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Implement full_chunks, handling tokens0 and chunk0; count metadata entries for smaller chunks. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day5 --variant changed --out out/day05-changed",
+          "expected": {
+            "zh": "full_chunks=7，tail=104。",
+            "en": "full_chunks=7; tail104."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "出现小数块",
+            "en": "Fractional chunks"
+          },
+          "fix": {
+            "zh": "整块数使用整数除法，尾部使用取余。",
+            "en": "Use integer division for full chunks and remainder for tails."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "chunk=0引发除零",
+            "en": "chunk0 divides by zero"
+          },
+          "fix": {
+            "zh": "入口拒绝非正块大小，不能默认为有效配置。",
+            "en": "Reject nonpositive chunk sizes at the boundary."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "1000token按256完整块能存几块？",
+            "en": "How many full256-token chunks fit1000tokens?"
+          },
+          "options": [
+            {
+              "zh": "4",
+              "en": "4"
+            },
+            {
+              "zh": "3",
+              "en": "3"
+            },
+            {
+              "zh": "3.90625",
+              "en": "3.90625"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "完整块策略必须向下取整，不能把不足的尾部算成整块。",
+            "en": "Full-chunk policy rounds down; a partial tail is not a complete chunk."
+          }
+        },
+        {
+          "question": {
+            "zh": "块越小一定更好吗？",
+            "en": "Are smaller chunks always better?"
+          },
+          "options": [
+            {
+              "zh": "是",
+              "en": "Yes"
+            },
+            {
+              "zh": "取决于尾部浪费与操作开销",
+              "en": "It depends on tail waste and operation overhead"
+            },
+            {
+              "zh": "不会影响任何东西",
+              "en": "Nothing changes"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "需要同时看元数据、I/O调用和对齐成本。",
+            "en": "Metadata, I/O call counts and alignment costs must also be considered."
+          }
+        }
+      ],
+      "interactive": "kv-cache"
     },
     {
       "day": 6,
@@ -317,47 +1119,210 @@
         "en": "Model the storage tiers"
       },
       "lesson": {
-        "zh": "把 KV 从设备移到主机或外部存储可以扩大可用容量，但命中仍需付出查找、排队、传输和装载成本。是否划算取决于这些成本能否小于重算 prefill，以及是否增加资源争用。文件系统、远端存储和内存后端各有不同故障与容量特性。先比较同一工作负载，再把带宽、对象大小、并发和命中率作为敏感性变量。",
-        "en": "Moving KV state from a device into host or external storage can expand capacity, but a hit still pays lookup, queueing, transfer, and loading costs. It helps only when these costs beat recomputing prefill without creating unacceptable contention. Filesystem, remote, and memory backends also have different failure and capacity properties. Compare the same workload first, then vary bandwidth, object size, concurrency, and hit rate in a sensitivity analysis. Never interpret storage capacity alone as evidence of an inference speedup."
+        "zh": "传输模型以十进制MB和GB/s计量：200MB/10GB每秒=20ms，另加5ms固定开销。网络拥塞、序列化、搬运和重叠均未建模，因此结果只是选择实验条件的依据。",
+        "en": "With decimal MB and GB/s,200MB at10GB/s takes20ms plus5ms fixed overhead. Congestion, serialization, copies and overlap are omitted; the estimate helps choose experiments rather than predict deployment performance."
       },
       "task": {
-        "zh": "从官方支持列表选两个你能访问的后端，绘制读写路径与失败点。用测得或明确标注的假定参数计算重算/取回交叉点，并对其中一个后端做小规模读写正确性测试。",
-        "en": "Choose two accessible backends from the supported list and map read/write paths and failure points. Calculate the recompute/retrieve break-even point using measured or clearly assumed parameters, then run a small correctness test on one backend."
+        "zh": "改变payload而保持带宽不变，再单独改变overhead；画出哪一区域值得缓存。",
+        "en": "Vary payload at fixed bandwidth, then vary overhead separately; chart the beneficial region."
       },
       "evidence": {
-        "zh": "tier-costs.csv、路径图与校验和记录；将假设值和测量值分列。",
-        "en": "tier-costs.csv, a path diagram, and checksum records; separate assumed values from measurements."
+        "zh": "day06.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day06.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "包含查找、传输和排队成本",
-          "两个后端使用相同对象与访问序列",
-          "结论说明带宽下降或命中降低时是否成立"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Include lookup, transfer, and queueing costs",
-          "Use identical objects and access traces for both backends",
-          "State whether the conclusion survives lower bandwidth or hit rate"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "用本地内存字典与临时文件保存相同字节对象并校验；文件实验只代表该电脑的 I/O，不代表生产远端存储。",
-        "en": "Store identical byte objects in a dictionary and temporary files and verify checksums. The filesystem experiment measures only this computer's I/O, not production remote storage."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "LMCache supported storage backends",
-          "url": "https://docs.lmcache.ai/mp/l2_storage/supported_storages.html"
+          "title": "LMCache quickstart",
+          "url": "https://docs.lmcache.ai/getting_started/quickstart.html"
         },
         {
-          "title": "LMCache MP configuration",
-          "url": "https://docs.lmcache.ai/mp/configuration.html"
-        },
-        {
-          "title": "Mooncake integration with LMCache",
-          "url": "https://kvcache-ai.github.io/Mooncake/deployment/integrations/lmcache/index.html"
+          "title": "LMCache compatibility",
+          "url": "https://docs.lmcache.ai/getting_started/compatibility.html"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "取回成本必须小于重算收益",
+            "en": "Restore costs must beat recomputation"
+          },
+          "body": {
+            "zh": "传输模型以十进制MB和GB/s计量：200MB/10GB每秒=20ms，另加5ms固定开销。网络拥塞、序列化、搬运和重叠均未建模，因此结果只是选择实验条件的依据。",
+            "en": "With decimal MB and GB/s,200MB at10GB/s takes20ms plus5ms fixed overhead. Congestion, serialization, copies and overlap are omitted; the estimate helps choose experiments rather than predict deployment performance."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "基线restore=25ms小于重算100ms；带宽降到0.5GB/s，restore=405ms，缓存反而昂贵。盈亏平衡带宽为200/(100−5)=2.105GB/s。",
+            "en": "Baseline restore25ms beats100ms recomputation. At0.5GB/s restore405ms loses. Break-even bandwidth is200/(100−5)=2.105GB/s."
+          }
+        },
+        {
+          "title": {
+            "zh": "动手调参：连接图解与实验",
+            "en": "Change parameters: connect widget and lab"
+          },
+          "body": {
+            "zh": "交互图的重算参照固定200ms，本日脚本固定100ms，二者是不同实验条件。传输输入同设200MB、10GB/s、固定5ms时都得到25ms；在1GB/s时为205ms，两种参照下都不值得取回。报告必须写出所用参照。",
+            "en": "The widget fixes recomputation at200ms; the script fixes100ms. They are different controls. Both give25ms for200MB,10GB/s and5ms overhead. At1GB/s,205ms loses against both controls. State the recomputation reference in your report."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "取回成本必须小于重算收益 · 流程",
+          "en": "Restore costs must beat recomputation · flow"
+        },
+        "nodes": [
+          {
+            "zh": "估算KV大小",
+            "en": "Estimate KV size"
+          },
+          {
+            "zh": "有效带宽",
+            "en": "Effective bandwidth"
+          },
+          {
+            "zh": "固定开销",
+            "en": "Fixed overhead"
+          },
+          {
+            "zh": "与重算比较",
+            "en": "Compare recompute"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的lmcache目录，先阅读lab.py中day6函数，预测结果再运行。",
+            "en": "Inside the extracted lmcache directory, read day6 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day6 --out out/day06-base",
+          "expected": {
+            "zh": "restore_ms=25，beneficial=true。 文件为out/day06-base/day06.json。",
+            "en": "restore_ms25; beneficial=true. File:out/day06-base/day06.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "改变payload而保持带宽不变，再单独改变overhead；画出哪一区域值得缓存。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Vary payload at fixed bandwidth, then vary overhead separately; chart the beneficial region. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day6 --variant changed --out out/day06-changed",
+          "expected": {
+            "zh": "restore_ms=405，beneficial=false。",
+            "en": "restore_ms405; beneficial=false."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "计算差1000倍",
+            "en": "Result differs by1000x"
+          },
+          "fix": {
+            "zh": "统一MB、GB/s、ms，写出单位约分，不混用MiB。",
+            "en": "Normalize MB,GB/s and ms, showing conversions; do not silently mix MiB."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "网卡带宽等于有效带宽",
+            "en": "NIC line rate used as effective bandwidth"
+          },
+          "fix": {
+            "zh": "实际端到端带宽需要测量；保留并发和传输大小。",
+            "en": "Measure effective end-to-end bandwidth and retain concurrency/payload size."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "200MB以10GB/s传输需要？",
+            "en": "How long does200MB take at10GB/s?"
+          },
+          "options": [
+            {
+              "zh": "20ms",
+              "en": "20ms"
+            },
+            {
+              "zh": "200ms",
+              "en": "200ms"
+            },
+            {
+              "zh": "0.02ms",
+              "en": "0.02ms"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "MB/GB每秒换算成毫秒后，数值为200/10=20。",
+            "en": "Converting MB and GB/s to milliseconds gives200/10=20."
+          }
+        },
+        {
+          "question": {
+            "zh": "restore=405ms而重算100ms时？",
+            "en": "What if restore is405ms and recompute100ms?"
+          },
+          "options": [
+            {
+              "zh": "无条件强制恢复",
+              "en": "Always restore"
+            },
+            {
+              "zh": "应考虑重算或其他层",
+              "en": "Consider recomputing or another tier"
+            },
+            {
+              "zh": "把405记作4.05",
+              "en": "Record405 as4.05"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "缓存是代价取舍，命中不代表值得使用。",
+            "en": "Caching is a cost tradeoff; a hit does not mean reuse is beneficial."
+          }
+        }
+      ],
+      "interactive": "transfer-cost"
     },
     {
       "day": 7,
@@ -366,45 +1331,197 @@
         "en": "Make cross-instance reuse correct"
       },
       "lesson": {
-        "zh": "多个 worker 共享存储，能够提高已有状态被再次使用的机会，也会扩大错误配置的影响范围。生产设计必须同时处理状态兼容、命名空间、访问权限、容量竞争和生命周期。缓存键相同不能代替租户认证；worker 重启后是否仍有可用对象也取决于后端。先用相同模型与布局建立可控共享，再逐项加入不兼容或过期情况。",
-        "en": "Shared storage gives multiple workers more chances to reuse existing state, while widening the impact of misconfiguration. A sound design considers compatibility, namespaces, authorization, capacity contention, and lifecycle together. Matching cache keys do not replace tenant authentication, and objects surviving a worker restart depends on the storage backend. Establish controlled sharing with the same model and layout first. Then introduce incompatible and expired cases one at a time, recording whether separation is enforced or remains an unverified requirement."
+        "zh": "相同键的对象可能被淘汰并重新写入。客户端若只持有旧地址或旧代际，容易把新对象误认为旧状态。本练习使用不可变generation字段检测过期引用，演示一种生命周期约束。",
+        "en": "An object under the same key can be evicted and recreated. A client retaining an old address/generation can mistake a new object for the old state. An immutable generation in this exercise detects stale references."
       },
       "task": {
-        "zh": "设计 A 写入、B 取回的两实例实验，并增加模型 revision 不同、过期/驱逐、无权限访问三个反例。仅使用自己控制的测试数据与服务；权限机制未实现时写入缺口清单。",
-        "en": "Design a two-instance experiment where A stores and B retrieves state. Add changed-model, expired/evicted, and unauthorized-access counterexamples. Use only controlled data and services; record gaps when authorization is not implemented."
+        "zh": "构造删除再重建同名对象的顺序图，说明只比较key为何不够。",
+        "en": "Draw deletion/recreation under one key and explain why comparing the key alone fails."
       },
       "evidence": {
-        "zh": "sharing-matrix.csv 与隔离设计，列出每个条件的预期、实测和待验证状态。",
-        "en": "sharing-matrix.csv and an isolation design showing expected, observed, and unverified outcomes for every condition."
+        "zh": "day07.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day07.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "至少有一个成功共享与三个反例",
-          "不兼容状态没有被宣称可安全复用",
-          "权限与命名空间分别讨论"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Include one successful-sharing case and three counterexamples",
-          "Do not claim incompatible state is safe to reuse",
-          "Discuss authorization separately from namespaces"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "运行两个本地进程或两个字典客户端，使用临时存储模拟共享、驱逐和拒绝访问；不要把应用层模拟当成 LMCache 的安全保证。",
-        "en": "Use two local processes or dictionary clients with temporary storage to simulate sharing, eviction, and denied access. Do not present the application-level simulation as a LMCache security guarantee."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "LMCache cache identity",
-          "url": "https://docs.lmcache.ai/developer_guide/cache_identity.html"
-        },
-        {
-          "title": "LMCache supported storage backends",
-          "url": "https://docs.lmcache.ai/mp/l2_storage/supported_storages.html"
-        },
-        {
           "title": "LMCache quickstart",
           "url": "https://docs.lmcache.ai/getting_started/quickstart.html"
+        },
+        {
+          "title": "LMCache compatibility",
+          "url": "https://docs.lmcache.ai/getting_started/compatibility.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "跨实例复用需要代际检查",
+            "en": "Cross-instance reuse needs generation checks"
+          },
+          "body": {
+            "zh": "相同键的对象可能被淘汰并重新写入。客户端若只持有旧地址或旧代际，容易把新对象误认为旧状态。本练习使用不可变generation字段检测过期引用，演示一种生命周期约束。",
+            "en": "An object under the same key can be evicted and recreated. A client retaining an old address/generation can mistake a new object for the old state. An immutable generation in this exercise detects stale references."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "服务端generation=2；基线客户端也2可接收，changed客户端1必须拒绝。拒绝后可刷新元数据或重算。这里不实现跨机一致性协议，只验证该检查条件。",
+            "en": "The object generation is2. Client2 accepts it; changed client1 must reject and refresh metadata or recompute. This is a guard condition, not a distributed consistency protocol."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "跨实例复用需要代际检查 · 流程",
+          "en": "Cross-instance reuse needs generation checks · flow"
+        },
+        "nodes": [
+          {
+            "zh": "获取身份",
+            "en": "Read identity"
+          },
+          {
+            "zh": "检查代际",
+            "en": "Check generation"
+          },
+          {
+            "zh": "引用生命周期",
+            "en": "Manage lifetime"
+          },
+          {
+            "zh": "读取或回退",
+            "en": "Read or fallback"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的lmcache目录，先阅读lab.py中day7函数，预测结果再运行。",
+            "en": "Inside the extracted lmcache directory, read day7 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day7 --out out/day07-base",
+          "expected": {
+            "zh": "accept=true。 文件为out/day07-base/day07.json。",
+            "en": "accept=true. File:out/day07-base/day07.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "构造删除再重建同名对象的顺序图，说明只比较key为何不够。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Draw deletion/recreation under one key and explain why comparing the key alone fails. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day7 --variant changed --out out/day07-changed",
+          "expected": {
+            "zh": "accept=false，提示refetch或recompute。",
+            "en": "accept=false; refetch or recompute."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "对象删除后仍被引用",
+            "en": "References outlive deletion"
+          },
+          "fix": {
+            "zh": "记录持有者、释放点和generation，不只记录键。",
+            "en": "Track holders, release points and generations, not just keys."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "过期引用不断重试",
+            "en": "Stale reference retried forever"
+          },
+          "fix": {
+            "zh": "刷新元数据，限制重试并保留重算回退路径。",
+            "en": "Refresh metadata, bound retries and retain recomputation fallback."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "客户端1读取代际2对象应怎样？",
+            "en": "What should client generation1 do with object generation2?"
+          },
+          "options": [
+            {
+              "zh": "直接使用",
+              "en": "Use it"
+            },
+            {
+              "zh": "拒绝并刷新或重算",
+              "en": "Reject and refresh/recompute"
+            },
+            {
+              "zh": "更改服务端代际",
+              "en": "Rewrite server generation"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "旧引用不能证明新对象符合原请求语义。",
+            "en": "A stale reference does not establish the new object’s semantics."
+          }
+        },
+        {
+          "question": {
+            "zh": "generation字段本身等于完整分布式协议吗？",
+            "en": "Is a generation field a complete distributed protocol?"
+          },
+          "options": [
+            {
+              "zh": "是",
+              "en": "Yes"
+            },
+            {
+              "zh": "能免除所有锁",
+              "en": "It eliminates all locks"
+            },
+            {
+              "zh": "不是，还需生命周期与一致性机制",
+              "en": "No, lifecycle and consistency mechanisms remain"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "本练习只测试其中一个防错条件。",
+            "en": "The exercise tests only one correctness guard."
+          }
         }
       ]
     },
@@ -415,47 +1532,210 @@
         "en": "Separate reuse from P/D transfer"
       },
       "lesson": {
-        "zh": "prefill/decode 分离要把一次请求刚生成的 KV 交给 decode，而缓存复用是在之后的请求中避免重复计算。两者都移动 KV，却有不同生命周期、时延预算与失败后果。连接器、引擎和后端并不自动支持任意组合。先画出一次请求与跨请求两条时间线，再判断 LMCache 在所选版本里承担存储、取回或传输中的哪部分。",
-        "en": "Prefill/decode disaggregation hands freshly computed KV state to a decode worker for the same request. Cache reuse avoids repeated computation in later requests. Both move KV, but their lifetimes, latency budgets, and failure consequences differ. Connectors, engines, and storage backends do not automatically support every combination. Draw separate same-request and cross-request timelines first, then identify the role LMCache actually plays in the chosen release. A feature appearing in another backend's example is not proof that your selected integration supports it."
+        "zh": "缓存复用回答是否已经有可用状态；PD传输回答新产生状态怎样到达decode。两者可能共用传输组件，但是否省去prefill是不同条件。把它们混在一起会错误归因。",
+        "en": "Reuse asks whether valid state already exists; P/D transport asks how newly computed state reaches decoding. They may share transport components, but eliminating prefill requires a different condition. Mixing them causes misattribution."
       },
       "task": {
-        "zh": "为普通重复请求和 P/D 请求各画一条带状态生命周期的时序图。查证所选引擎的官方支持，标出可运行、需额外硬件、未支持的边；计算一次转移的字节预算。",
-        "en": "Draw state-lifecycle sequence diagrams for repeated requests and P/D requests. Check official support for your chosen engine, label runnable, hardware-dependent, and unsupported edges, and calculate a transfer-byte budget."
+        "zh": "分别标注一次缓存命中和一次P/D分离请求的时间线，指出哪一步被省去。",
+        "en": "Label one cache-hit timeline and one P/D-separated timeline, identifying which step was eliminated."
       },
       "evidence": {
-        "zh": "flows.md：两张时序图、兼容性来源与转移预算；有条件时附小规模链路日志。",
-        "en": "flows.md with two sequence diagrams, compatibility sources, and a transfer budget; add small-scale link logs if available."
+        "zh": "day08.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day08.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "区分同一次请求转移和跨请求复用",
-          "每条实现路径都有具体版本或未验证标记",
-          "不把后端支持推导成所有引擎都支持"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Separate same-request transfer from cross-request reuse",
-          "Attach a version or an unverified label to every implementation path",
-          "Do not generalize backend support to every engine"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "使用事件表模拟 prefill 完成、缓存发布、decode 读取及超时；改变网络延迟观察关键路径，参数均标注为假设。",
-        "en": "Simulate prefill completion, publication, decode retrieval, and timeout in an event table. Vary network delay on the critical path and label every parameter as assumed."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
-        {
-          "title": "LMCache compatibility",
-          "url": "https://docs.lmcache.ai/getting_started/compatibility.html"
-        },
         {
           "title": "LMCache quickstart",
           "url": "https://docs.lmcache.ai/getting_started/quickstart.html"
         },
         {
-          "title": "LMCache MP architecture",
-          "url": "https://docs.lmcache.ai/mp/index.html"
+          "title": "LMCache compatibility",
+          "url": "https://docs.lmcache.ai/getting_started/compatibility.html"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "复用已有KV与传输新KV分开看",
+            "en": "Separate existing-KV reuse from new-KV transport"
+          },
+          "body": {
+            "zh": "缓存复用回答是否已经有可用状态；PD传输回答新产生状态怎样到达decode。两者可能共用传输组件，但是否省去prefill是不同条件。把它们混在一起会错误归因。",
+            "en": "Reuse asks whether valid state already exists; P/D transport asks how newly computed state reaches decoding. They may share transport components, but eliminating prefill requires a different condition. Mixing them causes misattribution."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "已有对象时prefill=0、传输20、decode80，关键路径100ms；没有对象时还需40ms prefill，总计140ms。两组假设其他成本相同，不代表真实系统的通用速度。",
+            "en": "An existing object gives0prefill+20transfer+80decode=100ms. Without one,40ms prefill makes140ms. Other costs are held fixed; this is not a universal system speed."
+          }
+        },
+        {
+          "title": {
+            "zh": "动手调参：连接图解与实验",
+            "en": "Change parameters: connect widget and lab"
+          },
+          "body": {
+            "zh": "交互图调整P/D worker数量，研究流水线处理能力；脚本比较单次请求已有KV与需要新做prefill的关键路径。吞吐上界与单请求延迟是两项指标，100ms对140ms不能直接当成系统吞吐提升40%。",
+            "en": "The widget varies P/D worker counts for pipeline capacity. The script compares a single request with existing KV versus newly produced KV. Capacity and individual latency differ:100ms versus140ms does not establish a40%system throughput gain."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "复用已有KV与传输新KV分开看 · 流程",
+          "en": "Separate existing-KV reuse from new-KV transport · flow"
+        },
+        "nodes": [
+          {
+            "zh": "判断已有状态",
+            "en": "Check existing state"
+          },
+          {
+            "zh": "必要时prefill",
+            "en": "Prefill if needed"
+          },
+          {
+            "zh": "传输",
+            "en": "Transfer"
+          },
+          {
+            "zh": "继续decode",
+            "en": "Continue decoding"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的lmcache目录，先阅读lab.py中day8函数，预测结果再运行。",
+            "en": "Inside the extracted lmcache directory, read day8 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day8 --out out/day08-base",
+          "expected": {
+            "zh": "mode=lookup-and-reuse，critical_path_ms=100。 文件为out/day08-base/day08.json。",
+            "en": "lookup-and-reuse; critical path100ms. File:out/day08-base/day08.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "分别标注一次缓存命中和一次P/D分离请求的时间线，指出哪一步被省去。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Label one cache-hit timeline and one P/D-separated timeline, identifying which step was eliminated. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day8 --variant changed --out out/day08-changed",
+          "expected": {
+            "zh": "mode=produce-then-transfer，critical_path_ms=140。",
+            "en": "produce-then-transfer; critical path140ms."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "将传输成功记为缓存命中",
+            "en": "Transfer success labeled a cache hit"
+          },
+          "fix": {
+            "zh": "记录状态是否先前存在，以及prefill是否实际跳过。",
+            "en": "Record whether state previously existed and whether prefill was skipped."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "缺少生产者时间",
+            "en": "Producer time omitted"
+          },
+          "fix": {
+            "zh": "端到端时间线包含产生新KV的prefill，不能从传输开始计时后仍叫全链路。",
+            "en": "Include prefill producing new KV; timing only from transfer is not end-to-end."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "已有KV时本例省掉什么？",
+            "en": "What does existing KV eliminate here?"
+          },
+          "options": [
+            {
+              "zh": "所有decode",
+              "en": "All decoding"
+            },
+            {
+              "zh": "已有前缀的prefill",
+              "en": "Prefill of the existing prefix"
+            },
+            {
+              "zh": "传输全部为0",
+              "en": "All transfer"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "后续生成与状态移动仍可能发生。",
+            "en": "Generation and state movement may still be necessary."
+          }
+        },
+        {
+          "question": {
+            "zh": "没有已有对象时本例总时长？",
+            "en": "What is total latency without an existing object?"
+          },
+          "options": [
+            {
+              "zh": "100ms",
+              "en": "100ms"
+            },
+            {
+              "zh": "140ms",
+              "en": "140ms"
+            },
+            {
+              "zh": "20ms",
+              "en": "20ms"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "40+20+80=140。",
+            "en": "40+20+80=140."
+          }
+        }
+      ],
+      "interactive": "pd-balance"
     },
     {
       "day": 9,
@@ -464,45 +1744,197 @@
         "en": "Observe failure and fallback"
       },
       "lesson": {
-        "zh": "命中率不能概括缓存服务的健康。需要同时看取回延迟、字节量、失败、队列和引擎端请求结果。指标缺失可能是尚未发生事件或导出模式不同，重启又会重置计数器。缓存不可用时究竟重算、拒绝还是超时，必须由当前集成实测确认；不能因为缓存被称为优化组件，就默认任何故障都不会影响推理。",
-        "en": "Hit rate alone cannot describe cache-service health. Track retrieval latency, bytes, failures, queues, and engine-side request outcomes together. A missing metric may mean no event has occurred yet or a different export mode is active, while restarts reset counters. Whether unavailable caching triggers recomputation, rejection, or a timeout must be tested for the current integration. Calling a cache an optimization does not establish fault isolation. Inspect controlled failures with bounded traffic and record what happens to correctness as well as latency."
+        "zh": "缓存后端失败时可以拒绝请求，也可以重算，选择取决于服务语义与预算。重算能保住成功率，却消耗更多GPU工作。重试、回退与失败必须分别计数。",
+        "en": "On a cache-backend failure, a service may reject or recompute according to semantics and budget. Recomputation can preserve availability while consuming more GPU work. Count retries, fallbacks and failures separately."
       },
       "task": {
-        "zh": "在隔离环境对缓存服务做一次受控停止或后端不可达实验，限定请求数与时长。记录错误、超时、是否回退、恢复后的首次请求及计数器变化，并写出操作恢复步骤。",
-        "en": "In an isolated environment, stop the cache service once or make a test backend unavailable, with bounded requests and duration. Record errors, timeouts, fallback, the first recovered request, and counter changes, then write recovery steps."
+        "zh": "为缓存超时制定有限重试和重算预算，并给超预算时明确的停止行为。",
+        "en": "Define bounded retries and a recomputation budget for cache timeouts, with explicit stopping behavior."
       },
       "evidence": {
-        "zh": "failure-report.md、故障前/中/后指标片段和恢复清单；只保留脱敏元数据。",
-        "en": "failure-report.md, before/during/after metric extracts, and recovery steps; retain only redacted metadata."
+        "zh": "day09.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day09.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "故障有明确时间窗口和恢复动作",
-          "实际请求结果与缓存指标相互对应",
-          "区分未出现指标、计数器重置和真实零值"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Define a bounded failure window and recovery action",
-          "Correlate request outcomes with cache metrics",
-          "Distinguish absent metrics, resets, and genuine zero values"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "让本地模拟后端按固定序号抛出异常，测试超时与重算分支；明确这是恢复逻辑练习，不是引擎故障验证。",
-        "en": "Make a local mock backend fail at fixed request numbers and test timeout and recomputation branches. Label this as recovery-logic practice, not validation of the engine."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "LMCache observability",
-          "url": "https://docs.lmcache.ai/mp/observability/index.html"
-        },
-        {
-          "title": "LMCache MP configuration",
-          "url": "https://docs.lmcache.ai/mp/configuration.html"
-        },
-        {
           "title": "LMCache quickstart",
           "url": "https://docs.lmcache.ai/getting_started/quickstart.html"
+        },
+        {
+          "title": "LMCache compatibility",
+          "url": "https://docs.lmcache.ai/getting_started/compatibility.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "故障回退有可用性代价和计算代价",
+            "en": "Fallback trades availability against compute"
+          },
+          "body": {
+            "zh": "缓存后端失败时可以拒绝请求，也可以重算，选择取决于服务语义与预算。重算能保住成功率，却消耗更多GPU工作。重试、回退与失败必须分别计数。",
+            "en": "On a cache-backend failure, a service may reject or recompute according to semantics and budget. Recomputation can preserve availability while consuming more GPU work. Count retries, fallbacks and failures separately."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "三条请求后端状态true,false,true。基线中间一条重算105ms且仍成功；changed关闭回退，中间一条5ms报错。错误很快并不表示服务体验更好。",
+            "en": "Backend outcomes are true,false,true. Baseline recomputes the middle request in105ms and succeeds; disabling fallback produces a5ms error. Fast failure does not imply better service."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "故障回退有可用性代价和计算代价 · 流程",
+          "en": "Fallback trades availability against compute · flow"
+        },
+        "nodes": [
+          {
+            "zh": "后端状态",
+            "en": "Backend state"
+          },
+          {
+            "zh": "命中或失败",
+            "en": "Hit or failure"
+          },
+          {
+            "zh": "按策略回退",
+            "en": "Policy fallback"
+          },
+          {
+            "zh": "计数与记录",
+            "en": "Count and record"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的lmcache目录，先阅读lab.py中day9函数，预测结果再运行。",
+            "en": "Inside the extracted lmcache directory, read day9 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day9 --out out/day09-base",
+          "expected": {
+            "zh": "failures=0，中间请求fallback_recompute=true。 文件为out/day09-base/day09.json。",
+            "en": "failures0; middle request recomputes. File:out/day09-base/day09.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "为缓存超时制定有限重试和重算预算，并给超预算时明确的停止行为。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Define bounded retries and a recomputation budget for cache timeouts, with explicit stopping behavior. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day9 --variant changed --out out/day09-changed",
+          "expected": {
+            "zh": "failures=1，中间请求status=error。",
+            "en": "failures1; middle request is an error."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把回退计为命中",
+            "en": "Fallback counted as a hit"
+          },
+          "fix": {
+            "zh": "单独记录命中、回退和最终请求状态。",
+            "en": "Record hit, fallback and final request status separately."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "缓存失败引发重算风暴",
+            "en": "Cache failure causes recompute storm"
+          },
+          "fix": {
+            "zh": "限制并发、重试和准入，观察GPU队列与尾延迟。",
+            "en": "Bound concurrency, retries and admission; observe queues and tail latency."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "关闭回退后平均耗时更低能说明改善吗？",
+            "en": "Does lower average time after disabling fallback prove improvement?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能，失败更快也会降低平均值",
+              "en": "No, faster errors lower averages too"
+            },
+            {
+              "zh": "只需看最小值",
+              "en": "Only the minimum matters"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "成功率和成功请求延迟要一起看。",
+            "en": "Consider success rate alongside successful-request latency."
+          }
+        },
+        {
+          "question": {
+            "zh": "重算回退的代价可能是什么？",
+            "en": "What can recomputation fallback cost?"
+          },
+          "options": [
+            {
+              "zh": "额外计算与排队",
+              "en": "Extra compute and queuing"
+            },
+            {
+              "zh": "自动增加GPU",
+              "en": "Automatically more GPUs"
+            },
+            {
+              "zh": "零成本",
+              "en": "No cost"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "缓存节省的计算在故障时重新出现，需要容量余量。",
+            "en": "The compute saved by caching returns during failures, requiring headroom."
+          }
         }
       ]
     },
@@ -513,16 +1945,16 @@
         "en": "Deliver a reviewable cache project"
       },
       "lesson": {
-        "zh": "好的缓存作品不只展示一个更低的延迟数字，还要交代成本、正确性、适用工作负载和没有收益的条件。让读者能从原始请求记录复算结论，比精美但不可复现的图更有价值。最后把固定环境、命中归因、容量估算、隔离边界与故障结果串联成一次工程决策，诚实区分已测事实、模型推导和下一步计划。",
-        "en": "A strong cache project explains cost, correctness, suitable workloads, and conditions where caching does not help, rather than showing only a lower latency number. Readers should be able to recompute conclusions from raw request records. Connect the pinned environment, hit attribution, capacity estimates, isolation boundaries, and failure results into one engineering decision. Clearly distinguish measured facts, model-based deductions, and future work. This produces a useful discussion artifact for an interview or community review without overstating ten days of experience."
+        "zh": "结课作品围绕一个可证伪的问题：选择前九天的一项假设，保持输入和其余参数一致，比较基线与改动。自动生成的报告只整理证据，不替你解释结果。需要完成自己的函数挑战，并说明示例代码与个人贡献。",
+        "en": "Build a falsifiable project around one assumption from the previous days. Hold inputs and other parameters fixed while comparing baseline and change. Generated reports organize evidence, not explanations. Complete your own function challenge and distinguish supplied code from personal contributions."
       },
       "task": {
-        "zh": "整理公开作品仓库：说明问题、复现步骤、原始脱敏数据、图表、正确性检查、至少一个负结果及版本限制。写一段建议，回答该工作负载是否应该启用 LMCache，以及需要先补什么证据。",
-        "en": "Package a public portfolio with the problem, reproduction steps, redacted raw data, charts, correctness checks, at least one negative result, and version limits. Recommend whether this workload should enable LMCache and what evidence is still needed."
+        "zh": "复现两组报告，完成student.py并通过check.py，再把一个真实反例与本人改动写入报告。",
+        "en": "Reproduce both reports, implement student.py and pass check.py, then document a counterexample and your contribution."
       },
       "evidence": {
-        "zh": "完整作品 README、实验目录与一页决策记录；可将作品链接加入聘枢求职材料。",
-        "en": "A complete portfolio README, experiment directory, and one-page decision record; the portfolio link can support a JobHub application."
+        "zh": "两份实验目录、通过学生检查的实现、无TODO的报告和复现说明。",
+        "en": "Two experiment directories, your passing implementation, a completed report and reproduction instructions."
       },
       "checklist": {
         "zh": [
@@ -537,23 +1969,200 @@
         ]
       },
       "noGpu": {
-        "zh": "提交完整的缓存身份测试、成本模型、故障模拟和集成设计；标题写明 CPU 设计实验，不虚构 GPU 性能或生产经验。",
-        "en": "Submit identity tests, cost models, failure simulations, and an integration design. Label the work as a CPU design lab and do not invent GPU performance or production experience."
+        "zh": "CPU路径可完成全部模型与作品；必须标明simulated。真实SDK/GPU实验不是本机已验证部分。",
+        "en": "The CPU path completes all models and the portfolio; label it simulated. SDK/GPU execution was not validated here."
       },
       "reading": [
         {
-          "title": "LMCache benchmarking",
-          "url": "https://docs.lmcache.ai/getting_started/benchmarking.html"
+          "title": "LMCache quickstart",
+          "url": "https://docs.lmcache.ai/getting_started/quickstart.html"
         },
         {
           "title": "LMCache compatibility",
           "url": "https://docs.lmcache.ai/getting_started/compatibility.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "可复现链条",
+            "en": "Reproduction chain"
+          },
+          "body": {
+            "zh": "day10会重新运行九个教学实验，保存逐日JSON、汇总CSV和文件哈希。分别使用两个输出目录，避免把前后结果覆盖。重复确定性模拟只验证重放一致，不能建立硬件加速的统计置信度。",
+            "en": "day10 reruns nine experiments, saving daily JSON, summary CSV and hashes. Use separate output directories. Repeating deterministic models checks replay consistency; it does not establish statistical confidence in hardware speedups."
+          }
         },
         {
-          "title": "LMCache observability",
-          "url": "https://docs.lmcache.ai/mp/observability/index.html"
+          "title": {
+            "zh": "用自己的解释完成作品",
+            "en": "Finish with your own explanation"
+          },
+          "body": {
+            "zh": "填写REPORT.md的所有TODO，写明问题、本人改动、输入、对照、一个不改善的条件和下一次实验。check.py默认检查student.py；--reference只验证随包参考实现，不能据此声称自己的挑战已完成。",
+            "en": "Fill every REPORT.md TODO: question, own change, inputs, controls, a no-benefit condition and the next experiment. check.py checks student.py by default; --reference checks the supplied solution and does not demonstrate your implementation."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立函数的输入输出",
+            "en": "Independent function contracts"
+          },
+          "body": {
+            "zh": "独立实现恢复决策与稳定KV身份摘要。200MB、10GB/s、固定5ms得到25ms；若重算也25ms，beneficial为false。保持token序列不变而改模型revision或namespace时摘要必须改变；不要用Python进程随机hash()，也不要用token数量代表内容。",
+            "en": "Implement restoration decisions and stable KV identity digests.200MB,10GB/s and5ms overhead give25ms; if recomputation is also25ms,beneficial is false. Changing revision or namespace must change identity even with identical tokens. Do not use process-randomized hash() or token count as content identity."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "从实验到作品",
+          "en": "From experiments to portfolio"
+        },
+        "nodes": [
+          {
+            "zh": "选择问题",
+            "en": "Choose question"
+          },
+          {
+            "zh": "固定条件",
+            "en": "Fix controls"
+          },
+          {
+            "zh": "保存证据",
+            "en": "Keep evidence"
+          },
+          {
+            "zh": "独立挑战",
+            "en": "Independent challenge"
+          },
+          {
+            "zh": "解释与复现",
+            "en": "Explain and reproduce"
+          }
+        ],
+        "caption": {
+          "zh": "作品可以是清楚标注的模拟分析；没有真机实验就不写真实引擎性能结论。",
+          "en": "A portfolio may contain clearly labeled simulation analysis; do not claim real-engine performance without measurements."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "在两个目录复现全部实验",
+            "en": "Reproduce all experiments in separate directories"
+          },
+          "body": {
+            "zh": "以下脚本只运行CPU教学模型，不连接真实服务；检查每份文件的evidence字段。",
+            "en": "These scripts run CPU models only and connect to no real service. Inspect evidence labels."
+          },
+          "command": "python3 lab.py day10 --out out/final-base\npython3 lab.py day10 --variant changed --out out/final-changed",
+          "expected": {
+            "zh": "每个目录包含9个dayXX.json、results.csv、manifest.json和REPORT.md。",
+            "en": "Each directory contains nine daily JSON files, results.csv, manifest.json and REPORT.md."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成独立挑战与报告",
+            "en": "Complete your challenge and report"
+          },
+          "body": {
+            "zh": "编辑student.py中的TODO，再运行检查。第一次未完成时显示NOT YET是预期结果；可以看提示，最后再核对参考解。",
+            "en": "Edit student.py TODOs before checking. An initial NOT YET is expected. Use the hints and compare the reference only after attempting your own solution."
+          },
+          "command": "python3 check.py\npython3 lab.py selfcheck",
+          "expected": {
+            "zh": "完成后student检查显示PASS；报告的TODO由你填写，selfcheck通过不代表报告已完成。",
+            "en": "Your completed student check shows PASS. Fill report TODOs yourself; selfcheck does not complete the report."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "check.py显示NOT YET",
+            "en": "check.py reports NOT YET"
+          },
+          "fix": {
+            "zh": "先实现student.py，不要把--reference通过误当自己的通过；参考边界案例定位。",
+            "en": "Implement student.py; passing --reference is not passing your own work. Use the boundary cases to debug."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "报告只有数字没有解释",
+            "en": "Report has numbers without explanations"
+          },
+          "fix": {
+            "zh": "补充假设、改动、反例与未验证项；请同伴从命令重算一项结论。",
+            "en": "Add assumptions, changes, counterexamples and unverified claims; ask a peer to recompute one conclusion."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "确定性模拟重复三次能证明GPU加速吗？",
+            "en": "Do three deterministic replays prove GPU acceleration?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能，只检查重放一致",
+              "en": "No, they check replay consistency"
+            },
+            {
+              "zh": "等于官方认证",
+              "en": "They are official certification"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "硬件结论需要真实运行、环境、负载与波动记录。",
+            "en": "Hardware conclusions require measurements, environment, workload and variation."
+          }
+        },
+        {
+          "question": {
+            "zh": "以下哪项最能体现个人贡献？",
+            "en": "Which best expresses personal contribution?"
+          },
+          "options": [
+            {
+              "zh": "只下载代码",
+              "en": "Downloading code"
+            },
+            {
+              "zh": "复制报告标题",
+              "en": "Copying the report title"
+            },
+            {
+              "zh": "展示自己的修改、证据和局限",
+              "en": "Showing your changes, evidence and limitations"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "可解释的改动和证据让别人能审阅你的判断。",
+            "en": "Explainable changes and evidence let others review your judgement."
+          }
         }
       ]
     }
-  ]
+  ],
+  "lab": {
+    "path": "lmcache",
+    "title": {
+      "zh": "10 天实战 LMCache · 实验包",
+      "en": "LMCache in 10 Days · lab kit"
+    },
+    "description": {
+      "zh": "Python3.9+标准库，普通电脑可完成全部CPU教学实验；含独立挑战、参考检查和报告导出。真实框架路线见README，需另备兼容环境。",
+      "en": "Python3.9+ standard library: laptop-ready teaching experiments, independent challenges, reference checks and report export. Real-framework routes in README require compatible environments."
+    }
+  }
 }

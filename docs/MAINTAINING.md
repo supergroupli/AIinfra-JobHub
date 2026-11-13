@@ -89,6 +89,10 @@ Git 历史、Actions 旧产物、旧部署、clone、fork 和搜索缓存可能�
 
 课程源文件在 `content/courses/{id}.json`。每门必须恰好 10 天，day 从 1 连续到 10；每一天包含中英对齐的 title、lesson、task、evidence、checklist（2–5 项）、noGpu 与 reading。元数据记录 category、level、hoursPerDay、prerequisites、hardware、hardwareTier、roles、outcome 和 lastVerified。代码样例可选，但必须说明环境与用途。
 
-`content/paths.json` 定义职业路径的课程顺序；引用必须指向真实课程。构建自动生成独立课程 HTML、两种语言的 Markdown 下载、站点地图和轻量首页目录。不要直接编辑 `dist/`。`lastVerified` 仅表示资料核对日期；硬件实验的真实运行证据需要另外记录，不能由字段自动推断。
+每一天还需要 explanation（至少两个原理段落）、diagram（有标题、节点和解释）、walkthrough（至少两步，含可执行命令与预期结果）、troubleshooting（至少两项）、quiz（至少两道有解析的题）。每门课至少安排三种不同且相关的交互模型。先解释模型适用范围，再谈实验结果；CPU 语义模型、模拟数据与真实框架测量必须分开标记。`hardwareTier` 按必做路线设置，真实硬件扩展在 `hardware` 与实验 README 中另外注明。
+
+`content/paths.json` 定义职业路径的课程顺序；引用必须指向真实课程。`requiredCourses` 是该岗位路线的必修，`electiveCourses` 是选修，`courses` 必须按顺序等于二者拼接且无重复。所有路线共同必修的课程会显示为共同基础；其他课程的定位随所选方向变化。它们是本站编辑的学习建议，不代表行业统一任职要求。
+
+构建自动生成独立课程 HTML、两种语言的 Markdown 下载、实验 ZIP、站点地图和轻量首页目录。`web/labs/{id}` 必须包含 README 和能独立运行的源码；压缩包根目录为课程 ID，排除输出、缓存与隐藏文件。新课发布前，从 ZIP 解压到干净目录验证逐日命令、自检、学生挑战与参考答案检查。不要直接编辑 `dist/`。`lastVerified` 仅表示资料核对日期；硬件实验的真实运行证据需要另外记录，不能由字段自动推断。
 
 学习进度使用独立的 `course-progress-v2` 浏览器存储版本，避免旧三任务路线的勾选被误当作十天课程成绩。每日笔记按课程和日期独立保存；导出的是学员自我记录，没有云端同步或认证效力。

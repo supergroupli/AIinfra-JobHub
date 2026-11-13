@@ -3,6 +3,13 @@ import html
 import json
 import re
 
+if __package__:
+    from .teaching_models import MODELS
+else:
+    from teaching_models import MODELS
+
+INTERACTIVE_KINDS = {"timeline", "kv-cache", "prefix-cache", *MODELS}
+
 CATEGORIES = {
     "foundations": {"zh": "系统基础", "en": "Foundations"},
     "inference": {"zh": "推理引擎", "en": "Inference"},
@@ -46,6 +53,8 @@ def course_hero(course):
         (("实践环境", "Hardware"), course["hardware"]),
         (("最终作品", "Final deliverable"), course["outcome"]),
     ]
+    if course.get("curriculum"):
+        facts.insert(0, (("课程定位", "Curriculum role"), course["curriculum"]["label"]))
     roles = {lang: " · ".join(course["roles"][lang]) for lang in ("zh", "en")}
     return (
         '<div class="breadcrumbs">' + label("a", "学习库", "Learning library", 'href="../../#learn"') +
@@ -100,7 +109,7 @@ def explanation_blocks(step):
         for index, node in enumerate(diagram["nodes"], 1):
             chunks += [f'<li><span class="diagram-number" aria-hidden="true">{index:02d}</span>', localized("span", node), '</li>']
         chunks += ['</ol>', localized("p", diagram["caption"], 'class="diagram-caption"'), '</figure>']
-    if step.get("interactive") in ("timeline", "kv-cache", "prefix-cache"):
+    if step.get("interactive") in INTERACTIVE_KINDS:
         chunks.append(interactive_panel(step["interactive"], step["day"]))
     return "".join(chunks)
 
@@ -114,6 +123,23 @@ def slider(widget_id, key, zh, en, value, minimum, maximum, increment=1):
 
 def interactive_panel(kind, day):
     widget_id = f"sim-{day}-{kind}"
+    if kind in MODELS:
+        model = MODELS[kind]
+        chunks = [f'<section class="learning-simulator" data-simulator="{kind}">',
+                  label("div", "交互实验 · 教学模型", "INTERACTIVE LAB · TEACHING MODEL", 'class="lab-eyebrow"'),
+                  localized("h3", model["title"]), localized("p", model["description"]), '<div class="sim-controls">']
+        for key, title, value, minimum, maximum, increment in model["inputs"]:
+            chunks.append(slider(widget_id, key, title["zh"], title["en"], value, minimum, maximum, increment))
+        chunks += ['</div>', f'<p class="sim-formula">{esc(model["formula"])}</p>', '<div class="sim-comparison">']
+        maximum = max(model["defaults"])
+        for index, row in enumerate(model["rows"]):
+            value = model["defaults"][index]
+            chunks += ['<div>', localized("span", row), f'<strong data-model-value="{index}">{value} {esc(model["unit"])}</strong>',
+                       f'<div class="sim-bar" aria-hidden="true"><span class="stage-{ "prefill" if index == 0 else "decode" }" data-model-bar="{index}" style="width:{value / maximum * 100:.3f}%"></span></div></div>']
+        chunks += ['</div>', f'<output class="sim-result" aria-live="polite">{esc(model["example"]["zh"])}</output>',
+                   label("p", "调整参数，先预测再观察。教学假设不代表真实系统的性能或容量承诺。", "Predict before adjusting. Teaching assumptions do not guarantee real system performance or capacity.", 'class="sim-boundary"'),
+                   '<noscript>', label("p", "启用 JavaScript 可调整参数；当前显示默认算例。", "Enable JavaScript to adjust parameters; the default example is shown."), '</noscript></section>']
+        return "".join(chunks)
     titles = {"timeline": ("把一次请求拆开看", "Inside one request"), "kv-cache": ("算一算 KV cache 占多少空间", "Estimate the KV cache footprint"), "prefix-cache": ("共享前缀怎样改变等待时间？", "How can a shared prefix change waiting time?")}
     chunks = [
         f'<section class="learning-simulator" data-simulator="{kind}">',
@@ -271,6 +297,8 @@ def course_markdown(course, lang, site_url=None):
     lines = [f'# {pick(course["title"])} · {"10-day guide" if english else "10 天实战学习"}', '', '聘枢 · AI Infra JobHub', '', pick(course["description"]), '']
     for name, key in [("Daily commitment" if english else "每日投入", "hoursPerDay"), ("Prerequisites" if english else "先修知识", "prerequisites"), ("Hardware" if english else "实践环境", "hardware"), ("Final deliverable" if english else "结课作品", "outcome")]:
         lines += [f'**{name}:** {pick(course[key])}', '']
+    if course.get("curriculum"):
+        lines += [f'**{"Curriculum role" if english else "课程定位"}:** {pick(course["curriculum"]["label"])}', '']
     lines += [f'{"Sources checked" if english else "资料核对"}: {course["lastVerified"]}.', '',
               'Source review does not mean all hardware experiments were run here. Pin versions and label measured, simulated and planned work separately.' if english else '资料核对不代表所有硬件实验已由平台跑通。请固定版本，并区分实测、模拟与未执行的设计。', '']
     if course.get("lab"):

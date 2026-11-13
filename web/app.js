@@ -11,10 +11,12 @@ const storage = {
   set(key, value) { try { localStorage.setItem(`infra-commons:${key}`, JSON.stringify(value)); } catch { /* Progress remains available for this visit. */ } }
 };
 const savedProgress = storage.get("course-progress-v2", []);
-const state = {lang: storage.get("language", "zh") === "en" ? "en" : "zh", data: null, skills: new Set(), query: "", workMode: "", courseQuery: "", category: "", level: "", hardware: "", path: "", progress: new Set(Array.isArray(savedProgress) ? savedProgress.filter(x => typeof x === "string") : [])};
+const state = {lang: storage.get("language", "zh") === "en" ? "en" : "zh", data: null, skills: new Set(), query: "", workMode: "", courseQuery: "", category: "", level: "", hardware: "", path: "", requirement: "", progress: new Set(Array.isArray(savedProgress) ? savedProgress.filter(x => typeof x === "string") : [])};
 const technologies = ["vLLM", "SGLang", "LMCache", "Mooncake", "Dynamo", "KV Cache", "Serving", "CUDA", "Triton", "PyTorch", "Ray", "NCCL", "Kubernetes", "Distributed Systems", "Observability"];
 const messages = {
   zh: {
+    gpuExtensions: "含 GPU / 高速互连选做实验",
+    requiredHeading: "必修课", electiveHeading: "选修课", commonRequired: "共同必修", roleRequired: "岗位必修", elective: "方向选修", requiredGroup: "必修 · 共 {days} 天", electiveGroup: "选修 · {count} 门，按需选择", selectedRequirement: "课程性质", allRequirements: "必修 + 选修", roleLabel: "目标岗位", allRoles: "全部方向", requiredCount: "{count} 门必修 · {days} 天",
     guidedBadge: "图解 · 配套实验 · 逐题解析",
     navProjects: "实战项目", navPortfolio: "作品档案",
     courseSearchLabel: "探索技术与岗位", courseSearchPlaceholder: "搜索 vLLM、Mooncake、分布式训练…", courseLevelLabel: "学习深度", allLevels: "所有深度", beginner: "入门", intermediate: "进阶", advanced: "深入", courseHardwareLabel: "实践条件", allHardware: "所有环境", cpuFriendly: "可从 CPU 起步", gpuRequired: "需兼容 GPU", multiGpu: "多卡 / 多节点实测", allCourses: "全部课程", clearCatalog: "重置学习库筛选", catalogCount: "{count} 门课程 · 每门 10 天", pathDuration: "{count} 门课程 · 按顺序共 {days} 天", choosePath: "查看这条路径", openCourse: "打开 10 天学习手册", continueCourse: "继续学习", tenDays: "10 天实战", noCourses: "没有符合这些条件的课程", noCoursesBody: "换一个技术关键词，或重置筛选查看完整学习库。", relatedRoles: "关联岗位", metricCourses: "门 10 天课程", metricDays: "个每日学习任务", metricLanguages: "双语学习手册",
@@ -39,7 +41,9 @@ const messages = {
     privacy3: "学习进度和语言偏好保存在本浏览器。本站代码不加载分析跟踪脚本，也不把这些进度上传。你可以通过邮件客户端将简历发送至 career@yzinfra.com，邮件由该邮箱运营方接收和处理，不会由网站自动发布到 GitHub。针对具体职位，也可使用企业官方申请入口。网站不提供私聊或简历上传存储；邮件和网页访问仍适用各服务提供方的数据处理政策。"
   },
   en: {
-    guidedBadge: "Diagrams · Lab kit · Explained quizzes", guidedEyebrow: "NEW TO AI INFRA? START HERE", guidedTitle: "Build an experiment. Understand a system.", guidedDescription: "Foundations and vLLM include guided experiments, diagrams, downloadable code and explained quizzes. Start with the CPU foundations course if you know Python, then explore vLLM serving and caching.", guidedFoundations: "① Foundations · Start on a laptop", guidedVllm: "② vLLM · Simulation / GPU labs",
+    gpuExtensions: "Optional GPU / fast-interconnect labs",
+    requiredHeading: "Core courses", electiveHeading: "Electives", commonRequired: "Common core", roleRequired: "Role core", elective: "Elective", requiredGroup: "Core · {days} days", electiveGroup: "Electives · choose from {count}", selectedRequirement: "Course requirement", allRequirements: "Core + electives", roleLabel: "Target role", allRoles: "All roles", requiredCount: "{count} core courses · {days} days", curriculumNote: "Foundations is common to every path. Core and elective choices depend on your target role; use the lab checks to identify what you already know.",
+    guidedBadge: "Diagrams · Lab kit · Explained quizzes", guidedEyebrow: "NEW TO AI INFRA? START HERE", guidedTitle: "Build an experiment. Understand a system.", guidedDescription: "Every course includes guided experiments, diagrams, downloadable code and explained quizzes. Start with CPU foundations, then follow the core courses and choose electives for your target role.", guidedFoundations: "① Foundations · Start on a laptop", guidedVllm: "② vLLM · Simulation / GPU labs",
     wechatEntry: "Careers & technical exchange · Connect on WeCom ↗", wechatTitle: "AI Infra careers and technical conversations", wechatDescription: "Looking for an AI infrastructure role, or interested in inference, caching, GPUs and platform engineering? Scan to add 元智引擎 on WeCom and introduce your interests.", wechatIntro: "When adding the contact, include your technical focus, career or collaboration interests, and a portfolio link.", wechatPhone: "On mobile, open and save the original image, then recognize the QR code in WeChat.", wechatScan: "Scan to connect on WeCom", wechatOriginal: "Open the original QR image ↗", wechatJobsTitle: "Bring your work. Talk about your next opportunity.", wechatJobsDescription: "You can also connect on WeCom to introduce your target role, technical focus and availability.",
     navProjects: "Projects", navPortfolio: "Portfolio", buildEyebrow: "THE NEXT STEP / FROM LEARNING TO PRACTICE", buildTitle: "Turn what you know into work you can show.", buildIntro: "Choose an engineering problem, leave a reproducible record, then let your work introduce you.", projectsTitle: "Build a reproducible engineering project", projectsIntro: "Explore serving workloads, cache experiments and GPU kernels. Each project defines its scope, deliverables and acceptance checks, with CPU-friendly starting points.", exploreProjects: "Explore the project library ↗", portfolioTitle: "Make your contribution easy to understand", portfolioIntro: "Document the problem, environment, method, raw evidence and limitations. Keep a draft, export Markdown, then choose how to share it.", portfolioLocal: "Drafts stay in this browser", portfolioEvidence: "Distinguish measurements, simulations and designs", createPortfolio: "Build my project portfolio ↗", preparePortfolio: "Need a project introduction? Prepare your engineering portfolio ↗",
     courseSearchLabel: "Explore technologies and roles", courseSearchPlaceholder: "Search vLLM, Mooncake, distributed training…", courseLevelLabel: "Depth", allLevels: "All levels", beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced", courseHardwareLabel: "Practice environment", allHardware: "All environments", cpuFriendly: "Start on a CPU", gpuRequired: "Compatible GPU needed", multiGpu: "Multi-GPU / multi-node", allCourses: "All courses", clearCatalog: "Reset library filters", catalogCount: "{count} courses · 10 days each", pathDuration: "{count} courses · {days} days in sequence", choosePath: "Explore this path", openCourse: "Open the 10-day guide", continueCourse: "Continue learning", tenDays: "10-DAY GUIDE", noCourses: "No courses match these filters", noCoursesBody: "Try another technology or reset the filters to see the full library.", relatedRoles: "Related roles", metricCourses: "ten-day courses", metricDays: "daily learning tasks", metricLanguages: "bilingual guides",
@@ -82,7 +86,18 @@ function translatePage() {
 
 function renderPaths() {
   if (!state.data) return;
-  $("#career-paths").innerHTML = state.data.paths.map(path => `<article class="path-card"><span class="path-number">PATH ${h(path.number)}</span><h3>${h(pick(path.title))}</h3><p>${h(pick(path.description))}</p><div class="path-chain">${path.courses.map(id => `<a href="./learn/${encodeURIComponent(id)}/">${h(state.data.tracks.find(x => x.id === id)?.title[state.lang] ?? id)}</a>`).join(' <span aria-hidden="true">→</span> ')}</div><small>${h(t("pathDuration", {count: path.courses.length, days: path.courses.length * 10}))}</small><button class="text-button" type="button" data-path="${h(path.id)}" aria-pressed="${state.path === path.id}">${h(t("choosePath"))} ↗</button></article>`).join("");
+  $("#course-role").innerHTML = `<option value="">${h(t("allRoles"))}</option>` + state.data.paths.map(path => `<option value="${h(path.id)}">${h(pick(path.title))}</option>`).join("");
+  $("#course-role").value = state.path;
+  const links = ids => ids.map(id => `<a href="./learn/${encodeURIComponent(id)}/?lang=${state.lang}">${h(state.data.tracks.find(x => x.id === id)?.title[state.lang] ?? id)}</a>`).join(' <span aria-hidden="true">·</span> ');
+  $("#career-paths").innerHTML = state.data.paths.map(path => `<article class="path-card${state.path === path.id ? " is-selected" : ""}"><span class="path-number">PATH ${h(path.number)}</span><h3>${h(pick(path.title))}</h3><p>${h(pick(path.description))}</p><div class="path-core"><strong>${h(t("requiredGroup", {days:path.requiredCourses.length * 10}))}</strong><div class="path-chain">${links(path.requiredCourses)}</div></div><details class="path-electives"><summary>${h(t("electiveGroup", {count:path.electiveCourses.length}))}</summary><div class="path-chain">${links(path.electiveCourses)}</div></details><button class="text-button" type="button" data-path="${h(path.id)}" aria-pressed="${state.path === path.id}">${h(t("choosePath"))} ↗</button></article>`).join("");
+}
+
+function requirementLabel(course) {
+  const result = Curriculum.classify(course.id, state.data.paths, state.path);
+  if (result.common) return t("commonRequired");
+  if (result.kind === "elective") return t("elective");
+  if (state.path) return t("roleRequired");
+  return t("roleRequired") + " · " + result.requiredFor.map(id => pick(state.data.paths.find(p => p.id === id).title)).join(" / ");
 }
 
 function renderCategories() {
@@ -97,7 +112,7 @@ function filteredCourses() {
   let courses = state.data.tracks.filter(course => {
     const haystack = [course.title.zh, course.title.en, course.description.zh, course.description.en, ...course.tags, ...course.roles.zh, ...course.roles.en].join(" ").toLocaleLowerCase();
     const hardwareMatch = !state.hardware || (state.hardware === "cpu" ? ["cpu", "gpu-optional"].includes(course.hardwareTier) : course.hardwareTier === state.hardware);
-    return (!query || haystack.includes(query)) && (!state.category || course.category === state.category) && (!state.level || course.level === state.level) && hardwareMatch && (!path || path.courses.includes(course.id));
+    return (!query || haystack.includes(query)) && (!state.category || course.category === state.category) && (!state.level || course.level === state.level) && hardwareMatch && (!path || path.courses.includes(course.id)) && (!state.requirement || Curriculum.classify(course.id, state.data.paths, state.path).kind === state.requirement);
   });
   if (path) courses = courses.sort((a, b) => path.courses.indexOf(a.id) - path.courses.indexOf(b.id));
   return courses;
@@ -112,17 +127,21 @@ function renderTracks() {
   $("#metric-days").textContent = state.data.tracks.reduce((total, x) => total + x.steps.length, 0);
   const selectedPath = state.data.paths.find(x => x.id === state.path);
   $("#catalog-count").textContent = t("catalogCount", {count: courses.length}) + (selectedPath ? ` · ${pick(selectedPath.title)}` : "");
-  $("#tracks").innerHTML = courses.map(track => {
+  const renderCards = items => items.map(track => {
     const done = track.steps.filter(step => state.progress.has(`${track.id}:${step.day}`)).length;
     const nextDay = track.steps.find(step => !state.progress.has(`${track.id}:${step.day}`))?.day ?? 10;
     const href = `./learn/${encodeURIComponent(track.id)}/#day-${nextDay}`;
-    return `<article class="course-card"><div class="course-top"><span class="course-code" aria-hidden="true">${h(symbols[track.id] ?? "↗")}</span><span class="course-category">${h(pick(state.data.categories[track.category]))}</span><span class="track-number">${h(track.number)}</span></div><h3><a href="${href}">${h(pick(track.title))}</a></h3><p>${h(pick(track.description))}</p>${tagsHtml(track.tags)}${track.lab ? `<p class="guided-badge">${h(t("guidedBadge"))}</p>` : ""}<div class="course-meta"><span>${h(t("tenDays"))}</span><span>${h(t(track.level))}</span><span>${h(pick(track.hoursPerDay))}</span></div><div class="hardware-label">${h(t(hardwareLabels[track.hardwareTier]))}</div><div class="course-footer"><a class="text-link" href="${href}">${h(t(done ? "continueCourse" : "openCourse"))} ↗</a><span class="course-progress" aria-label="${done} / 10">${done}/10</span></div></article>`;
+    return `<article class="course-card"><div class="course-top"><span class="course-code" aria-hidden="true">${h(symbols[track.id] ?? "↗")}</span><span class="course-category">${h(pick(state.data.categories[track.category]))}</span><span class="track-number">${h(track.number)}</span></div><span class="requirement-label ${Curriculum.classify(track.id, state.data.paths, state.path).kind}">${h(requirementLabel(track))}</span><h3><a href="${href}">${h(pick(track.title))}</a></h3><p>${h(pick(track.description))}</p>${tagsHtml(track.tags)}${track.lab ? `<p class="guided-badge">${h(t("guidedBadge"))}</p>` : ""}<div class="course-meta"><span>${h(t("tenDays"))}</span><span>${h(t(track.level))}</span><span>${h(pick(track.hoursPerDay))}</span></div><div class="hardware-label">${h(t(hardwareLabels[track.hardwareTier]))}</div><div class="course-footer"><a class="text-link" href="${href}">${h(t(done ? "continueCourse" : "openCourse"))} ↗</a><span class="course-progress" aria-label="${done} / 10">${done}/10</span></div></article>`;
+  }).join("");
+  $("#tracks").innerHTML = ["required", "elective"].map(kind => {
+    const items = courses.filter(course => Curriculum.classify(course.id, state.data.paths, state.path).kind === kind);
+    return items.length ? `<div class="course-group-heading"><h3>${h(t(kind === "required" ? "requiredHeading" : "electiveHeading"))}</h3><span>${items.length} · ${h(selectedPath ? pick(selectedPath.title) : t("allRoles"))}</span></div>${renderCards(items)}` : "";
   }).join("") || `<div class="empty-state"><div><h3>${h(t("noCourses"))}</h3><p>${h(t("noCoursesBody"))}</p></div><button class="text-button" data-clear-catalog type="button">${h(t("clearCatalog"))}</button></div>`;
 }
 
 function clearCatalog(render = true) {
-  state.courseQuery = ""; state.category = ""; state.level = ""; state.hardware = ""; state.path = "";
-  $("#course-search").value = ""; $("#course-level").value = ""; $("#course-hardware").value = "";
+  state.courseQuery = ""; state.category = ""; state.level = ""; state.hardware = ""; state.path = ""; state.requirement = "";
+  $("#course-search").value = ""; $("#course-level").value = ""; $("#course-hardware").value = ""; $("#course-role").value = ""; $("#course-requirement").value = "";
   if (render) { renderPaths(); renderCategories(); renderTracks(); }
 }
 
@@ -192,6 +211,8 @@ $("#reset-filters").addEventListener("click", clearFilters);
 $("#course-search").addEventListener("input", event => { state.courseQuery = event.target.value; renderTracks(); });
 $("#course-level").addEventListener("change", event => { state.level = event.target.value; renderTracks(); });
 $("#course-hardware").addEventListener("change", event => { state.hardware = event.target.value; renderTracks(); });
+$("#course-role").addEventListener("change", event => { state.path = event.target.value; renderPaths(); renderTracks(); });
+$("#course-requirement").addEventListener("change", event => { state.requirement = event.target.value; renderTracks(); });
 $("#clear-catalog").addEventListener("click", () => clearCatalog());
 $("#close-dialog").addEventListener("click", () => $("#detail-dialog").close());
 $("#privacy-button").addEventListener("click", () => showDialog(`<h2 id="dialog-title">${h(t("privacyTitle"))}</h2><div class="privacy-copy">${["privacy1", "privacy2", "privacy3"].map(key => `<p>${h(t(key))}</p>`).join("")}</div>`));

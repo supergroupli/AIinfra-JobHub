@@ -11,8 +11,8 @@
     "en": "Make inference workloads operable"
   },
   "description": {
-    "zh": "从 Pod 与资源请求到 GPU 调度、模型存储、健康检查与发布回滚，完成一份可复用的 AI 服务部署方案。",
-    "en": "Move from Pods and resource requests to GPU scheduling, model storage, health checks and rollbacks. Produce a reusable AI service deployment plan."
+    "zh": "用10天逐步完成 Kubernetes AI 平台：图解原理、运行CPU实验、分析对照与失败，完成独立挑战和可复现报告。真实框架/集群路线单独标注，模拟结果不替代实测。",
+    "en": "A ten-day guided kubernetes course with diagrams, runnable CPU exercises, controlled comparisons, failures, independent challenges and a reproducible report. Optional real-framework/cluster work is labeled separately."
   },
   "level": "intermediate",
   "hoursPerDay": {
@@ -24,10 +24,10 @@
     "en": "Linux, container images and HTTP; foundations and vLLM are recommended first."
   },
   "hardware": {
-    "zh": "普通电脑可用 kind 完成控制面实验；真实 GPU 调度需兼容节点、驱动与设备插件。",
-    "en": "A laptop with kind is enough for control-plane labs. Actual GPU scheduling needs compatible nodes, drivers and device plugins."
+    "zh": "Python 3.9+，无需Docker、GPU或集群即可完成离线主线；可选真实路线针对专用Kubernetes/kubectl 1.35.9学习集群。",
+    "en": "Python 3.9+ offline route needs no Docker, GPU or cluster; optional real deployment targets a dedicated Kubernetes/kubectl 1.35.9 teaching cluster."
   },
-  "hardwareTier": "gpu-optional",
+  "hardwareTier": "cpu",
   "tags": [
     "Kubernetes",
     "Serving"
@@ -75,30 +75,32 @@
         "en": "Create a lab cluster and object map"
       },
       "lesson": {
-        "zh": "Kubernetes 通过控制循环让实际状态逐步接近期望状态。Pod 是调度的基本单位，Deployment 管理副本与更新，Service 提供稳定访问入口。控制面只知道资源与声明，并不理解模型效果。先把这些责任区分开，才能解释“进程在运行”与“推理服务可用”之间的差距。所有动手操作使用自己创建的实验集群。",
-        "en": "Kubernetes controllers reconcile observed state toward declared state. A Pod is a scheduling unit; a Deployment manages replicas and updates; a Service provides a stable access endpoint. The control plane understands resources and declarations, not model quality. Separate these responsibilities before interpreting a running process as a usable inference service. Use a lab cluster you own for every exercise."
+        "zh": "Kubernetes以声明式对象描述期望状态，再由控制器持续协调。Deployment管理副本与发布，Pod承载容器，Service选择后端。资源清单被解析成功与实际调度成功是两件事。 实验包的List包含ConfigMap、Deployment和ClusterIP Service。离线检查验证选择器、端口和本教材默认资源；只有API server与实际节点运行才能证明部署可用。",
+        "en": "Kubernetes objects declare desired state and controllers reconcile it. Deployments manage replicas and releases, Pods host containers, and Services select backends. Parsed configuration is not the same as successful scheduling. The supplied List contains a ConfigMap, Deployment and ClusterIP Service. Offline checks cover selectors, ports and tutorial defaults. Only API-server acceptance and running nodes can validate deployment."
       },
       "task": {
-        "zh": "按 kind 官方指南创建 jobhub-lab 集群，部署一个轻量 HTTP 示例，画出请求从 Service 到 Pod 的路径。保存 kubectl 与集群版本。",
-        "en": "Create a jobhub-lab cluster using the kind guide, deploy a small HTTP example and map the Service-to-Pod request path. Record kubectl and cluster versions."
+        "zh": "在副本文件里改坏Service selector，观察校验失败并恢复；画出Deployment到Pod的关系。",
+        "en": "Break the Service selector in a copy, observe failure and restore it; draw Deployment-to-Pod ownership."
       },
       "evidence": {
-        "zh": "对象关系图、环境记录与最小 Deployment/Service 清单。",
-        "en": "An object diagram, environment record and minimal Deployment/Service manifests."
+        "zh": "out/day01.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day01.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "能解释 Pod、Deployment、Service 的不同职责",
-          "能从集群内访问示例，或准确说明运行条件缺口"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Explain the separate responsibilities of Pod, Deployment and Service",
-          "Reach the example inside the cluster, or document the missing execution prerequisites"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "本日不需要 GPU；没有容器环境时完成清单评审与对象生命周期图。",
-        "en": "No GPU is needed. Without a container runtime, review the manifests and draw the object lifecycle."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
@@ -109,6 +111,162 @@
           "title": "kind · Quick Start",
           "url": "https://kind.sigs.k8s.io/docs/user/quick-start/"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "Kubernetes以声明式对象描述期望状态，再由控制器持续协调。Deployment管理副本与发布，Pod承载容器，Service选择后端。资源清单被解析成功与实际调度成功是两件事。",
+            "en": "Kubernetes objects declare desired state and controllers reconcile it. Deployments manage replicas and releases, Pods host containers, and Services select backends. Parsed configuration is not the same as successful scheduling."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "实验包的List包含ConfigMap、Deployment和ClusterIP Service。离线检查验证选择器、端口和本教材默认资源；只有API server与实际节点运行才能证明部署可用。",
+            "en": "The supplied List contains a ConfigMap, Deployment and ClusterIP Service. Offline checks cover selectors, ports and tutorial defaults. Only API-server acceptance and running nodes can validate deployment."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "建立实验集群与对象地图 · 图解",
+          "en": "Create a lab cluster and object map · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "声明清单",
+            "en": "Manifest"
+          },
+          {
+            "zh": "API校验",
+            "en": "API validation"
+          },
+          {
+            "zh": "控制器协调",
+            "en": "Reconcile"
+          },
+          {
+            "zh": "Pod与Service",
+            "en": "Pod/Service"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "在下载并解压的 kubernetes 文件夹打开终端；Windows可将python3换为py -3。先运行python3 lab.py selfcheck，再执行本日命令。",
+            "en": "Open a terminal in the extracted kubernetes folder. Windows can use py -3 instead of python3. Run python3 lab.py selfcheck first, then today’s command."
+          },
+          "command": "python3 lab.py day1",
+          "expected": {
+            "zh": "status=PASS、checks=7；scope明确不是API验收。",
+            "en": "status=PASS, checks=7; scope explicitly excludes API acceptance."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "在副本文件里改坏Service selector，观察校验失败并恢复；画出Deployment到Pod的关系。",
+            "en": "Break the Service selector in a copy, observe failure and restore it; draw Deployment-to-Pod ownership."
+          },
+          "command": "python3 -m json.tool out/day01.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "selector mismatch",
+            "en": "selector mismatch"
+          },
+          "fix": {
+            "zh": "逐项核对Deployment.selector、Pod labels与Service.selector。",
+            "en": "Compare Deployment selector, Pod labels and Service selector."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "把离线检查当API校验",
+            "en": "Treating offline checks as API validation"
+          },
+          "fix": {
+            "zh": "本检查只覆盖教材字段；真实路线还需server dry-run与运行验收。",
+            "en": "The checker covers tutorial fields; use server dry-run and runtime checks in the real route."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "离线PASS证明Pod已Running吗？",
+            "en": "Does offline PASS prove a Pod is Running?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "能证明有GPU",
+              "en": "It proves GPU availability"
+            },
+            {
+              "zh": "不能",
+              "en": "No"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "答案：不能。Kubernetes以声明式对象描述期望状态，再由控制器持续协调。Deployment管理副本与发布，Pod承载容器，Service选择后端。资源清单被解析成功与实际调度成功是两件事。",
+            "en": "Answer: No. Kubernetes objects declare desired state and controllers reconcile it. Deployments manage replicas and releases, Pods host containers, and Services select backends. Parsed configuration is not the same as successful scheduling."
+          }
+        },
+        {
+          "question": {
+            "zh": "谁管理Deployment的副本期望？",
+            "en": "What reconciles desired Deployment replicas?"
+          },
+          "options": [
+            {
+              "zh": "镜像名称",
+              "en": "Image name"
+            },
+            {
+              "zh": "控制器",
+              "en": "Controllers"
+            },
+            {
+              "zh": "浏览器",
+              "en": "Browser"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "答案：控制器。实验包的List包含ConfigMap、Deployment和ClusterIP Service。离线检查验证选择器、端口和本教材默认资源；只有API server与实际节点运行才能证明部署可用。",
+            "en": "Answer: Controllers. The supplied List contains a ConfigMap, Deployment and ClusterIP Service. Offline checks cover selectors, ports and tutorial defaults. Only API-server acceptance and running nodes can validate deployment."
+          }
+        }
       ]
     },
     {
@@ -118,37 +276,196 @@
         "en": "Declare a resource budget"
       },
       "lesson": {
-        "zh": "CPU 和内存的 requests 影响调度，limits 约束容器可用资源，但两者不是同一种承诺。模型权重、KV cache、运行时缓冲与主机内存都可能成为瓶颈；只看 GPU 数量会漏掉 CPU 数据处理和内存压力。调度可容纳并不意味着延迟目标已达成，容量预算与性能验收需要分别记录。",
-        "en": "CPU and memory requests inform scheduling, while limits constrain resource use. They are different contracts. Weights, KV cache, runtime buffers and host memory can each become bottlenecks; GPU counts alone miss CPU preprocessing and host pressure. A schedulable workload has not necessarily met its latency objective. Keep capacity planning and performance acceptance as separate records."
+        "zh": "requests参与调度容量判断，limits描述运行约束，二者用途不同。节点allocatable已经扣除了部分系统预留；不要拿整机内存直接当可分配预算。还要考虑已有Pod、亲和性和污点。 一个空节点有4000m CPU与8192Mi内存，每副本请求500m和1024Mi，两种约束都允许8副本。若内存请求改成2048Mi，内存把上限降到4。",
+        "en": "Requests affect scheduling capacity, while limits constrain runtime behavior. Node allocatable already accounts for some reservations. Existing Pods, affinity and taints also matter beyond total hardware. An empty node with 4000m CPU and 8192Mi admits eight 500m/1024Mi replicas. Raising memory to 2048Mi makes memory the bottleneck at four replicas."
       },
       "task": {
-        "zh": "为示例服务设置 requests/limits，观察 Pod 的调度事件。再为一个选定模型编写 CPU、主机内存、GPU 显存与并发预算，说明每项依据。",
-        "en": "Set requests and limits for the sample service and inspect scheduling events. Draft CPU, host-memory, GPU-memory and concurrency budgets for one model, explaining each assumption."
+        "zh": "在slots函数调用中把内存请求改为2048Mi，预测再验证；解释limit不等于调度预留。",
+        "en": "Call slots with 2048Mi memory request, predict then verify, and distinguish limits from reservations."
       },
       "evidence": {
-        "zh": "资源预算表与一次可解释的 Pending 或资源限制观察。",
-        "en": "A resource budget and one explained scheduling or resource-limit observation."
+        "zh": "out/day02.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day02.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "区分 requests 与 limits",
-          "预算包含权重、KV cache 与非模型开销"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Distinguish requests from limits",
-          "Account for weights, KV cache and non-model overhead"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "用 CPU 服务观察调度；模型显存项写为估算，标注未实测。",
-        "en": "Observe scheduling with a CPU service; label model-memory values as estimates."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
           "title": "Kubernetes · Resource management",
           "url": "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "requests参与调度容量判断，limits描述运行约束，二者用途不同。节点allocatable已经扣除了部分系统预留；不要拿整机内存直接当可分配预算。还要考虑已有Pod、亲和性和污点。",
+            "en": "Requests affect scheduling capacity, while limits constrain runtime behavior. Node allocatable already accounts for some reservations. Existing Pods, affinity and taints also matter beyond total hardware."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "一个空节点有4000m CPU与8192Mi内存，每副本请求500m和1024Mi，两种约束都允许8副本。若内存请求改成2048Mi，内存把上限降到4。",
+            "en": "An empty node with 4000m CPU and 8192Mi admits eight 500m/1024Mi replicas. Raising memory to 2048Mi makes memory the bottleneck at four replicas."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "把资源预算写进清单 · 图解",
+          "en": "Declare a resource budget · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "allocatable",
+            "en": "Allocatable"
+          },
+          {
+            "zh": "CPU请求",
+            "en": "CPU request"
+          },
+          {
+            "zh": "内存请求",
+            "en": "Memory request"
+          },
+          {
+            "zh": "最小容量上限",
+            "en": "Minimum bound"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day2",
+          "expected": {
+            "zh": "schedulable_slots=8；这是单节点简化预算。",
+            "en": "schedulable_slots=8 for the simplified single-node budget."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "在slots函数调用中把内存请求改为2048Mi，预测再验证；解释limit不等于调度预留。",
+            "en": "Call slots with 2048Mi memory request, predict then verify, and distinguish limits from reservations."
+          },
+          "command": "python3 -m json.tool out/day02.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "Pod因资源不足Pending",
+            "en": "Pod Pending for insufficient resources"
+          },
+          "fix": {
+            "zh": "检查requests与节点allocatable/已分配量，再查其他调度条件。",
+            "en": "Compare requests, allocatable and existing allocations, then other scheduling constraints."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "把Mi当成MB",
+            "en": "Confusing Mi with MB"
+          },
+          "fix": {
+            "zh": "Mi使用2^20字节；所有预算先统一单位。",
+            "en": "Mi uses 2^20 bytes; normalize units before budgeting."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "4000m CPU相当于多少CPU？",
+            "en": "How many CPUs is 4000m?"
+          },
+          "options": [
+            {
+              "zh": "0.004",
+              "en": "0.004"
+            },
+            {
+              "zh": "4",
+              "en": "4"
+            },
+            {
+              "zh": "4000",
+              "en": "4000"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "答案：4。requests参与调度容量判断，limits描述运行约束，二者用途不同。节点allocatable已经扣除了部分系统预留；不要拿整机内存直接当可分配预算。还要考虑已有Pod、亲和性和污点。",
+            "en": "Answer: 4. Requests affect scheduling capacity, while limits constrain runtime behavior. Node allocatable already accounts for some reservations. Existing Pods, affinity and taints also matter beyond total hardware."
+          }
+        },
+        {
+          "question": {
+            "zh": "CPU允许8、内存允许4，应取哪个？",
+            "en": "CPU allows eight, memory four: which bound?"
+          },
+          "options": [
+            {
+              "zh": "4",
+              "en": "4"
+            },
+            {
+              "zh": "8",
+              "en": "8"
+            },
+            {
+              "zh": "12",
+              "en": "12"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "答案：4。一个空节点有4000m CPU与8192Mi内存，每副本请求500m和1024Mi，两种约束都允许8副本。若内存请求改成2048Mi，内存把上限降到4。",
+            "en": "Answer: 4. An empty node with 4000m CPU and 8192Mi admits eight 500m/1024Mi replicas. Raising memory to 2048Mi makes memory the bottleneck at four replicas."
+          }
+        }
+      ],
+      "interactive": "placement-budget"
     },
     {
       "day": 3,
@@ -157,30 +474,32 @@
         "en": "Understand GPU scheduling"
       },
       "lesson": {
-        "zh": "设备插件把厂商设备暴露为扩展资源，调度器根据资源请求选择节点。申请 GPU 不会替你安装驱动，也不会自动保证镜像、CUDA 与引擎兼容。标签和亲和性可以表达硬件约束，但不能凭空创建资源。学习 GPU 调度的关键是把发现、分配、运行时访问与应用可用这四个阶段分别验证。",
-        "en": "Device plugins expose vendor devices as extended resources; the scheduler selects nodes that satisfy requests. A GPU request does not install drivers or guarantee image, CUDA and engine compatibility. Labels and affinity express constraints but cannot create capacity. Verify discovery, allocation, runtime access and application readiness separately rather than treating scheduling as the whole GPU integration."
+        "zh": "GPU需要设备插件把扩展资源暴露给调度器。清单写nvidia.com/gpu并不会创造GPU。GPU请求通常是整数设备计数；共享或切片需要另外的设备与调度配置。 相同CPU/内存节点若没有可分配GPU，请求1GPU时容量为0；有2张可分配GPU时最多2副本，即使CPU可容纳8副本也一样。",
+        "en": "Device plugins expose GPUs as extended resources. Writing nvidia.com/gpu does not create devices. Requests normally count integer devices; sharing or partitioning requires additional configuration. With identical CPU/memory but zero allocatable GPUs, one-GPU replicas have zero slots. With two GPUs, the limit is two even if CPU allows eight."
       },
       "task": {
-        "zh": "阅读设备插件与 GPU 调度文档，编写一个明确 GPU 资源名的 Pod 清单；有 GPU 的实验节点验证设备可见性，无 GPU 时解释 Pending 的事件原因。",
-        "en": "Read device-plugin and GPU-scheduling guidance. Write a manifest with an explicit GPU resource name. Validate device visibility on a GPU lab node, or explain Pending events without one."
+        "zh": "列出Pending时需要核对的节点allocatable、设备插件与Pod请求；不要把CPU示例称GPU部署。",
+        "en": "List allocatable, device-plugin and Pod-request checks for Pending; keep the CPU demo distinct from GPU deployment."
       },
       "evidence": {
-        "zh": "GPU 依赖矩阵、Pod 清单与调度链路说明。",
-        "en": "A GPU dependency matrix, Pod manifest and scheduling walkthrough."
+        "zh": "out/day03.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day03.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "说明资源名来自哪种设备插件",
-          "不把 kind 中的普通节点称为真实 GPU 环境"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Identify the device plugin behind the resource name",
-          "Do not describe ordinary kind nodes as a real GPU setup"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "在无 GPU 集群中审查资源声明，记录预期不可调度原因；不伪造设备成功日志。",
-        "en": "Review the resource declaration and expected unschedulable state; do not fabricate device-success logs."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
@@ -191,7 +510,164 @@
           "title": "Kubernetes · Device plugins",
           "url": "https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "GPU需要设备插件把扩展资源暴露给调度器。清单写nvidia.com/gpu并不会创造GPU。GPU请求通常是整数设备计数；共享或切片需要另外的设备与调度配置。",
+            "en": "Device plugins expose GPUs as extended resources. Writing nvidia.com/gpu does not create devices. Requests normally count integer devices; sharing or partitioning requires additional configuration."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "相同CPU/内存节点若没有可分配GPU，请求1GPU时容量为0；有2张可分配GPU时最多2副本，即使CPU可容纳8副本也一样。",
+            "en": "With identical CPU/memory but zero allocatable GPUs, one-GPU replicas have zero slots. With two GPUs, the limit is two even if CPU allows eight."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "理解 GPU 是如何被调度的 · 图解",
+          "en": "Understand GPU scheduling · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "设备与驱动",
+            "en": "Device/driver"
+          },
+          {
+            "zh": "设备插件",
+            "en": "Device plugin"
+          },
+          {
+            "zh": "扩展资源",
+            "en": "Extended resource"
+          },
+          {
+            "zh": "Pod准入",
+            "en": "Pod admission"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day3",
+          "expected": {
+            "zh": "without_device_plugin_gpu_slots=0；with_two_allocatable_gpus_slots=2。",
+            "en": "without_device_plugin_gpu_slots=0; with_two_allocatable_gpus_slots=2."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "列出Pending时需要核对的节点allocatable、设备插件与Pod请求；不要把CPU示例称GPU部署。",
+            "en": "List allocatable, device-plugin and Pod-request checks for Pending; keep the CPU demo distinct from GPU deployment."
+          },
+          "command": "python3 -m json.tool out/day03.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "Insufficient nvidia.com/gpu",
+            "en": "Insufficient nvidia.com/gpu"
+          },
+          "fix": {
+            "zh": "检查设备插件、驱动、节点allocatable；YAML不能创建设备。",
+            "en": "Check plugin, driver and allocatable resources; YAML cannot create devices."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "给GPU写0.5失败",
+            "en": "Fractional GPU request fails"
+          },
+          "fix": {
+            "zh": "普通扩展资源使用整数；共享需要专门配置，不能随意填写小数。",
+            "en": "Ordinary extended resources use integers; sharing needs explicit support."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "只在YAML写GPU资源就能获得GPU吗？",
+            "en": "Does declaring a GPU allocate hardware that does not exist?"
+          },
+          "options": [
+            {
+              "zh": "不能",
+              "en": "No"
+            },
+            {
+              "zh": "能模拟生产GPU",
+              "en": "It creates a production simulator"
+            },
+            {
+              "zh": "会自动购买",
+              "en": "It buys a GPU"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "答案：不能。GPU需要设备插件把扩展资源暴露给调度器。清单写nvidia.com/gpu并不会创造GPU。GPU请求通常是整数设备计数；共享或切片需要另外的设备与调度配置。",
+            "en": "Answer: No. Device plugins expose GPUs as extended resources. Writing nvidia.com/gpu does not create devices. Requests normally count integer devices; sharing or partitioning requires additional configuration."
+          }
+        },
+        {
+          "question": {
+            "zh": "2GPU节点上每Pod请求1GPU最多几个？",
+            "en": "How many one-GPU Pods fit on a two-GPU node?"
+          },
+          "options": [
+            {
+              "zh": "8",
+              "en": "8"
+            },
+            {
+              "zh": "无限",
+              "en": "Unlimited"
+            },
+            {
+              "zh": "2",
+              "en": "2"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "答案：2。相同CPU/内存节点若没有可分配GPU，请求1GPU时容量为0；有2张可分配GPU时最多2副本，即使CPU可容纳8副本也一样。",
+            "en": "Answer: 2. With identical CPU/memory but zero allocatable GPUs, one-GPU replicas have zero slots. With two GPUs, the limit is two even if CPU allows eight."
+          }
+        }
+      ],
+      "interactive": "placement-budget"
     },
     {
       "day": 4,
@@ -200,37 +676,206 @@
         "en": "Manage model files and their lifecycle"
       },
       "lesson": {
-        "zh": "容器镜像、模型文件和运行时缓存有不同更新节奏。把大权重塞进每个镜像会增加分发负担；把下载放在启动路径又可能延长冷启动。持久卷声明表达存储需求，实际后端决定访问模式和性能。讨论共享目录时还应考虑版本固定、并发读取与权限，而不是只比较磁盘容量。",
-        "en": "Images, model files and runtime caches change on different schedules. Baking large weights into every image increases distribution cost; downloading during startup extends cold starts. A persistent-volume claim declares storage needs while its backend determines access modes and performance. Shared model storage also needs version pinning, concurrent-read planning and permissions, not just a capacity comparison."
+        "zh": "模型文件的生命周期常长于容器。emptyDir与Pod绑定，容器重启通常保留，但Pod删除会丢失。PVC/PV则有独立对象及回收策略，不能笼统认为永不删除。 用SHA-256记录文件内容，可判断下载是否一致，但不能验证模型来源可信。本示例ConfigMap只装HTML，不用它存大模型权重；真实模型需要合适卷和下载校验流程。",
+        "en": "Model files can outlive containers. emptyDir is tied to a Pod: container restarts usually preserve it, Pod deletion does not. PVC/PV persistence has separate lifecycle and reclaim policy. A SHA-256 identifies content equality, not trusted model provenance. The demo ConfigMap contains only HTML, not large model weights. Real models need suitable volumes and acquisition checks."
       },
       "task": {
-        "zh": "用小型测试文件验证卷挂载和 Pod 重建后的行为，设计模型 revision 与校验记录。比较镜像内置、启动下载和共享模型卷三种路径。",
-        "en": "Use a small file to verify mounts and behavior after Pod replacement. Design model-revision and checksum records. Compare image-bundled, startup-download and shared-volume approaches."
+        "zh": "画出镜像、临时卷、PVC三类数据的生命周期，为缓存重建失败写一个恢复步骤。",
+        "en": "Compare image, temporary-volume and PVC lifetimes; add a cache-rebuild recovery step."
       },
       "evidence": {
-        "zh": "存储决策表、挂载清单与冷启动路径图。",
-        "en": "A storage decision table, mount manifest and cold-start diagram."
+        "zh": "out/day04.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day04.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "说明卷的访问模式与生命周期",
-          "把模型版本与可变缓存区分开"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Explain volume access modes and lifecycle",
-          "Separate model versions from mutable caches"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "用 KB 级文件替代真实模型权重，验证的是存储语义。",
-        "en": "Use kilobyte-sized files instead of weights; validate storage semantics only."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
           "title": "Kubernetes · Persistent volumes",
           "url": "https://kubernetes.io/docs/concepts/storage/persistent-volumes/"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "模型文件的生命周期常长于容器。emptyDir与Pod绑定，容器重启通常保留，但Pod删除会丢失。PVC/PV则有独立对象及回收策略，不能笼统认为永不删除。",
+            "en": "Model files can outlive containers. emptyDir is tied to a Pod: container restarts usually preserve it, Pod deletion does not. PVC/PV persistence has separate lifecycle and reclaim policy."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "用SHA-256记录文件内容，可判断下载是否一致，但不能验证模型来源可信。本示例ConfigMap只装HTML，不用它存大模型权重；真实模型需要合适卷和下载校验流程。",
+            "en": "A SHA-256 identifies content equality, not trusted model provenance. The demo ConfigMap contains only HTML, not large model weights. Real models need suitable volumes and acquisition checks."
+          }
+        },
+        {
+          "title": {
+            "zh": "模型制品下载预算",
+            "en": "Model-artifact transfer budget"
+          },
+          "body": {
+            "zh": "用对象大小、有效带宽与固定开销估计一次下载；不包括解压、磁盘写入、鉴权和多Pod争用。模型帮助估计冷启动的一部分，不代表实测镜像拉取时间。",
+            "en": "Estimate one artifact download from size, effective bandwidth and fixed overhead. Excludes unpacking, disk writes, authentication and contention. This is only part of cold start, not measured image-pull time."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "模型文件与数据生命周期 · 图解",
+          "en": "Manage model files and their lifecycle · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "模型来源",
+            "en": "Model source"
+          },
+          {
+            "zh": "下载与校验",
+            "en": "Download/check"
+          },
+          {
+            "zh": "卷挂载",
+            "en": "Mount volume"
+          },
+          {
+            "zh": "重启/回收",
+            "en": "Restart/reclaim"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day4",
+          "expected": {
+            "zh": "emptyDir容器重启保留=true，Pod删除保留=false；输出校验值。",
+            "en": "emptyDir survives container restart=true, Pod deletion=false; a checksum is emitted."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "画出镜像、临时卷、PVC三类数据的生命周期，为缓存重建失败写一个恢复步骤。",
+            "en": "Compare image, temporary-volume and PVC lifetimes; add a cache-rebuild recovery step."
+          },
+          "command": "python3 -m json.tool out/day04.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "Pod重建后模型文件丢失",
+            "en": "Model files disappear after Pod recreation"
+          },
+          "fix": {
+            "zh": "检查是否放在emptyDir；确定持久卷或可重建下载流程。",
+            "en": "Check emptyDir usage and choose persistence or a reproducible download path."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "PVC一直Pending",
+            "en": "PVC stays Pending"
+          },
+          "fix": {
+            "zh": "检查StorageClass、容量、访问模式和绑定策略；本CPU示例没有申请PVC。",
+            "en": "Inspect StorageClass, size, access mode and binding; the CPU example does not request a PVC."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "Pod删除后emptyDir通常怎样？",
+            "en": "What happens to emptyDir when its Pod is deleted?"
+          },
+          "options": [
+            {
+              "zh": "永久保留",
+              "en": "Kept forever"
+            },
+            {
+              "zh": "自动变PVC",
+              "en": "Becomes a PVC"
+            },
+            {
+              "zh": "随Pod删除",
+              "en": "Deleted with the Pod"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "答案：随Pod删除。模型文件的生命周期常长于容器。emptyDir与Pod绑定，容器重启通常保留，但Pod删除会丢失。PVC/PV则有独立对象及回收策略，不能笼统认为永不删除。",
+            "en": "Answer: Deleted with the Pod. Model files can outlive containers. emptyDir is tied to a Pod: container restarts usually preserve it, Pod deletion does not. PVC/PV persistence has separate lifecycle and reclaim policy."
+          }
+        },
+        {
+          "question": {
+            "zh": "SHA-256相同就证明来源可信？",
+            "en": "Does equal SHA-256 establish trusted provenance?"
+          },
+          "options": [
+            {
+              "zh": "说明有官方认证",
+              "en": "It is official certification"
+            },
+            {
+              "zh": "不能单独证明",
+              "en": "Not by itself"
+            },
+            {
+              "zh": "一定可信",
+              "en": "Always"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "答案：不能单独证明。用SHA-256记录文件内容，可判断下载是否一致，但不能验证模型来源可信。本示例ConfigMap只装HTML，不用它存大模型权重；真实模型需要合适卷和下载校验流程。",
+            "en": "Answer: Not by itself. A SHA-256 identifies content equality, not trusted model provenance. The demo ConfigMap contains only HTML, not large model weights. Real models need suitable volumes and acquisition checks."
+          }
+        }
+      ],
+      "interactive": "transfer-cost"
     },
     {
       "day": 5,
@@ -239,35 +884,193 @@
         "en": "Make probes reflect service state"
       },
       "lesson": {
-        "zh": "startup、readiness 与 liveness 分别回答启动是否完成、是否应接收流量、是否需要重启。大模型加载慢时，激进的存活探针可能反复杀掉本来正常的进程；readiness 也不应在每次检查都执行昂贵推理。探针设计应连接模型加载、路由准入和恢复策略，而不是复制普通网页的超时值。",
-        "en": "Startup, readiness and liveness probes answer different questions: has initialization finished, should traffic arrive, and should the process restart? Aggressive liveness checks can repeatedly kill a healthy model-loading process. Readiness checks should not perform expensive inference on every probe. Connect checks to model initialization, traffic admission and recovery rather than copying generic web-server timeouts."
+        "zh": "startup、readiness、liveness回答不同问题：是否完成启动、是否接流量、是否需要重启。长模型加载时，过早liveness会反复杀进程；依赖短暂故障通常先停止接流量，而非无限重启。 模拟loading时startup=false且不接流量；loaded时ready=true；dependency_down时ready=false但不自动宣称需要重启。示例nginx的简单HTTP探针不代表真实模型就绪探针。",
+        "en": "Startup, readiness and liveness ask whether initialization finished, traffic can be accepted, and restart is needed. Premature liveness can repeatedly kill long model loads. Temporary dependency failure may call for removing traffic rather than restarting. The model routes no traffic while loading, routes when ready, and marks dependency failure unready without automatically demanding restart. Simple nginx HTTP probes are not model-readiness probes."
       },
       "task": {
-        "zh": "用可配置启动延迟的轻量服务模拟模型加载，分别配置三类探针，观察 Ready 状态、端点变化与重启计数。",
-        "en": "Simulate model loading with a lightweight service that has a configurable startup delay. Configure the three probe types and observe readiness, endpoints and restart counts."
+        "zh": "把模型加载90秒代入探针预算，讨论failureThreshold×periodSeconds的近似等待范围及初始延时。",
+        "en": "Use a 90-second load and discuss the approximate failureThreshold×periodSeconds budget and initial delays."
       },
       "evidence": {
-        "zh": "探针清单与正常启动、暂不可用、进程卡住三种时序图。",
-        "en": "Probe manifests and timelines for startup, temporary unavailability and a stuck process."
+        "zh": "out/day05.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day05.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "区分停止路由与重启进程",
-          "启动容忍时间有测量或明确假设"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Distinguish traffic removal from process restart",
-          "Justify startup tolerance with measurements or stated assumptions"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "用 CPU HTTP 服务模拟状态转换，不需要加载大模型。",
-        "en": "Use a CPU HTTP service to simulate state transitions."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
           "title": "Kubernetes · Startup, readiness and liveness probes",
           "url": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "startup、readiness、liveness回答不同问题：是否完成启动、是否接流量、是否需要重启。长模型加载时，过早liveness会反复杀进程；依赖短暂故障通常先停止接流量，而非无限重启。",
+            "en": "Startup, readiness and liveness ask whether initialization finished, traffic can be accepted, and restart is needed. Premature liveness can repeatedly kill long model loads. Temporary dependency failure may call for removing traffic rather than restarting."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "模拟loading时startup=false且不接流量；loaded时ready=true；dependency_down时ready=false但不自动宣称需要重启。示例nginx的简单HTTP探针不代表真实模型就绪探针。",
+            "en": "The model routes no traffic while loading, routes when ready, and marks dependency failure unready without automatically demanding restart. Simple nginx HTTP probes are not model-readiness probes."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "让探针反映真实服务状态 · 图解",
+          "en": "Make probes reflect service state · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "启动检查",
+            "en": "Startup"
+          },
+          {
+            "zh": "就绪判断",
+            "en": "Readiness"
+          },
+          {
+            "zh": "流量路由",
+            "en": "Route traffic"
+          },
+          {
+            "zh": "存活与恢复",
+            "en": "Liveness/recovery"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day5",
+          "expected": {
+            "zh": "三种状态明确区分route_traffic和restart_required。",
+            "en": "Three scenarios distinguish route_traffic from restart_required."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "把模型加载90秒代入探针预算，讨论failureThreshold×periodSeconds的近似等待范围及初始延时。",
+            "en": "Use a 90-second load and discuss the approximate failureThreshold×periodSeconds budget and initial delays."
+          },
+          "command": "python3 -m json.tool out/day05.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "启动期间反复重启",
+            "en": "Repeated restarts during startup"
+          },
+          "fix": {
+            "zh": "检查startup预算与liveness启动时机，保留上次容器日志。",
+            "en": "Check startup budget/liveness timing and preserve previous logs."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "进程存活但不接流量",
+            "en": "Process lives but receives no traffic"
+          },
+          "fix": {
+            "zh": "查readiness失败原因；存活不代表可服务。",
+            "en": "Inspect readiness failures; being alive is not being ready."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "readiness失败通常首先影响什么？",
+            "en": "What does readiness failure first affect?"
+          },
+          "options": [
+            {
+              "zh": "删除所有PVC",
+              "en": "Delete all PVCs"
+            },
+            {
+              "zh": "是否接收流量",
+              "en": "Traffic eligibility"
+            },
+            {
+              "zh": "必定立即重启",
+              "en": "Immediate mandatory restart"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "答案：是否接收流量。startup、readiness、liveness回答不同问题：是否完成启动、是否接流量、是否需要重启。长模型加载时，过早liveness会反复杀进程；依赖短暂故障通常先停止接流量，而非无限重启。",
+            "en": "Answer: Traffic eligibility. Startup, readiness and liveness ask whether initialization finished, traffic can be accepted, and restart is needed. Premature liveness can repeatedly kill long model loads. Temporary dependency failure may call for removing traffic rather than restarting."
+          }
+        },
+        {
+          "question": {
+            "zh": "模型加载慢应优先考虑哪个探针？",
+            "en": "Which probe helps with slow initialization?"
+          },
+          "options": [
+            {
+              "zh": "startupProbe",
+              "en": "startupProbe"
+            },
+            {
+              "zh": "只缩短liveness",
+              "en": "Only shorten liveness"
+            },
+            {
+              "zh": "Service端口",
+              "en": "Service port"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "答案：startupProbe。模拟loading时startup=false且不接流量；loaded时ready=true；dependency_down时ready=false但不自动宣称需要重启。示例nginx的简单HTTP探针不代表真实模型就绪探针。",
+            "en": "Answer: startupProbe. The model routes no traffic while loading, routes when ready, and marks dependency failure unready without automatically demanding restart. Simple nginx HTTP probes are not model-readiness probes."
+          }
         }
       ]
     },
@@ -278,30 +1081,32 @@
         "en": "Design service access boundaries"
       },
       "lesson": {
-        "zh": "Service 将访问地址与具体 Pod 解耦，但它不自动提供身份验证或流量控制。内部服务、外部入口和管理接口应分别设计。NetworkPolicy 的执行依赖网络插件；写了策略文件不等于隔离已经生效。对 AI 服务还要辨别普通请求、流式响应和长连接在代理超时上的差异。",
-        "en": "A Service decouples an endpoint from individual Pods; it does not provide authentication or traffic control automatically. Design internal serving, external entry points and administrative access separately. NetworkPolicy enforcement depends on the network plugin, so a policy file is not proof of isolation. AI endpoints also need deliberate treatment of streaming responses and long-lived connections at proxy timeouts."
+        "zh": "Service通过selector找到符合标签的Pod，并把服务端口转到targetPort。ClusterIP是集群内入口；调试可以使用明确绑定127.0.0.1的port-forward，避免把练习服务直接开放到外网。 本清单Service端口8080转容器80，selector匹配app=jobhub-demo。若标签写错，服务对象仍可能存在但没有有效后端；要同时查EndpointSlice和Pod readiness。",
+        "en": "A Service selects Pods by labels and maps its port to targetPort. ClusterIP provides an internal endpoint. Localhost-bound port-forward is a convenient scoped debugging path. The Service maps 8080 to container port 80 and selects app=jobhub-demo. A wrong selector can leave an existing Service without usable backends. Check EndpointSlices and readiness."
       },
       "task": {
-        "zh": "画出客户端、入口、服务和模型进程的边界；在实验集群里用 ClusterIP 或 port-forward 验证访问，编写允许必要流量的策略评审说明。",
-        "en": "Map client, entry point, Service and model-process boundaries. Verify lab access with ClusterIP or port-forward and review a policy allowing necessary traffic."
+        "zh": "故意改错targetPort再验证；记录Service存在、Pod存在和请求成功三种证据的差异。",
+        "en": "Break targetPort and validate it; distinguish existing objects from successful requests."
       },
       "evidence": {
-        "zh": "访问路径图、测试记录与边界说明。",
-        "en": "An access diagram, test record and boundary description."
+        "zh": "out/day06.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day06.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "识别访问控制应由哪一层实现",
-          "声明网络插件是否支持所写策略"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Identify which layer provides access control",
-          "State whether the network plugin enforces the proposed policy"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "用轻量回显服务练习网络路径，并注明没有真实推理流量。",
-        "en": "Use a lightweight echo service and label the traffic as a network exercise."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
@@ -312,6 +1117,162 @@
           "title": "Kubernetes · Network policies",
           "url": "https://kubernetes.io/docs/concepts/services-networking/network-policies/"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "Service通过selector找到符合标签的Pod，并把服务端口转到targetPort。ClusterIP是集群内入口；调试可以使用明确绑定127.0.0.1的port-forward，避免把练习服务直接开放到外网。",
+            "en": "A Service selects Pods by labels and maps its port to targetPort. ClusterIP provides an internal endpoint. Localhost-bound port-forward is a convenient scoped debugging path."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "本清单Service端口8080转容器80，selector匹配app=jobhub-demo。若标签写错，服务对象仍可能存在但没有有效后端；要同时查EndpointSlice和Pod readiness。",
+            "en": "The Service maps 8080 to container port 80 and selects app=jobhub-demo. A wrong selector can leave an existing Service without usable backends. Check EndpointSlices and readiness."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "服务访问与最小暴露 · 图解",
+          "en": "Design service access boundaries · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "客户端",
+            "en": "Client"
+          },
+          {
+            "zh": "Service选择器",
+            "en": "Service selector"
+          },
+          {
+            "zh": "就绪后端",
+            "en": "Ready backend"
+          },
+          {
+            "zh": "容器端口",
+            "en": "Container port"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day6",
+          "expected": {
+            "zh": "service_type=ClusterIP，port=8080，targetPort=80。",
+            "en": "service_type=ClusterIP, port=8080, targetPort=80."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "故意改错targetPort再验证；记录Service存在、Pod存在和请求成功三种证据的差异。",
+            "en": "Break targetPort and validate it; distinguish existing objects from successful requests."
+          },
+          "command": "python3 -m json.tool out/day06.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "Service没有Endpoints",
+            "en": "Service has no endpoints"
+          },
+          "fix": {
+            "zh": "核对selector、Pod标签及readiness；查EndpointSlice。",
+            "en": "Check selectors, Pod labels, readiness and EndpointSlices."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "转发端口连接拒绝",
+            "en": "Connection refused on forwarded port"
+          },
+          "fix": {
+            "zh": "保持port-forward终端运行，核对8080→80和本机端口占用。",
+            "en": "Keep port-forward running and verify the 8080→80 mapping and local port availability."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "Service 8080 → targetPort 80代表？",
+            "en": "What does Service 8080 → targetPort 80 mean?"
+          },
+          "options": [
+            {
+              "zh": "服务端口转到容器80",
+              "en": "Forward to container port 80"
+            },
+            {
+              "zh": "容器必须监听8080",
+              "en": "Container must listen on 8080"
+            },
+            {
+              "zh": "开放所有端口",
+              "en": "Expose all ports"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "答案：服务端口转到容器80。Service通过selector找到符合标签的Pod，并把服务端口转到targetPort。ClusterIP是集群内入口；调试可以使用明确绑定127.0.0.1的port-forward，避免把练习服务直接开放到外网。",
+            "en": "Answer: Forward to container port 80. A Service selects Pods by labels and maps its port to targetPort. ClusterIP provides an internal endpoint. Localhost-bound port-forward is a convenient scoped debugging path."
+          }
+        },
+        {
+          "question": {
+            "zh": "Service存在就一定有可用后端吗？",
+            "en": "Does an existing Service guarantee usable backends?"
+          },
+          "options": [
+            {
+              "zh": "总保证",
+              "en": "Always"
+            },
+            {
+              "zh": "只要名字正确",
+              "en": "If its name is correct"
+            },
+            {
+              "zh": "不保证",
+              "en": "No"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "答案：不保证。本清单Service端口8080转容器80，selector匹配app=jobhub-demo。若标签写错，服务对象仍可能存在但没有有效后端；要同时查EndpointSlice和Pod readiness。",
+            "en": "Answer: No. The Service maps 8080 to container port 80 and selects app=jobhub-demo. A wrong selector can leave an existing Service without usable backends. Check EndpointSlices and readiness."
+          }
+        }
       ]
     },
     {
@@ -321,37 +1282,196 @@
         "en": "Scale from meaningful signals"
       },
       "lesson": {
-        "zh": "增加副本前必须先确认瓶颈在哪里。GPU 利用率、排队长度、并发和尾延迟各自描述不同状态，不能互相替代。HPA 依赖可获得的指标及其适配组件；模型加载与权重分发会让扩容存在明显延迟。好的策略也应限制抖动，并考虑缩容时仍在生成的请求。",
-        "en": "Before adding replicas, identify the bottleneck. GPU utilization, queue length, concurrency and tail latency describe different conditions. HPA depends on available metrics and their adapters; model initialization and weight distribution can make scaling slow. A useful policy also limits oscillation and addresses requests still generating during scale-down. More replicas are not an automatic latency fix."
+        "zh": "自动扩缩容依赖明确指标。CPU利用率相对requests计算，缺少或错误请求会影响解释。生产控制器还包含容忍区间、稳定窗口、就绪处理和上下限，不能只看一条简单比例。 简化比例：当前2副本，观察90%，目标60%，ceil(2×90/60)=3；观察10%时理想值为1，受最小副本约束。本例不运行HPA控制器。",
+        "en": "Autoscaling needs a defined signal. CPU utilization is relative to requests, so missing or wrong requests affect interpretation. Real controllers include tolerance, stabilization, readiness handling and bounds. The simplified ratio gives ceil(2×90/60)=3. At 10%, the bounded minimum is one. The exercise does not run an HPA controller."
       },
       "task": {
-        "zh": "为一个假设工作负载选主指标与辅助指标，写扩缩容决策表；有 metrics-server 时用 CPU 服务演示 HPA，没有时手工推演负载时间线。",
-        "en": "Choose primary and supporting signals for a workload and write a scaling decision table. Demonstrate HPA on a CPU service if metrics-server is available; otherwise simulate a load timeline manually."
+        "zh": "把观测改为300%并设置最大4副本，核对上限；解释为什么GPU利用率低仍可能排队。",
+        "en": "Try 300% with maximum four and verify the cap; discuss low GPU utilization despite queuing."
       },
       "evidence": {
-        "zh": "扩缩容设计、指标来源与一次负载变化分析。",
-        "en": "A scaling design, metric sources and one load-change analysis."
+        "zh": "out/day07.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day07.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "指标确实可被当前集群获取或标明缺口",
-          "考虑启动延迟、冷却时间与正在处理的请求"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Identify available metrics and missing integrations",
-          "Account for initialization delay, stabilization and in-flight requests"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "CPU HPA 仅验证控制流程，不拿它证明 GPU 推理扩容效果。",
-        "en": "Use CPU HPA to validate the control loop, not GPU-serving performance."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
           "title": "Kubernetes · Horizontal Pod Autoscaling",
           "url": "https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "自动扩缩容依赖明确指标。CPU利用率相对requests计算，缺少或错误请求会影响解释。生产控制器还包含容忍区间、稳定窗口、就绪处理和上下限，不能只看一条简单比例。",
+            "en": "Autoscaling needs a defined signal. CPU utilization is relative to requests, so missing or wrong requests affect interpretation. Real controllers include tolerance, stabilization, readiness handling and bounds."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "简化比例：当前2副本，观察90%，目标60%，ceil(2×90/60)=3；观察10%时理想值为1，受最小副本约束。本例不运行HPA控制器。",
+            "en": "The simplified ratio gives ceil(2×90/60)=3. At 10%, the bounded minimum is one. The exercise does not run an HPA controller."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "扩缩容从信号开始 · 图解",
+          "en": "Scale from meaningful signals · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "采集指标",
+            "en": "Observe"
+          },
+          {
+            "zh": "定义目标",
+            "en": "Target"
+          },
+          {
+            "zh": "比例与边界",
+            "en": "Ratio/bounds"
+          },
+          {
+            "zh": "稳定窗口",
+            "en": "Stabilization"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day7",
+          "expected": {
+            "zh": "ideal_desired=3，scaled_down=1。",
+            "en": "ideal_desired=3, scaled_down=1."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "把观测改为300%并设置最大4副本，核对上限；解释为什么GPU利用率低仍可能排队。",
+            "en": "Try 300% with maximum four and verify the cap; discuss low GPU utilization despite queuing."
+          },
+          "command": "python3 -m json.tool out/day07.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "HPA没有指标",
+            "en": "HPA has no metrics"
+          },
+          "fix": {
+            "zh": "核对指标来源、metrics server和资源请求；不能靠离线比例自动扩容。",
+            "en": "Check metrics source/server and requests; an offline ratio cannot scale a cluster."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "副本频繁上下波动",
+            "en": "Replica count oscillates"
+          },
+          "fix": {
+            "zh": "检查稳定窗口、目标及工作负载变化；保留时间序列再调整。",
+            "en": "Inspect stabilization, target and workload changes; retain a time series."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "ceil(2×90/60)是多少？",
+            "en": "What is ceil(2×90/60)?"
+          },
+          "options": [
+            {
+              "zh": "2",
+              "en": "2"
+            },
+            {
+              "zh": "4",
+              "en": "4"
+            },
+            {
+              "zh": "3",
+              "en": "3"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "答案：3。自动扩缩容依赖明确指标。CPU利用率相对requests计算，缺少或错误请求会影响解释。生产控制器还包含容忍区间、稳定窗口、就绪处理和上下限，不能只看一条简单比例。",
+            "en": "Answer: 3. Autoscaling needs a defined signal. CPU utilization is relative to requests, so missing or wrong requests affect interpretation. Real controllers include tolerance, stabilization, readiness handling and bounds."
+          }
+        },
+        {
+          "question": {
+            "zh": "公式输出等于生产HPA每次行为吗？",
+            "en": "Does the simple ratio predict every real HPA action?"
+          },
+          "options": [
+            {
+              "zh": "与指标无关",
+              "en": "Metrics do not matter"
+            },
+            {
+              "zh": "不等于，控制逻辑更完整",
+              "en": "No; control logic adds conditions"
+            },
+            {
+              "zh": "完全等于",
+              "en": "Exactly"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "答案：不等于，控制逻辑更完整。简化比例：当前2副本，观察90%，目标60%，ceil(2×90/60)=3；观察10%时理想值为1，受最小副本约束。本例不运行HPA控制器。",
+            "en": "Answer: No; control logic adds conditions. The simplified ratio gives ceil(2×90/60)=3. At 10%, the bounded minimum is one. The exercise does not run an HPA controller."
+          }
+        }
+      ],
+      "interactive": "task-queue"
     },
     {
       "day": 8,
@@ -360,37 +1480,196 @@
         "en": "Roll out and roll back predictably"
       },
       "lesson": {
-        "zh": "应用版本、模型 revision 与配置共同决定服务行为。Deployment 的滚动更新管理副本替换，但副本临时增加可能超出稀缺 GPU 配额；新版本 Ready 也不等于质量和性能合格。发布计划应把兼容性检查、流量切换、结果对照与回滚触发条件连在一起。",
-        "en": "Application version, model revision and configuration together determine behavior. A Deployment manages replica replacement, but temporary extra replicas can exceed scarce GPU capacity. Ready status alone does not prove acceptable quality or performance. A release plan should connect compatibility checks, traffic movement, result comparison and explicit rollback triggers."
+        "zh": "滚动发布会让新旧副本短时间共存。maxSurge增加峰值容量需求，maxUnavailable控制允许减少的可用副本；如果新Pod始终未就绪，发布可能停住。回滚也需要资源和验证。 2副本、maxSurge=1，峰值3个Pod。每个请求64Mi内存，基线128Mi，滚动峰值192Mi。这里仅计requests，不等于实际RSS或模型双份显存。",
+        "en": "Rolling updates temporarily overlap old and new replicas. maxSurge raises peak capacity, maxUnavailable limits permitted availability reduction. Unready new Pods can stall rollout; rollback also needs resources and verification. Two replicas plus maxSurge one allow three Pods. At 64Mi requested memory each, baseline is 128Mi and peak 192Mi. Requests are not measured RSS or duplicated GPU model memory."
       },
       "task": {
-        "zh": "对 CPU 示例服务发布两个明确版本，观察滚动更新并执行回滚；为 GPU 版本写出 maxSurge、容量和模型兼容性的取舍。",
-        "en": "Roll out two explicit versions of the CPU example and execute a rollback. Explain capacity, maxSurge and model-compatibility trade-offs for a GPU deployment."
+        "zh": "改为4副本和surge=2重新预算；写出新版本探针失败时的暂停与回滚验收。",
+        "en": "Budget four replicas plus surge two, then define rollback checks for failed readiness."
       },
       "evidence": {
-        "zh": "版本清单、回滚操作记录与发布准入条件。",
-        "en": "Version records, a rollback log and release acceptance criteria."
+        "zh": "out/day08.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day08.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "可以说明当前运行的是哪个镜像与配置",
-          "回滚触发条件可被观察和判断"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Identify the running image and configuration",
-          "Define observable rollback triggers"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "CPU 实验完成发布机制验证，GPU 容量以设计假设表达。",
-        "en": "Validate release mechanics with CPU workloads and label GPU capacity assumptions."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
           "title": "Kubernetes · Deployments",
           "url": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "滚动发布会让新旧副本短时间共存。maxSurge增加峰值容量需求，maxUnavailable控制允许减少的可用副本；如果新Pod始终未就绪，发布可能停住。回滚也需要资源和验证。",
+            "en": "Rolling updates temporarily overlap old and new replicas. maxSurge raises peak capacity, maxUnavailable limits permitted availability reduction. Unready new Pods can stall rollout; rollback also needs resources and verification."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "2副本、maxSurge=1，峰值3个Pod。每个请求64Mi内存，基线128Mi，滚动峰值192Mi。这里仅计requests，不等于实际RSS或模型双份显存。",
+            "en": "Two replicas plus maxSurge one allow three Pods. At 64Mi requested memory each, baseline is 128Mi and peak 192Mi. Requests are not measured RSS or duplicated GPU model memory."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "滚动发布与可回滚版本 · 图解",
+          "en": "Roll out and roll back predictably · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "旧版本",
+            "en": "Old revision"
+          },
+          {
+            "zh": "启动新副本",
+            "en": "Start new"
+          },
+          {
+            "zh": "检查就绪",
+            "en": "Check readiness"
+          },
+          {
+            "zh": "逐步替换",
+            "en": "Replace gradually"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day8",
+          "expected": {
+            "zh": "peak_pods=3；surge_memory_requests_mib=192。",
+            "en": "peak_pods=3; surge_memory_requests_mib=192."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "改为4副本和surge=2重新预算；写出新版本探针失败时的暂停与回滚验收。",
+            "en": "Budget four replicas plus surge two, then define rollback checks for failed readiness."
+          },
+          "command": "python3 -m json.tool out/day08.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "滚动发布停住",
+            "en": "Rollout stalls"
+          },
+          "fix": {
+            "zh": "检查新Pod是否可调度和就绪，以及surge容量是否存在。",
+            "en": "Check scheduling/readiness of new Pods and available surge capacity."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "回滚命令成功但服务仍失败",
+            "en": "Rollback command succeeds but service fails"
+          },
+          "fix": {
+            "zh": "检查回滚后的版本、探针和实际请求，不能只看命令返回。",
+            "en": "Verify revision, probes and requests after rollback, not only command exit status."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "2副本+surge1峰值几个Pod？",
+            "en": "Peak Pods for two replicas plus surge one?"
+          },
+          "options": [
+            {
+              "zh": "1",
+              "en": "1"
+            },
+            {
+              "zh": "3",
+              "en": "3"
+            },
+            {
+              "zh": "2",
+              "en": "2"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "答案：3。滚动发布会让新旧副本短时间共存。maxSurge增加峰值容量需求，maxUnavailable控制允许减少的可用副本；如果新Pod始终未就绪，发布可能停住。回滚也需要资源和验证。",
+            "en": "Answer: 3. Rolling updates temporarily overlap old and new replicas. maxSurge raises peak capacity, maxUnavailable limits permitted availability reduction. Unready new Pods can stall rollout; rollback also needs resources and verification."
+          }
+        },
+        {
+          "question": {
+            "zh": "maxUnavailable=0能单独保证服务SLO吗？",
+            "en": "Does maxUnavailable=0 alone guarantee an SLO?"
+          },
+          "options": [
+            {
+              "zh": "不能",
+              "en": "No"
+            },
+            {
+              "zh": "可以忽略探针",
+              "en": "Probes become irrelevant"
+            },
+            {
+              "zh": "可以忽略容量",
+              "en": "Capacity becomes irrelevant"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "答案：不能。2副本、maxSurge=1，峰值3个Pod。每个请求64Mi内存，基线128Mi，滚动峰值192Mi。这里仅计requests，不等于实际RSS或模型双份显存。",
+            "en": "Answer: No. Two replicas plus maxSurge one allow three Pods. At 64Mi requested memory each, baseline is 128Mi and peak 192Mi. Requests are not measured RSS or duplicated GPU model memory."
+          }
+        }
+      ],
+      "interactive": "placement-budget"
     },
     {
       "day": 9,
@@ -399,30 +1678,32 @@
         "en": "Build an incident evidence chain"
       },
       "lesson": {
-        "zh": "一个失败请求可能来自调度、镜像拉取、模型加载、资源不足、路由或应用本身。事件、容器日志与服务指标观察的是不同层面。先保留时间线并缩小故障范围，再修改配置，能避免把偶然恢复误认为修复。故障演练的价值在于可重复地触发与解释，而不是制造复杂故障。",
-        "en": "A failed request may originate in scheduling, image pulls, model initialization, resource pressure, routing or the application. Events, container logs and service metrics cover different layers. Preserve a timeline and narrow the failure before changing configuration, so accidental recovery is not mistaken for a fix. A useful drill is repeatable and explainable rather than elaborate."
+        "zh": "排障先建立证据链：Pod状态、事件、调度条件、容器日志和退出原因。相同“服务不可用”可能来自不同层次，盲目增加资源或重启会掩盖根因。 FailedScheduling先查请求与allocatable，再查污点和亲和性；ImagePullBackOff查镜像与仓库；Readiness失败查端口、路径、启动与依赖。每条假设都要能被下一条证据证伪。",
+        "en": "Start incidents with Pod state, events, scheduling constraints, logs and exit reasons. The same unavailable symptom can come from different layers; blind restarts or resource increases hide evidence. For FailedScheduling check requests/allocatable then taints and affinity. For ImagePullBackOff check images and registries. Readiness failures need port/path/startup/dependency checks. Each hypothesis should be falsifiable."
       },
       "task": {
-        "zh": "在自己的实验集群制造一种可恢复错误，例如错误端口或不可满足的资源请求；用 get、describe、logs 收集证据，再只改一个变量修复。",
-        "en": "Introduce one recoverable error in your lab, such as a wrong port or unsatisfiable request. Collect evidence with get, describe and logs, then change one variable to repair it."
+        "zh": "选一个事件，写出检查命令、两种可能原因与恢复后的成功条件，不只写“重启”。",
+        "en": "Choose one event and write commands, two hypotheses and a recovery criterion beyond restart."
       },
       "evidence": {
-        "zh": "一页故障复盘：现象、时间线、根因、修复与验证。",
-        "en": "A one-page incident report with symptoms, timeline, cause, repair and verification."
+        "zh": "out/day09.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day09.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "保存修复前的原始观察",
-          "修复后重复同一检查证明恢复"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Preserve observations from before the repair",
-          "Repeat the same check after the repair"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "整个演练可用 CPU 服务完成，不需要 GPU。",
-        "en": "Run the entire drill with a CPU service."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
@@ -433,6 +1714,162 @@
           "title": "Kubernetes · Startup, readiness and liveness probes",
           "url": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "排障先建立证据链：Pod状态、事件、调度条件、容器日志和退出原因。相同“服务不可用”可能来自不同层次，盲目增加资源或重启会掩盖根因。",
+            "en": "Start incidents with Pod state, events, scheduling constraints, logs and exit reasons. The same unavailable symptom can come from different layers; blind restarts or resource increases hide evidence."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "FailedScheduling先查请求与allocatable，再查污点和亲和性；ImagePullBackOff查镜像与仓库；Readiness失败查端口、路径、启动与依赖。每条假设都要能被下一条证据证伪。",
+            "en": "For FailedScheduling check requests/allocatable then taints and affinity. For ImagePullBackOff check images and registries. Readiness failures need port/path/startup/dependency checks. Each hypothesis should be falsifiable."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "排障时先建立证据链 · 图解",
+          "en": "Build an incident evidence chain · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "状态与事件",
+            "en": "State/events"
+          },
+          {
+            "zh": "定位层次",
+            "en": "Locate layer"
+          },
+          {
+            "zh": "验证假设",
+            "en": "Test hypothesis"
+          },
+          {
+            "zh": "恢复验收",
+            "en": "Recovery check"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day9",
+          "expected": {
+            "zh": "输出3种incident与对应first_check。",
+            "en": "Outputs three incidents with first_check."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "选一个事件，写出检查命令、两种可能原因与恢复后的成功条件，不只写“重启”。",
+            "en": "Choose one event and write commands, two hypotheses and a recovery criterion beyond restart."
+          },
+          "command": "python3 -m json.tool out/day09.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "ImagePullBackOff",
+            "en": "ImagePullBackOff"
+          },
+          "fix": {
+            "zh": "核对镜像tag、仓库连通性和访问凭据；先读events。",
+            "en": "Check tag, registry connectivity and credentials, starting with events."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "日志没有故障前记录",
+            "en": "Logs omit pre-crash context"
+          },
+          "fix": {
+            "zh": "对重启容器读取previous日志，并记录Pod UID与时间。",
+            "en": "Read previous container logs and record Pod UID and timestamps."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "FailedScheduling先看什么？",
+            "en": "What should you first inspect for FailedScheduling?"
+          },
+          "options": [
+            {
+              "zh": "资源与调度条件",
+              "en": "Resources/scheduling constraints"
+            },
+            {
+              "zh": "网页颜色",
+              "en": "Page color"
+            },
+            {
+              "zh": "模型回答内容",
+              "en": "Model answer text"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "答案：资源与调度条件。排障先建立证据链：Pod状态、事件、调度条件、容器日志和退出原因。相同“服务不可用”可能来自不同层次，盲目增加资源或重启会掩盖根因。",
+            "en": "Answer: Resources/scheduling constraints. Start incidents with Pod state, events, scheduling constraints, logs and exit reasons. The same unavailable symptom can come from different layers; blind restarts or resource increases hide evidence."
+          }
+        },
+        {
+          "question": {
+            "zh": "恢复验收应该包含什么？",
+            "en": "What belongs in recovery verification?"
+          },
+          "options": [
+            {
+              "zh": "只看重启命令返回0",
+              "en": "Only restart exit code zero"
+            },
+            {
+              "zh": "只删日志",
+              "en": "Only delete logs"
+            },
+            {
+              "zh": "实际请求与就绪状态",
+              "en": "Request success and readiness"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "答案：实际请求与就绪状态。FailedScheduling先查请求与allocatable，再查污点和亲和性；ImagePullBackOff查镜像与仓库；Readiness失败查端口、路径、启动与依赖。每条假设都要能被下一条证据证伪。",
+            "en": "Answer: Request success and readiness. For FailedScheduling check requests/allocatable then taints and affinity. For ImagePullBackOff check images and registries. Readiness failures need port/path/startup/dependency checks. Each hypothesis should be falsifiable."
+          }
+        }
       ]
     },
     {
@@ -442,32 +1879,32 @@
         "en": "Deliver a reviewable AI platform bundle"
       },
       "lesson": {
-        "zh": "结课作品应让另一位工程师能够理解并复现你的选择。把部署、资源、模型版本、访问边界、扩缩容和故障记录放在同一仓库，分清已在 CPU 环境验证的机制、GPU 实测结果与尚待验证的设计。平台工程能力体现在约束与失败路径的处理，也体现在默认值是否清楚。",
-        "en": "Your final project should let another engineer understand and reproduce your decisions. Keep deployment, resources, model versions, access boundaries, scaling and incident records together. Distinguish mechanisms validated on CPU, real GPU measurements and untested design. Platform skill includes handling constraints and failure paths, as well as making defaults understandable."
+        "zh": "平台方案作品应该包含清单、预算、访问方式、发布回滚和排障手册。没有集群也能交付可审查的设计，但必须把实际执行结果与离线推演分开。 day10导出所有离线记录并保存manifest哈希。实际部署选做要求独立教学namespace与明确context；部署日志应记录版本，不能用离线PASS代替kubectl和请求结果。",
+        "en": "A platform portfolio includes manifests, budgets, access, rollout/rollback and an incident runbook. A reviewable offline design is useful without a cluster, provided execution and planning are separated. Day 10 exports offline records and manifest hashes. Optional deployment uses a dedicated teaching namespace and explicit context. Real logs should record versions; offline PASS cannot substitute for kubectl and requests."
       },
       "task": {
-        "zh": "整理一套按顺序可执行的部署/验证/清理说明，请同伴按 README 评审。写出三项后续工作，链接作品到个人公开仓库。",
-        "en": "Assemble deployment, verification and cleanup instructions. Ask a peer to review the README. Record three follow-up tasks and publish the portfolio repository if desired."
+        "zh": "实现student.py的副本容量函数并通过边界检查；在报告中写出两种资源瓶颈和回滚条件。",
+        "en": "Implement replica capacity in student.py, pass boundary checks, and document two bottlenecks and rollback conditions."
       },
       "evidence": {
-        "zh": "包含清单、架构图、版本表、运维手册与验证边界的作品仓库。",
-        "en": "A portfolio repository with manifests, diagrams, versions, a runbook and validation boundaries."
+        "zh": "out/REPORT.md、summary.csv、environment.json及个人代码差异。",
+        "en": "out/REPORT.md, summary.csv, environment.json and your code diff."
       },
       "checklist": {
         "zh": [
-          "没有把未运行的 GPU 实验写成成功",
-          "清理操作只针对明确创建的实验资源",
-          "说明与 vLLM、Ray 或 Dynamo 的下一步连接"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Do not report unrun GPU experiments as successful",
-          "Scope cleanup to explicitly created lab resources",
-          "Explain the next connection to vLLM, Ray or Dynamo"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "交付完整 CPU 控制面实验与 GPU 部署设计；将两类证据分开。",
-        "en": "Deliver CPU control-plane experiments and a separate GPU deployment design."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
@@ -478,7 +1915,174 @@
           "title": "Kubernetes · Schedule GPUs",
           "url": "https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "平台方案作品应该包含清单、预算、访问方式、发布回滚和排障手册。没有集群也能交付可审查的设计，但必须把实际执行结果与离线推演分开。",
+            "en": "A platform portfolio includes manifests, budgets, access, rollout/rollback and an incident runbook. A reviewable offline design is useful without a cluster, provided execution and planning are separated."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "day10导出所有离线记录并保存manifest哈希。实际部署选做要求独立教学namespace与明确context；部署日志应记录版本，不能用离线PASS代替kubectl和请求结果。",
+            "en": "Day 10 exports offline records and manifest hashes. Optional deployment uses a dedicated teaching namespace and explicit context. Real logs should record versions; offline PASS cannot substitute for kubectl and requests."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "交付一套可评审的 AI 平台方案 · 图解",
+          "en": "Deliver a reviewable AI platform bundle · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "清单与预算",
+            "en": "Manifests/budget"
+          },
+          {
+            "zh": "发布与访问",
+            "en": "Rollout/access"
+          },
+          {
+            "zh": "故障手册",
+            "en": "Runbook"
+          },
+          {
+            "zh": "证据分类",
+            "en": "Evidence labels"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day10",
+          "expected": {
+            "zh": "生成报告、9份记录、CSV和带manifest哈希的环境说明。",
+            "en": "Generates a report, nine records, CSV and an environment file with manifest hash."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "实现student.py的副本容量函数并通过边界检查；在报告中写出两种资源瓶颈和回滚条件。",
+            "en": "Implement replica capacity in student.py, pass boundary checks, and document two bottlenecks and rollback conditions."
+          },
+          "command": "python3 check.py",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。首次NOT YET表示student.py尚未实现；完成后应PASS，参考解通过不算本人完成。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable. Initial NOT YET means student.py needs implementation; your implementation should then PASS. Reference checks are not your own completion."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "check.py显示NOT YET",
+            "en": "check.py displays NOT YET"
+          },
+          "fix": {
+            "zh": "实现student.py的replica_slots，覆盖CPU/内存两种瓶颈。",
+            "en": "Implement replica_slots in student.py and cover both CPU and memory bottlenecks."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "报告宣称已部署但没有集群证据",
+            "en": "Deployment claim lacks cluster evidence"
+          },
+          "fix": {
+            "zh": "把离线结果标design/simulated；真实结果另附context、版本与请求记录。",
+            "en": "Label offline results design/simulated; real runs need context, versions and request evidence."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "未部署集群的作品应怎么标？",
+            "en": "How should a project without a cluster run be labeled?"
+          },
+          "options": [
+            {
+              "zh": "生产实测",
+              "en": "Production measurement"
+            },
+            {
+              "zh": "官方认证",
+              "en": "Official certification"
+            },
+            {
+              "zh": "设计/模拟",
+              "en": "Design/simulation"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "答案：设计/模拟。平台方案作品应该包含清单、预算、访问方式、发布回滚和排障手册。没有集群也能交付可审查的设计，但必须把实际执行结果与离线推演分开。",
+            "en": "Answer: Design/simulation. A platform portfolio includes manifests, budgets, access, rollout/rollback and an incident runbook. A reviewable offline design is useful without a cluster, provided execution and planning are separated."
+          }
+        },
+        {
+          "question": {
+            "zh": "有效复现说明应包含？",
+            "en": "What belongs in useful reproduction instructions?"
+          },
+          "options": [
+            {
+              "zh": "只有课程完成勾选",
+              "en": "Only completion checkmarks"
+            },
+            {
+              "zh": "版本、命令、输入与结果边界",
+              "en": "Versions, commands, inputs and limits"
+            },
+            {
+              "zh": "只有截图",
+              "en": "Only screenshots"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "答案：版本、命令、输入与结果边界。day10导出所有离线记录并保存manifest哈希。实际部署选做要求独立教学namespace与明确context；部署日志应记录版本，不能用离线PASS代替kubectl和请求结果。",
+            "en": "Answer: Versions, commands, inputs and limits. Day 10 exports offline records and manifest hashes. Optional deployment uses a dedicated teaching namespace and explicit context. Real logs should record versions; offline PASS cannot substitute for kubectl and requests."
+          }
+        }
       ]
     }
-  ]
+  ],
+  "lab": {
+    "path": "kubernetes",
+    "title": {
+      "zh": "下载 kubernetes 实验包",
+      "en": "Download the kubernetes lab"
+    },
+    "description": {
+      "zh": "Python 3.9+ 标准库主线；包含10日实验、独立挑战、参考解与报告导出。框架/集群选做环境见README，未经实测不写为性能结论。",
+      "en": "Python 3.9+ standard-library route with ten daily labs, independent challenges, references and report export. Optional SDK/cluster requirements are in README; unmeasured runs are not performance evidence."
+    }
+  }
 }

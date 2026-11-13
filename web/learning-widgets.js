@@ -59,6 +59,14 @@ if (typeof document !== "undefined") (() => {
       panel.querySelector("[data-warm-total]").textContent = `${Math.round(data.warm)} ms`;
       panel.querySelector('[data-bar="warm"]').style.width = `${data.warm / data.cold * 100}%`;
       result.textContent = pick(`热态 Prefill 与复用开销 = ${Math.round(data.warmPrefill)} ms · 总时长 = ${Math.round(data.warm)} ms`, `Warm prefill + reuse = ${Math.round(data.warmPrefill)} ms · Total = ${Math.round(data.warm)} ms`);
+    } else if (typeof EngineeringModels !== "undefined") {
+      const data = EngineeringModels.describe(panel.dataset.simulator, values, language());
+      const scale = data.scale || Math.max(1, ...data.values);
+      data.values.forEach((value, index) => {
+        panel.querySelector(`[data-model-value="${index}"]`).textContent = `${Number(value.toFixed(2)).toLocaleString(language() === "en" ? "en-US" : "zh-CN")} ${data.unit}`;
+        panel.querySelector(`[data-model-bar="${index}"]`).style.width = `${Math.max(0, Math.min(100, value / scale * 100))}%`;
+      });
+      result.textContent = data.summary;
     }
   }
 

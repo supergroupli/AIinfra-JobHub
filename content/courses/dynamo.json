@@ -11,8 +11,8 @@
     "en": "From inference workers to a measurable serving system"
   },
   "description": {
-    "zh": "学习请求路由、P/D 分离、控制面、容量规划与 Kubernetes 部署，用真实服务或官方模拟器建立 SLO 驱动的工程作品。十天目标是理解、实验和可复现交付。",
-    "en": "Study routing, P/D disaggregation, control planes, capacity planning, and Kubernetes deployment. Use real serving or official simulation to build an SLO-driven portfolio focused on understanding, experimentation, and reproducibility."
+    "zh": "10天逐步拆解NVIDIA Dynamo：每天有原理图、可运行CPU实验、对照结果、排错和测验。用带原始记录的工程作品连接学习与求职；真实引擎扩展和教学模拟分别说明。",
+    "en": "Ten guided days for NVIDIA Dynamo: diagrams, runnable CPU models, controls, troubleshooting and quizzes, culminating in an evidence-backed portfolio. Real-engine extensions are clearly separate from simulations."
   },
   "level": "advanced",
   "hoursPerDay": {
@@ -24,8 +24,8 @@
     "en": "Know one inference engine, Python/HTTP, containers, and performance metrics. Day 8 uses Kubernetes Pods, Services, and resource requests. Complete vLLM or SGLang first."
   },
   "hardware": {
-    "zh": "真实 worker 需要兼容矩阵中所选后端支持的硬件；双 worker 路由与 P/D 实验通常需要多个设备。无 GPU 可使用官方 Mocker/DynoSim 路径研究控制行为。Kubernetes 练习可在本地测试集群或以配置审查完成。",
-    "en": "Real workers need hardware supported by the selected backend's compatibility matrix; two-worker routing and P/D experiments usually need multiple devices. Without GPUs, use official Mocker/DynoSim paths to study control behavior. Kubernetes labs can use a local test cluster or a configuration review."
+    "zh": "CPU教学实验：Python3.9+标准库和普通电脑。真实框架/模型/GPU扩展见实验包README的版本、环境和步骤；当前发布未做GPU实测。",
+    "en": "CPU exercises: Python3.9+ standard library and a laptop. See lab README for versions, environments and steps for real-framework/GPU extensions; this publication did not run GPU benchmarks."
   },
   "hardwareTier": "gpu-optional",
   "tags": [
@@ -47,11 +47,23 @@
     ]
   },
   "outcome": {
-    "zh": "完成固定版本的服务拓扑、SLO 工作负载、路由与 P/D 对照、扩缩容推演、部署清单及恢复手册；明确区分模拟结果与真实模型性能。",
-    "en": "Deliver a pinned serving topology, SLO workload, routing and P/D comparisons, scaling analysis, deployment manifests, and a recovery runbook, clearly separating simulation from real model performance."
+    "zh": "一个包含逐日原始JSON、对照CSV、独立函数挑战、文件哈希与个人分析报告的工程作品；清楚区分模拟和真实框架记录。",
+    "en": "A portfolio containing daily raw JSON, comparison CSV, an independent function challenge, file hashes and your analysis, separating simulation from actual framework records."
   },
   "lastVerified": "2026-11-13",
   "resources": [
+    {
+      "title": "Dynamo quickstart",
+      "url": "https://docs.nvidia.com/dynamo/cli/getting-started/quickstart"
+    },
+    {
+      "title": "Dynamo 1.6.1 release",
+      "url": "https://github.com/ai-dynamo/dynamo/releases/tag/v1.6.1"
+    },
+    {
+      "title": "Dynamo 1.6.1 documentation",
+      "url": "https://docs.nvidia.com/dynamo/v1.6.1/llms.txt"
+    },
     {
       "title": "NVIDIA Dynamo documentation",
       "url": "https://docs.nvidia.com/dynamo/latest/"
@@ -81,90 +93,398 @@
         "en": "Map the serving system"
       },
       "lesson": {
-        "zh": "Dynamo 位于推理引擎之上，组织前端、worker、路由与相关状态，而引擎仍负责模型计算。理解请求路径、控制路径与 KV 状态路径，可以避免把所有延迟都归因于 GPU。后端、设备和版本支持存在差异，单个例子不能推导出全部组合都可用。先确定一个后端和实验拓扑，后续再研究组件增多是否带来可衡量的收益。",
-        "en": "Dynamo organizes frontends, workers, routing, and related state above inference engines; the engine still performs model computation. Separating request, control, and KV-state paths prevents every latency problem from being blamed on the GPU. Backend, device, and release support differ, so one working example does not establish that all combinations are supported. Select one backend and experimental topology first. Later experiments can then test whether additional components provide a measurable benefit rather than assuming architectural complexity is itself an improvement."
+        "zh": "Dynamo把前端、路由、worker、服务发现、规划与数据移动组合成服务系统。逻辑职责分开后，才能解释“worker在列表里却不能接请求”或“路由成功但KV传输失败”。",
+        "en": "Dynamo combines frontend, routing, workers, discovery, planning and data movement. Separating responsibilities explains a listed but unready worker or a successful route followed by failed KV transfer."
       },
       "task": {
-        "zh": "绘制请求、控制和状态三张简图，列出每个组件的输入、输出与失败影响。固定 Dynamo、引擎、模型 revision 和设备条件；标记采用真实 worker 还是官方模拟路径。",
-        "en": "Draw request, control, and state diagrams, listing each component's inputs, outputs, and failure impact. Pin Dynamo, engine, model revision, and device requirements; mark whether the project uses real workers or official simulation."
+        "zh": "为一个请求画三种颜色的箭头，标出健康状态更新与KV数据流的区别。",
+        "en": "Draw three colors of arrows for a request, distinguishing health updates from KV data flow."
       },
       "evidence": {
-        "zh": "architecture.md 与 environment.json，含拓扑、版本和未验证的兼容性项。",
-        "en": "architecture.md and environment.json with topology, versions, and unverified compatibility items."
+        "zh": "day01.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day01.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "计算引擎与服务编排职责分开",
-          "标注三条路径及其共享依赖",
-          "每个后端选择都有官方兼容性依据"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Separate engine computation from serving orchestration",
-          "Label all three paths and their shared dependencies",
-          "Support each backend choice with official compatibility evidence"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "选择官方模拟路径并注明模拟的组件与简化假设；架构图仍需保留真实部署时的数据路径。",
-        "en": "Choose an official simulation path and state which components it models and what it simplifies. Keep the real deployment's data path in the architecture diagram."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "Dynamo architecture overview",
-          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/overview"
+          "title": "Dynamo quickstart",
+          "url": "https://docs.nvidia.com/dynamo/cli/getting-started/quickstart"
         },
         {
-          "title": "Dynamo compatibility",
-          "url": "https://docs.nvidia.com/dynamo/reference/compatibility"
+          "title": "Dynamo 1.6.1 release",
+          "url": "https://github.com/ai-dynamo/dynamo/releases/tag/v1.6.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "控制面、请求面与数据面",
+            "en": "Control, request and data planes"
+          },
+          "body": {
+            "zh": "Dynamo把前端、路由、worker、服务发现、规划与数据移动组合成服务系统。逻辑职责分开后，才能解释“worker在列表里却不能接请求”或“路由成功但KV传输失败”。",
+            "en": "Dynamo combines frontend, routing, workers, discovery, planning and data movement. Separating responsibilities explains a listed but unready worker or a successful route followed by failed KV transfer."
+          }
         },
         {
-          "title": "Dynamo simulation overview",
-          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/concepts/simulation/overview"
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "基线输出请求面3项、控制面3项、数据面3项。changed场景是worker崩溃后成员状态更新。三个平面不是三台固定机器，部署时可共享进程或节点。",
+            "en": "The baseline lists three components per plane; the changed scenario updates membership after a worker crash. Planes are logical responsibilities, not three fixed machines."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "控制面、请求面与数据面 · 流程",
+          "en": "Control, request and data planes · flow"
+        },
+        "nodes": [
+          {
+            "zh": "前端入口",
+            "en": "Frontend"
+          },
+          {
+            "zh": "路由选择",
+            "en": "Routing"
+          },
+          {
+            "zh": "worker执行",
+            "en": "Worker execution"
+          },
+          {
+            "zh": "KV数据移动",
+            "en": "KV movement"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "点击上方下载实验包；在终端进入ZIP所在目录后执行下列命令。Windows可右键解压，再在dynamo文件夹打开终端，将python3换为py -3。后续每天都在同一个实验目录运行。Python3.9+无需pip安装。",
+            "en": "Download the lab ZIP above and open a terminal in its download directory. Run the commands below. On Windows, extract with the file manager, open a terminal in dynamo and replace python3 with py -3. Run subsequent days in this same lab directory. Python3.9+ needs no pip packages."
+          },
+          "command": "unzip dynamo.zip\ncd dynamo\npython3 --version\npython3 lab.py selfcheck\npython3 lab.py day1 --out out/day01-base",
+          "expected": {
+            "zh": "三个plane数组各3项，runtime=not loaded。 文件为out/day01-base/day01.json。",
+            "en": "Each plane has three items; runtime not loaded. File:out/day01-base/day01.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "为一个请求画三种颜色的箭头，标出健康状态更新与KV数据流的区别。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Draw three colors of arrows for a request, distinguishing health updates from KV data flow. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day1 --variant changed --out out/day01-changed",
+          "expected": {
+            "zh": "case变为worker crash与membership变化。",
+            "en": "Case changes to worker crash and membership update."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "误把路由器当模型引擎",
+            "en": "Router confused with engine"
+          },
+          "fix": {
+            "zh": "记录谁选择worker、谁实际执行token计算。",
+            "en": "Identify who selects workers and who computes tokens."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "无法导入dynamo",
+            "en": "Cannot import dynamo"
+          },
+          "fix": {
+            "zh": "CPU实验不依赖SDK；先运行lab.py。真实容器路线在README另列。",
+            "en": "CPU labs need no SDK; run lab.py first. Real containers are a separate README route."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "服务发现主要属于？",
+            "en": "Which plane owns service discovery?"
+          },
+          "options": [
+            {
+              "zh": "控制面",
+              "en": "Control plane"
+            },
+            {
+              "zh": "token输出",
+              "en": "Token output"
+            },
+            {
+              "zh": "模型权重",
+              "en": "Model weights"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "服务发现维护参与者状态，供请求路由使用。",
+            "en": "Discovery tracks participants for request routing."
+          }
+        },
+        {
+          "question": {
+            "zh": "逻辑平面与物理机器是一一对应吗？",
+            "en": "Do logical planes map one-to-one to machines?"
+          },
+          "options": [
+            {
+              "zh": "是",
+              "en": "Yes"
+            },
+            {
+              "zh": "不是",
+              "en": "No"
+            },
+            {
+              "zh": "只能部署三台",
+              "en": "Exactly three machines are required"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "职责划分与进程/节点放置是不同设计维度。",
+            "en": "Responsibilities and process/node placement are separate design decisions."
+          }
         }
       ]
     },
     {
       "day": 2,
       "title": {
-        "zh": "构建最小可观察服务",
-        "en": "Build a minimal observable service"
+        "zh": "模拟服务发现与就绪筛选",
+        "en": "Model discovery and readiness filtering"
       },
       "lesson": {
-        "zh": "最小服务的价值是减少变量：一个前端、一个 worker、一个模型和一条可重复请求。健康端点成功与模型能够正确返回是两项不同检查，流式输出又增加了首 token 和结束状态。Dynamo 的发现与运行方式随路径不同，不应把某个示例的依赖当成所有部署都必须安装。启动后先保留请求时间线和日志，为后续对照提供基线。",
-        "en": "A minimal service reduces variables to one frontend, one worker, one model, and one repeatable request. Health success and a correct model response are separate checks; streaming also adds first-token and termination behavior. Discovery and runtime choices depend on the selected Dynamo path, so dependencies from one example should not be assumed mandatory for every deployment. Preserve request timelines and logs after startup. This establishes a baseline before introducing routing, distributed transfer, or autoscaling, and exposes basic configuration problems early."
+        "zh": "worker启动后可能先注册，再下载模型、分配内存和预热。路由应只选择ready集合。这个简单状态表帮助理解为什么扩容请求发出后容量不会立即增加。",
+        "en": "A worker may register before loading weights, allocating memory and warming up. Route only to ready workers. This state table explains why requested scale-out does not immediately add capacity."
       },
       "task": {
-        "zh": "按固定版本 quickstart 启动单 worker 路径，验证健康、普通请求、流式请求、错误输入与客户端取消。记录启动命令来源和脱敏日志；模拟路线使用官方 Mocker 示例进行同类协议检查。",
-        "en": "Use the pinned quickstart to start a single-worker path. Check health, ordinary and streaming requests, invalid input, and client cancellation. Save command sources and redacted logs; on the simulation route, apply equivalent protocol checks to the official Mocker example."
+        "zh": "新增draining状态并定义是否接受新请求，说明已在执行的请求如何处理。",
+        "en": "Add draining and define admission of new requests and treatment of in-flight ones."
       },
       "evidence": {
-        "zh": "smoke-results.csv、服务启动说明和一条请求时间线。",
-        "en": "smoke-results.csv, service startup instructions, and one request timeline."
+        "zh": "day02.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day02.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "健康与生成结果分别记录",
-          "包括流式结束和错误输入结果",
-          "明确记录真实模型或模拟 worker"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Record health separately from generation results",
-          "Include stream termination and invalid-input outcomes",
-          "Identify real-model or simulated workers explicitly"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "使用官方 Mocker 示例。其响应和时延用于控制流程实验，不是模型质量或 GPU 推理速度的证据。",
-        "en": "Use the official Mocker example. Its responses and timings support control-flow experiments, not claims about model quality or GPU inference speed."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "Dynamo local quickstart",
+          "title": "Dynamo quickstart",
           "url": "https://docs.nvidia.com/dynamo/cli/getting-started/quickstart"
         },
         {
-          "title": "Dynamo simulation overview",
-          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/concepts/simulation/overview"
+          "title": "Dynamo 1.6.1 release",
+          "url": "https://github.com/ai-dynamo/dynamo/releases/tag/v1.6.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "注册不代表就绪",
+            "en": "Registration is not readiness"
+          },
+          "body": {
+            "zh": "worker启动后可能先注册，再下载模型、分配内存和预热。路由应只选择ready集合。这个简单状态表帮助理解为什么扩容请求发出后容量不会立即增加。",
+            "en": "A worker may register before loading weights, allocating memory and warming up. Route only to ready workers. This state table explains why requested scale-out does not immediately add capacity."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "基线a和b都ready，eligible包含两项。changed中b为starting，只剩a；仍有4个请求，不应把b算入可用吞吐。真实就绪信号要通过对应后端和服务健康检查确认。",
+            "en": "Baseline a/b are ready, giving two eligible workers. Changed b is starting, leaving only a for four requests. Real readiness must be checked through the backend and health endpoints."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "注册不代表就绪 · 流程",
+          "en": "Registration is not readiness · flow"
+        },
+        "nodes": [
+          {
+            "zh": "注册",
+            "en": "Register"
+          },
+          {
+            "zh": "加载模型",
+            "en": "Load model"
+          },
+          {
+            "zh": "健康就绪",
+            "en": "Ready"
+          },
+          {
+            "zh": "进入路由集合",
+            "en": "Join routing set"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的dynamo目录，先阅读lab.py中day2函数，预测结果再运行。",
+            "en": "Inside the extracted dynamo directory, read day2 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day2 --out out/day02-base",
+          "expected": {
+            "zh": "eligible含worker-a、worker-b。 文件为out/day02-base/day02.json。",
+            "en": "Eligible includes worker-a and worker-b. File:out/day02-base/day02.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "新增draining状态并定义是否接受新请求，说明已在执行的请求如何处理。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Add draining and define admission of new requests and treatment of in-flight ones. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day2 --variant changed --out out/day02-changed",
+          "expected": {
+            "zh": "eligible只有worker-a。",
+            "en": "Only worker-a is eligible."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "注册后请求仍失败",
+            "en": "Requests fail after registration"
+          },
+          "fix": {
+            "zh": "核对ready条件和模型加载日志，不仅看成员列表。",
+            "en": "Inspect readiness and model-load logs, not only membership."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "扩容后延迟没降",
+            "en": "Latency does not drop after scaling"
+          },
+          "fix": {
+            "zh": "分别记录扩容请求、进程启动、模型就绪三个时间点。",
+            "en": "Record scale request, process start and model-ready timestamps separately."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "starting worker应该计入可路由容量吗？",
+            "en": "Should a starting worker count as routable capacity?"
+          },
+          "options": [
+            {
+              "zh": "不应该",
+              "en": "No"
+            },
+            {
+              "zh": "应该",
+              "en": "Yes"
+            },
+            {
+              "zh": "只看名字",
+              "en": "Only its name matters"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "注册和就绪是两个不同状态。",
+            "en": "Registration and readiness are distinct states."
+          }
+        },
+        {
+          "question": {
+            "zh": "扩容命令成功意味着？",
+            "en": "What does a successful scale command imply?"
+          },
+          "options": [
+            {
+              "zh": "模型已全部预热",
+              "en": "All models are warm"
+            },
+            {
+              "zh": "只表示动作被接受，仍需等就绪",
+              "en": "The action is accepted; readiness still matters"
+            },
+            {
+              "zh": "队列一定为空",
+              "en": "Queues are empty"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "创建进程、拉镜像和加载权重都可能延迟实际容量。",
+            "en": "Process creation, image pulls and weight loading can delay usable capacity."
+          }
         }
       ]
     },
@@ -175,51 +495,210 @@
         "en": "Define experiments with an SLO"
       },
       "lesson": {
-        "zh": "吞吐高并不代表用户体验好，排队可能使首 token 与完成时间超过要求。先为固定工作负载设定 TTFT、端到端延迟和错误率目标，再计算满足目标的有效请求量。输入/输出长度、到达模式和并发都会影响结果；闭环客户端等待回复再发请求，可能掩盖开放到达流下的过载。保存逐请求记录，才能复算分位数和达标比例。",
-        "en": "High throughput does not guarantee a good experience if queueing pushes first-token or completion time beyond the target. Define TTFT, end-to-end latency, and error-rate objectives for a fixed workload, then count completed requests that meet them. Input/output lengths, arrival patterns, and concurrency all influence results. Closed-loop clients wait for responses before issuing more work and can hide overload seen under open arrivals. Keep per-request records so reviewers can recompute quantiles, error rates, and the fraction meeting the stated objective."
+        "zh": "只看成功率会忽略太慢的成功请求。这里的goodput_fraction定义为同时成功且延迟不超过阈值的请求数/全部请求数，是达标比例，不是每秒请求数。",
+        "en": "Success rate ignores successful but late requests. goodput_fraction here is successful requests within the latency threshold divided by all requests. It is an attainment fraction, not requests per second."
       },
       "task": {
-        "zh": "定义一个短请求和一个长上下文工作负载，事先写下实验用 SLO。用 AIPerf 或等价记录方式保存逐请求指标，比较至少两个负载水平，计算 goodput 并解释未达标请求。",
-        "en": "Define short-request and long-context workloads with explicit experimental SLOs. Use AIPerf or an equivalent recording method to save per-request metrics. Compare at least two load levels, calculate goodput, and explain requests that miss the objective."
+        "zh": "实现student.py的goodput，处理空样本和恰好等于阈值的请求。",
+        "en": "Implement goodput, including empty samples and latency exactly at the threshold."
       },
       "evidence": {
-        "zh": "workload.json、requests.csv 与指标计算说明；SLO 是练习假设，不冒充行业统一标准。",
-        "en": "workload.json, requests.csv, and metric definitions; label SLOs as exercise assumptions rather than industry-wide standards."
+        "zh": "day03.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day03.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "SLO 在看结果前定义",
-          "错误和超时没有算成达标请求",
-          "可以从逐请求记录复算 goodput"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Define the SLO before inspecting results",
-          "Exclude errors and timeouts from successful SLO completions",
-          "Make goodput recomputable from per-request records"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "用官方模拟器生成负载轨迹，或使用下方合成记录练习统计；所有图表标注 simulated，不能换算成真实集群容量承诺。",
-        "en": "Generate traces with official simulation or use the synthetic records below to practice statistics. Label every chart simulated and do not convert it into a real-cluster capacity promise."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "Benchmarking Dynamo with AIPerf",
-          "url": "https://docs.nvidia.com/dynamo/cli/operations/benchmarking-with-ai-perf"
+          "title": "Dynamo quickstart",
+          "url": "https://docs.nvidia.com/dynamo/cli/getting-started/quickstart"
         },
         {
-          "title": "Dynamo simulation overview",
-          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/concepts/simulation/overview"
+          "title": "Dynamo 1.6.1 release",
+          "url": "https://github.com/ai-dynamo/dynamo/releases/tag/v1.6.1"
         }
       ],
-      "code": {
-        "language": "python",
-        "caption": {
-          "zh": "合成请求的 goodput 计算示例；阈值只是课程假设，数据不是 Dynamo 测量结果。",
-          "en": "Goodput calculation on synthetic requests; thresholds are exercise assumptions and the data is not a Dynamo measurement."
+      "explanation": [
+        {
+          "title": {
+            "zh": "SLO达标率保留全部分母",
+            "en": "Keep the full denominator for SLO attainment"
+          },
+          "body": {
+            "zh": "只看成功率会忽略太慢的成功请求。这里的goodput_fraction定义为同时成功且延迟不超过阈值的请求数/全部请求数，是达标比例，不是每秒请求数。",
+            "en": "Success rate ignores successful but late requests. goodput_fraction here is successful requests within the latency threshold divided by all requests. It is an attainment fraction, not requests per second."
+          }
         },
-        "content": "# Synthetic data; thresholds are exercise assumptions.\nrequests = [\n    {'ok': True,  'ttft_ms': 100, 'e2e_ms': 900},\n    {'ok': True,  'ttft_ms': 700, 'e2e_ms': 1400},\n    {'ok': False, 'ttft_ms': None, 'e2e_ms': 2000},\n    {'ok': True,  'ttft_ms': 200, 'e2e_ms': 1100},\n]\nwindow_s = 10.0\nttft_limit_ms, e2e_limit_ms = 500, 1500\nwithin_slo = sum(\n    r['ok'] and r['ttft_ms'] is not None\n    and r['ttft_ms'] <= ttft_limit_ms\n    and r['e2e_ms'] <= e2e_limit_ms\n    for r in requests\n)\nprint('SLO-compliant requests:', within_slo)\nprint('Goodput (requests/s):', within_slo / window_s)\n"
-      }
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "四条请求中3成功，成功率0.75；100ms阈值只有40和80达标，所以比例0.5。阈值改60ms，只40达标，比例0.25。错误即使10ms返回也不达标。",
+            "en": "Three of four requests succeed, yielding0.75. At100ms only40 and80 meet the target, giving0.5. At60ms only40 meets it, giving0.25. A10ms error never qualifies."
+          }
+        },
+        {
+          "title": {
+            "zh": "动手调参：连接图解与实验",
+            "en": "Change parameters: connect widget and lab"
+          },
+          "body": {
+            "zh": "拖动排队时间观察单请求何时超过你的SLO，再回到四条原始请求分别打标。交互条是单请求时间分解；达标率的分母仍是全部4条，不能因为一条失败就只除以3。",
+            "en": "Vary queue time until a request exceeds your SLO, then label each of the four raw rows. The widget decomposes one request; SLO attainment still divides by all four submitted requests, including the failure."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "SLO达标率保留全部分母 · 流程",
+          "en": "Keep the full denominator for SLO attainment · flow"
+        },
+        "nodes": [
+          {
+            "zh": "定义SLO",
+            "en": "Define SLO"
+          },
+          {
+            "zh": "保留所有请求",
+            "en": "Keep all requests"
+          },
+          {
+            "zh": "成功且及时",
+            "en": "Successful and timely"
+          },
+          {
+            "zh": "达标比例",
+            "en": "Attainment fraction"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的dynamo目录，先阅读lab.py中day3函数，预测结果再运行。",
+            "en": "Inside the extracted dynamo directory, read day3 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day3 --out out/day03-base",
+          "expected": {
+            "zh": "success_fraction=.75，goodput_fraction=.5。 文件为out/day03-base/day03.json。",
+            "en": "Success fraction.75; attainment.5. File:out/day03-base/day03.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "实现student.py的goodput，处理空样本和恰好等于阈值的请求。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Implement goodput, including empty samples and latency exactly at the threshold. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day3 --variant changed --out out/day03-changed",
+          "expected": {
+            "zh": "slo_ms=60，goodput_fraction=.25。",
+            "en": "SLO60ms; attainment.25."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "达标率高于成功率",
+            "en": "Attainment exceeds success rate"
+          },
+          "fix": {
+            "zh": "检查是否把失败也当及时成功；达标集合必须是成功集合子集。",
+            "en": "Check failed requests were not counted; timely successes are a subset of successes."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "把比例写为QPS",
+            "en": "Fraction labeled QPS"
+          },
+          "fix": {
+            "zh": "比例无时间单位；QPS还需要明确整个观测窗口秒数。",
+            "en": "Fractions are dimensionless; QPS needs the observation-window duration."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "100ms阈值达标比例？",
+            "en": "What fraction meets the100ms target?"
+          },
+          "options": [
+            {
+              "zh": ".75",
+              "en": ".75"
+            },
+            {
+              "zh": ".5",
+              "en": ".5"
+            },
+            {
+              "zh": "1",
+              "en": "1"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "两个成功且及时请求除以四个总请求。",
+            "en": "Two timely successes divided by four total requests."
+          }
+        },
+        {
+          "question": {
+            "zh": "10ms的错误响应算达标吗？",
+            "en": "Does a10ms error count as meeting the target?"
+          },
+          "options": [
+            {
+              "zh": "算",
+              "en": "Yes"
+            },
+            {
+              "zh": "不算",
+              "en": "No"
+            },
+            {
+              "zh": "只要够快就算",
+              "en": "Any fast response counts"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "定义要求成功和及时同时满足。",
+            "en": "The definition requires both success and timeliness."
+          }
+        }
+      ],
+      "interactive": "timeline"
     },
     {
       "day": 4,
@@ -228,43 +707,210 @@
         "en": "Compare cache affinity and load"
       },
       "lesson": {
-        "zh": "KV 感知路由希望把请求送到已有可复用状态的位置，但最可能命中的 worker 也可能排队最久。因此路由的目标不是单独最大化命中率，而是在复用收益和负载之间取舍。路由观察到的状态与真实缓存还可能存在更新延迟。必须有至少两个可选 worker 才能验证选择行为，并用相同请求序列比较策略，而不是只展示一个温热样例。",
-        "en": "KV-aware routing tries to send requests toward reusable state, but the worker with the best cache affinity may also have the longest queue. The objective is therefore a tradeoff between reuse and load, not maximizing hit rate alone. Observed routing state may also lag actual cache contents. You need at least two eligible workers to test selection behavior. Compare policies with the same request sequence instead of presenting one warm example, and record both cache-related evidence and user-visible latency."
+        "zh": "偏向有缓存的worker可以减少prefill，但它可能已有长队。本模型用排队时间+max(0,40−缓存节省)作为完成时间估计，选择最小值；真实路由器还需处理状态过期和批处理。",
+        "en": "A cached worker can save prefill but have a longer queue. The model minimizes queue+max(0,40−cache savings). A real router must also handle stale state and batching."
       },
       "task": {
-        "zh": "准备共享前缀、完全不同前缀和偏斜热点三组序列。在两个 worker 上比较文档支持的路由配置，记录分配、命中证据、队列与 SLO；真实资源不足时使用官方模拟路径。",
-        "en": "Prepare shared-prefix, distinct-prefix, and skewed-hotspot traces. Across two workers, compare documented routing configurations and record assignments, hit evidence, queues, and SLO outcomes. Use official simulation when real resources are unavailable."
+        "zh": "让缓存节省为0和40分别验证边界，解释为什么不能只按命中率路由。",
+        "en": "Test savings0 and40 and explain why hit rate alone is insufficient for routing."
       },
       "evidence": {
-        "zh": "routing-runs.csv 与策略对照图；至少解释一个命中更高但体验未改善的可能原因。",
-        "en": "routing-runs.csv and policy comparison charts, explaining at least one reason higher cache affinity may not improve experience."
+        "zh": "day04.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day04.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "两个策略使用同一请求序列与资源预算",
-          "至少两个可选 worker，或明确标注未验证路由",
-          "同时报告分配偏斜、命中与请求延迟"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Use identical traces and resource budgets across policies",
-          "Use two eligible workers or mark routing as unverified",
-          "Report assignment skew, cache evidence, and request latency"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "使用 Mocker/DynoSim 支持的路由实验；若该版本不支持所需事件，写离散事件模型并把它标为自建模拟而非 Dynamo 实测。",
-        "en": "Use routing experiments supported by Mocker/DynoSim. If the selected version lacks needed events, write a discrete-event model and label it as your simulation rather than a Dynamo measurement."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "Dynamo KV-aware routing",
-          "url": "https://docs.nvidia.com/dynamo/cli/kv-aware-routing/overview"
+          "title": "Dynamo quickstart",
+          "url": "https://docs.nvidia.com/dynamo/cli/getting-started/quickstart"
         },
         {
-          "title": "Dynamo simulation overview",
-          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/concepts/simulation/overview"
+          "title": "Dynamo 1.6.1 release",
+          "url": "https://github.com/ai-dynamo/dynamo/releases/tag/v1.6.1"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "缓存亲和需要和排队一起比较",
+            "en": "Balance affinity against queueing"
+          },
+          "body": {
+            "zh": "偏向有缓存的worker可以减少prefill，但它可能已有长队。本模型用排队时间+max(0,40−缓存节省)作为完成时间估计，选择最小值；真实路由器还需处理状态过期和批处理。",
+            "en": "A cached worker can save prefill but have a longer queue. The model minimizes queue+max(0,40−cache savings). A real router must also handle stale state and batching."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "基线a排队10、节省35，估计15ms；b排队0、节省0，估计40ms，选a。changed把a排队改100，估计105ms，改选b。",
+            "en": "Baseline a has queue10/savings35, giving15ms; b gives40ms, so select a. With a’s queue100, its105ms estimate loses to b."
+          }
+        },
+        {
+          "title": {
+            "zh": "动手调参：连接图解与实验",
+            "en": "Change parameters: connect widget and lab"
+          },
+          "body": {
+            "zh": "交互图体现前缀复用可以减少的计算；本日路由脚本再把排队时间加上。比较亲和worker的15ms和忙时105ms：即使命中相同，路由选择也会反转，说明命中率不是唯一目标。",
+            "en": "The widget shows compute saved by prefix reuse; the routing script adds queue time. The affinity worker costs15ms or105ms when busy. Identical cache affinity can lead to opposite route choices, so hit rate is not the only objective."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "缓存亲和需要和排队一起比较 · 流程",
+          "en": "Balance affinity against queueing · flow"
+        },
+        "nodes": [
+          {
+            "zh": "读排队",
+            "en": "Read queue"
+          },
+          {
+            "zh": "估算复用",
+            "en": "Estimate reuse"
+          },
+          {
+            "zh": "计算分数",
+            "en": "Compute scores"
+          },
+          {
+            "zh": "选择worker",
+            "en": "Choose worker"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的dynamo目录，先阅读lab.py中day4函数，预测结果再运行。",
+            "en": "Inside the extracted dynamo directory, read day4 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day4 --out out/day04-base",
+          "expected": {
+            "zh": "predicted=[15,40]，selected_worker=0。 文件为out/day04-base/day04.json。",
+            "en": "Predicted[15,40]; selected_worker0. File:out/day04-base/day04.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "让缓存节省为0和40分别验证边界，解释为什么不能只按命中率路由。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Test savings0 and40 and explain why hit rate alone is insufficient for routing. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day4 --variant changed --out out/day04-changed",
+          "expected": {
+            "zh": "predicted=[105,40]，selected_worker=1。",
+            "en": "Predicted[105,40]; selected_worker1."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "亲和路由让热点更拥堵",
+            "en": "Affinity overloads a hotspot"
+          },
+          "fix": {
+            "zh": "把排队与负载加入成本，观察尾延迟而不只命中率。",
+            "en": "Include queue/load costs and inspect tail latency, not just hits."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "读取到过期缓存位置",
+            "en": "Cache-location metadata is stale"
+          },
+          "fix": {
+            "zh": "容忍失配并重选/重算，记录状态新鲜度与失配次数。",
+            "en": "Handle misses by rerouting/recomputing and record metadata age/mismatches."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "基线选择哪个worker？",
+            "en": "Which worker wins in the baseline?"
+          },
+          "options": [
+            {
+              "zh": "a/0",
+              "en": "a/0"
+            },
+            {
+              "zh": "b/1",
+              "en": "b/1"
+            },
+            {
+              "zh": "随机",
+              "en": "Random"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "15ms估计小于40ms。",
+            "en": "The15ms estimate is below40ms."
+          }
+        },
+        {
+          "question": {
+            "zh": "缓存worker排队100ms时仍应强制选它吗？",
+            "en": "Should a cached worker with100ms queue always win?"
+          },
+          "options": [
+            {
+              "zh": "应该",
+              "en": "Yes"
+            },
+            {
+              "zh": "不应，比较总体成本",
+              "en": "No, compare total cost"
+            },
+            {
+              "zh": "缓存取消了队列",
+              "en": "Caching eliminates queues"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "节省35ms无法抵消额外100ms排队。",
+            "en": "Saving35ms does not offset100ms queueing."
+          }
+        }
+      ],
+      "interactive": "prefix-cache"
     },
     {
       "day": 5,
@@ -273,90 +919,409 @@
         "en": "Decide whether P/D disaggregation helps"
       },
       "lesson": {
-        "zh": "prefill 偏向处理输入计算，decode 偏向持续生成；分离可以让两阶段分别分配资源，也引入 KV 交接、网络和协调成本。长输入、高输出或不同批量下，收益可能变化。比较时必须保持总资源预算和工作负载一致，不能让分离方案多用一倍 GPU 后就宣称架构更高效。传输后端的支持取决于当前引擎路径，不能把实验选项泛化为所有后端能力。",
-        "en": "Prefill processes input computation while decode repeatedly generates tokens. Separating them enables independent resource allocation but adds KV handoff, networking, and coordination costs. Benefits vary with prompt length, output length, and batching. Keep total resources and workloads comparable; giving the disaggregated setup twice as many GPUs does not establish greater architectural efficiency. Transfer-backend support depends on the selected engine path. An experimental option in one backend's documentation should not be generalized into a capability of every supported engine."
+        "zh": "Prefill、传输、Decode各有服务能力。理想流水线上限取阶段容量的最小值；单请求延迟却是阶段时长之和。该模型固定1P+1D，不包含批处理、网络竞争和额外系统开销。",
+        "en": "Prefill, transfer and decode each impose capacity. Ideal pipeline capacity is their minimum; single-request latency is their sum. This model fixes1P+1D and omits batching, contention and overhead."
       },
       "task": {
-        "zh": "选两个不同输入/输出比例的工作负载，画出聚合与 P/D 时间线。按相同总设备预算比较，或建立带转移时间的成本模型；记录 prefill、传输、排队与 decode 的贡献。",
-        "en": "Choose two workloads with different input/output ratios and draw aggregated and P/D timelines. Compare at equal total device budgets, or build a model including transfer time. Record contributions from prefill, transfer, queueing, and decode."
+        "zh": "增加一个P worker与一个D worker分别预测上限，保留相同传输瓶颈。",
+        "en": "Add one P worker and one D worker in separate predictions while retaining the transfer bottleneck."
       },
       "evidence": {
-        "zh": "pd-decision.md 与对照表，包含版本支持、资源预算、转移成本和适用条件。",
-        "en": "pd-decision.md and a comparison table covering version support, resource budgets, transfer cost, and applicability."
+        "zh": "day05.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day05.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "两方案比较总设备数与资源配置",
-          "转移与协调成本没有被省略",
-          "结论限制在已测试或建模的工作负载"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Compare total devices and resource configuration",
-          "Include transfer and coordination costs",
-          "Limit conclusions to tested or modeled workloads"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "用阶段服务时间和网络转移假设建立事件表，扫描转移延迟与输入长度；结果写成敏感性分析，不声称真实 GPU 加速倍数。",
-        "en": "Build an event table from assumed stage service times and network transfer costs. Sweep transfer latency and input length, reporting sensitivity rather than a real GPU speedup."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "Dynamo disaggregated serving",
-          "url": "https://docs.nvidia.com/dynamo/cli/disaggregated-serving/overview"
+          "title": "Dynamo quickstart",
+          "url": "https://docs.nvidia.com/dynamo/cli/getting-started/quickstart"
         },
         {
-          "title": "Dynamo compatibility",
-          "url": "https://docs.nvidia.com/dynamo/reference/compatibility"
+          "title": "Dynamo 1.6.1 release",
+          "url": "https://github.com/ai-dynamo/dynamo/releases/tag/v1.6.1"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "流水线吞吐由最慢阶段限制",
+            "en": "The slowest stage limits pipeline throughput"
+          },
+          "body": {
+            "zh": "Prefill、传输、Decode各有服务能力。理想流水线上限取阶段容量的最小值；单请求延迟却是阶段时长之和。该模型固定1P+1D，不包含批处理、网络竞争和额外系统开销。",
+            "en": "Prefill, transfer and decode each impose capacity. Ideal pipeline capacity is their minimum; single-request latency is their sum. This model fixes1P+1D and omits batching, contention and overhead."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "40ms prefill对应25请求/s，80ms decode对应12.5，20ms传输对应50，所以上限12.5。传输变200ms时上限5，单请求变320ms。",
+            "en": "40ms prefill supports25requests/s,80ms decode12.5 and20ms transfer50, giving12.5. At200ms transfer the ceiling is5 and individual latency320ms."
+          }
+        },
+        {
+          "title": {
+            "zh": "动手调参：连接图解与实验",
+            "en": "Change parameters: connect widget and lab"
+          },
+          "body": {
+            "zh": "把交互图设1P/1D与80ms decode，读出12.5请求/秒；加一个D可把纯计算上界提高到25。随后把脚本传输改到200ms，会发现网络上界5，增加D不再有效。交互图不计算传输，脚本补上这个反例。",
+            "en": "Set the widget to1P/1D with80ms decode for12.5requests/s; adding a D raises the compute-only bound to25. With200ms transfer in the script, the network bound is5, so adding D no longer helps. The script adds the widget's omitted transfer constraint."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "流水线吞吐由最慢阶段限制 · 流程",
+          "en": "The slowest stage limits pipeline throughput · flow"
+        },
+        "nodes": [
+          {
+            "zh": "P容量",
+            "en": "P capacity"
+          },
+          {
+            "zh": "传输容量",
+            "en": "Transfer capacity"
+          },
+          {
+            "zh": "D容量",
+            "en": "D capacity"
+          },
+          {
+            "zh": "取最小值",
+            "en": "Take minimum"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的dynamo目录，先阅读lab.py中day5函数，预测结果再运行。",
+            "en": "Inside the extracted dynamo directory, read day5 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day5 --out out/day05-base",
+          "expected": {
+            "zh": "ideal_requests_per_s=12.5，isolated=140ms。 文件为out/day05-base/day05.json。",
+            "en": "Ideal capacity12.5requests/s; individual140ms. File:out/day05-base/day05.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "增加一个P worker与一个D worker分别预测上限，保留相同传输瓶颈。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Add one P worker and one D worker in separate predictions while retaining the transfer bottleneck. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day5 --variant changed --out out/day05-changed",
+          "expected": {
+            "zh": "ideal_requests_per_s=5，isolated=320ms。",
+            "en": "Ideal capacity5requests/s; individual320ms."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "增加P却没有吞吐收益",
+            "en": "Adding P brings no throughput gain"
+          },
+          "fix": {
+            "zh": "先判断D或传输是否已是瓶颈。",
+            "en": "Check whether D or transfer is already limiting."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "用两卡结果比较单卡而忽略预算",
+            "en": "Ignoring different device budgets"
+          },
+          "fix": {
+            "zh": "记录每阶段设备数，另做相同总预算对照。",
+            "en": "Record devices per stage and add a fixed-total-budget comparison."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "基线瓶颈是哪一阶段？",
+            "en": "Which stage limits the baseline?"
+          },
+          "options": [
+            {
+              "zh": "prefill",
+              "en": "Prefill"
+            },
+            {
+              "zh": "decode",
+              "en": "Decode"
+            },
+            {
+              "zh": "传输",
+              "en": "Transfer"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "decode容量12.5最小。",
+            "en": "Decode capacity12.5 is the minimum."
+          }
+        },
+        {
+          "question": {
+            "zh": "单请求延迟等于各阶段最大值吗？",
+            "en": "Is one-request latency the maximum stage duration?"
+          },
+          "options": [
+            {
+              "zh": "不是，串行关键路径要相加",
+              "en": "No, serial stages add"
+            },
+            {
+              "zh": "是",
+              "en": "Yes"
+            },
+            {
+              "zh": "等于吞吐",
+              "en": "It equals throughput"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "最大服务时长决定流水线间隔，和单请求经过所有阶段不同。",
+            "en": "The longest stage constrains pipeline spacing, unlike a request traversing every stage."
+          }
+        }
+      ],
+      "interactive": "pd-balance"
     },
     {
       "day": 6,
       "title": {
-        "zh": "追踪状态事件与数据移动",
-        "en": "Trace state events and data movement"
+        "zh": "用代际事件拒绝过期状态",
+        "en": "Reject stale state with generation events"
       },
       "lesson": {
-        "zh": "控制面知道某个 worker 有缓存块，与另一个 worker 已经拿到这些字节，是两件不同的事。路由事件、发现信息、缓存元数据和实际 KV 传输可能有不同更新时机及失败方式。理解这一区别，有助于排查陈旧路由、重启后状态不匹配和传输等待。NIXL 等数据移动组件只是路径的一部分，仍需结合引擎状态生命周期解释请求为何完成或失败。",
-        "en": "Knowing that a worker has cache blocks is different from another worker possessing those bytes. Routing events, discovery records, cache metadata, and actual KV transfers can update at different times and fail differently. This distinction helps explain stale routing, state mismatches after restart, and transfer waits. Data-movement components such as NIXL are only part of the path; request outcomes still depend on engine-state lifetimes. Trace one request across events and bytes instead of assuming that a metadata announcement proves usable data has arrived."
+        "zh": "缓存位置和worker成员事件可能晚到、重复或乱序。本教学状态机只接受更大的seq，防止较早ready事件把已移除worker复活。真实系统还涉及不同实体、快照和恢复协议。",
+        "en": "Location/membership events can arrive late, duplicated or out of order. This state machine accepts only increasing seq, preventing an old ready event from resurrecting a removed worker. Real systems also need entity scope, snapshots and recovery protocols."
       },
       "task": {
-        "zh": "跟踪一条可复用请求，列出缓存产生、事件发布、路由选择、必要传输与状态释放的时间点。为 worker 重启和事件延迟各画一条异常时间线，标出应查的日志与未能确认的顺序。",
-        "en": "Trace a reusable request through cache creation, event publication, routing, required transfer, and release. Draw exception timelines for worker restart and delayed events, identifying relevant logs and ordering that remains unverified."
+        "zh": "再插入重复seq2和新seq3，写出什么时候可以重新进入ready。",
+        "en": "Insert duplicate seq2 and newseq3; explain when readiness can be restored."
       },
       "evidence": {
-        "zh": "state-timeline.md：正常与两种异常流程，标出控制事件和真实字节移动。",
-        "en": "state-timeline.md with normal and two exceptional flows, separating control events from byte movement."
+        "zh": "day06.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day06.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "事件可见不等同于数据就绪",
-          "至少分析重启与事件延迟两个场景",
-          "未观测到的时序没有当成实现保证"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Do not equate event visibility with data readiness",
-          "Analyze both restart and delayed-event scenarios",
-          "Do not present unobserved ordering as an implementation guarantee"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "制作事件驱动模拟，延迟或移除一条状态通知，观察路由决策改变；标签写明模型假设，不声称复现了所有真实竞态。",
-        "en": "Build an event-driven simulation that delays or removes one state notification and observe routing changes. State model assumptions rather than claiming every real race is reproduced."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "Dynamo architecture overview",
-          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/overview"
+          "title": "Dynamo quickstart",
+          "url": "https://docs.nvidia.com/dynamo/cli/getting-started/quickstart"
         },
         {
-          "title": "Dynamo KV-aware routing",
-          "url": "https://docs.nvidia.com/dynamo/cli/kv-aware-routing/overview"
+          "title": "Dynamo 1.6.1 release",
+          "url": "https://github.com/ai-dynamo/dynamo/releases/tag/v1.6.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "事件顺序影响路由正确性",
+            "en": "Event ordering affects routing correctness"
+          },
+          "body": {
+            "zh": "缓存位置和worker成员事件可能晚到、重复或乱序。本教学状态机只接受更大的seq，防止较早ready事件把已移除worker复活。真实系统还涉及不同实体、快照和恢复协议。",
+            "en": "Location/membership events can arrive late, duplicated or out of order. This state machine accepts only increasing seq, preventing an old ready event from resurrecting a removed worker. Real systems also need entity scope, snapshots and recovery protocols."
+          }
         },
         {
-          "title": "Dynamo disaggregated serving",
-          "url": "https://docs.nvidia.com/dynamo/cli/disaggregated-serving/overview"
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "基线ready(seq1)后removed(seq2)，最终removed。changed再送ready(seq1)，应忽略一次，最终仍removed。seq只是这里的教学代际，不冒充Dynamo实际事件字段。",
+            "en": "Ready(seq1) then removed(seq2) ends removed. Appending ready(seq1) is ignored once and still ends removed. These are teaching generations, not Dynamo wire fields."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "事件顺序影响路由正确性 · 流程",
+          "en": "Event ordering affects routing correctness · flow"
+        },
+        "nodes": [
+          {
+            "zh": "收到事件",
+            "en": "Receive event"
+          },
+          {
+            "zh": "比较代际",
+            "en": "Compare generation"
+          },
+          {
+            "zh": "应用较新状态",
+            "en": "Apply newer state"
+          },
+          {
+            "zh": "拒绝旧事件",
+            "en": "Reject stale event"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的dynamo目录，先阅读lab.py中day6函数，预测结果再运行。",
+            "en": "Inside the extracted dynamo directory, read day6 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day6 --out out/day06-base",
+          "expected": {
+            "zh": "最终state=removed，ignored=0。 文件为out/day06-base/day06.json。",
+            "en": "Final state removed; ignored0. File:out/day06-base/day06.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "再插入重复seq2和新seq3，写出什么时候可以重新进入ready。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Insert duplicate seq2 and newseq3; explain when readiness can be restored. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day6 --variant changed --out out/day06-changed",
+          "expected": {
+            "zh": "最终仍removed，ignored_stale_events=1。",
+            "en": "Still removed; one stale event ignored."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "移除worker又复活",
+            "en": "Removed worker reappears"
+          },
+          "fix": {
+            "zh": "比较事件seq与当前记录，拒绝旧消息覆盖。",
+            "en": "Compare event sequence with current state and reject older messages."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "只靠本机时间排序",
+            "en": "Sorting only by local clock"
+          },
+          "fix": {
+            "zh": "跨机时钟不可靠地代表因果关系；定义实体代际和更新规则。",
+            "en": "Cross-machine wall clocks do not reliably establish causality; define generations/update rules."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "迟到seq1能覆盖seq2吗？",
+            "en": "Can late seq1 overwrite seq2?"
+          },
+          "options": [
+            {
+              "zh": "不能",
+              "en": "No"
+            },
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "只看到达时间",
+              "en": "Arrival time alone decides"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "模型按代际单调更新，拒绝旧状态。",
+            "en": "The model updates generations monotonically and rejects stale state."
+          }
+        },
+        {
+          "question": {
+            "zh": "这个状态机等于完整分布式一致性实现吗？",
+            "en": "Is this a complete distributed consistency implementation?"
+          },
+          "options": [
+            {
+              "zh": "是",
+              "en": "Yes"
+            },
+            {
+              "zh": "不是",
+              "en": "No"
+            },
+            {
+              "zh": "已支持所有故障",
+              "en": "It covers every failure"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "这里只展示单实体的乱序防护，还缺快照、重放与故障恢复等机制。",
+            "en": "It illustrates single-entity ordering, without snapshots, replay and recovery machinery."
+          }
         }
       ]
     },
@@ -367,94 +1332,409 @@
         "en": "Reason about scaling under change"
       },
       "lesson": {
-        "zh": "扩容决策到新 worker 可接流量之间存在调度、加载模型和预热时间。控制器如果只追着瞬时指标变化，可能反复扩缩或在流量下降后才扩容。Dynamo Planner 的具体输入与机制要按当前版本核对；学习重点是把负载轨迹、目标、容量估计与动作延迟连接起来。模拟可验证控制策略趋势，但依赖校准，不能直接替代生产容量评估。",
-        "en": "Scaling decisions precede usable capacity by scheduling, model-loading, and warmup delays. A controller that follows instantaneous measurements can oscillate or add workers after demand has already fallen. Check the current Dynamo Planner documentation for its actual inputs and mechanisms. The learning goal is to connect load traces, objectives, capacity estimates, and action delays. Simulation can test control-policy trends, but its assumptions require calibration and cannot replace a production capacity study. Include resource cost and delayed reactions alongside SLO outcomes."
+        "zh": "扩容控制信号到达后还要等待资源、镜像、模型与预热。本离散模型每tick旧worker处理10条；新worker就绪后容量才增为20。它没有预测真实启动时间，只用于比较延迟的后果。",
+        "en": "Scaling waits for resources, images, model loading and warm-up. The model serves10requests/tick before a second worker becomes ready, then20. It does not predict real startup times; it compares consequences of delay."
       },
       "task": {
-        "zh": "制作平稳、突发和阶梯增长三种负载轨迹，按文档梳理 Planner 的输入与动作。使用官方支持的模拟路径或纸面事件表比较两组控制参数，加入启动延迟，统计 SLO 违约与 worker 时间。",
-        "en": "Create steady, burst, and step-growth load traces and map the Planner's documented inputs and actions. Use an official simulation path or an event table to compare two parameter settings, including startup delay; count SLO violations and worker time."
+        "zh": "把ready_at调到3，手算每tick backlog；给预扩容和准入限制各写一个代价。",
+        "en": "Set ready_at3 and calculate each backlog; describe a cost of prescaling and admission limits."
       },
       "evidence": {
-        "zh": "scaling.csv 与控制参数决策记录，含启动延迟和资源成本假设。",
-        "en": "scaling.csv and a control-parameter decision record with startup-delay and resource-cost assumptions."
+        "zh": "day07.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day07.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "负载轨迹固定且可重复",
-          "扩容动作与生效时刻分别记录",
-          "同时报告 SLO 与资源使用，避免只看 worker 数"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Keep load traces fixed and reproducible",
-          "Record action time separately from usable-capacity time",
-          "Report SLO outcomes and resources, not just worker counts"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "用 Mocker/DynoSim 的受支持实验或自建事件表完成；若使用自建控制规则，明确它不是 Dynamo Planner 的真实实现。",
-        "en": "Use supported Mocker/DynoSim experiments or your own event table. If the control rules are yours, say they are not the actual Dynamo Planner implementation."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "Dynamo Planner",
-          "url": "https://docs.nvidia.com/dynamo/kubernetes/auto-deployment/dynamo-planner"
+          "title": "Dynamo quickstart",
+          "url": "https://docs.nvidia.com/dynamo/cli/getting-started/quickstart"
         },
         {
-          "title": "Dynamo simulation overview",
-          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/concepts/simulation/overview"
-        },
-        {
-          "title": "Dynamo Mocker on Kubernetes",
-          "url": "https://docs.nvidia.com/dynamo/knowledge-base/concepts/simulation/kubernetes-mocker"
+          "title": "Dynamo 1.6.1 release",
+          "url": "https://github.com/ai-dynamo/dynamo/releases/tag/v1.6.1"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "扩容时延会积累队列",
+            "en": "Scale-up delay accumulates backlog"
+          },
+          "body": {
+            "zh": "扩容控制信号到达后还要等待资源、镜像、模型与预热。本离散模型每tick旧worker处理10条；新worker就绪后容量才增为20。它没有预测真实启动时间，只用于比较延迟的后果。",
+            "en": "Scaling waits for resources, images, model loading and warm-up. The model serves10requests/tick before a second worker becomes ready, then20. It does not predict real startup times; it compares consequences of delay."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "到达量[5,15,15,15,5]。新worker在tick2就绪，最大backlog5；延到tick4，最大backlog15。创建请求发出于tick1，两种情境相同。",
+            "en": "Arrivals are[5,15,15,15,5]. Readiness at tick2 gives maximum backlog5; delaying to tick4 gives15. Both issue the scale request at tick1."
+          }
+        },
+        {
+          "title": {
+            "zh": "动手调参：连接图解与实验",
+            "en": "Change parameters: connect widget and lab"
+          },
+          "body": {
+            "zh": "把交互图设到达率高于服务能力，观察稳态60秒积压；脚本则逐tick模拟新副本延迟就绪。前者没有启动时间，后者说明“已请求扩容”不能立即把队列能力翻倍。记录两种模型各自的时间单位。",
+            "en": "Set arrival rate above service capacity to inspect the widget's60-second fluid backlog. The script uses ticks and delayed replica readiness. The widget omits startup time; the script shows that requesting scale-out does not immediately double capacity. Record each model's time unit."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "扩容时延会积累队列 · 流程",
+          "en": "Scale-up delay accumulates backlog · flow"
+        },
+        "nodes": [
+          {
+            "zh": "负载上升",
+            "en": "Load grows"
+          },
+          {
+            "zh": "请求扩容",
+            "en": "Request scale-up"
+          },
+          {
+            "zh": "等待就绪",
+            "en": "Wait for readiness"
+          },
+          {
+            "zh": "消化队列",
+            "en": "Drain backlog"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的dynamo目录，先阅读lab.py中day7函数，预测结果再运行。",
+            "en": "Inside the extracted dynamo directory, read day7 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day7 --out out/day07-base",
+          "expected": {
+            "zh": "maximum_backlog=5。 文件为out/day07-base/day07.json。",
+            "en": "Maximum backlog5. File:out/day07-base/day07.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "把ready_at调到3，手算每tick backlog；给预扩容和准入限制各写一个代价。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Set ready_at3 and calculate each backlog; describe a cost of prescaling and admission limits. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day7 --variant changed --out out/day07-changed",
+          "expected": {
+            "zh": "maximum_backlog=15。",
+            "en": "Maximum backlog15."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "负backlog",
+            "en": "Negative backlog"
+          },
+          "fix": {
+            "zh": "每tick用max(0,旧积压+到达−容量)，空闲能力不能当未来负债。",
+            "en": "Clamp backlog at zero; unused capacity is not negative future debt."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "容量按desired副本算",
+            "en": "Using desired rather than ready replicas"
+          },
+          "fix": {
+            "zh": "同时记录desired、starting与ready，服务能力由ready贡献。",
+            "en": "Track desired/starting/ready separately; only ready replicas serve."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "发出扩容请求时容量立即翻倍吗？",
+            "en": "Does a scale request immediately double capacity?"
+          },
+          "options": [
+            {
+              "zh": "是",
+              "en": "Yes"
+            },
+            {
+              "zh": "否，要等新worker ready",
+              "en": "No, readiness is required"
+            },
+            {
+              "zh": "队列会自动消失",
+              "en": "The queue vanishes"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "模型加载与预热期间不应计入可用容量。",
+            "en": "Loading and warm-up do not contribute ready capacity."
+          }
+        },
+        {
+          "question": {
+            "zh": "延迟到tick4就绪的最大积压？",
+            "en": "What is max backlog with readiness at tick4?"
+          },
+          "options": [
+            {
+              "zh": "5",
+              "en": "5"
+            },
+            {
+              "zh": "10",
+              "en": "10"
+            },
+            {
+              "zh": "15",
+              "en": "15"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "tick1/2/3分别额外积压5，达到15。",
+            "en": "Ticks1/2/3 each add5, reaching15."
+          }
+        }
+      ],
+      "interactive": "task-queue"
     },
     {
       "day": 8,
       "title": {
-        "zh": "阅读并验证部署声明",
-        "en": "Read and validate deployment manifests"
+        "zh": "检查部署资源预算",
+        "en": "Check deployment resource budgets"
       },
       "lesson": {
-        "zh": "Kubernetes 部署把期望拓扑交给控制器持续维护。DynamoGraphDeployment 描述图中的组件，而 Pod、Service、资源请求、设备插件与网络条件决定它能否真正运行。YAML 语法正确不代表 CRD 已安装，资源可调度也不代表模型就绪。将配置解析、服务端校验、调度和应用健康分层检查，比看到 apply 成功就宣布部署完成更可靠。",
-        "en": "A Kubernetes deployment asks controllers to maintain a desired topology. DynamoGraphDeployment describes graph components, while Pods, Services, resource requests, device plugins, and network conditions determine whether they can run. Valid YAML does not prove the CRD is installed, and schedulable resources do not prove model readiness. Check parsing, server-side validation, scheduling, and application health separately. This gives a more useful deployment assessment than treating a successful apply operation as proof that inference is available and configured correctly."
+        "zh": "副本数乘每副本GPU需求给出请求资源总量。它只是静态容量检查，还没有考虑拓扑、碎片、亲和性和可调度条件。声明里还应有就绪检测和启动预算。",
+        "en": "Replica count times GPUs per replica gives requested resources. This static check omits topology, fragmentation, affinity and schedulability. Readiness and startup budgets also belong in deployment declarations."
       },
       "task": {
-        "zh": "从固定版本官方 DGD 示例选择最小拓扑，注释每个组件、镜像、资源和健康检查。在自己的测试命名空间做可用的校验；无集群则完成配置审查，并列出服务端校验所需 CRD 与依赖。",
-        "en": "Choose a minimal topology from the pinned DGD examples and annotate components, images, resources, and health checks. Perform available validation in your own test namespace; without a cluster, review the configuration and list CRDs and dependencies required for server-side validation."
+        "zh": "加入两节点各1GPU情境，说明单副本需要2GPU时为什么总和够仍可能放不下。",
+        "en": "Consider two nodes with1GPU each and explain why a2GPU replica can remain unschedulable despite sufficient aggregate GPUs."
       },
       "evidence": {
-        "zh": "deployment-review.md 与注释后的清单，分别标注解析、校验、调度和服务就绪状态。",
-        "en": "deployment-review.md and annotated manifests, separately marking parsing, validation, scheduling, and readiness status."
+        "zh": "day08.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day08.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "镜像与组件版本明确，不使用无解释的 latest",
-          "说明资源、设备和网络依赖",
-          "未运行集群时不声称部署成功"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Pin images and components rather than using unexplained latest tags",
-          "Explain resource, device, and networking dependencies",
-          "Do not claim deployment success without a running cluster"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "可在本地测试集群部署官方 Kubernetes Mocker；没有集群时只提交静态审查，保留服务端验证与就绪检查为待办。",
-        "en": "Optionally deploy the official Kubernetes Mocker in a local test cluster. Without a cluster, submit a static review and leave server-side validation and readiness checks pending."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "Deploy with DynamoGraphDeployment",
-          "url": "https://docs.nvidia.com/dynamo/kubernetes/model-deployment/deploy-with-dgd"
+          "title": "Dynamo quickstart",
+          "url": "https://docs.nvidia.com/dynamo/cli/getting-started/quickstart"
         },
         {
-          "title": "Dynamo on Kubernetes",
-          "url": "https://docs.nvidia.com/dynamo/kubernetes/getting-started/introduction"
+          "title": "Dynamo 1.6.1 release",
+          "url": "https://github.com/ai-dynamo/dynamo/releases/tag/v1.6.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "部署声明需要可检查的预算",
+            "en": "Deployment declarations need checkable budgets"
+          },
+          "body": {
+            "zh": "副本数乘每副本GPU需求给出请求资源总量。它只是静态容量检查，还没有考虑拓扑、碎片、亲和性和可调度条件。声明里还应有就绪检测和启动预算。",
+            "en": "Replica count times GPUs per replica gives requested resources. This static check omits topology, fragmentation, affinity and schedulability. Readiness and startup budgets also belong in deployment declarations."
+          }
         },
         {
-          "title": "Dynamo Mocker on Kubernetes",
-          "url": "https://docs.nvidia.com/dynamo/knowledge-base/concepts/simulation/kubernetes-mocker"
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "两个副本各1GPU，总需求2。节点有4GPU时算术上可放；changed节点只有1GPU，应判不能满足。fits=true不是Kubernetes已接受CRD的证据。",
+            "en": "Two replicas require2GPUs. Capacity4 passes arithmetic; changed capacity1 fails. A true fit is not evidence of a validated Kubernetes CRD."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "部署声明需要可检查的预算 · 流程",
+          "en": "Deployment declarations need checkable budgets · flow"
+        },
+        "nodes": [
+          {
+            "zh": "副本数",
+            "en": "Replica count"
+          },
+          {
+            "zh": "每副本资源",
+            "en": "Per-replica resources"
+          },
+          {
+            "zh": "可用节点",
+            "en": "Available nodes"
+          },
+          {
+            "zh": "预算与就绪",
+            "en": "Budget and readiness"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的dynamo目录，先阅读lab.py中day8函数，预测结果再运行。",
+            "en": "Inside the extracted dynamo directory, read day8 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day8 --out out/day08-base",
+          "expected": {
+            "zh": "requested_gpu=2，fits_capacity=true。 文件为out/day08-base/day08.json。",
+            "en": "Requested GPU2; fits=true. File:out/day08-base/day08.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "加入两节点各1GPU情境，说明单副本需要2GPU时为什么总和够仍可能放不下。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Consider two nodes with1GPU each and explain why a2GPU replica can remain unschedulable despite sufficient aggregate GPUs. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day8 --variant changed --out out/day08-changed",
+          "expected": {
+            "zh": "node_gpu_capacity=1，fits_capacity=false。",
+            "en": "Node capacity1; fits=false."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "副本Pending",
+            "en": "Replicas remain Pending"
+          },
+          "fix": {
+            "zh": "核对单节点资源、标签、污点和亲和条件；CPU算术模型未模拟这些。",
+            "en": "Inspect per-node capacity, labels, taints and affinity; the CPU arithmetic does not model them."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "进程启动却不健康",
+            "en": "Process starts but is unhealthy"
+          },
+          "fix": {
+            "zh": "区分启动、就绪和存活探针，给模型加载适当时间。",
+            "en": "Separate startup/readiness/liveness probes and allow for model loading."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "2副本×1GPU共需？",
+            "en": "How many GPUs for2replicas×1GPU?"
+          },
+          "options": [
+            {
+              "zh": "1",
+              "en": "1"
+            },
+            {
+              "zh": "2",
+              "en": "2"
+            },
+            {
+              "zh": "4",
+              "en": "4"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "资源需求按副本逐项相加。",
+            "en": "Sum per-replica requests."
+          }
+        },
+        {
+          "question": {
+            "zh": "总GPU数足够就一定可调度吗？",
+            "en": "Does enough total GPU capacity guarantee scheduling?"
+          },
+          "options": [
+            {
+              "zh": "一定",
+              "en": "Yes"
+            },
+            {
+              "zh": "不一定，单副本和拓扑约束也重要",
+              "en": "No, per-replica and topology constraints matter"
+            },
+            {
+              "zh": "只看显存",
+              "en": "Only memory matters"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "跨节点不能任意拼成单节点设备，亲和与拓扑还可能限制放置。",
+            "en": "GPUs across nodes cannot be arbitrarily treated as one node; affinity/topology constrain placement."
+          }
         }
       ]
     },
@@ -465,41 +1745,197 @@
         "en": "Verify failure, cancellation, and recovery"
       },
       "lesson": {
-        "zh": "推理请求可能在还没有输出时失败，也可能在流式输出一半时中断，两者的重试语义不同。盲目重发可能重复计算，拼接两次生成又可能产生错误结果。worker 退出、流量排空与状态清理也需要时间。先理解当前版本提供的容错机制，再用有界故障验证请求结果、资源释放和恢复条件；不要假设平台会自动实现所有业务级重试。",
-        "en": "Inference may fail before any output or halfway through a stream, and those cases have different retry semantics. Blindly resubmitting can duplicate computation; concatenating two generations can produce an incorrect response. Worker exit, traffic draining, and state cleanup also take time. Read the current release's fault-tolerance behavior, then inject a bounded fault and verify request outcomes, resource release, and recovery conditions. Do not assume platform mechanisms automatically implement every application-level retry policy or guarantee transparent continuation of an interrupted stream."
+        "zh": "取消是请求状态变化，释放是资源生命周期动作。若只把状态标为cancelled，缓存块或槽位仍可能被占住。晚到完成事件还要防止重复释放。",
+        "en": "Cancellation changes request state; release changes resource ownership. A cancelled label can still leave cache blocks or slots held. Late completion also must not double-release resources."
       },
       "task": {
-        "zh": "在自己的测试服务中分别取消一个请求、停止一个测试 worker，限制流量和实验时间。记录已输出 token、客户端错误、重试行为、队列清理与恢复后的首个成功请求；写出逐步恢复手册。",
-        "en": "In your test service, cancel one request and stop one test worker with bounded traffic and duration. Record emitted tokens, client errors, retry behavior, queue cleanup, and the first successful request after recovery; write a step-by-step runbook."
+        "zh": "补一个重复release事件并说明幂等要求；为超时与worker退出写各自的清理责任。",
+        "en": "Add duplicate release and explain idempotence; assign cleanup responsibilities for timeouts and worker exits."
       },
       "evidence": {
-        "zh": "failure-report.md 与请求时间线，包含流式中断的用户侧处理策略。",
-        "en": "failure-report.md and request timelines, including a client-side policy for interrupted streams."
+        "zh": "day09.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day09.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "区分未输出失败与输出中断",
-          "验证恢复后的新请求与资源状态",
-          "不将自动重试当作未经验证的默认保证"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Distinguish pre-output failures from interrupted streams",
-          "Verify new requests and resource state after recovery",
-          "Do not assume automatic retries without validation"
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "使用 Mocker 或本地协议模拟器触发停止与取消；记录其支持范围，不把模拟的清理速度用作真实 GPU 恢复指标。",
-        "en": "Use Mocker or a local protocol simulator to trigger stops and cancellations. Record its supported behavior, and do not treat simulated cleanup speed as real GPU recovery performance."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "Dynamo fault tolerance",
-          "url": "https://docs.nvidia.com/dynamo/kubernetes/fault-tolerance/overview"
+          "title": "Dynamo quickstart",
+          "url": "https://docs.nvidia.com/dynamo/cli/getting-started/quickstart"
         },
         {
-          "title": "Dynamo simulation overview",
-          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/concepts/simulation/overview"
+          "title": "Dynamo 1.6.1 release",
+          "url": "https://github.com/ai-dynamo/dynamo/releases/tag/v1.6.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "取消请求还必须释放资源",
+            "en": "Cancellation must release resources"
+          },
+          "body": {
+            "zh": "取消是请求状态变化，释放是资源生命周期动作。若只把状态标为cancelled，缓存块或槽位仍可能被占住。晚到完成事件还要防止重复释放。",
+            "en": "Cancellation changes request state; release changes resource ownership. A cancelled label can still leave cache blocks or slots held. Late completion also must not double-release resources."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "基线序列admit,allocate,cancel,release,late_completion最终resources_held=0，释放一次。changed漏掉release，resources_held=1并检测泄漏。",
+            "en": "The baseline sequence ends with no held resource and one release. Removing release leaves one resource held and detects a leak."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "取消请求还必须释放资源 · 流程",
+          "en": "Cancellation must release resources · flow"
+        },
+        "nodes": [
+          {
+            "zh": "准入",
+            "en": "Admit"
+          },
+          {
+            "zh": "分配",
+            "en": "Allocate"
+          },
+          {
+            "zh": "取消",
+            "en": "Cancel"
+          },
+          {
+            "zh": "释放与晚到事件",
+            "en": "Release and late completion"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的dynamo目录，先阅读lab.py中day9函数，预测结果再运行。",
+            "en": "Inside the extracted dynamo directory, read day9 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day9 --out out/day09-base",
+          "expected": {
+            "zh": "resources_held=0，releases=1。 文件为out/day09-base/day09.json。",
+            "en": "Resources held0; releases1. File:out/day09-base/day09.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "补一个重复release事件并说明幂等要求；为超时与worker退出写各自的清理责任。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Add duplicate release and explain idempotence; assign cleanup responsibilities for timeouts and worker exits. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day9 --variant changed --out out/day09-changed",
+          "expected": {
+            "zh": "resources_held=1，leak_detected=true。",
+            "en": "Resources held1; leak detected=true."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "取消后显存不回落",
+            "en": "Memory remains after cancellation"
+          },
+          "fix": {
+            "zh": "检查活动请求引用与清理完成，不能只看HTTP断开。",
+            "en": "Inspect references and cleanup completion, not only HTTP disconnects."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "资源计数变负",
+            "en": "Resource count becomes negative"
+          },
+          "fix": {
+            "zh": "为所有权转换加状态检查，拒绝重复释放。",
+            "en": "Guard ownership transitions and reject duplicate release."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "cancel事件单独能证明释放了吗？",
+            "en": "Does cancellation alone prove release?"
+          },
+          "options": [
+            {
+              "zh": "不能",
+              "en": "No"
+            },
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "只要客户端断开",
+              "en": "Client disconnect is enough"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "需要资源所有权状态和实际释放事件证据。",
+            "en": "Resource ownership and release events provide the evidence."
+          }
+        },
+        {
+          "question": {
+            "zh": "晚到完成事件应再次释放同一资源吗？",
+            "en": "Should late completion release the same resource again?"
+          },
+          "options": [
+            {
+              "zh": "应该",
+              "en": "Yes"
+            },
+            {
+              "zh": "不应该，释放需幂等",
+              "en": "No, release should be idempotent"
+            },
+            {
+              "zh": "应再分配一次",
+              "en": "Allocate again"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "重复释放会破坏计数或其他请求的所有权。",
+            "en": "Double release can corrupt accounting or another request’s ownership."
+          }
         }
       ]
     },
@@ -510,16 +1946,16 @@
         "en": "Deliver an SLO-driven serving design"
       },
       "lesson": {
-        "zh": "最终作品应回答一个明确问题：给定工作负载和资源约束，为什么选择这套拓扑？把基线、路由、P/D、扩缩容与故障实验关联起来，才能说明优化是否帮助用户达标，而不只是增加组件。十天足以形成可复现的入门工程证据；尚未完成的模型质量、长期稳定性、多租户或大规模验证，应作为后续工作清楚列出。",
-        "en": "The final portfolio should answer a concrete question: why choose this topology for the stated workload and resource constraints? Connect the baseline, routing, P/D, scaling, and failure experiments to show whether changes help users meet objectives rather than merely add components. Ten days can produce reproducible introductory engineering evidence. Model quality, long-term stability, tenant controls, and large-scale validation that have not been performed belong in a clear future-work section, not in an implied claim that the service is production-ready."
+        "zh": "结课作品围绕一个可证伪的问题：选择前九天的一项假设，保持输入和其余参数一致，比较基线与改动。自动生成的报告只整理证据，不替你解释结果。需要完成自己的函数挑战，并说明示例代码与个人贡献。",
+        "en": "Build a falsifiable project around one assumption from the previous days. Hold inputs and other parameters fixed while comparing baseline and change. Generated reports organize evidence, not explanations. Complete your own function challenge and distinguish supplied code from personal contributions."
       },
       "task": {
-        "zh": "制作公开作品仓库：架构与版本、请求样本、SLO 计算、路由和 P/D 决策、扩缩容分析、清单与运行手册。写一页面试讲解：最有价值的结果、一个失败实验、一个未知项与下一步验证。",
-        "en": "Create a public portfolio with architecture and versions, request samples, SLO calculations, routing/P/D decisions, scaling analysis, manifests, and a runbook. Write a one-page interview narrative covering the strongest result, a failed experiment, an unknown, and the next validation step."
+        "zh": "复现两组报告，完成student.py并通过check.py，再把一个真实反例与本人改动写入报告。",
+        "en": "Reproduce both reports, implement student.py and pass check.py, then document a counterexample and your contribution."
       },
       "evidence": {
-        "zh": "作品 README、可复算数据和服务设计记录，可用于推理平台与 SRE 岗位展示。",
-        "en": "A portfolio README, recomputable data, and a serving-design record suitable for inference-platform and SRE applications."
+        "zh": "两份实验目录、通过学生检查的实现、无TODO的报告和复现说明。",
+        "en": "Two experiment directories, your passing implementation, a completed report and reproduction instructions."
       },
       "checklist": {
         "zh": [
@@ -534,23 +1970,200 @@
         ]
       },
       "noGpu": {
-        "zh": "以模拟与部署设计项目交付，明确真实硬件校准计划；作品仍能展示路由、指标、控制与故障分析能力。",
-        "en": "Deliver a simulation and deployment-design project with a clear hardware-calibration plan. It can still demonstrate routing, metrics, control, and failure-analysis skills."
+        "zh": "CPU路径可完成全部模型与作品；必须标明simulated。真实SDK/GPU实验不是本机已验证部分。",
+        "en": "The CPU path completes all models and the portfolio; label it simulated. SDK/GPU execution was not validated here."
       },
       "reading": [
         {
-          "title": "Dynamo architecture overview",
-          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/overview"
+          "title": "Dynamo quickstart",
+          "url": "https://docs.nvidia.com/dynamo/cli/getting-started/quickstart"
         },
         {
-          "title": "Benchmarking Dynamo with AIPerf",
-          "url": "https://docs.nvidia.com/dynamo/cli/operations/benchmarking-with-ai-perf"
+          "title": "Dynamo 1.6.1 release",
+          "url": "https://github.com/ai-dynamo/dynamo/releases/tag/v1.6.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "可复现链条",
+            "en": "Reproduction chain"
+          },
+          "body": {
+            "zh": "day10会重新运行九个教学实验，保存逐日JSON、汇总CSV和文件哈希。分别使用两个输出目录，避免把前后结果覆盖。重复确定性模拟只验证重放一致，不能建立硬件加速的统计置信度。",
+            "en": "day10 reruns nine experiments, saving daily JSON, summary CSV and hashes. Use separate output directories. Repeating deterministic models checks replay consistency; it does not establish statistical confidence in hardware speedups."
+          }
         },
         {
-          "title": "Dynamo compatibility",
-          "url": "https://docs.nvidia.com/dynamo/reference/compatibility"
+          "title": {
+            "zh": "用自己的解释完成作品",
+            "en": "Finish with your own explanation"
+          },
+          "body": {
+            "zh": "填写REPORT.md的所有TODO，写明问题、本人改动、输入、对照、一个不改善的条件和下一次实验。check.py默认检查student.py；--reference只验证随包参考实现，不能据此声称自己的挑战已完成。",
+            "en": "Fill every REPORT.md TODO: question, own change, inputs, controls, a no-benefit condition and the next experiment. check.py checks student.py by default; --reference checks the supplied solution and does not demonstrate your implementation."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立函数的输入输出",
+            "en": "Independent function contracts"
+          },
+          "body": {
+            "zh": "独立实现就绪worker代价选择与SLO达标率。先过滤ready，再最小化queue_ms+max(0,40-saved_prefill_ms)，平局选输入顺序靠前者，无就绪者返回None。达标率将失败计入分母；空负载返回None，不能宣称100%达标。",
+            "en": "Implement readiness-filtered worker selection and SLO attainment. Filter ready workers, minimize queue_ms+max(0,40-saved_prefill_ms), break ties by input order and returnNone if none are ready. Failures remain in the attainment denominator. Empty workload returnsNone, not100%success."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "从实验到作品",
+          "en": "From experiments to portfolio"
+        },
+        "nodes": [
+          {
+            "zh": "选择问题",
+            "en": "Choose question"
+          },
+          {
+            "zh": "固定条件",
+            "en": "Fix controls"
+          },
+          {
+            "zh": "保存证据",
+            "en": "Keep evidence"
+          },
+          {
+            "zh": "独立挑战",
+            "en": "Independent challenge"
+          },
+          {
+            "zh": "解释与复现",
+            "en": "Explain and reproduce"
+          }
+        ],
+        "caption": {
+          "zh": "作品可以是清楚标注的模拟分析；没有真机实验就不写真实引擎性能结论。",
+          "en": "A portfolio may contain clearly labeled simulation analysis; do not claim real-engine performance without measurements."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "在两个目录复现全部实验",
+            "en": "Reproduce all experiments in separate directories"
+          },
+          "body": {
+            "zh": "以下脚本只运行CPU教学模型，不连接真实服务；检查每份文件的evidence字段。",
+            "en": "These scripts run CPU models only and connect to no real service. Inspect evidence labels."
+          },
+          "command": "python3 lab.py day10 --out out/final-base\npython3 lab.py day10 --variant changed --out out/final-changed",
+          "expected": {
+            "zh": "每个目录包含9个dayXX.json、results.csv、manifest.json和REPORT.md。",
+            "en": "Each directory contains nine daily JSON files, results.csv, manifest.json and REPORT.md."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成独立挑战与报告",
+            "en": "Complete your challenge and report"
+          },
+          "body": {
+            "zh": "编辑student.py中的TODO，再运行检查。第一次未完成时显示NOT YET是预期结果；可以看提示，最后再核对参考解。",
+            "en": "Edit student.py TODOs before checking. An initial NOT YET is expected. Use the hints and compare the reference only after attempting your own solution."
+          },
+          "command": "python3 check.py\npython3 lab.py selfcheck",
+          "expected": {
+            "zh": "完成后student检查显示PASS；报告的TODO由你填写，selfcheck通过不代表报告已完成。",
+            "en": "Your completed student check shows PASS. Fill report TODOs yourself; selfcheck does not complete the report."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "check.py显示NOT YET",
+            "en": "check.py reports NOT YET"
+          },
+          "fix": {
+            "zh": "先实现student.py，不要把--reference通过误当自己的通过；参考边界案例定位。",
+            "en": "Implement student.py; passing --reference is not passing your own work. Use the boundary cases to debug."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "报告只有数字没有解释",
+            "en": "Report has numbers without explanations"
+          },
+          "fix": {
+            "zh": "补充假设、改动、反例与未验证项；请同伴从命令重算一项结论。",
+            "en": "Add assumptions, changes, counterexamples and unverified claims; ask a peer to recompute one conclusion."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "确定性模拟重复三次能证明GPU加速吗？",
+            "en": "Do three deterministic replays prove GPU acceleration?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能，只检查重放一致",
+              "en": "No, they check replay consistency"
+            },
+            {
+              "zh": "等于官方认证",
+              "en": "They are official certification"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "硬件结论需要真实运行、环境、负载与波动记录。",
+            "en": "Hardware conclusions require measurements, environment, workload and variation."
+          }
+        },
+        {
+          "question": {
+            "zh": "以下哪项最能体现个人贡献？",
+            "en": "Which best expresses personal contribution?"
+          },
+          "options": [
+            {
+              "zh": "只下载代码",
+              "en": "Downloading code"
+            },
+            {
+              "zh": "复制报告标题",
+              "en": "Copying the report title"
+            },
+            {
+              "zh": "展示自己的修改、证据和局限",
+              "en": "Showing your changes, evidence and limitations"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "可解释的改动和证据让别人能审阅你的判断。",
+            "en": "Explainable changes and evidence let others review your judgement."
+          }
         }
       ]
     }
-  ]
+  ],
+  "lab": {
+    "path": "dynamo",
+    "title": {
+      "zh": "10 天实战 NVIDIA Dynamo · 实验包",
+      "en": "NVIDIA Dynamo in 10 Days · lab kit"
+    },
+    "description": {
+      "zh": "Python3.9+标准库，普通电脑可完成全部CPU教学实验；含独立挑战、参考检查和报告导出。真实框架路线见README，需另备兼容环境。",
+      "en": "Python3.9+ standard library: laptop-ready teaching experiments, independent challenges, reference checks and report export. Real-framework routes in README require compatible environments."
+    }
+  }
 }

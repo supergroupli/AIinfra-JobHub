@@ -11,8 +11,8 @@
     "en": "Understand DDP, FSDP2 and recoverable training in 10 days"
   },
   "description": {
-    "zh": "从单进程基线扩展到多进程数据并行，理解通信、采样、性能与检查点，再为 FSDP2 建立正确的内存与执行模型。用小模型训练工程验证方法，不以大模型或大集群作为入门门槛。",
-    "en": "Grow a single-process baseline into multi-process data-parallel training. Study communication, sampling, performance and checkpointing, then build the correct memory/execution model for FSDP2. Validate ideas with a small training project instead of requiring a large model or cluster."
+    "zh": "从单进程基线扩展到多进程数据并行，理解通信、采样、性能与检查点，再为 FSDP2 建立正确的内存与执行模型。用小模型训练工程验证方法，不以大模型或大集群作为入门门槛。 每日补充图解、可运行CPU实验、预期输出、排错和解析题；保留真实框架选做路线。",
+    "en": "Grow a single-process baseline into multi-process data-parallel training. Study communication, sampling, performance and checkpointing, then build the correct memory/execution model for FSDP2. Validate ideas with a small training project instead of requiring a large model or cluster. Every day includes diagrams, runnable CPU exercises, expected outputs, troubleshooting and explained quizzes, with an optional real-framework path."
   },
   "level": "intermediate",
   "hoursPerDay": {
@@ -24,10 +24,10 @@
     "en": "Write and explain a single-device PyTorch forward/loss/backward/optimizer loop. Understand tensors, gradients and basic processes."
   },
   "hardware": {
-    "zh": "基础通信与 DDP 教学可在支持 Gloo 的 CPU 环境运行；真实多卡扩展、NCCL 和 FSDP2 实验需对应版本支持的多 GPU 环境。无 GPU 选择分析与 CPU 分支。",
-    "en": "Basic collectives and DDP can run on CPU when Gloo is available. Real multi-device scaling, NCCL and FSDP2 labs require compatible GPUs. The no-GPU route uses CPU exercises and design analysis."
+    "zh": "普通电脑可完成Python 3.9+标准库的数值/系统语义实验；真实框架路线见实验包README，须另备对应环境。CPU模型与GPU实测分开标记。",
+    "en": "A laptop runs Python 3.9+ standard-library numerical/system exercises. Optional real-framework routes require the environment in the lab README. Label CPU models and hardware measurements separately."
   },
-  "hardwareTier": "multi-gpu",
+  "hardwareTier": "gpu-optional",
   "tags": [
     "PyTorch",
     "Distributed Training",
@@ -51,6 +51,18 @@
   },
   "lastVerified": "2026-11-13",
   "resources": [
+    {
+      "title": "PyTorch pinned installation versions",
+      "url": "https://pytorch.org/get-started/previous-versions/"
+    },
+    {
+      "title": "PyTorch DDP tutorial",
+      "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
+    },
+    {
+      "title": "PyTorch distributed package",
+      "url": "https://docs.pytorch.org/docs/stable/distributed.html"
+    },
     {
       "title": "PyTorch · Distributed overview",
       "url": "https://docs.pytorch.org/tutorials/beginner/dist_overview.html"
@@ -108,35 +120,193 @@
         "en": "Distributed training must preserve the intended training semantics. Without a single-process baseline, differences cannot be attributed to communication, data partitioning or preexisting model code. Fix a small dataset, initialization, loss definition and optimizer, and record which samples each step consumes. Seeds are only part of reproducibility: operations, platforms and versions also matter, so bitwise equality is not always an appropriate target."
       },
       "task": {
-        "zh": "编写一个小型分类或回归模型，使用自建小数据集。保存初始权重、固定数量训练步后的权重、loss 序列、样本 ID 和环境记录；定义后续比较的数值容差。",
-        "en": "Create a small classifier or regressor on self-generated data. Save initial weights, final weights after a fixed number of steps, loss history, sample IDs and environment. Define tolerances for later comparisons."
+        "zh": "手算前两步，再将初始weight改为1，解释轨迹为何不同。",
+        "en": "Hand-calculate two updates, change the starting weight to one and explain the trajectory."
       },
       "evidence": {
-        "zh": "single_train.py、初始检查点、基线结果与复现说明。",
-        "en": "single_train.py, an initial checkpoint, baseline results and reproduction notes."
+        "zh": "day01.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day01.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "训练循环与 loss reduction 定义明确",
-          "重新运行能解释差异，并能追踪每一步样本"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Define the loop and loss reduction explicitly",
-          "Explain rerun differences and trace samples at each step"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "小模型与合成数据可以完全在 CPU 上训练，不需要下载大型数据集。",
-        "en": "Train the small model on synthetic data entirely on CPU; no large dataset download is needed."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "PyTorch · Distributed overview",
-          "url": "https://docs.pytorch.org/tutorials/beginner/dist_overview.html"
+          "title": "PyTorch pinned installation versions",
+          "url": "https://pytorch.org/get-started/previous-versions/"
         },
         {
-          "title": "PyTorch · Reproducibility",
-          "url": "https://docs.pytorch.org/docs/stable/notes/randomness.html"
+          "title": "PyTorch DDP tutorial",
+          "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "从一个参数开始",
+            "en": "Start with one parameter"
+          },
+          "body": {
+            "zh": "模型y=wx，样本x=[1,2]、y=[2,4]，损失用均方误差，梯度为mean(2x(wx−y))。w=0时梯度−10，学习率0.1让第一次更新得到w=1。先把这个单进程答案算清，再比较分布式。",
+            "en": "For y=wx with x=[1,2], targets=[2,4] and mean squared error, the gradient is mean(2x(wx−y)). At w=0 it is −10; learning rate .1 yields w=1 after one update. Establish this scalar reference before distribution."
+          }
+        },
+        {
+          "title": {
+            "zh": "保存轨迹而非最后一个数",
+            "en": "Keep the training trace"
+          },
+          "body": {
+            "zh": "四次更新依次得到1、1.5、1.75、1.875。原始梯度与step一起保存，能定位第一次出现差异的位置。本脚本使用Python标量，不涉及自动微分、DDP通信或真实训练吞吐。",
+            "en": "Four updates produce 1, 1.5, 1.75 and 1.875. Saving gradients and steps identifies the first divergence. This is scalar Python, not autograd, DDP communication or measured training throughput."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "初始梯度−10、lr=.1，w从0变为？",
+            "en": "With gradient −10 and lr=.1, w=0 becomes?"
+          },
+          "options": [
+            {
+              "zh": "−1",
+              "en": "−1"
+            },
+            {
+              "zh": "1",
+              "en": "1"
+            },
+            {
+              "zh": "10",
+              "en": "10"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "0−0.1×(−10)=1。",
+            "en": "0−.1×(−10)=1."
+          }
+        },
+        {
+          "question": {
+            "zh": "此脚本能证明DDP性能吗？",
+            "en": "Does this script establish DDP performance?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能，它是标量参考",
+              "en": "No, it is a scalar reference"
+            },
+            {
+              "zh": "等同多GPU",
+              "en": "It is multi-GPU"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "它只提供数值基准。",
+            "en": "It provides a numerical reference only."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：保存一个可信的单进程基线",
+          "en": "Lesson flow: Preserve a trustworthy single-process baseline"
+        },
+        "nodes": [
+          {
+            "zh": "样本与初值",
+            "en": "Samples and initial state"
+          },
+          {
+            "zh": "计算全局均值梯度",
+            "en": "Global mean gradient"
+          },
+          {
+            "zh": "SGD更新",
+            "en": "SGD update"
+          },
+          {
+            "zh": "保存每步轨迹",
+            "en": "Save step trace"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "先下载并解压实验ZIP，在终端进入 pytorch-distributed 文件夹（父目录执行 cd pytorch-distributed）。需要Python 3.9+，Windows可将python3换为py -3。",
+            "en": "Download and extract the ZIP; enter pytorch-distributed (cd pytorch-distributed from its parent). Use Python3.9+; Windows can substitute py -3."
+          },
+          "command": "python3 lab.py day1",
+          "expected": {
+            "zh": "weight=1.875，四步trace可见，最终loss=0.0390625。",
+            "en": "weight=1.875, four trace rows, final loss=.0390625."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "手算前两步，再将初始weight改为1，解释轨迹为何不同。",
+            "en": "Hand-calculate two updates, change the starting weight to one and explain the trajectory."
+          },
+          "command": "python3 -c \"from lab import train; print(train(2,weight=1))\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "梯度符号反了",
+            "en": "Gradient sign reversed"
+          },
+          "fix": {
+            "zh": "检查损失导数是2x(wx−y)，更新是减去lr×gradient。",
+            "en": "Use 2x(wx−y) and subtract learning-rate times gradient."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "仅比较最终loss",
+            "en": "Only comparing final loss"
+          },
+          "fix": {
+            "zh": "保留相同样本、初值和每步日志；不同轨迹偶然接近不代表等价。",
+            "en": "Keep identical samples, initial state and step traces."
+          }
         }
       ]
     },
@@ -151,45 +321,196 @@
         "en": "A rank identifies a process within a communication group, world size counts its processes, and local rank commonly maps processes to local devices. Collectives require participating processes to call compatible operations in the same order, with matching tensor expectations. All-reduce, all-gather and reduce-scatter serve different exchange patterns. Small tensor examples help distinguish coordination bugs from network-performance problems."
       },
       "task": {
-        "zh": "在可用的 Gloo CPU 环境启动两个进程，让每个 rank 提供不同数值并执行 all-reduce。再画出 all-gather 与 reduce-scatter 的输入输出分布，解释求和与平均的区别。",
-        "en": "Launch two processes in a working Gloo CPU environment. Give each rank a different value and perform all-reduce. Diagram all-gather and reduce-scatter inputs/outputs and explain the difference between summing and averaging."
+        "zh": "用四张纸模拟rank，分别演示sum和gather；写出必须一致的shape/dtype/操作顺序。",
+        "en": "Model four ranks on paper, distinguish sum from gather and list matching shape/dtype/order requirements."
       },
       "evidence": {
-        "zh": "collectives.py、双 rank 日志和三种通信示意图。",
-        "en": "collectives.py, two-rank logs and diagrams for three collectives."
+        "zh": "day02.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day02.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "两进程获得预期归约结果并正常清理进程组",
-          "能说明 rank 与 local rank 在多机下为何不同"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Both processes obtain the expected result and clean up their group",
-          "Explain why rank and local rank differ across nodes"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "本课优先使用 CPU/Gloo。若当前 PyTorch 未编译相应后端，完成数组级通信模拟并注明环境限制。",
-        "en": "CPU/Gloo is the preferred exercise. If the installed build lacks that backend, simulate collective array semantics and record the limitation."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "PyTorch · Writing distributed applications",
-          "url": "https://docs.pytorch.org/tutorials/intermediate/dist_tuto.html"
+          "title": "PyTorch pinned installation versions",
+          "url": "https://pytorch.org/get-started/previous-versions/"
         },
         {
-          "title": "PyTorch · torchrun",
-          "url": "https://docs.pytorch.org/docs/stable/elastic/run.html"
+          "title": "PyTorch DDP tutorial",
+          "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
         }
       ],
-      "code": {
-        "language": "python",
-        "caption": {
-          "zh": "保存为 collectives.py；用 torchrun --standalone --nproc-per-node=2 collectives.py 启动，要求已安装支持 Gloo 的 PyTorch",
-          "en": "Save as collectives.py and launch with torchrun --standalone --nproc-per-node=2 collectives.py; requires a Gloo-enabled PyTorch installation"
+      "explanation": [
+        {
+          "title": {
+            "zh": "collective需要共同参与",
+            "en": "Collectives need matching participants"
+          },
+          "body": {
+            "zh": "AllReduce(sum)把每个rank的对应元素相加，并把结果交给所有rank。[1,2,3,4]参与标量求和，四个rank都得到10。AllGather则保留每个rank的值，拼成列表；两者不是互换的。",
+            "en": "AllReduce(sum) sums corresponding elements and returns the result to every rank. Scalar inputs [1,2,3,4] give ten on each rank. AllGather preserves each rank’s contribution as a concatenation; the operations differ."
+          }
         },
-        "content": "import torch\nimport torch.distributed as dist\n\nif not dist.is_gloo_available():\n    raise RuntimeError(\"This exercise requires the Gloo backend\")\ndist.init_process_group(\"gloo\")\ntry:\n    rank = dist.get_rank()\n    value = torch.tensor([float(rank + 1)])\n    dist.all_reduce(value, op=dist.ReduceOp.SUM)\n    print({\"rank\": rank, \"sum\": value.item()}, flush=True)\nfinally:\n    dist.destroy_process_group()"
-      }
+        {
+          "title": {
+            "zh": "rank不是线程编号",
+            "en": "Rank is not a thread index"
+          },
+          "body": {
+            "zh": "world_size是进程组成员数，rank是组内身份。真实torchrun会设置RANK、LOCAL_RANK和WORLD_SIZE。若某个rank遗漏或以不同顺序进入通信，其他rank可能等待，必须以超时与日志定位。",
+            "en": "world_size counts process-group members; rank identifies a member. torchrun sets RANK, LOCAL_RANK and WORLD_SIZE. Missing or differently ordered collective participation can make peers wait; use timeouts and logs."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "AllReduce(sum)输入1/2/3/4，每rank输出？",
+            "en": "AllReduce(sum) over 1/2/3/4 returns what per rank?"
+          },
+          "options": [
+            {
+              "zh": "自己的输入",
+              "en": "Its own input"
+            },
+            {
+              "zh": "10",
+              "en": "10"
+            },
+            {
+              "zh": "只有rank0有10",
+              "en": "Ten only on rank0"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "AllReduce将归约结果分发给全部成员。",
+            "en": "AllReduce returns the reduction to every participant."
+          }
+        },
+        {
+          "question": {
+            "zh": "LOCAL_RANK主要表示？",
+            "en": "What does LOCAL_RANK identify?"
+          },
+          "options": [
+            {
+              "zh": "当前节点内的进程序号",
+              "en": "Process index within its node"
+            },
+            {
+              "zh": "全局训练步数",
+              "en": "Global training step"
+            },
+            {
+              "zh": "数据行号",
+              "en": "Dataset row"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "它用于节点内资源映射，不是global rank的别名。",
+            "en": "It maps node-local resources and need not equal global rank."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：理解 rank、进程组与集体通信",
+          "en": "Lesson flow: Understand ranks, process groups and collectives"
+        },
+        "nodes": [
+          {
+            "zh": "初始化进程组",
+            "en": "Initialize group"
+          },
+          {
+            "zh": "每rank准备数据",
+            "en": "Each rank prepares data"
+          },
+          {
+            "zh": "相同顺序通信",
+            "en": "Matching collective order"
+          },
+          {
+            "zh": "检查各rank结果",
+            "en": "Check each result"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day2",
+          "expected": {
+            "zh": "allreduce_sum=[10,10,10,10]，allgather=[1,2,3,4]。",
+            "en": "allreduce_sum=[10,10,10,10], allgather=[1,2,3,4]."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "用四张纸模拟rank，分别演示sum和gather；写出必须一致的shape/dtype/操作顺序。",
+            "en": "Model four ranks on paper, distinguish sum from gather and list matching shape/dtype/order requirements."
+          },
+          "command": "python3 -c \"from lab import experiment; print(experiment(2))\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "只启动一个进程",
+            "en": "Only one process launched"
+          },
+          "fix": {
+            "zh": "可选DDP例要求torchrun --nproc-per-node=2，普通python启动缺少rank环境。",
+            "en": "Use torchrun with two processes; plain Python lacks launch environment."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "通信一直等",
+            "en": "Collective waits"
+          },
+          "fix": {
+            "zh": "先核对所有rank是否启动、是否走到同一collective；避免直接增大超时掩盖错误。",
+            "en": "Verify launch and matching collective order before increasing timeouts."
+          }
+        }
+      ],
+      "interactive": "collective-cost"
     },
     {
       "day": 3,
@@ -202,37 +523,211 @@
         "en": "DDP replicates a model and synchronizes gradients; it does not automatically partition your input data. Each rank computes a local loss and participates in gradient synchronization. Unequal sample counts or loss weights can make a simple average differ from the intended global objective. Compare single-process and DDP runs with equivalent effective global batch, initialization and optimizer semantics, not merely equal per-process batch sizes."
       },
       "task": {
-        "zh": "将第 1 天模型改为两个 rank 的 DDP，手动划分一个可核对的小 batch。比较一次更新后的参数与等效单进程更新，解释误差和 loss reduction 的影响。",
-        "en": "Convert the day-1 model to two-rank DDP and partition a small inspectable batch. Compare parameters after one update with an equivalent single-process update. Explain discrepancies and loss-reduction effects."
+        "zh": "实现student.py，验证不等批量的3.5反例；可选运行真实CPU DDP示例。",
+        "en": "Implement student.py, verify the unequal-batch 3.5 case and optionally run real CPU DDP."
       },
       "evidence": {
-        "zh": "ddp_train.py、参数差异报告和全局 batch 推导。",
-        "en": "ddp_train.py, a parameter-difference report and global-batch derivation."
+        "zh": "day03.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day03.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "两个 rank 使用不同且明确的输入子集",
-          "等效全局更新在声明容差内，或差异有可验证解释"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Ranks receive distinct, documented input subsets",
-          "Equivalent updates meet the tolerance or have a testable explanation"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "用 CPU/Gloo 和小模型完成相同的 DDP 语义验证；不把 CPU 加速情况外推到多 GPU。",
-        "en": "Use CPU/Gloo and a small model to validate the same DDP semantics. Do not extrapolate CPU scaling to GPUs."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "PyTorch · Getting started with DDP",
-          "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
+          "title": "PyTorch pinned installation versions",
+          "url": "https://pytorch.org/get-started/previous-versions/"
         },
         {
-          "title": "PyTorch · Writing distributed applications",
-          "url": "https://docs.pytorch.org/tutorials/intermediate/dist_tuto.html"
+          "title": "PyTorch DDP tutorial",
+          "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "等批量时平均梯度等价",
+            "en": "Equal batches yield equivalent means"
+          },
+          "body": {
+            "zh": "两个rank分别处理x=1和x=2，局部平均梯度为−4和−16。DDP默认平均梯度得到−10，与单进程全局均值一致。这个等价依赖相同模型初值、损失定义及每rank样本数。",
+            "en": "Ranks processing x=1 and x=2 have local mean gradients −4 and −16. Default DDP averaging gives −10, matching the global mean. Equivalence depends on common initial parameters, loss definition and equal local batch sizes."
+          }
+        },
+        {
+          "title": {
+            "zh": "不等批量需要样本权重",
+            "en": "Unequal batches need sample weighting"
+          },
+          "body": {
+            "zh": "局部均值2和8、样本数3和1，全局样本均值应为(2×3+8×1)/4=3.5；简单rank平均为5。独立挑战weighted_gradient要求你正确合并，并拒绝空输入和零样本数。",
+            "en": "Local means two and eight with sample counts three and one combine to 3.5; a rank mean would be five. Implement weighted_gradient and reject empty input or zero counts."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "局部均值2/8，样本数3/1，全局均值？",
+            "en": "Local means 2/8, counts 3/1: global mean?"
+          },
+          "options": [
+            {
+              "zh": "5",
+              "en": "5"
+            },
+            {
+              "zh": "3.5",
+              "en": "3.5"
+            },
+            {
+              "zh": "10",
+              "en": "10"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "(2×3+8×1)/4=3.5。",
+            "en": "(2×3+8×1)/4=3.5."
+          }
+        },
+        {
+          "question": {
+            "zh": "平均两个rank梯度何时匹配全局样本均值？",
+            "en": "When does rank averaging match the global sample mean?"
+          },
+          "options": [
+            {
+              "zh": "任何样本数",
+              "en": "Any counts"
+            },
+            {
+              "zh": "局部批量相等且损失口径一致",
+              "en": "Equal local counts and compatible loss"
+            },
+            {
+              "zh": "只有rank0有数据",
+              "en": "Only rank0 has data"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "不等批量时通常需显式权重处理。",
+            "en": "Unequal counts generally require explicit weighting."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：把单机训练改造成 DDP",
+          "en": "Lesson flow: Convert the baseline to DDP"
+        },
+        "nodes": [
+          {
+            "zh": "相同初始参数",
+            "en": "Same initial parameters"
+          },
+          {
+            "zh": "局部mean loss",
+            "en": "Local mean loss"
+          },
+          {
+            "zh": "平均或样本加权",
+            "en": "Average or sample-weight"
+          },
+          {
+            "zh": "同步更新",
+            "en": "Synchronized update"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day3",
+          "expected": {
+            "zh": "local_mean_gradients=[−4,−16]；rank_average=global_mean=−10。",
+            "en": "Local gradients are [−4,−16]; rank average and global mean both equal −10."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "实现student.py，验证不等批量的3.5反例；可选运行真实CPU DDP示例。",
+            "en": "Implement student.py, verify the unequal-batch 3.5 case and optionally run real CPU DDP."
+          },
+          "command": "python3 check.py",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        },
+        {
+          "title": {
+            "zh": "可选：安装CPU版PyTorch并运行DDP",
+            "en": "Optional: install CPU PyTorch and run actual DDP"
+          },
+          "body": {
+            "zh": "Linux x86_64、Python3.10–3.12，使用独立环境。此脚本确实调用Gloo/DDP，但平台未安装运行；标准库路线已可独立完成。GPU NCCL扩展见README。",
+            "en": "Use Linux x86_64 and Python3.10–3.12 in an isolated environment. This script invokes actual Gloo/DDP but was not installed/run here. The standard-library path is independent; see README for optional GPU NCCL."
+          },
+          "command": "python3.12 -m venv .venv\nsource .venv/bin/activate\npython -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu\ntorchrun --standalone --nproc-per-node=2 ddp_example.py --backend gloo",
+          "expected": {
+            "zh": "两个rank分别打印weight=1.0、expected=1.0、backend=gloo。只证明本次同步更新，不证明训练吞吐。",
+            "en": "Both ranks print weight=1.0, expected=1.0 and backend=gloo. This checks one update, not training throughput."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "check.py未通过",
+            "en": "check.py fails"
+          },
+          "fix": {
+            "zh": "先按样本数加权，不要只平均rank数量；保留空输入和错误计数测试。",
+            "en": "Weight by sample count, not rank count; preserve invalid-input checks."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "每个rank更新后不同",
+            "en": "Ranks diverge after update"
+          },
+          "fix": {
+            "zh": "核对模型初始化、是否真正包裹DDP、优化器是否作用于相同参数。",
+            "en": "Check initialization, DDP wrapping and optimizer parameter ownership."
+          }
+        }
+      ],
+      "interactive": "training-memory"
     },
     {
       "day": 4,
@@ -245,35 +740,193 @@
         "en": "Data parallelism also determines who sees each sample. DistributedSampler partitions indices, but nondivisible dataset sizes may require padding or dropping examples. DataLoader's drop_last acts at the batch level and is a separate decision. Updating the sampler epoch enables the intended reshuffling. A decreasing training loss does not prove that samples are neither duplicated nor omitted, or that ordering is correct."
       },
       "task": {
-        "zh": "用 11 个带 ID 的样本和两个 rank 测试不同 drop_last 组合。保存每个 epoch、rank、step 的样本 ID，解释补齐、丢弃和 set_epoch 的效果。",
-        "en": "Use 11 labeled samples and two ranks to test drop_last combinations. Log sample IDs by epoch, rank and step, explaining padding, dropping and the effect of set_epoch."
+        "zh": "统计每个ID出现次数，把n改为6比较整除场景，写明训练与评估采用的策略。",
+        "en": "Count visits per ID, compare n=6 and document separate train/evaluation policies."
       },
       "evidence": {
-        "zh": "sampler_audit.py、索引覆盖表与数据策略说明。",
-        "en": "sampler_audit.py, an index-coverage table and a data-policy note."
+        "zh": "day04.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day04.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "能精确说明重复或丢弃了哪些样本及原因",
-          "至少对比两轮采样并验证预期变化"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Identify exactly which samples are repeated/dropped and why",
-          "Compare at least two epochs and verify intended reshuffling"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "样本索引审计可完全在 CPU 上进行，甚至不需要执行模型。",
-        "en": "Audit sample indices entirely on CPU without running a model."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "PyTorch · Data loading and DistributedSampler",
-          "url": "https://docs.pytorch.org/docs/stable/data.html"
+          "title": "PyTorch pinned installation versions",
+          "url": "https://pytorch.org/get-started/previous-versions/"
         },
         {
-          "title": "PyTorch · Getting started with DDP",
+          "title": "PyTorch DDP tutorial",
           "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "平均分配会补齐或丢弃",
+            "en": "Equal shards pad or drop"
+          },
+          "body": {
+            "zh": "5个样本分给2个rank，补齐策略产生6次样本访问，至少一个重复；drop策略只访问4个样本，少一个。不要同时声称每rank等长、没有重复、没有丢弃，除非数据量可整除。",
+            "en": "Five samples across two ranks cannot all be equal-length, unique and complete. Padding produces six visits with a duplicate; dropping uses four and omits one. Exact coverage requires handling this tradeoff."
+          }
+        },
+        {
+          "title": {
+            "zh": "epoch需要参与shuffle",
+            "en": "Epoch changes shuffling"
+          },
+          "body": {
+            "zh": "实验用epoch作为确定性随机种子，同一epoch复现同一顺序，改变epoch应换顺序。真实DistributedSampler需要在每轮调用set_epoch。验证样本ID覆盖，不只看loader的batch数量。",
+            "en": "The model seeds shuffling by epoch: same epoch reproduces order, a new epoch changes it. Real DistributedSampler needs set_epoch each epoch. Audit sample IDs rather than only loader lengths."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "5样本2rank补齐后访问数？",
+            "en": "Padded visits for five samples on two ranks?"
+          },
+          "options": [
+            {
+              "zh": "4",
+              "en": "4"
+            },
+            {
+              "zh": "5",
+              "en": "5"
+            },
+            {
+              "zh": "6",
+              "en": "6"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "每rank3个，共6次，含重复。",
+            "en": "Three per rank gives six visits, including repetition."
+          }
+        },
+        {
+          "question": {
+            "zh": "只看每rank长度能验证完整覆盖吗？",
+            "en": "Do shard lengths prove complete coverage?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能，还需核对ID",
+              "en": "No, audit IDs too"
+            },
+            {
+              "zh": "无需关注数据",
+              "en": "Data does not matter"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "长度不能揭示重复或遗漏。",
+            "en": "Lengths do not reveal duplicates or omissions."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：验证数据覆盖与每轮采样",
+          "en": "Lesson flow: Verify data coverage and epoch sampling"
+        },
+        "nodes": [
+          {
+            "zh": "生成样本ID",
+            "en": "Create sample IDs"
+          },
+          {
+            "zh": "按epoch打乱",
+            "en": "Shuffle by epoch"
+          },
+          {
+            "zh": "补齐或drop",
+            "en": "Pad or drop"
+          },
+          {
+            "zh": "按rank切分",
+            "en": "Shard by rank"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day4",
+          "expected": {
+            "zh": "padded_total=6，dropped_total=4；epoch1给出另一排列。",
+            "en": "padded_total=6, dropped_total=4; epoch1 gives another order."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "统计每个ID出现次数，把n改为6比较整除场景，写明训练与评估采用的策略。",
+            "en": "Count visits per ID, compare n=6 and document separate train/evaluation policies."
+          },
+          "command": "python3 -c \"from lab import shard_indices; print(shard_indices(6,2))\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "每轮样本顺序不变",
+            "en": "Shuffle repeats every epoch"
+          },
+          "fix": {
+            "zh": "真实sampler调用set_epoch；教学函数传新的epoch。",
+            "en": "Call set_epoch in the real sampler or pass a new epoch here."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "评估指标重复计数",
+            "en": "Evaluation double-counts samples"
+          },
+          "fix": {
+            "zh": "保留样本ID并处理padding重复；不能将补齐样本当独立新数据。",
+            "en": "Track IDs and remove/handle padding duplicates in evaluation."
+          }
         }
       ]
     },
@@ -288,35 +941,193 @@
         "en": "A launcher establishes process environments but cannot fix inconsistent synchronization in training code. A rank that exits early, skips backward or waits for different input may leave peers blocked in a collective. Log ranks, steps and synchronization boundaries, checking whether every process reaches the same stage before blaming networking. A longer timeout can conceal a bug; first explain why a process failed to participate."
       },
       "task": {
-        "zh": "使用 torchrun 启动小型训练，打印 rank/local rank/world size。只在自己的短生命周期实验中制造一次可控延迟或显式异常，观察错误传播并编写全部进程退出与重启步骤。",
-        "en": "Launch the toy job with torchrun and log rank/local rank/world size. In your own short-lived experiment, introduce one controlled delay or explicit exception. Observe error propagation and document complete shutdown and restart."
+        "zh": "把两个耗时改为40/40，再写一份诊断顺序区分loader、计算和通信等待。",
+        "en": "Try 40/40 and write a diagnosis order separating loading, compute and waiting."
       },
       "evidence": {
-        "zh": "launch.sh、分 rank 日志、故障定位与清理手册。",
-        "en": "launch.sh, per-rank logs and a diagnosis/cleanup guide."
+        "zh": "day05.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day05.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "没有残留训练进程，异常退出有可识别日志",
-          "同步错误、数据等待和网络假设被分开分析"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Leave no training processes behind and retain recognizable failure logs",
-          "Separate synchronization bugs, input waits and networking hypotheses"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "两进程 CPU 实验足以练习启动、日志和退出；无需多机或 GPU。",
-        "en": "Two CPU processes are enough to practice launching, logging and shutdown; no cluster or GPU is needed."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "PyTorch · torchrun",
-          "url": "https://docs.pytorch.org/docs/stable/elastic/run.html"
+          "title": "PyTorch pinned installation versions",
+          "url": "https://pytorch.org/get-started/previous-versions/"
         },
         {
-          "title": "PyTorch · Distributed package",
-          "url": "https://docs.pytorch.org/docs/stable/distributed.html"
+          "title": "PyTorch DDP tutorial",
+          "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "同步步骤受慢rank约束",
+            "en": "The slow rank limits a synchronous step"
+          },
+          "body": {
+            "zh": "两个rank本地计算分别40和90ms，同步步骤不可能只花40ms。慢rank可能来自数据读取、CPU资源争用或设备差异，通信等待可能只是症状。这里只是下界模型，不是测量。",
+            "en": "If rank work takes 40 and 90ms, a synchronized step cannot finish in 40ms. Loading, CPU contention or devices can create a straggler; communication waiting may be a symptom. This is a lower-bound model, not measurement."
+          }
+        },
+        {
+          "title": {
+            "zh": "先检查启动映射",
+            "en": "Check launch mappings first"
+          },
+          "body": {
+            "zh": "在单节点2进程示例中global rank与local rank恰好相同，但多节点会重复LOCAL_RANK。GPU设备使用local rank；把global rank直接作为本机设备下标可能越界。",
+            "en": "Global and local rank coincide in the two-process single-node example. On multiple nodes local ranks repeat. Map GPU devices with local rank; using global rank as a device index can exceed local device count."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "40/90ms两个rank同步步骤下界？",
+            "en": "Synchronous lower bound for ranks at 40/90ms?"
+          },
+          "options": [
+            {
+              "zh": "40ms",
+              "en": "40ms"
+            },
+            {
+              "zh": "65ms",
+              "en": "65ms"
+            },
+            {
+              "zh": "90ms",
+              "en": "90ms"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "必须等最慢的参与者。",
+            "en": "The slowest participant must finish."
+          }
+        },
+        {
+          "question": {
+            "zh": "多节点用哪个身份选本机GPU？",
+            "en": "Which identifier selects a node-local GPU?"
+          },
+          "options": [
+            {
+              "zh": "LOCAL_RANK",
+              "en": "LOCAL_RANK"
+            },
+            {
+              "zh": "全局step",
+              "en": "Global step"
+            },
+            {
+              "zh": "WORLD_SIZE",
+              "en": "WORLD_SIZE"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "global rank不等于设备下标。",
+            "en": "Global rank is not a local device index."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：用 torchrun 处理启动与失衡",
+          "en": "Lesson flow: Use torchrun and diagnose process imbalance"
+        },
+        "nodes": [
+          {
+            "zh": "torchrun分配身份",
+            "en": "torchrun assigns ranks"
+          },
+          {
+            "zh": "local rank选设备",
+            "en": "Local rank selects device"
+          },
+          {
+            "zh": "记录每rank耗时",
+            "en": "Record per-rank work"
+          },
+          {
+            "zh": "定位慢rank",
+            "en": "Locate straggler"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day5",
+          "expected": {
+            "zh": "step_times_ms=[40,90]，synchronous_step_lower_bound_ms=90。",
+            "en": "step_times_ms=[40,90]; synchronized lower bound=90ms."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "把两个耗时改为40/40，再写一份诊断顺序区分loader、计算和通信等待。",
+            "en": "Try 40/40 and write a diagnosis order separating loading, compute and waiting."
+          },
+          "command": "python3 -c \"print(max([40,40]))\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "invalid device ordinal",
+            "en": "invalid device ordinal"
+          },
+          "fix": {
+            "zh": "使用LOCAL_RANK，核对可见GPU数与nproc-per-node匹配。",
+            "en": "Use LOCAL_RANK and match visible GPUs to processes per node."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "只看rank0日志",
+            "en": "Only rank0 logs inspected"
+          },
+          "fix": {
+            "zh": "为所有rank记录相同step标签，比较进入和离开阶段时间。",
+            "en": "Log matching step/phase labels on every rank."
+          }
         }
       ]
     },
@@ -331,35 +1142,193 @@
         "en": "Gradient accumulation combines microbatches into one update, changing effective batch and synchronization frequency. Equivalence to a larger batch requires correct loss scaling, zeroing and final synchronization, including DDP's documented no_sync boundaries. Mixed precision introduces separate overflow and scaling concerns. Validate equivalent updates before investigating communication savings so that altered optimization semantics are not presented as a pure performance improvement."
       },
       "task": {
-        "zh": "比较一次大 batch 更新与两个 microbatch 累积更新，再在 DDP 中控制同步时机。记录有效全局 batch 与参数误差。具备适配 GPU 时选做混合精度，并记录数值异常处理。",
-        "en": "Compare one large-batch update with two accumulated microbatches, then control synchronization in DDP. Record effective global batch and parameter error. On suitable GPUs, optionally study mixed precision and numerical failure handling."
+        "zh": "比较等大小与不等大小microbatch，复用自己的weighted_gradient解释差异。",
+        "en": "Compare equal/unequal microbatches using your weighted_gradient."
       },
       "evidence": {
-        "zh": "accumulation_test.py、等效性报告与可选精度实验。",
-        "en": "accumulation_test.py, an equivalence report and optional precision experiments."
+        "zh": "day06.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day06.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "loss 缩放、清零与更新次数可核对",
-          "不会把改变 batch 或训练目标的结果当作等价加速"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Make loss scaling, zeroing and update counts inspectable",
-          "Do not label changed batch/objective semantics as an equivalent speedup"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "使用 CPU 完成全精度累积与同步语义测试；混合精度 GPU 实验单独标为未执行。",
-        "en": "Validate full-precision accumulation and synchronization on CPU. Mark GPU mixed-precision experiments as unexecuted."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "PyTorch · Getting started with DDP",
-          "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
+          "title": "PyTorch pinned installation versions",
+          "url": "https://pytorch.org/get-started/previous-versions/"
         },
         {
-          "title": "PyTorch · Profiler",
-          "url": "https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html"
+          "title": "PyTorch DDP tutorial",
+          "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "累积需要保持mean的尺度",
+            "en": "Accumulation must preserve mean scale"
+          },
+          "body": {
+            "zh": "两个同样大小的microbatch梯度−4和−16，完整batch均值为−10。直接累加得−20，等价于改了更新尺度。每个microbatch loss除以累积次数，或最终按正确样本权重缩放。",
+            "en": "Two equal-size microbatch gradients −4 and −16 should combine to mean −10. Summing gives −20 and changes update scale. Divide losses by accumulation steps or apply correct sample weighting."
+          }
+        },
+        {
+          "title": {
+            "zh": "同步边界与优化步骤",
+            "en": "Separate synchronization and optimizer steps"
+          },
+          "body": {
+            "zh": "真实DDP可用no_sync推迟中间同步，最终microbatch才同步；forward也应在相应上下文内。zero_grad放在累积开始，step放在累积结束。AMP的scale/unscale和裁剪顺序要另行核对。",
+            "en": "DDP no_sync can defer intermediate synchronization, with the final microbatch synchronizing; forward belongs inside the context too. Zero gradients at accumulation start and step at the end. AMP scaling/unscaling and clipping order need separate validation."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "−4与−16等大小microbatch均值？",
+            "en": "Mean gradient of equal-size microbatches −4 and −16?"
+          },
+          "options": [
+            {
+              "zh": "−20",
+              "en": "−20"
+            },
+            {
+              "zh": "−10",
+              "en": "−10"
+            },
+            {
+              "zh": "−4",
+              "en": "−4"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "两者求和后除2。",
+            "en": "Sum and divide by two."
+          }
+        },
+        {
+          "question": {
+            "zh": "累积过程中何时step？",
+            "en": "When should the optimizer step during accumulation?"
+          },
+          "options": [
+            {
+              "zh": "每个样本",
+              "en": "Every sample"
+            },
+            {
+              "zh": "累积窗口结束",
+              "en": "At the accumulation boundary"
+            },
+            {
+              "zh": "从不step",
+              "en": "Never"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "否则不再是同一个有效batch更新。",
+            "en": "Otherwise the effective batch update changes."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：保持梯度累积与精度语义一致",
+          "en": "Lesson flow: Preserve accumulation and precision semantics"
+        },
+        "nodes": [
+          {
+            "zh": "清零一次",
+            "en": "Zero once"
+          },
+          {
+            "zh": "多次反向",
+            "en": "Multiple backward passes"
+          },
+          {
+            "zh": "按样本缩放",
+            "en": "Scale by samples"
+          },
+          {
+            "zh": "同步并step",
+            "en": "Synchronize and step"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day6",
+          "expected": {
+            "zh": "scaled_sum=−10，unscaled_sum=−20，global_gradient=−10。",
+            "en": "scaled_sum=−10, unscaled_sum=−20, global_gradient=−10."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "比较等大小与不等大小microbatch，复用自己的weighted_gradient解释差异。",
+            "en": "Compare equal/unequal microbatches using your weighted_gradient."
+          },
+          "command": "python3 check.py",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "loss突然放大",
+            "en": "Loss/update scale changes"
+          },
+          "fix": {
+            "zh": "检查累计步数是否归一化，是否每次microbatch都step。",
+            "en": "Check normalization and whether you step on every microbatch."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "梯度一直为最后一批",
+            "en": "Only final microbatch contributes"
+          },
+          "fix": {
+            "zh": "不要在每个microbatch前zero_grad，否则前面累积被擦除。",
+            "en": "Do not zero gradients before each microbatch."
+          }
         }
       ]
     },
@@ -374,37 +1343,206 @@
         "en": "Training time includes input work, computation, communication and waiting. Communication may overlap backward computation, so summing every event duration can overestimate elapsed time. Scaling comparisons must state whether global or per-device batch is fixed and calculate throughput from actual processed samples. A two-device improvement does not imply linear multi-node scaling; topology and small-model overhead can substantially change the result."
       },
       "task": {
-        "zh": "为单进程和双 rank 训练采集短 profiler 记录，标出数据等待、forward/backward 与同步。按固定全局 batch 比较端到端步时和吞吐，报告预热与采样窗口。",
-        "en": "Capture short profiler traces for single-process and two-rank training. Identify input wait, forward/backward and synchronization. Compare elapsed step time and throughput at fixed global batch, documenting warm-up and the measurement window."
+        "zh": "把未隐藏通信从15改为60ms，计算是否还值得扩展，并标注这是设计假设。",
+        "en": "Change exposed communication from15 to60ms and calculate whether scaling helps; label assumptions."
       },
       "evidence": {
-        "zh": "trace 文件、带注释时间线与 scaling.md。",
-        "en": "Trace files, an annotated timeline and scaling.md."
+        "zh": "day07.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day07.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "区分累计算子时间与真实墙钟时间",
-          "全局 batch、处理样本数、预热和设备条件明确"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Separate summed operator time from wall-clock time",
-          "State global batch, sample counts, warm-up and device conditions"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "CPU/Gloo 可以验证 trace 阅读和计时方法，但不能代表 NCCL 或 GPU 通信重叠。",
-        "en": "CPU/Gloo validates trace-reading and timing methods but does not represent NCCL or GPU overlap."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "PyTorch · Profiler",
-          "url": "https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html"
+          "title": "PyTorch pinned installation versions",
+          "url": "https://pytorch.org/get-started/previous-versions/"
         },
         {
-          "title": "PyTorch · Distributed overview",
-          "url": "https://docs.pytorch.org/tutorials/beginner/dist_overview.html"
+          "title": "PyTorch DDP tutorial",
+          "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "速度与效率分别计算",
+            "en": "Separate speedup from efficiency"
+          },
+          "body": {
+            "zh": "固定全局工作量，单rank100ms，双rank计算55ms加未隐藏通信15ms，合计70ms。speedup=100/70≈1.43，效率=1.43/2≈0.714。必须说明固定的是全局工作量还是每卡batch。",
+            "en": "At fixed global work, one rank takes100ms; two ranks take55ms compute plus15ms exposed communication, total70ms. Speedup≈1.43 and efficiency≈.714. State whether global work or per-device batch is fixed."
+          }
+        },
+        {
+          "title": {
+            "zh": "通信不能随意相减",
+            "en": "Overlap is constrained"
+          },
+          "body": {
+            "zh": "总时间不能简单按计算时间减通信时间。真正可隐藏的通信取决于梯度何时就绪、网络与计算是否争资源。此处15ms已定义为未隐藏部分；实验需要实际trace才能估计它。",
+            "en": "Communication cannot simply be subtracted from compute. Overlap depends on gradient readiness and resource contention. Here15ms is explicitly exposed communication; real traces are needed to estimate it."
+          }
+        },
+        {
+          "title": {
+            "zh": "重叠演示是另一组明确假设",
+            "en": "Overlap uses separate declared assumptions"
+          },
+          "body": {
+            "zh": "下方交互比较串行的计算+通信与完全重叠的max(计算,通信)。它是理想下界，不要把本课已定义的15ms未隐藏通信再重复抵扣。真实梯度就绪顺序和资源争用必须用trace验证。",
+            "en": "The widget compares serial compute+communication with the ideal overlap bound max(compute,communication). Do not subtract the lesson’s already-exposed15ms communication twice. Real readiness order and contention need traces."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "100ms变70ms，双rank效率约多少？",
+            "en": "Two-rank efficiency from100ms to70ms is about?"
+          },
+          "options": [
+            {
+              "zh": "0.714",
+              "en": "0.714"
+            },
+            {
+              "zh": "1.43",
+              "en": "1.43"
+            },
+            {
+              "zh": "2",
+              "en": "2"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "效率是加速比再除rank数。",
+            "en": "Efficiency divides speedup by rank count."
+          }
+        },
+        {
+          "question": {
+            "zh": "未隐藏通信变大可能导致？",
+            "en": "What can larger exposed communication cause?"
+          },
+          "options": [
+            {
+              "zh": "一定更快",
+              "en": "Always faster"
+            },
+            {
+              "zh": "扩展反而更慢",
+              "en": "Slower scaling"
+            },
+            {
+              "zh": "自动不影响",
+              "en": "No effect"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "计算节省可能被额外通信抵消。",
+            "en": "Communication can exceed saved compute time."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：观察通信、计算与扩展效率",
+          "en": "Lesson flow: Observe communication, compute and scaling"
+        },
+        "nodes": [
+          {
+            "zh": "固定工作量",
+            "en": "Fix workload"
+          },
+          {
+            "zh": "测每阶段",
+            "en": "Measure phases"
+          },
+          {
+            "zh": "识别未隐藏通信",
+            "en": "Find exposed communication"
+          },
+          {
+            "zh": "算speedup与效率",
+            "en": "Compute speedup/efficiency"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day7",
+          "expected": {
+            "zh": "two_rank_total_ms=70，speedup≈1.42857，efficiency≈0.71429。",
+            "en": "Total70ms, speedup≈1.42857, efficiency≈.71429."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "把未隐藏通信从15改为60ms，计算是否还值得扩展，并标注这是设计假设。",
+            "en": "Change exposed communication from15 to60ms and calculate whether scaling helps; label assumptions."
+          },
+          "command": "python3 -c \"print({'speedup':100/(55+60),'efficiency':100/(55+60)/2})\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "效率超过预期却没记录batch",
+            "en": "High efficiency without batch records"
+          },
+          "fix": {
+            "zh": "核对比较是否相同全局样本数；扩大batch可能改变工作量。",
+            "en": "Check equal global sample count; larger batches change workload."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "GPU利用率高就认为加速",
+            "en": "High utilization treated as speedup"
+          },
+          "fix": {
+            "zh": "用完成同一任务的时间与质量比较，而非单个利用率数值。",
+            "en": "Compare completion time and quality for the same task."
+          }
+        }
+      ],
+      "interactive": "overlap-bound"
     },
     {
       "day": 8,
@@ -417,37 +1555,196 @@
         "en": "When replicating model state on every device is impractical, sharding can reduce resident memory. FSDP2 uses fully_shard to manage distributed parameters, gradients and optimizer state, gathering parameters for computation and releasing full copies according to policy. Smaller sharding units may lower peak memory while increasing communication overhead. New code should follow FSDP2 guidance rather than freely mixing older FSDP1 examples and interfaces."
       },
       "task": {
-        "zh": "为小模型画出 DDP 与 FSDP2 的状态分布，估算权重、梯度、优化器与临时完整参数占用。有适配多 GPU 环境时按官方教程运行最小 FSDP2 例子并核对包装与优化器创建顺序。",
-        "en": "Diagram state placement under DDP and FSDP2 and estimate weights, gradients, optimizer state and temporary full parameters. On compatible multiple GPUs, run the minimal official FSDP2 example and verify sharding and optimizer-construction order."
+        "zh": "计算2、4、8rank持久状态，另列至少三项未计开销；不要把预算写成实测峰值。",
+        "en": "Calculate states for2/4/8 ranks and list three excluded costs; do not label estimates as measured peaks."
       },
       "evidence": {
-        "zh": "fsdp2-design.md、内存预算与可选的真实运行日志。",
-        "en": "fsdp2-design.md, memory estimates and optional real-run logs."
+        "zh": "day08.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day08.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "峰值预算没有遗漏临时完整参数和通信开销",
-          "明确所用 FSDP2 API 与版本，不混称 FSDP1"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Include temporary full parameters and communication overhead in peak estimates",
-          "Identify FSDP2 APIs/version and avoid confusing them with FSDP1"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "完成状态分布、数组分片模拟和源码/教程解读；不假装在普通 CPU 上完成了同等 GPU FSDP2 性能测试。",
-        "en": "Complete state diagrams, array-sharding simulations and source/tutorial analysis. Do not present ordinary CPU work as equivalent GPU FSDP2 benchmarking."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "PyTorch · Getting started with FSDP2",
-          "url": "https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html"
+          "title": "PyTorch pinned installation versions",
+          "url": "https://pytorch.org/get-started/previous-versions/"
         },
         {
-          "title": "PyTorch · Distributed overview",
-          "url": "https://docs.pytorch.org/tutorials/beginner/dist_overview.html"
+          "title": "PyTorch DDP tutorial",
+          "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先拆持久状态",
+            "en": "Separate persistent states"
+          },
+          "body": {
+            "zh": "以FP32 Adam为例，参数4字节、梯度4字节、两个优化器状态8字节，共16字节/参数。100万参数每rank复制约1600万字节；4rank理想全分片持久状态为400万字节/rank。",
+            "en": "FP32 Adam uses4 bytes for parameters,4 for gradients and8 for two optimizer states:16 bytes per parameter. One million parameters mean16 million replicated bytes per rank, or an ideal4 million under full sharding across four ranks."
+          }
+        },
+        {
+          "title": {
+            "zh": "分片不是显存除法保证",
+            "en": "Sharding is not a peak-memory guarantee"
+          },
+          "body": {
+            "zh": "FSDP还需临时all-gather、激活、通信buffer和内存对齐；峰值不会自动等于持久状态除以world size。模型层大小和重分片策略会影响临时峰值，本课公式只解释逻辑持久状态。",
+            "en": "FSDP also needs temporary all-gathers, activations, buffers and alignment. Peak memory is not simply persistent state divided by world size. Layer sizes and resharding policies matter; this formula covers logical persistent state only."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "FP32 Adam本例持久字节/参数？",
+            "en": "Persistent bytes/parameter in this FP32 Adam example?"
+          },
+          "options": [
+            {
+              "zh": "4",
+              "en": "4"
+            },
+            {
+              "zh": "8",
+              "en": "8"
+            },
+            {
+              "zh": "16",
+              "en": "16"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "4+4+8=16，未含激活。",
+            "en": "4+4+8=16, excluding activations."
+          }
+        },
+        {
+          "question": {
+            "zh": "理想分片预算是否等于峰值显存？",
+            "en": "Does ideal sharded state equal peak memory?"
+          },
+          "options": [
+            {
+              "zh": "是",
+              "en": "Yes"
+            },
+            {
+              "zh": "否，还需临时与激活开销",
+              "en": "No; transients and activations remain"
+            },
+            {
+              "zh": "与模型无关",
+              "en": "It is model independent"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "持久状态与运行峰值不同。",
+            "en": "Persistent state differs from runtime peak."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：理解 FSDP2 的分片与临时聚合",
+          "en": "Lesson flow: Understand FSDP2 sharding and temporary gathering"
+        },
+        "nodes": [
+          {
+            "zh": "参数/梯度/状态",
+            "en": "Weights/gradients/states"
+          },
+          {
+            "zh": "复制基线",
+            "en": "Replicated baseline"
+          },
+          {
+            "zh": "逻辑分片",
+            "en": "Logical sharding"
+          },
+          {
+            "zh": "另算临时峰值",
+            "en": "Add transient peaks"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day8",
+          "expected": {
+            "zh": "replicated_bytes_per_rank=16000000，ideal_sharded=4000000。",
+            "en": "Replicated bytes/rank=16000000; ideal sharded=4000000."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "计算2、4、8rank持久状态，另列至少三项未计开销；不要把预算写成实测峰值。",
+            "en": "Calculate states for2/4/8 ranks and list three excluded costs; do not label estimates as measured peaks."
+          },
+          "command": "python3 -c \"from lab import memory; print(memory(1000000,8))\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "FSDP显存高于估计",
+            "en": "FSDP memory exceeds estimate"
+          },
+          "fix": {
+            "zh": "补上激活、临时聚合与通信buffer，检查峰值测量时点。",
+            "en": "Include activations, transient gathers and buffers; inspect peak timing."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "混合精度仍按同一公式",
+            "en": "Same formula used for mixed precision"
+          },
+          "fix": {
+            "zh": "明确每类state的dtype及master weights；本例仅FP32 Adam假设。",
+            "en": "Specify dtypes and master weights; this example assumes FP32 Adam."
+          }
+        }
+      ],
+      "interactive": "training-memory"
     },
     {
       "day": 9,
@@ -460,39 +1757,193 @@
         "en": "Recovering training can require optimizer, scheduler, random state, step counters and data progress in addition to model weights. Distributed checkpoints add rank ownership, storage visibility and synchronization. Successfully reading a file does not prove that the training trajectory resumed correctly: compare state and subsequent updates. Checkpoint formats and cross-version compatibility must also be verified against the selected implementation."
       },
       "task": {
-        "zh": "在小训练任务固定步数处保存，退出后恢复，再与不中断训练的等效过程比较。DDP 路径先验证保存者与读取者同步；FSDP2 路径有硬件时按 DCP 官方流程选做。",
-        "en": "Save a toy job at a fixed step, exit, restore and compare with equivalent uninterrupted training. For DDP, first validate writer/reader synchronization. With suitable hardware, optionally follow the official DCP workflow for FSDP2."
+        "zh": "故意把checkpoint学习率或next_step描述改错，解释为何真实训练会不等价。",
+        "en": "Alter checkpoint learning-rate or next-step metadata and explain real-training inequivalence."
       },
       "evidence": {
-        "zh": "resume_test.py、恢复前后状态对比、检查点清单与存储假设。",
-        "en": "resume_test.py, pre/post-restore comparisons, checkpoint inventory and storage assumptions."
+        "zh": "day09.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day09.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "恢复包含训练所需状态，而不只是权重",
-          "恢复后的下一次更新符合声明容差或差异被解释"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Restore required training state, not only weights",
-          "The next update meets the declared tolerance or differences are explained"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "使用 CPU/DDP 完成完整中断与恢复测试；FSDP2/DCP 多 GPU 分片恢复保留为独立待验证项。",
-        "en": "Complete interruption/recovery on CPU/DDP. Keep multi-GPU FSDP2/DCP recovery as a separate unverified item."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "PyTorch · Distributed checkpoint",
-          "url": "https://docs.pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html"
+          "title": "PyTorch pinned installation versions",
+          "url": "https://pytorch.org/get-started/previous-versions/"
         },
         {
-          "title": "PyTorch · Getting started with DDP",
+          "title": "PyTorch DDP tutorial",
           "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "恢复要重建下一步状态",
+            "en": "Resume reconstructs the next step"
+          },
+          "body": {
+            "zh": "示例连续训练6步，与先3步保存weight/next_step再训练3步，最终weight相同。这里SGD无动量，所以没有优化器tensor状态；这不能推导真实Adam只存权重就够。",
+            "en": "Six uninterrupted steps match three steps plus a checkpoint and three resumed steps. This SGD has no momentum, hence no optimizer tensors; this does not imply weights alone suffice for Adam."
+          }
         },
         {
-          "title": "PyTorch · Reproducibility",
-          "url": "https://docs.pytorch.org/docs/stable/notes/randomness.html"
+          "title": {
+            "zh": "把随机和数据状态也纳入",
+            "en": "Include randomness and data state"
+          },
+          "body": {
+            "zh": "真实恢复可能需optimizer、scheduler、AMP scaler、RNG、sampler epoch与数据游标。仅loss看起来接近不够，应比较下一步使用的样本、学习率和参数。保存失败或不匹配项。",
+            "en": "Real resume may require optimizer, scheduler, AMP scaler, RNG, sampler epoch and data cursor. Similar-looking loss is insufficient; compare next samples, learning rate and parameters. Preserve mismatches."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "本例为何不保存Adam状态？",
+            "en": "Why are Adam states absent here?"
+          },
+          "options": [
+            {
+              "zh": "Adam不需要状态",
+              "en": "Adam is stateless"
+            },
+            {
+              "zh": "本例用无动量SGD",
+              "en": "This uses momentum-free SGD"
+            },
+            {
+              "zh": "状态永远自动恢复",
+              "en": "States always restore automatically"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "这是示例限定，不能推广到Adam。",
+            "en": "This is a narrow example assumption."
+          }
+        },
+        {
+          "question": {
+            "zh": "验证恢复最好比较什么？",
+            "en": "What best validates resume?"
+          },
+          "options": [
+            {
+              "zh": "文件大小",
+              "en": "File size"
+            },
+            {
+              "zh": "下一步数据、lr和参数轨迹",
+              "en": "Next data, LR and parameter trajectory"
+            },
+            {
+              "zh": "文件名",
+              "en": "Filename"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "这些状态共同决定更新。",
+            "en": "These states determine the update together."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：让训练可以正确恢复",
+          "en": "Lesson flow: Make training recover correctly"
+        },
+        "nodes": [
+          {
+            "zh": "保存完整状态",
+            "en": "Save full state"
+          },
+          {
+            "zh": "重建环境",
+            "en": "Recreate environment"
+          },
+          {
+            "zh": "恢复下一step",
+            "en": "Restore next step"
+          },
+          {
+            "zh": "对照不中断运行",
+            "en": "Compare uninterrupted run"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day9",
+          "expected": {
+            "zh": "match=true，full_weight=resumed_weight=1.96875。",
+            "en": "match=true; both weights=1.96875."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "故意把checkpoint学习率或next_step描述改错，解释为何真实训练会不等价。",
+            "en": "Alter checkpoint learning-rate or next-step metadata and explain real-training inequivalence."
+          },
+          "command": "python3 -c \"from lab import train; print(train(6)[0])\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "恢复后轨迹变了",
+            "en": "Trajectory changes after resume"
+          },
+          "fix": {
+            "zh": "检查优化器和随机状态、数据顺序，不只检查权重文件存在。",
+            "en": "Check optimizer/RNG/data ordering, not only checkpoint existence."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "模型保存成功就宣称可恢复",
+            "en": "Saved model claimed as resumable training"
+          },
+          "fix": {
+            "zh": "恢复推理权重与恢复训练不同；列出所保存状态并做中断对照。",
+            "en": "Inference weight loading differs from training resume; perform an interruption comparison."
+          }
         }
       ]
     },
@@ -507,43 +1958,206 @@
         "en": "A strong small distributed-training project demonstrates data coverage, gradient semantics, failure handling and recovery rather than merely printing multiple ranks. Explain the choice of DDP or FSDP2 for a specific workload and identify when tensor or pipeline parallelism would become relevant. Large-scale networking, resilience and cost optimization need further practice. This path establishes reviewable engineering foundations rather than cluster-scale expertise."
       },
       "task": {
-        "zh": "整合单进程、DDP、采样审计、恢复测试和性能记录。提供一个最小启动命令、已验证硬件列表、失败场景与清理步骤；写出下一阶段扩展到更大模型的决策表。",
-        "en": "Integrate the baseline, DDP, sampling audit, recovery tests and performance records. Provide a minimal launch command, verified hardware list, failure cases and cleanup steps. Write a decision table for scaling to larger models."
+        "zh": "填写个人贡献和一个失败案例，让同学按步骤重算梯度和恢复对照。",
+        "en": "Fill personal contributions and one failure case; have a peer recompute gradients and resume results."
       },
       "evidence": {
-        "zh": "分布式训练作品仓库、可复现报告与 DDP/FSDP2/TP 选型表。",
-        "en": "A distributed-training portfolio, reproduction report and DDP/FSDP2/TP decision table."
+        "zh": "day10.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day10.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "从干净环境可复跑核心 CPU 或 GPU 路径",
-          "数据覆盖、有效 batch 和恢复均有测试证据",
-          "对未运行的 FSDP2/多机路径清楚标注"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Reproduce the core CPU or GPU path from a clean environment",
-          "Provide evidence for data coverage, effective batch and recovery",
-          "Clearly label unexecuted FSDP2 or multi-node paths"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "CPU/DDP 小训练工程也可以成为完整作品；真实多 GPU 扩展图表须待相应实验后再添加。",
-        "en": "A CPU/DDP toy project is a valid completed portfolio. Add multi-GPU scaling plots only after those experiments are run."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "PyTorch · Distributed overview",
-          "url": "https://docs.pytorch.org/tutorials/beginner/dist_overview.html"
+          "title": "PyTorch pinned installation versions",
+          "url": "https://pytorch.org/get-started/previous-versions/"
         },
         {
-          "title": "PyTorch · Getting started with FSDP2",
-          "url": "https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html"
+          "title": "PyTorch DDP tutorial",
+          "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "用等价性串起作品",
+            "en": "Build around equivalence"
+          },
+          "body": {
+            "zh": "作品应串起单rank参考、等批量平均、不等批量权重、样本覆盖和恢复。每个结论指向一份JSON或自己的函数测试。真实DDP可选例只验证一次同步更新，不证明长期训练质量。",
+            "en": "Connect the single-rank reference, equal/unequal batch weighting, sample coverage and resume. Link claims to JSON or your own tests. The optional DDP example checks one synchronized update, not long-run training quality."
+          }
         },
         {
-          "title": "PyTorch · Tensor parallel training",
-          "url": "https://docs.pytorch.org/tutorials/intermediate/TP_tutorial.html"
+          "title": {
+            "zh": "记录已运行与待验证",
+            "en": "Record executed and pending work"
+          },
+          "body": {
+            "zh": "day10生成九天原始数据和报告骨架。CPU代数、真实Gloo、GPU NCCL应分别标记；没装torch也能交付CPU分析作品，但不能自称已完成DDP或FSDP生产验证。",
+            "en": "day10 emits nine daily data files and a report scaffold. Label CPU algebra, actual Gloo and GPU NCCL separately. A CPU analysis portfolio is valid without torch, but is not DDP/FSDP production validation."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "一个有价值的作品包含？",
+            "en": "What makes a useful portfolio?"
+          },
+          "options": [
+            {
+              "zh": "参数、样本与更新证据",
+              "en": "Parameter/sample/update evidence"
+            },
+            {
+              "zh": "只有安装截图",
+              "en": "Only an installation screenshot"
+            },
+            {
+              "zh": "只写学完",
+              "en": "Only a completion claim"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "要让别人能够复核。",
+            "en": "Others should be able to verify it."
+          }
+        },
+        {
+          "question": {
+            "zh": "未运行FSDP时如何表达？",
+            "en": "How should unrun FSDP work be described?"
+          },
+          "options": [
+            {
+              "zh": "生产精通",
+              "en": "Production mastery"
+            },
+            {
+              "zh": "设计分析，待实测",
+              "en": "Design analysis pending measurement"
+            },
+            {
+              "zh": "删除所有边界",
+              "en": "Remove limitations"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "证据范围应与实际工作一致。",
+            "en": "Claims should match executed work."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：交付一个可恢复的训练工程",
+          "en": "Lesson flow: Deliver a recoverable training project"
+        },
+        "nodes": [
+          {
+            "zh": "重跑基线",
+            "en": "Replay baseline"
+          },
+          {
+            "zh": "验收个人函数",
+            "en": "Check own function"
+          },
+          {
+            "zh": "对照恢复",
+            "en": "Compare resume"
+          },
+          {
+            "zh": "写证据与限制",
+            "en": "Write evidence and limits"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day10 --out final-work",
+          "expected": {
+            "zh": "生成REPORT.md、manifest.csv和9个JSON；个人挑战须单独PASS。",
+            "en": "REPORT.md, manifest.csv and nine JSON files; own challenge needs a separate PASS."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "填写个人贡献和一个失败案例，让同学按步骤重算梯度和恢复对照。",
+            "en": "Fill personal contributions and one failure case; have a peer recompute gradients and resume results."
+          },
+          "command": "python3 check.py",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "只交一个最终weight",
+            "en": "Only final weight submitted"
+          },
+          "fix": {
+            "zh": "补齐轨迹、数据ID和配置才能解释等价性。",
+            "en": "Add traces, sample IDs and configuration to explain equivalence."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "把理想内存当测量",
+            "en": "Ideal memory labeled measured"
+          },
+          "fix": {
+            "zh": "保留design标签，实际设备数据另附版本和测量方法。",
+            "en": "Keep design labels and separately document device/version/measurement method."
+          }
         }
       ]
     }
-  ]
+  ],
+  "lab": {
+    "path": "pytorch-distributed",
+    "title": {
+      "zh": "下载逐日实验与独立挑战",
+      "en": "Download daily labs and independent challenges"
+    },
+    "description": {
+      "zh": "Python 3.9+ 标准库CPU实验；解压后在 pytorch-distributed 目录执行。另附真实框架可选示例与明确环境，GPU示例未在平台真机运行。",
+      "en": "Python 3.9+ standard-library CPU labs. Extract and run inside pytorch-distributed. Optional real-framework examples include explicit environments; GPU examples are not hardware-tested here."
+    }
+  }
 }

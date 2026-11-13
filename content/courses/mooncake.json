@@ -11,8 +11,8 @@
     "en": "From CPU transfers to distributed KV storage"
   },
   "description": {
-    "zh": "拆解 Transfer Engine 与 Mooncake Store，用正确性、容量和故障实验理解分离式推理的数据通路。CPU/TCP 可完成核心练习，RDMA 与真实引擎集成作为硬件扩展。",
-    "en": "Separate the Transfer Engine from Mooncake Store and study the data path through correctness, capacity, and failure experiments. CPU/TCP covers the core labs; RDMA and real engine integration are hardware-dependent extensions."
+    "zh": "用10天逐步完成 10 天实战 Mooncake：图解原理、运行CPU实验、分析对照与失败，完成独立挑战和可复现报告。真实框架/集群路线单独标注，模拟结果不替代实测。",
+    "en": "A ten-day guided mooncake course with diagrams, runnable CPU exercises, controlled comparisons, failures, independent challenges and a reproducible report. Optional real-framework/cluster work is labeled separately."
   },
   "level": "advanced",
   "hoursPerDay": {
@@ -24,8 +24,8 @@
     "en": "Know Linux, Python, multiprocessing, and basic networking. Understand KV cache, buffer lifetimes, and basic performance measurement. Complete an inference-engine course first."
   },
   "hardware": {
-    "zh": "受官方发行包支持的 Linux/CPU 环境可做 TCP 两进程传输；部分环境需编译。RDMA 实验需要兼容网卡、驱动与网络。真实推理集成需要所选引擎支持的 GPU；无这些设备可完成标明假设的模拟。",
-    "en": "A Linux/CPU environment supported by the official package can run two-process TCP transfer; some environments require a build. RDMA needs compatible NICs, drivers, and networking. Real serving integration needs a supported GPU; simulations are available with assumptions clearly labeled."
+    "zh": "Python 3.9+，普通电脑即可完成主线；第2天需允许本机TCP监听。可选Mooncake 0.3.14 CPU Store需Ubuntu/Python 3.11；RDMA/GPU需另备兼容硬件。",
+    "en": "Python 3.9+ on an ordinary laptop; day 2 needs localhost TCP binding. Optional Mooncake 0.3.14 CPU Store targets Ubuntu/Python 3.11; RDMA/GPU needs separate compatible hardware."
   },
   "hardwareTier": "gpu-optional",
   "tags": [
@@ -81,32 +81,32 @@
         "en": "Separate transport from storage"
       },
       "lesson": {
-        "zh": "Mooncake Transfer Engine 解决已知内存区域之间的数据移动，Mooncake Store 则增加对象、元数据、放置和生命周期管理。两者有关系，但不是同一个接口，也不承担推理调度。Store 的控制信息与数据流通常走不同路径，画清这些路径才能定位瓶颈。第一天先选版本和实验边界，避免把集群论文中的架构描述直接当成当前默认配置。",
-        "en": "The Mooncake Transfer Engine moves data between known memory regions, while Mooncake Store adds objects, metadata, placement, and lifecycle management. They are related but expose different responsibilities, and neither replaces inference scheduling. Store control information and bulk data typically follow different paths; mapping those paths helps locate bottlenecks. Start by choosing a release and an experimental boundary. A design described in a paper is not automatically the default configuration of the current software you are about to run."
+        "zh": "传输引擎负责把已有字节从一个内存区域送到另一个区域；对象存储还要回答对象叫什么、在哪里、何时失效。把两层分清，才能判断一次失败属于寻址、传输还是对象生命周期。 一个对象的校验值可以证明内容一致，却不能证明对象属于正确模型。先记录对象身份，再检查地址与长度，最后校验字节；其中任何一步都可能失败。",
+        "en": "A transfer engine moves bytes between memory regions. A store additionally manages names, locations and object lifetime. Separate these layers to locate failures in lookup, transport or lifecycle. A checksum establishes byte equality, not correct model identity. Record object identity, check addresses and lengths, then verify bytes. Each is a separate failure boundary."
       },
       "task": {
-        "zh": "画出调用方、Transfer Engine、Store client、master 与存储节点的关系图；分别用一次传输和一次 get 描述控制与数据消息。记录仓库 commit 或发布版本与文档核对日期。",
-        "en": "Diagram the caller, Transfer Engine, Store client, master, and storage nodes. Trace control and data messages for one transfer and one get. Record the repository commit or release and the documentation-check date."
+        "zh": "给 diagram 添加一条“对象不存在”分支，解释为什么没有必要发起字节传输。",
+        "en": "Add a missing-object branch and explain why transfer need not start."
       },
       "evidence": {
-        "zh": "architecture.md：组件责任表、两条路径图与固定版本清单。",
-        "en": "architecture.md with responsibilities, two path diagrams, and a pinned-version manifest."
+        "zh": "out/day01.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day01.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "明确区分字节传输与对象管理",
-          "控制面和数据面箭头不同",
-          "图中不把 Mooncake 当成推理调度器"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Distinguish byte transfer from object management",
-          "Use separate control- and data-path arrows",
-          "Do not depict Mooncake as the inference scheduler"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "阅读设计与官方 CPU/TCP 示例，完成路径追踪；所有未运行的组件标注为设计分析。",
-        "en": "Read the design and official CPU/TCP example and trace both paths. Label components that were not run as design analysis."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
@@ -121,41 +121,197 @@
           "title": "Mooncake quick start",
           "url": "https://kvcache-ai.github.io/Mooncake/getting_started/quick-start.html"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "传输引擎负责把已有字节从一个内存区域送到另一个区域；对象存储还要回答对象叫什么、在哪里、何时失效。把两层分清，才能判断一次失败属于寻址、传输还是对象生命周期。",
+            "en": "A transfer engine moves bytes between memory regions. A store additionally manages names, locations and object lifetime. Separate these layers to locate failures in lookup, transport or lifecycle."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "一个对象的校验值可以证明内容一致，却不能证明对象属于正确模型。先记录对象身份，再检查地址与长度，最后校验字节；其中任何一步都可能失败。",
+            "en": "A checksum establishes byte equality, not correct model identity. Record object identity, check addresses and lengths, then verify bytes. Each is a separate failure boundary."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "分清传输引擎与对象存储 · 图解",
+          "en": "Separate transport from storage · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "对象身份",
+            "en": "Object identity"
+          },
+          {
+            "zh": "查找位置",
+            "en": "Locate region"
+          },
+          {
+            "zh": "传输字节",
+            "en": "Transfer bytes"
+          },
+          {
+            "zh": "校验结果",
+            "en": "Verify result"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "在下载并解压的 mooncake 文件夹打开终端；Windows可将python3换为py -3。先运行python3 lab.py selfcheck，再执行本日命令。",
+            "en": "Open a terminal in the extracted mooncake folder. Windows can use py -3 instead of python3. Run python3 lab.py selfcheck first, then today’s command."
+          },
+          "command": "python3 lab.py day1",
+          "expected": {
+            "zh": "出现 transfer/store 两组步骤与 payload_sha256。",
+            "en": "Two separate transfer/store step lists and payload_sha256 appear."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "给 diagram 添加一条“对象不存在”分支，解释为什么没有必要发起字节传输。",
+            "en": "Add a missing-object branch and explain why transfer need not start."
+          },
+          "command": "python3 -m json.tool out/day01.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把网络失败当成对象缺失",
+            "en": "Confusing network failure with missing objects"
+          },
+          "fix": {
+            "zh": "先分别保存lookup结果和传输状态；对象找到后传输仍可能失败。",
+            "en": "Record lookup and transport separately; locating an object does not guarantee delivery."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "checksum一致却读错模型",
+            "en": "Checksum matches but the model is wrong"
+          },
+          "fix": {
+            "zh": "同时核对模型revision、布局与token身份；checksum只验证内容。",
+            "en": "Check model revision, layout and token identity; checksum only checks bytes."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "传输成功能证明什么？",
+            "en": "What does successful transfer establish?"
+          },
+          "options": [
+            {
+              "zh": "模型语义一定匹配",
+              "en": "Model semantics must match"
+            },
+            {
+              "zh": "对象永远不失效",
+              "en": "Object never expires"
+            },
+            {
+              "zh": "收到预期字节",
+              "en": "Expected bytes arrived"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "答案：收到预期字节。传输引擎负责把已有字节从一个内存区域送到另一个区域；对象存储还要回答对象叫什么、在哪里、何时失效。把两层分清，才能判断一次失败属于寻址、传输还是对象生命周期。",
+            "en": "Answer: Expected bytes arrived. A transfer engine moves bytes between memory regions. A store additionally manages names, locations and object lifetime. Separate these layers to locate failures in lookup, transport or lifecycle."
+          }
+        },
+        {
+          "question": {
+            "zh": "对象名称通常属于哪一层？",
+            "en": "Which layer normally owns object naming?"
+          },
+          "options": [
+            {
+              "zh": "浮点算子",
+              "en": "Floating-point kernel"
+            },
+            {
+              "zh": "对象存储",
+              "en": "Object store"
+            },
+            {
+              "zh": "网卡带宽",
+              "en": "NIC bandwidth"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "答案：对象存储。一个对象的校验值可以证明内容一致，却不能证明对象属于正确模型。先记录对象身份，再检查地址与长度，最后校验字节；其中任何一步都可能失败。",
+            "en": "Answer: Object store. A checksum establishes byte equality, not correct model identity. Record object identity, check addresses and lengths, then verify bytes. Each is a separate failure boundary."
+          }
+        }
       ]
     },
     {
       "day": 2,
       "title": {
-        "zh": "跑通 CPU 上的两进程传输",
-        "en": "Run a two-process CPU transfer"
+        "zh": "跑通本机TCP字节传输与校验",
+        "en": "Run and verify local TCP byte transfer"
       },
       "lesson": {
-        "zh": "传输最基本的正确性问题是目的端是否拿到了指定长度、指定内容的字节。官方 Transfer Engine 提供 CPU/TCP 两进程路径，可先理解初始化、内存注册、连接与传输，不必先配置 RDMA。进程可达、端口正确并不代表数据正确；校验和、边界长度与明确的完成状态才构成最小证据。包与平台不匹配时，应记录失败而不是假装硬件测试已完成。",
-        "en": "The first transfer question is whether the destination received the intended bytes at the intended length. The official Transfer Engine includes a two-process CPU/TCP path, letting you study initialization, memory registration, connection, and transfer before configuring RDMA. Reachable processes and open ports do not establish data correctness. Checksums, boundary lengths, and explicit completion status provide the minimum evidence. If the package does not support your platform, record that limitation instead of presenting a substitute as a completed Mooncake hardware test."
+        "zh": "TCP 提供字节流，不提供消息边界。一次 recv 可能只返回部分数据。本例先发4字节大端长度，再循环接收指定字节数，随后返回 SHA-256；连接只绑定本机地址。 本例传65536字节，返回32字节摘要。计时包含建连、发送、接收和校验返回；结果会随机器变化。一进程两线程演示传输协议，没有调用 Mooncake，也没有 RDMA。",
+        "en": "TCP supplies a byte stream without message boundaries. A recv call may return only part of a payload. This example sends a four-byte big-endian length, receives exactly that many bytes, and returns SHA-256 over localhost. The example transfers 65,536 bytes and returns a 32-byte digest. Timing includes connection, data and checksum response and varies by machine. Two threads in one process illustrate transport; neither Mooncake nor RDMA is invoked."
       },
       "task": {
-        "zh": "在隔离本地环境按官方 CPU/TCP 示例启动发送与接收进程，保留版本。传输 1 KiB、64 KiB 和 1 MiB 的确定性字节数组，逐次核对长度与 SHA-256，保存完成状态。",
-        "en": "Follow the official CPU/TCP example in an isolated local environment and record versions. Transfer deterministic 1 KiB, 64 KiB, and 1 MiB buffers, checking length and SHA-256 for each transfer and saving completion status."
+        "zh": "把 tcp_roundtrip 的 size 改为1字节和1MiB，在新目录运行；解释小对象固定开销。",
+        "en": "Try 1 byte and 1 MiB in tcp_roundtrip, preserve separate results and discuss fixed cost."
       },
       "evidence": {
-        "zh": "transfer-checks.csv：大小、源/目的摘要、状态及进程日志。",
-        "en": "transfer-checks.csv with size, source/destination digests, status, and process logs."
+        "zh": "out/day02.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day02.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "至少 3 个大小的传输通过内容校验",
-          "失败与超时没有计入成功样本",
-          "记录传输后端为 TCP，而不是 RDMA"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Validate contents at three buffer sizes",
-          "Exclude failures and timeouts from successful samples",
-          "Record TCP as the backend, not RDMA"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "此练习本身可在受支持 CPU 环境运行。平台不兼容时用 Python socket 重现流程并明确标注替代实现，保留 Mooncake 安装失败记录。",
-        "en": "This lab runs on supported CPU environments. If your platform is incompatible, reproduce the flow with Python sockets, label it as a substitute implementation, and retain the Mooncake installation failure."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
@@ -166,7 +322,164 @@
           "title": "Mooncake quick start",
           "url": "https://kvcache-ai.github.io/Mooncake/getting_started/quick-start.html"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "TCP 提供字节流，不提供消息边界。一次 recv 可能只返回部分数据。本例先发4字节大端长度，再循环接收指定字节数，随后返回 SHA-256；连接只绑定本机地址。",
+            "en": "TCP supplies a byte stream without message boundaries. A recv call may return only part of a payload. This example sends a four-byte big-endian length, receives exactly that many bytes, and returns SHA-256 over localhost."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "本例传65536字节，返回32字节摘要。计时包含建连、发送、接收和校验返回；结果会随机器变化。一进程两线程演示传输协议，没有调用 Mooncake，也没有 RDMA。",
+            "en": "The example transfers 65,536 bytes and returns a 32-byte digest. Timing includes connection, data and checksum response and varies by machine. Two threads in one process illustrate transport; neither Mooncake nor RDMA is invoked."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "跑通 CPU 上的两进程传输 · 图解",
+          "en": "Run a two-process CPU transfer · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "长度帧",
+            "en": "Length frame"
+          },
+          {
+            "zh": "分段接收",
+            "en": "Receive chunks"
+          },
+          {
+            "zh": "SHA-256",
+            "en": "SHA-256"
+          },
+          {
+            "zh": "返回确认",
+            "en": "Acknowledgment"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day2",
+          "expected": {
+            "zh": "received_bytes=65536 且 verified=true；elapsed_s 每次可变。",
+            "en": "received_bytes=65536 and verified=true; elapsed_s varies."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "把 tcp_roundtrip 的 size 改为1字节和1MiB，在新目录运行；解释小对象固定开销。",
+            "en": "Try 1 byte and 1 MiB in tcp_roundtrip, preserve separate results and discuss fixed cost."
+          },
+          "command": "python3 -m json.tool out/day02.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "PermissionError / Address unavailable",
+            "en": "PermissionError / Address unavailable"
+          },
+          "fix": {
+            "zh": "允许本机loopback连接；本脚本使用随机空闲端口。受限环境可先做selfcheck，不能把未运行TCP写成成功。",
+            "en": "Allow localhost connections; an ephemeral port is used. Run selfcheck first in restricted environments, without claiming TCP success."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "接收长度不足或超时",
+            "en": "Short receive or timeout"
+          },
+          "fix": {
+            "zh": "检查长度帧与recv_exact；保留EOFError/TimeoutError，不补零也不忽略错误。",
+            "en": "Check the length frame and recv_exact; preserve EOFError/TimeoutError rather than padding or ignoring them."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "recv(65536) 一定返回65536字节吗？",
+            "en": "Must recv(65536) return exactly 65,536 bytes?"
+          },
+          "options": [
+            {
+              "zh": "只有GPU能返回",
+              "en": "Only a GPU can do this"
+            },
+            {
+              "zh": "不一定，需要循环",
+              "en": "No; loop until complete"
+            },
+            {
+              "zh": "一定，TCP保证",
+              "en": "Yes; TCP guarantees it"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "答案：不一定，需要循环。TCP 提供字节流，不提供消息边界。一次 recv 可能只返回部分数据。本例先发4字节大端长度，再循环接收指定字节数，随后返回 SHA-256；连接只绑定本机地址。",
+            "en": "Answer: No; loop until complete. TCP supplies a byte stream without message boundaries. A recv call may return only part of a payload. This example sends a four-byte big-endian length, receives exactly that many bytes, and returns SHA-256 over localhost."
+          }
+        },
+        {
+          "question": {
+            "zh": "这里的吞吐能代表RDMA吗？",
+            "en": "Does this goodput represent RDMA?"
+          },
+          "options": [
+            {
+              "zh": "不能，路径和口径不同",
+              "en": "No; transport and scope differ"
+            },
+            {
+              "zh": "能，都是网络",
+              "en": "Yes; both use networks"
+            },
+            {
+              "zh": "能，因为用了SHA-256",
+              "en": "Yes; SHA-256 proves it"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "答案：不能，路径和口径不同。本例传65536字节，返回32字节摘要。计时包含建连、发送、接收和校验返回；结果会随机器变化。一进程两线程演示传输协议，没有调用 Mooncake，也没有 RDMA。",
+            "en": "Answer: No; transport and scope differ. The example transfers 65,536 bytes and returns a 32-byte digest. Timing includes connection, data and checksum response and varies by machine. Two threads in one process illustrate transport; neither Mooncake nor RDMA is invoked."
+          }
+        }
+      ],
+      "interactive": "transfer-cost"
     },
     {
       "day": 3,
@@ -175,37 +488,193 @@
         "en": "Manage asynchronous buffer lifetimes"
       },
       "lesson": {
-        "zh": "提交异步传输意味着任务被接受，不意味着远端字节已经可用。缓冲区注册、提交、轮询完成、释放资源有严格先后关系；在完成前复用内存可能产生难以重现的错误。批量任务部分失败时，部分目的字节也可能已经改变，不能简单把失败视为从未发生。需要用状态机描述所有权，并为超时和错误写出可恢复的处理规则。",
-        "en": "Submitting an asynchronous transfer means work was accepted, not that the remote bytes are ready. Registration, submission, completion polling, and resource release have an ordering that protects buffer lifetime. Reusing memory before completion can produce intermittent corruption. A partially failed batch may already have modified some destination bytes, so failure is not equivalent to nothing happening. Model ownership as a state machine and define recoverable handling for timeouts and errors. Release memory only when the selected API's completion and cleanup requirements permit it."
+        "zh": "异步提交返回时，读取源缓冲区的操作可能还没结束。借用内存必须保持有效且内容稳定，直到收到完成事件；释放、覆盖或复用过早会造成错误，而不一定立即崩溃。 bytearray ABC 被借用后改首字节为Z，借用者看到ZBC；bytes快照仍为ABC。快照保正确但付出复制成本；本例只展示Python所有权，不是注册内存API。",
+        "en": "After asynchronous submission, the transport may still read source memory. Borrowed buffers must remain alive and unchanged until completion. Early release or reuse can corrupt data without an immediate crash. Mutating a borrowed bytearray ABC produces ZBC for the borrower, while an immutable bytes snapshot remains ABC. Copying costs memory/bandwidth; this is Python ownership, not a registered-memory API."
       },
       "task": {
-        "zh": "画出 buffer 与 batch 的状态机，给每条边标注负责的进程。添加受控错误路径：连接失败、超时和部分任务失败；通过日志或模拟证明不会在未确认完成时复用/释放内存。",
-        "en": "Draw buffer and batch state machines and label the process responsible for each transition. Add controlled connection-failure, timeout, and partial-batch-failure paths; use logs or simulation to show that memory is not reused or freed before completion is established."
+        "zh": "将修改动作放到完成事件之后，写出何时允许重用源buffer；保留错误与正确两个时序。",
+        "en": "Move mutation after completion and document when buffer reuse becomes safe. Keep both timelines."
       },
       "evidence": {
-        "zh": "lifecycle.md 与至少 5 条状态转换测试记录；包括部分失败后的内容校验策略。",
-        "en": "lifecycle.md and at least five transition tests, including a strategy for validating contents after partial failure."
+        "zh": "out/day03.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day03.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "提交与完成是两个独立状态",
-          "超时后不会立刻假定缓冲区可复用",
-          "部分失败有校验、重试或丢弃策略"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Keep submission and completion as separate states",
-          "Do not assume a timeout makes a buffer reusable",
-          "Define validation, retry, or discard after partial failure"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "写一个 asyncio 状态机模拟延迟完成与失败，用断言拒绝过早释放；这验证所有权逻辑，不证明底层传输的故障语义。",
-        "en": "Write an asyncio state-machine simulation with delayed completion and failures, asserting against early release. This validates ownership logic, not the transport's actual failure semantics."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
           "title": "Mooncake Transfer Engine",
           "url": "https://kvcache-ai.github.io/Mooncake/design/transfer-engine/index.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "异步提交返回时，读取源缓冲区的操作可能还没结束。借用内存必须保持有效且内容稳定，直到收到完成事件；释放、覆盖或复用过早会造成错误，而不一定立即崩溃。",
+            "en": "After asynchronous submission, the transport may still read source memory. Borrowed buffers must remain alive and unchanged until completion. Early release or reuse can corrupt data without an immediate crash."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "bytearray ABC 被借用后改首字节为Z，借用者看到ZBC；bytes快照仍为ABC。快照保正确但付出复制成本；本例只展示Python所有权，不是注册内存API。",
+            "en": "Mutating a borrowed bytearray ABC produces ZBC for the borrower, while an immutable bytes snapshot remains ABC. Copying costs memory/bandwidth; this is Python ownership, not a registered-memory API."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "管理异步传输的内存生命周期 · 图解",
+          "en": "Manage asynchronous buffer lifetimes · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "注册",
+            "en": "Register"
+          },
+          {
+            "zh": "提交",
+            "en": "Submit"
+          },
+          {
+            "zh": "等待完成",
+            "en": "Await completion"
+          },
+          {
+            "zh": "释放",
+            "en": "Release"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day3",
+          "expected": {
+            "zh": "borrowed_after_mutation=ZBC；owned_snapshot=ABC。",
+            "en": "borrowed_after_mutation=ZBC; owned_snapshot=ABC."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "将修改动作放到完成事件之后，写出何时允许重用源buffer；保留错误与正确两个时序。",
+            "en": "Move mutation after completion and document when buffer reuse becomes safe. Keep both timelines."
+          },
+          "command": "python3 -m json.tool out/day03.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "借用数据意外变成ZBC",
+            "en": "Borrowed data unexpectedly becomes ZBC"
+          },
+          "fix": {
+            "zh": "追踪提交、修改、完成三个时刻；等完成后再修改，或显式复制并计算成本。",
+            "en": "Trace submit, mutation and completion; mutate afterward or explicitly copy and account for the cost."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "内存注册成功就立即释放",
+            "en": "Freeing memory immediately after registration"
+          },
+          "fix": {
+            "zh": "注册不等于传输完成；将释放动作放到对应完成事件之后。",
+            "en": "Registration is not completion; release after the matching completion event."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "何时可安全复用借用buffer？",
+            "en": "When can a borrowed buffer be reused?"
+          },
+          "options": [
+            {
+              "zh": "对应操作完成后",
+              "en": "After its operation completes"
+            },
+            {
+              "zh": "提交函数刚返回",
+              "en": "Immediately after submission"
+            },
+            {
+              "zh": "每过1毫秒",
+              "en": "After any one millisecond"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "答案：对应操作完成后。异步提交返回时，读取源缓冲区的操作可能还没结束。借用内存必须保持有效且内容稳定，直到收到完成事件；释放、覆盖或复用过早会造成错误，而不一定立即崩溃。",
+            "en": "Answer: After its operation completes. After asynchronous submission, the transport may still read source memory. Borrowed buffers must remain alive and unchanged until completion. Early release or reuse can corrupt data without an immediate crash."
+          }
+        },
+        {
+          "question": {
+            "zh": "快照仍是ABC说明什么？",
+            "en": "What does the unchanged ABC snapshot show?"
+          },
+          "options": [
+            {
+              "zh": "它没有内存成本",
+              "en": "It has no memory cost"
+            },
+            {
+              "zh": "RDMA传输成功",
+              "en": "RDMA succeeded"
+            },
+            {
+              "zh": "它复制了内容",
+              "en": "It copied the content"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "答案：它复制了内容。bytearray ABC 被借用后改首字节为Z，借用者看到ZBC；bytes快照仍为ABC。快照保正确但付出复制成本；本例只展示Python所有权，不是注册内存API。",
+            "en": "Answer: It copied the content. Mutating a borrowed bytearray ABC produces ZBC for the borrower, while an immutable bytes snapshot remains ABC. Copying costs memory/bandwidth; this is Python ownership, not a registered-memory API."
+          }
         }
       ]
     },
@@ -216,32 +685,32 @@
         "en": "Understand Store object behavior"
       },
       "lesson": {
-        "zh": "对象存储让调用方用键与对象交互，而不是直接管理远端内存地址。Mooncake Store 的 master 维护对象位置等元数据，客户端按协议完成数据访问；元数据可见与数据可读必须按实际 API 语义理解。当前设计把对象视为写入后不可原地修改的内容，更新不能擅自当作传统可变字典赋值。先验证 put/get/remove 与缺失对象，再讨论性能。",
-        "en": "Object storage lets callers work with keys and objects instead of directly managing remote addresses. Mooncake Store's master tracks placement metadata, and clients follow the protocol for data access; metadata visibility and readable data must be interpreted through the actual API. The current design treats stored objects as immutable rather than arbitrary mutable dictionary entries. Do not assume overwriting a key behaves like assignment in Python. Validate put, get, remove, and missing-object behavior before measuring performance or designing an application around them."
+        "zh": "Store 的 put/get/delete 操作有各自的完成语义。命中不是“key存在过”，而是当前读取拿到了可用的正确对象。缺失值与合法的空对象要区分，不能把 None 自动当作空KV。 字典例子写入两字节KV，读取后删除，再读得到None。这个顺序只说明单进程行为；并发写入、持久化、副本一致性不能从它推断。",
+        "en": "Put, get and delete have separate completion semantics. A hit requires a currently usable, correct object, not a key that existed once. Missing objects and valid empty payloads must remain distinct. The dictionary stores two bytes KV, reads them, deletes the key, and then returns None. It demonstrates local sequencing, not concurrent consistency, persistence or replication."
       },
       "task": {
-        "zh": "按固定版本的官方 Store 部署指南建立最小本地拓扑。用唯一键写入、读取、删除字节对象，测试缺失键与重复键的实际行为；每次读取校验内容，不推断未测试的并发一致性。",
-        "en": "Use the pinned Store deployment guide to create a minimal local topology. Put, get, and remove byte objects under unique keys, then test missing and duplicate keys. Validate contents on every read without claiming untested concurrency guarantees."
+        "zh": "保存一个空bytes对象并与缺失key对比；增加条件检查，避免把空对象错误当成未命中。",
+        "en": "Store empty bytes and compare them with a missing key. Use explicit checks rather than truthiness."
       },
       "evidence": {
-        "zh": "store-behavior.csv 与拓扑配置：每个操作的预期、返回状态、摘要及版本。",
-        "en": "store-behavior.csv and topology configuration, recording expectations, returned status, digests, and versions for each operation."
+        "zh": "out/day04.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day04.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "至少覆盖写入、读取、删除、缺失与重复键",
-          "读取内容与原始对象摘要一致",
-          "说明不可变对象对更新设计的影响"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Cover put, get, remove, missing, and duplicate keys",
-          "Match retrieved content to original digests",
-          "Explain how immutable objects affect updates"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "优先使用受支持的 CPU/TCP Store 路径；环境无法部署时用显式不可变对象模型完成行为表，并列出仍需真实验证的返回语义。",
-        "en": "Prefer a supported CPU/TCP Store path. If deployment is unavailable, use an explicitly immutable object model and list return semantics that still need real validation."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
@@ -252,6 +721,162 @@
           "title": "Mooncake Store deployment guide",
           "url": "https://kvcache-ai.github.io/Mooncake/deployment/mooncake-store-deployment-guide.html"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "Store 的 put/get/delete 操作有各自的完成语义。命中不是“key存在过”，而是当前读取拿到了可用的正确对象。缺失值与合法的空对象要区分，不能把 None 自动当作空KV。",
+            "en": "Put, get and delete have separate completion semantics. A hit requires a currently usable, correct object, not a key that existed once. Missing objects and valid empty payloads must remain distinct."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "字典例子写入两字节KV，读取后删除，再读得到None。这个顺序只说明单进程行为；并发写入、持久化、副本一致性不能从它推断。",
+            "en": "The dictionary stores two bytes KV, reads them, deletes the key, and then returns None. It demonstrates local sequencing, not concurrent consistency, persistence or replication."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "理解 Store 的对象行为 · 图解",
+          "en": "Understand Store object behavior · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "put",
+            "en": "Put"
+          },
+          {
+            "zh": "get命中",
+            "en": "Get hit"
+          },
+          {
+            "zh": "delete",
+            "en": "Delete"
+          },
+          {
+            "zh": "get缺失",
+            "en": "Get miss"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day4",
+          "expected": {
+            "zh": "put_bytes=2，hit=KV，after_delete=null。",
+            "en": "put_bytes=2, hit=KV, after_delete=null."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "保存一个空bytes对象并与缺失key对比；增加条件检查，避免把空对象错误当成未命中。",
+            "en": "Store empty bytes and compare them with a missing key. Use explicit checks rather than truthiness."
+          },
+          "command": "python3 -m json.tool out/day04.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "空bytes被当成缺失",
+            "en": "Empty bytes treated as missing"
+          },
+          "fix": {
+            "zh": "用value is None判缺失，不要只用if not value。",
+            "en": "Use value is None for a miss rather than if not value."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "删除后仍引用旧值",
+            "en": "Using an old reference after deletion"
+          },
+          "fix": {
+            "zh": "区分字典中可查对象与已经取出的本地副本，说明一致性边界。",
+            "en": "Separate store lookup from a previously fetched local copy and state the consistency boundary."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "删除后的None应如何解释？",
+            "en": "How should None after deletion be interpreted?"
+          },
+          "options": [
+            {
+              "zh": "获得一个有效空对象",
+              "en": "A valid empty object"
+            },
+            {
+              "zh": "自动触发RDMA",
+              "en": "Automatic RDMA transfer"
+            },
+            {
+              "zh": "本例对象缺失",
+              "en": "Object missing in this example"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "答案：本例对象缺失。Store 的 put/get/delete 操作有各自的完成语义。命中不是“key存在过”，而是当前读取拿到了可用的正确对象。缺失值与合法的空对象要区分，不能把 None 自动当作空KV。",
+            "en": "Answer: Object missing in this example. Put, get and delete have separate completion semantics. A hit requires a currently usable, correct object, not a key that existed once. Missing objects and valid empty payloads must remain distinct."
+          }
+        },
+        {
+          "question": {
+            "zh": "单进程字典验证了副本一致性吗？",
+            "en": "Does a local dictionary validate replica consistency?"
+          },
+          "options": [
+            {
+              "zh": "验证了多机高可用",
+              "en": "It proves multi-node availability"
+            },
+            {
+              "zh": "没有",
+              "en": "No"
+            },
+            {
+              "zh": "验证了强一致",
+              "en": "It proves strong consistency"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "答案：没有。字典例子写入两字节KV，读取后删除，再读得到None。这个顺序只说明单进程行为；并发写入、持久化、副本一致性不能从它推断。",
+            "en": "Answer: No. The dictionary stores two bytes KV, reads them, deletes the key, and then returns None. It demonstrates local sequencing, not concurrent consistency, persistence or replication."
+          }
+        }
       ]
     },
     {
@@ -261,32 +886,32 @@
         "en": "Measure throughput and latency boundaries"
       },
       "lesson": {
-        "zh": "小对象的完成时间容易被固定开销主导，大对象更容易受带宽和内存复制限制；增加并发能提高吞吐，也可能拉长排队和尾延迟。只报告总字节除以时间会掩盖失败、预热与并发差异。先明确测的是单次操作延迟还是稳定吞吐，再固定 CPU、网络、数据大小与后端。TCP 本地结果能够检验方法，不能替代 RDMA 或跨机结论。",
-        "en": "Fixed overhead often dominates small transfers, while large transfers are more exposed to bandwidth and memory-copy limits. Concurrency can raise throughput while increasing queueing and tail latency. Reporting only total bytes divided by elapsed time can hide failures, warmup, and workload differences. Define whether you are measuring individual operation latency or steady throughput, then pin CPU, networking, data sizes, and backend. Local TCP results validate a measurement method, but cannot establish RDMA performance or behavior across machines."
+        "zh": "链路传输下界可用数据量除以带宽估算，但小对象还要考虑固定开销。GB/s 与 GiB/s 不能混用；完成字节数是分子，测量窗口必须说明，失败数据不能偷偷从成功率分母删除。 100MB按十进制计算，在10GB/s下为10ms，再加0.2ms固定成本得到10.2ms。本公式不包含竞争、重试、复制和并行重叠，不能替代测量。",
+        "en": "A size/bandwidth model estimates transfer cost, with fixed overhead dominating small objects. Distinguish decimal GB/s from binary GiB/s. State completed bytes, timing window and failed-attempt accounting. 100 decimal MB at 10 GB/s takes 10 ms, plus 0.2 ms fixed cost gives 10.2 ms. Contention, retries, copies and overlap are excluded, so this is a model rather than a measurement."
       },
       "task": {
-        "zh": "选择 3 个对象大小与 3 个并发档位，每组重复至少 3 次；保存成功/失败数、传输字节、耗时和延迟样本。区分 MiB/s 与 Gb/s，画出大小、并发与吞吐/尾延迟关系。",
-        "en": "Choose three object sizes and three concurrency levels, repeating each at least three times. Save successes, failures, bytes, elapsed time, and latency samples. Distinguish MiB/s from Gb/s and plot size/concurrency against throughput and tail latency."
+        "zh": "把固定开销改成2ms，解释1MB与100MB对象受到的相对影响为什么不同。",
+        "en": "Change fixed overhead to 2 ms and compare its relative effect on 1 MB and 100 MB objects."
       },
       "evidence": {
-        "zh": "bench.csv、测量方法与两张图；包含预热和统计窗口说明。",
-        "en": "bench.csv, measurement methods, and two charts, with warmup and measurement-window definitions."
+        "zh": "out/day05.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day05.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "所有结果保留后端、对象大小、并发与重复编号",
-          "失败样本单独统计",
-          "单位换算正确且没有外推未测网络"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Keep backend, size, concurrency, and repeat ID for every result",
-          "Count failures separately",
-          "Use correct units without extrapolating to unmeasured networks"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "直接测本机 CPU/TCP，或使用下方成本模型做参数敏感性分析；模拟结果不可命名为 Mooncake benchmark。",
-        "en": "Measure local CPU/TCP directly or use the cost model below for sensitivity analysis. Do not name simulated results a Mooncake benchmark."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
@@ -298,14 +923,163 @@
           "url": "https://kvcache-ai.github.io/Mooncake/getting_started/observability.html"
         }
       ],
-      "code": {
-        "language": "python",
-        "caption": {
-          "zh": "仅用于敏感性分析的传输下界模型；不包含排队、复制或协议开销，不是 Mooncake 实测。",
-          "en": "A transfer lower-bound model for sensitivity analysis only; it excludes queues, copies, and protocol overhead and is not a Mooncake measurement."
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "链路传输下界可用数据量除以带宽估算，但小对象还要考虑固定开销。GB/s 与 GiB/s 不能混用；完成字节数是分子，测量窗口必须说明，失败数据不能偷偷从成功率分母删除。",
+            "en": "A size/bandwidth model estimates transfer cost, with fixed overhead dominating small objects. Distinguish decimal GB/s from binary GiB/s. State completed bytes, timing window and failed-attempt accounting."
+          }
         },
-        "content": "# Assumed parameters; these are not measured Mooncake results.\nfixed_us = 40\nfor size_mib in (1, 16, 256):\n    for rate_gbps in (10, 25, 100):\n        bytes_count = size_mib * 1024**2\n        transfer_ms = (bytes_count * 8 / (rate_gbps * 1e9)) * 1000\n        lower_bound_ms = fixed_us / 1000 + transfer_ms\n        print(size_mib, rate_gbps, round(lower_bound_ms, 3))\n"
-      }
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "100MB按十进制计算，在10GB/s下为10ms，再加0.2ms固定成本得到10.2ms。本公式不包含竞争、重试、复制和并行重叠，不能替代测量。",
+            "en": "100 decimal MB at 10 GB/s takes 10 ms, plus 0.2 ms fixed cost gives 10.2 ms. Contention, retries, copies and overlap are excluded, so this is a model rather than a measurement."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "测量吞吐与延迟的边界 · 图解",
+          "en": "Measure throughput and latency boundaries · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "完成字节数",
+            "en": "Completed bytes"
+          },
+          {
+            "zh": "带宽单位",
+            "en": "Bandwidth units"
+          },
+          {
+            "zh": "固定开销",
+            "en": "Fixed overhead"
+          },
+          {
+            "zh": "总成本",
+            "en": "Total cost"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day5",
+          "expected": {
+            "zh": "四行size/bandwidth矩阵；100000000字节/10GB/s对应10.2ms。",
+            "en": "Four size/bandwidth rows; 100,000,000 bytes at 10 GB/s gives 10.2 ms."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "把固定开销改成2ms，解释1MB与100MB对象受到的相对影响为什么不同。",
+            "en": "Change fixed overhead to 2 ms and compare its relative effect on 1 MB and 100 MB objects."
+          },
+          "command": "python3 -m json.tool out/day05.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "计算差了1000倍",
+            "en": "Transfer estimate differs by 1000×"
+          },
+          "fix": {
+            "zh": "GB/s转bytes/s乘10^9，秒转毫秒乘1000；打印单位逐项检查。",
+            "en": "Convert GB/s using 10^9 and seconds to milliseconds using 1000; inspect units."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "小对象吞吐明显低",
+            "en": "Low small-object goodput"
+          },
+          "fix": {
+            "zh": "将连接、校验和固定开销单独列出，不把它们解释成链路带宽降低。",
+            "en": "Separate connect/checksum/fixed cost instead of inferring reduced link bandwidth."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "100MB / 10GB/s 是多少？",
+            "en": "What is 100 MB / 10 GB/s?"
+          },
+          "options": [
+            {
+              "zh": "0.1ms",
+              "en": "0.1 ms"
+            },
+            {
+              "zh": "10ms",
+              "en": "10 ms"
+            },
+            {
+              "zh": "100ms",
+              "en": "100 ms"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "答案：10ms。链路传输下界可用数据量除以带宽估算，但小对象还要考虑固定开销。GB/s 与 GiB/s 不能混用；完成字节数是分子，测量窗口必须说明，失败数据不能偷偷从成功率分母删除。",
+            "en": "Answer: 10 ms. A size/bandwidth model estimates transfer cost, with fixed overhead dominating small objects. Distinguish decimal GB/s from binary GiB/s. State completed bytes, timing window and failed-attempt accounting."
+          }
+        },
+        {
+          "question": {
+            "zh": "模型10.2ms就是实测结果吗？",
+            "en": "Is the modeled 10.2 ms a measurement?"
+          },
+          "options": [
+            {
+              "zh": "不是，需要测量验证",
+              "en": "No; measurements are needed"
+            },
+            {
+              "zh": "是，公式不会错",
+              "en": "Yes; formulas cannot be wrong"
+            },
+            {
+              "zh": "只有大对象才是",
+              "en": "Only for large objects"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "答案：不是，需要测量验证。100MB按十进制计算，在10GB/s下为10ms，再加0.2ms固定成本得到10.2ms。本公式不包含竞争、重试、复制和并行重叠，不能替代测量。",
+            "en": "Answer: No; measurements are needed. 100 decimal MB at 10 GB/s takes 10 ms, plus 0.2 ms fixed cost gives 10.2 ms. Contention, retries, copies and overlap are excluded, so this is a model rather than a measurement."
+          }
+        }
+      ],
+      "interactive": "transfer-cost"
     },
     {
       "day": 6,
@@ -314,32 +1088,32 @@
         "en": "Reason about replicas and capacity"
       },
       "lesson": {
-        "zh": "副本能够提供更多可访问位置，也会消耗额外容量与写入带宽；副本数并不等于任意故障下都可读。需要结合放置位置、节点失效、元数据状态与清理机制讨论可用性。容量表应同时记录有效对象字节、预留空间、复制开销与回收余量。当前版本的恢复机制要以文档和实际配置为准，不能沿用旧架构中关于高可用性的结论。",
-        "en": "Replicas provide additional locations for reads but consume capacity and write bandwidth. A replica count does not guarantee readability under every failure: placement, node loss, metadata state, and cleanup all matter. A capacity worksheet should account for live object bytes, reserved space, replication, and reclamation headroom. Recovery mechanisms must be checked against the current release and actual configuration. Do not carry forward an old architecture's availability claims when the implementation has changed, and do not infer durability solely from multiple in-memory copies."
+        "zh": "副本提高可用性时会消耗额外存储，并增加写入和恢复流量。放在两个进程不一定属于两个独立故障域：它们可能共用同一主机、电源或网络。 逻辑8GiB、2副本需要16GiB有效空间。若要求物理容量保留20%空闲，则需16/0.8=20GiB。预留比例必须说清是按总量还是按使用量。",
+        "en": "Replication consumes storage and additional write/recovery traffic. Two processes are not necessarily independent failure domains; they may share a host, power or network. Eight logical GiB with two replicas needs 16 usable GiB. Reserving 20% of physical capacity requires 16/0.8=20 GiB. Specify the denominator of a reserve percentage."
       },
       "task": {
-        "zh": "为三个节点、两类对象设计容量与放置表，计算不同副本目标下的可用容量。按当前实现约束模拟一个节点下线，记录哪些对象仍可读、哪些元数据需要更新及恢复前提。",
-        "en": "Design capacity and placement tables for three nodes and two object classes. Calculate usable capacity for different replica targets. Simulate one node becoming unavailable under current implementation constraints, recording readable objects, metadata changes, and recovery prerequisites."
+        "zh": "改为3副本并手算所需容量；画出机架级故障后仍可读的放置方案。",
+        "en": "Compute three-replica capacity and draw placement that survives a rack failure."
       },
       "evidence": {
-        "zh": "placement.csv、容量公式与单节点故障推演；真实实验与纸面推演分开。",
-        "en": "placement.csv, capacity formulas, and a single-node failure analysis, separating live experiments from paper exercises."
+        "zh": "out/day06.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day06.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "容量包含副本和预留空间",
-          "解释副本、可用性与持久性之间的区别",
-          "恢复假设与当前版本文档一致"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Include replicas and reserved space in capacity",
-          "Distinguish replication, availability, and durability",
-          "Align recovery assumptions with current-version documentation"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "用集合模拟节点到对象的映射，移除一个节点后计算剩余副本数；测试器只证明所写放置模型，不证明 Store 已实现相同策略。",
-        "en": "Represent node-to-object placement with sets, remove one node, and count remaining replicas. The test validates your placement model, not an assertion that Store implements that exact policy."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
@@ -350,7 +1124,164 @@
           "title": "Mooncake Store deployment guide",
           "url": "https://kvcache-ai.github.io/Mooncake/deployment/mooncake-store-deployment-guide.html"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "副本提高可用性时会消耗额外存储，并增加写入和恢复流量。放在两个进程不一定属于两个独立故障域：它们可能共用同一主机、电源或网络。",
+            "en": "Replication consumes storage and additional write/recovery traffic. Two processes are not necessarily independent failure domains; they may share a host, power or network."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "逻辑8GiB、2副本需要16GiB有效空间。若要求物理容量保留20%空闲，则需16/0.8=20GiB。预留比例必须说清是按总量还是按使用量。",
+            "en": "Eight logical GiB with two replicas needs 16 usable GiB. Reserving 20% of physical capacity requires 16/0.8=20 GiB. Specify the denominator of a reserve percentage."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "计算副本、放置与容量 · 图解",
+          "en": "Reason about replicas and capacity · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "逻辑容量",
+            "en": "Logical size"
+          },
+          {
+            "zh": "副本放大",
+            "en": "Replication"
+          },
+          {
+            "zh": "预留空间",
+            "en": "Headroom"
+          },
+          {
+            "zh": "故障域",
+            "en": "Failure domains"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day6",
+          "expected": {
+            "zh": "required_physical_gib=20.0；node-a/node-b各承载8GiB。",
+            "en": "required_physical_gib=20.0; node-a/node-b each hold 8 GiB."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "改为3副本并手算所需容量；画出机架级故障后仍可读的放置方案。",
+            "en": "Compute three-replica capacity and draw placement that survives a rack failure."
+          },
+          "command": "python3 -m json.tool out/day06.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "只预算逻辑容量",
+            "en": "Budget contains only logical bytes"
+          },
+          "fix": {
+            "zh": "先乘副本数，再按保留空闲比例除以1-reserve。",
+            "en": "Multiply by replica count, then divide by 1-reserve."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "两个副本同时丢失",
+            "en": "Both replicas disappear together"
+          },
+          "fix": {
+            "zh": "检查是否同一主机或机架，重新标注实际故障域。",
+            "en": "Check shared host/rack placement and label actual failure domains."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "8GiB×2副本，20%空闲需多少物理容量？",
+            "en": "Physical capacity for 8 GiB × 2 with 20% free?"
+          },
+          "options": [
+            {
+              "zh": "20GiB",
+              "en": "20 GiB"
+            },
+            {
+              "zh": "16GiB",
+              "en": "16 GiB"
+            },
+            {
+              "zh": "19.2GiB",
+              "en": "19.2 GiB"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "答案：20GiB。副本提高可用性时会消耗额外存储，并增加写入和恢复流量。放在两个进程不一定属于两个独立故障域：它们可能共用同一主机、电源或网络。",
+            "en": "Answer: 20 GiB. Replication consumes storage and additional write/recovery traffic. Two processes are not necessarily independent failure domains; they may share a host, power or network."
+          }
+        },
+        {
+          "question": {
+            "zh": "同一主机的两个进程能抗主机故障吗？",
+            "en": "Can two processes on one host survive that host failing?"
+          },
+          "options": [
+            {
+              "zh": "一定能",
+              "en": "Always"
+            },
+            {
+              "zh": "取决于进程名字",
+              "en": "It depends on process names"
+            },
+            {
+              "zh": "不能单凭这两个副本保证",
+              "en": "Not with these replicas alone"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "答案：不能单凭这两个副本保证。逻辑8GiB、2副本需要16GiB有效空间。若要求物理容量保留20%空闲，则需16/0.8=20GiB。预留比例必须说清是按总量还是按使用量。",
+            "en": "Answer: Not with these replicas alone. Eight logical GiB with two replicas needs 16 usable GiB. Reserving 20% of physical capacity requires 16/0.8=20 GiB. Specify the denominator of a reserve percentage."
+          }
+        }
+      ],
+      "interactive": "placement-budget"
     },
     {
       "day": 7,
@@ -359,32 +1290,32 @@
         "en": "Choose an inference integration path"
       },
       "lesson": {
-        "zh": "Mooncake 可以出现在不同 KV 数据路径中：同一请求的 prefill/decode 交接，或跨请求共享缓存的存取。选择 Transfer Engine、Store 或上层缓存集成，取决于引擎当前支持和你的目标。成功移动字节不是推理正确性的充分条件；状态布局、模型版本、块大小和设备支持都要匹配。一次只验证一条官方路径，避免把多个项目的参数拼成未经支持的组合。",
-        "en": "Mooncake can participate in different KV paths: handing state from prefill to decode within one request, or storing shared cache for later requests. Choosing Transfer Engine, Store, or an upper-layer cache integration depends on current engine support and the goal. Moving bytes successfully is not enough to establish correct inference; state layout, model version, chunking, and device support must align. Validate one documented integration at a time instead of assembling parameters from several projects into an unsupported combination."
+        "zh": "接入推理引擎时必须对齐模型、token序列、精度与布局。字节完整但语义不兼容仍会产生错误；连接器还负责完成通知、缺失回退和错误传播，不能只连通网络就验收。 producer是toy-v1、consumer是toy-v2，其余字段相同仍判不兼容。安全的实验回退是重新计算；课程不声称这个小字典实现了真实连接器协议。",
+        "en": "Inference integration requires matching model, token sequence, dtype and layout. Intact bytes can still be semantically incompatible. A connector must handle completion, misses and errors in addition to transport. A toy-v1 producer and toy-v2 consumer mismatch even when other fields agree. The exercise falls back to recomputation; the dictionary is not an implementation of a real connector protocol."
       },
       "task": {
-        "zh": "在 SGLang、vLLM 或 LMCache 的官方集成中选一条，列出版本、硬件、依赖和支持边界。画一条请求时序图；有硬件时执行最小正确性验证，无硬件时提交可审查配置与待验证清单。",
-        "en": "Choose one official SGLang, vLLM, or LMCache integration and list versions, hardware, dependencies, and support limits. Draw a request sequence diagram. Run minimal correctness checks if hardware is available; otherwise submit a reviewable configuration and validation checklist."
+        "zh": "只把consumer模型改一致，再单独改dtype；列出必须同时满足的身份条件。",
+        "en": "Match only the model, then separately change dtype. List all conditions that must match."
       },
       "evidence": {
-        "zh": "integration-plan.md 与配置副本；注明选的是 P/D 交接还是共享缓存。",
-        "en": "integration-plan.md and configuration copies, explicitly identifying P/D handoff or shared caching."
+        "zh": "out/day07.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day07.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "目标只包含一条已查证的官方集成路径",
-          "标注每个组件的版本与硬件条件",
-          "有端到端正确性计划，而不仅是带宽目标"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Choose one verified official integration path",
-          "Record component versions and hardware requirements",
-          "Include end-to-end correctness checks, not only a bandwidth target"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "完成配置审查和事件时间线，把 GPU、模型权重与真实请求验收列为待运行项；不生成虚构性能数字。",
-        "en": "Review configuration and produce an event timeline, marking GPU execution, model loading, and request validation as pending. Do not fabricate performance numbers."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
@@ -399,7 +1330,164 @@
           "title": "Mooncake integration with LMCache",
           "url": "https://kvcache-ai.github.io/Mooncake/deployment/integrations/lmcache/index.html"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "接入推理引擎时必须对齐模型、token序列、精度与布局。字节完整但语义不兼容仍会产生错误；连接器还负责完成通知、缺失回退和错误传播，不能只连通网络就验收。",
+            "en": "Inference integration requires matching model, token sequence, dtype and layout. Intact bytes can still be semantically incompatible. A connector must handle completion, misses and errors in addition to transport."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "producer是toy-v1、consumer是toy-v2，其余字段相同仍判不兼容。安全的实验回退是重新计算；课程不声称这个小字典实现了真实连接器协议。",
+            "en": "A toy-v1 producer and toy-v2 consumer mismatch even when other fields agree. The exercise falls back to recomputation; the dictionary is not an implementation of a real connector protocol."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "选择一条推理集成路径 · 图解",
+          "en": "Choose an inference integration path · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "生产者元数据",
+            "en": "Producer metadata"
+          },
+          {
+            "zh": "兼容性检查",
+            "en": "Compatibility"
+          },
+          {
+            "zh": "传输完成",
+            "en": "Transfer completion"
+          },
+          {
+            "zh": "消费者使用",
+            "en": "Consumer use"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day7",
+          "expected": {
+            "zh": "compatible=false，fallback说明重新计算。",
+            "en": "compatible=false and fallback requests recomputation."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "只把consumer模型改一致，再单独改dtype；列出必须同时满足的身份条件。",
+            "en": "Match only the model, then separately change dtype. List all conditions that must match."
+          },
+          "command": "python3 -m json.tool out/day07.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "producer/consumer不兼容",
+            "en": "Producer/consumer mismatch"
+          },
+          "fix": {
+            "zh": "逐字段比较模型、精度、布局、token，不强行复用；保存回退记录。",
+            "en": "Compare model, dtype, layout and tokens; reject reuse and record fallback."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "回退后吞吐变差",
+            "en": "Fallback reduces throughput"
+          },
+          "fix": {
+            "zh": "保留正确性优先的结果，统计回退率，再判断兼容配置是否值得优化。",
+            "en": "Keep the correct result, count fallbacks, then investigate compatible configurations."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "checksum一致是否允许跨模型复用？",
+            "en": "Does equal checksum permit cross-model reuse?"
+          },
+          "options": [
+            {
+              "zh": "总允许",
+              "en": "Always"
+            },
+            {
+              "zh": "只要token数相同",
+              "en": "If token counts match"
+            },
+            {
+              "zh": "不允许据此推断",
+              "en": "Not on that evidence"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "答案：不允许据此推断。接入推理引擎时必须对齐模型、token序列、精度与布局。字节完整但语义不兼容仍会产生错误；连接器还负责完成通知、缺失回退和错误传播，不能只连通网络就验收。",
+            "en": "Answer: Not on that evidence. Inference integration requires matching model, token sequence, dtype and layout. Intact bytes can still be semantically incompatible. A connector must handle completion, misses and errors in addition to transport."
+          }
+        },
+        {
+          "question": {
+            "zh": "不兼容时应怎么做？",
+            "en": "What should happen on incompatibility?"
+          },
+          "options": [
+            {
+              "zh": "强制类型转换后使用",
+              "en": "Force-cast and use"
+            },
+            {
+              "zh": "拒绝复用并走明确回退",
+              "en": "Reject reuse and use explicit fallback"
+            },
+            {
+              "zh": "忽略字段",
+              "en": "Ignore metadata"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "答案：拒绝复用并走明确回退。producer是toy-v1、consumer是toy-v2，其余字段相同仍判不兼容。安全的实验回退是重新计算；课程不声称这个小字典实现了真实连接器协议。",
+            "en": "Answer: Reject reuse and use explicit fallback. A toy-v1 producer and toy-v2 consumer mismatch even when other fields agree. The exercise falls back to recomputation; the dictionary is not an implementation of a real connector protocol."
+          }
+        }
+      ],
+      "interactive": "pd-balance"
     },
     {
       "day": 8,
@@ -408,32 +1496,32 @@
         "en": "Handle sharing, isolation, and lifecycle"
       },
       "lesson": {
-        "zh": "共享 KV 的价值来自重复工作可以复用，但共享边界必须与状态兼容和数据权限一致。命名空间、租户配置与对象键各有职责，不能把名字不同当作完整访问控制。模型更新、对象驱逐、使用结束与节点重启也会影响对象是否仍可使用。设计时先定义谁能写、谁能读、何时失效，再核对当前版本确实提供哪些机制。",
-        "en": "Shared KV is valuable when it avoids repeated work, but sharing boundaries must respect state compatibility and access permissions. Namespaces, tenant configuration, and object keys serve different purposes; different names are not a complete access-control system. Model updates, eviction, end of use, and node restarts also affect whether objects remain usable. Define who may write, who may read, and when state expires before checking the mechanisms offered by the current release. Unimplemented controls belong in a gap list, not in a claim of tenant safety."
+        "zh": "缓存隔离需要正确的key，也需要权限检查。把租户名拼到key能避免意外碰撞，但不意味着读取者有权指定任意租户。TTL决定对象是否仍有效，删除和权限撤销也是独立过程。 同样token和模型，在租户a与b下key不同；过期时间10、当前时间12时应过期。墙钟可能跳变，进程内相对超时适合单调时钟；跨机器期限还要定义时钟假设。",
+        "en": "Cache isolation requires correct keys and authorization. Adding a tenant name avoids accidental collisions but does not authorize arbitrary tenant access. TTL, deletion and permission revocation are distinct mechanisms. The same model/tokens under tenants a and b have distinct keys. An expiry of 10 is expired at 12. Local relative timeouts should use a monotonic clock; cross-machine deadlines need explicit clock assumptions."
       },
       "task": {
-        "zh": "使用测试租户 A/B 和合成字节，设计允许共享、应隔离、对象已删除与模型已更新四组用例。检查官方 sharing/isolation 配置的默认值与启用条件，在自己控制的环境中验证可验证部分。",
-        "en": "Using test tenants A/B and synthetic bytes, design permitted-sharing, required-isolation, deleted-object, and model-updated cases. Check defaults and activation conditions in the official sharing/isolation guide, then validate available controls in an environment you own."
+        "zh": "将namespace从key中删去观察碰撞，再恢复；写明还缺哪些权限检查。",
+        "en": "Remove namespace to observe collision, restore it, and describe missing authorization checks."
       },
       "evidence": {
-        "zh": "isolation-matrix.csv 与生命周期图；将命名空间、授权和状态兼容分列。",
-        "en": "isolation-matrix.csv and a lifecycle diagram, with separate columns for namespaces, authorization, and state compatibility."
+        "zh": "out/day08.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day08.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "至少覆盖共享、隔离、删除和模型更新",
-          "没有将默认配置宣称为自动安全隔离",
-          "每个控制标明已验证或仍需上层实现"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Cover sharing, isolation, deletion, and model updates",
-          "Do not claim defaults provide automatic secure isolation",
-          "Mark each control as verified or requiring an upper layer"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "用本地键值模型实现租户策略和删除测试；注明这是你定义的策略模拟，不能代替 Mooncake 配置验证。",
-        "en": "Implement tenant rules and deletion tests in a local key-value model. Label this as a simulation of your policy, not validation of Mooncake configuration."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
@@ -444,6 +1532,162 @@
           "title": "Mooncake Store architecture",
           "url": "https://kvcache-ai.github.io/Mooncake/design/store/mooncake-store.html"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "缓存隔离需要正确的key，也需要权限检查。把租户名拼到key能避免意外碰撞，但不意味着读取者有权指定任意租户。TTL决定对象是否仍有效，删除和权限撤销也是独立过程。",
+            "en": "Cache isolation requires correct keys and authorization. Adding a tenant name avoids accidental collisions but does not authorize arbitrary tenant access. TTL, deletion and permission revocation are distinct mechanisms."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "同样token和模型，在租户a与b下key不同；过期时间10、当前时间12时应过期。墙钟可能跳变，进程内相对超时适合单调时钟；跨机器期限还要定义时钟假设。",
+            "en": "The same model/tokens under tenants a and b have distinct keys. An expiry of 10 is expired at 12. Local relative timeouts should use a monotonic clock; cross-machine deadlines need explicit clock assumptions."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "处理共享、隔离与对象生命周期 · 图解",
+          "en": "Handle sharing, isolation, and lifecycle · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "认证身份",
+            "en": "Authenticate"
+          },
+          {
+            "zh": "命名空间",
+            "en": "Namespace"
+          },
+          {
+            "zh": "过期检查",
+            "en": "Expiry check"
+          },
+          {
+            "zh": "读取/回退",
+            "en": "Read/fallback"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day8",
+          "expected": {
+            "zh": "same_tenant=true、other_tenant=false、expired_at_12=true。",
+            "en": "same_tenant=true, other_tenant=false, expired_at_12=true."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "将namespace从key中删去观察碰撞，再恢复；写明还缺哪些权限检查。",
+            "en": "Remove namespace to observe collision, restore it, and describe missing authorization checks."
+          },
+          "command": "python3 -m json.tool out/day08.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "租户变化仍命中",
+            "en": "Hit persists across tenant changes"
+          },
+          "fix": {
+            "zh": "检查key是否含namespace；随后独立检查调用方授权。",
+            "en": "Check namespace in the key, then independently check caller authorization."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "过期对象仍可读取",
+            "en": "Expired object is still read"
+          },
+          "fix": {
+            "zh": "把到期检查置于返回数据之前，并记录时间口径和清理延迟。",
+            "en": "Check expiry before returning data and document clocks and cleanup delay."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "命名空间key等于访问控制吗？",
+            "en": "Is a namespaced key access control?"
+          },
+          "options": [
+            {
+              "zh": "等于管理员授权",
+              "en": "It grants admin access"
+            },
+            {
+              "zh": "不等于",
+              "en": "No"
+            },
+            {
+              "zh": "等于加密",
+              "en": "It is encryption"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "答案：不等于。缓存隔离需要正确的key，也需要权限检查。把租户名拼到key能避免意外碰撞，但不意味着读取者有权指定任意租户。TTL决定对象是否仍有效，删除和权限撤销也是独立过程。",
+            "en": "Answer: No. Cache isolation requires correct keys and authorization. Adding a tenant name avoids accidental collisions but does not authorize arbitrary tenant access. TTL, deletion and permission revocation are distinct mechanisms."
+          }
+        },
+        {
+          "question": {
+            "zh": "expiry=10，now=12应怎样处理？",
+            "en": "What about expiry=10, now=12?"
+          },
+          "options": [
+            {
+              "zh": "过期后回退",
+              "en": "Expire and fall back"
+            },
+            {
+              "zh": "继续永久复用",
+              "en": "Reuse forever"
+            },
+            {
+              "zh": "修改时钟",
+              "en": "Change the clock"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "答案：过期后回退。同样token和模型，在租户a与b下key不同；过期时间10、当前时间12时应过期。墙钟可能跳变，进程内相对超时适合单调时钟；跨机器期限还要定义时钟假设。",
+            "en": "Answer: Expire and fall back. The same model/tokens under tenants a and b have distinct keys. An expiry of 10 is expired at 12. Local relative timeouts should use a monotonic clock; cross-machine deadlines need explicit clock assumptions."
+          }
+        }
       ]
     },
     {
@@ -453,32 +1697,32 @@
         "en": "Observe failure and verify recovery"
       },
       "lesson": {
-        "zh": "分布式数据路径的失败可能发生在客户端、传输层、数据节点或元数据服务。单个超时无法说明哪个组件出错，也无法说明对象是否已经部分写入。用统一请求标识、状态码、字节计数与时间线连接证据，才有机会区分拥塞、容量不足和组件失联。恢复完成的标准应包括后续请求正确与资源可回收，而不只是进程重新启动。",
-        "en": "Failures can occur in the client, transport, data nodes, or metadata service. A single timeout does not identify the failed component or establish whether data was partially written. Correlate request identifiers, statuses, byte counters, and timelines to distinguish congestion, exhausted capacity, and unreachable components. Recovery should mean that subsequent requests are correct and resources can be reclaimed, not merely that a process restarted. Test one bounded fault in a private environment and document any behavior you could not verify."
+        "zh": "失败处理先判断哪些步骤已经提交。重试可能再次写入同一对象，因此需要幂等键或事务边界。网络关闭不是成功信号，读取不足声明长度时应保留失败而不是补零。 声明8字节只收到3字节，状态为truncated。同一write-17尝试两次只应用一次，依赖进程内seen集合；进程重启后集合会丢失，因此不具备持久化去重。",
+        "en": "Determine what committed before retrying. A retry may repeat a write, so use idempotency keys or transaction boundaries. Connection closure is not success: a short frame is an error, not an invitation to pad zeros. An eight-byte frame with only three bytes is truncated. Two write-17 attempts apply once using an in-memory seen set, which is lost on restart and does not provide durable deduplication."
       },
       "task": {
-        "zh": "对本地测试拓扑实施一次有界故障：停止一个自己启动的进程或耗尽小型测试容量。记录故障前、中、后读写、摘要、指标及资源；恢复后重复正确性测试，编写运行手册。",
-        "en": "Inject one bounded fault into your local topology: stop a process you started or exhaust a small test capacity. Capture reads/writes, digests, metrics, and resources before, during, and after it. Repeat correctness checks after recovery and write a runbook."
+        "zh": "在两次尝试之间清空seen，说明为什么效果变成两次；提出持久化原子记录方案。",
+        "en": "Clear seen between attempts, explain the duplicate effect and propose an atomic durable record."
       },
       "evidence": {
-        "zh": "failure-timeline.csv、脱敏日志与 runbook.md；写清故障注入与撤销步骤。",
-        "en": "failure-timeline.csv, redacted logs, and runbook.md, including injection and rollback steps."
+        "zh": "out/day09.json、自己的参数修改与解释、一个失败或反例。",
+        "en": "out/day09.json, your parameter change and explanation, and a failure/counterexample."
       },
       "checklist": {
         "zh": [
-          "故障只作用于自己控制的测试环境",
-          "恢复后重新校验数据与操作结果",
-          "记录无法确认的对象与资源状态"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Limit the fault to your controlled test environment",
-          "Revalidate data and operation outcomes after recovery",
-          "Record object and resource states that remain uncertain"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "让模拟节点在固定操作序号失联，验证检测、超时、恢复与校验流程；给所有故障时间和恢复指标标注模拟来源。",
-        "en": "Make a simulated node disappear at a fixed operation number and test detection, timeout, recovery, and validation. Label all fault timings and recovery metrics as simulated."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
@@ -493,6 +1737,162 @@
           "title": "Mooncake Transfer Engine",
           "url": "https://kvcache-ai.github.io/Mooncake/design/transfer-engine/index.html"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "失败处理先判断哪些步骤已经提交。重试可能再次写入同一对象，因此需要幂等键或事务边界。网络关闭不是成功信号，读取不足声明长度时应保留失败而不是补零。",
+            "en": "Determine what committed before retrying. A retry may repeat a write, so use idempotency keys or transaction boundaries. Connection closure is not success: a short frame is an error, not an invitation to pad zeros."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "声明8字节只收到3字节，状态为truncated。同一write-17尝试两次只应用一次，依赖进程内seen集合；进程重启后集合会丢失，因此不具备持久化去重。",
+            "en": "An eight-byte frame with only three bytes is truncated. Two write-17 attempts apply once using an in-memory seen set, which is lost on restart and does not provide durable deduplication."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "观察故障并验证恢复 · 图解",
+          "en": "Observe failure and verify recovery · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "检测截断",
+            "en": "Detect truncation"
+          },
+          {
+            "zh": "记录尝试",
+            "en": "Record attempt"
+          },
+          {
+            "zh": "幂等检查",
+            "en": "Check idempotency"
+          },
+          {
+            "zh": "恢复验证",
+            "en": "Verify recovery"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day9",
+          "expected": {
+            "zh": "status=truncated；attempts=2但apply_count=1。",
+            "en": "status=truncated; attempts=2 but apply_count=1."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "在两次尝试之间清空seen，说明为什么效果变成两次；提出持久化原子记录方案。",
+            "en": "Clear seen between attempts, explain the duplicate effect and propose an atomic durable record."
+          },
+          "command": "python3 -m json.tool out/day09.json",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "重试后重复写入",
+            "en": "Duplicate writes after retry"
+          },
+          "fix": {
+            "zh": "给操作固定幂等ID；说明去重记录和提交能否原子持久化。",
+            "en": "Use a stable idempotency key and discuss atomic durable commit/deduplication."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "短帧被记录为成功",
+            "en": "Truncated frame recorded as success"
+          },
+          "fix": {
+            "zh": "将完整长度与校验作为成功条件，错误也保留在请求总数中。",
+            "en": "Require full length and checksum, retaining errors in total request counts."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "短于声明长度的消息应归类为？",
+            "en": "A message shorter than its announced length is?"
+          },
+          "options": [
+            {
+              "zh": "传输失败",
+              "en": "A transfer failure"
+            },
+            {
+              "zh": "成功但较短",
+              "en": "A shorter success"
+            },
+            {
+              "zh": "缓存命中",
+              "en": "A cache hit"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "答案：传输失败。失败处理先判断哪些步骤已经提交。重试可能再次写入同一对象，因此需要幂等键或事务边界。网络关闭不是成功信号，读取不足声明长度时应保留失败而不是补零。",
+            "en": "Answer: A transfer failure. Determine what committed before retrying. A retry may repeat a write, so use idempotency keys or transaction boundaries. Connection closure is not success: a short frame is an error, not an invitation to pad zeros."
+          }
+        },
+        {
+          "question": {
+            "zh": "内存seen集合能抗进程重启吗？",
+            "en": "Does an in-memory seen set survive restart?"
+          },
+          "options": [
+            {
+              "zh": "能自动写盘",
+              "en": "It automatically persists"
+            },
+            {
+              "zh": "SHA-256能恢复它",
+              "en": "SHA-256 restores it"
+            },
+            {
+              "zh": "不能",
+              "en": "No"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "答案：不能。声明8字节只收到3字节，状态为truncated。同一write-17尝试两次只应用一次，依赖进程内seen集合；进程重启后集合会丢失，因此不具备持久化去重。",
+            "en": "Answer: No. An eight-byte frame with only three bytes is truncated. Two write-17 attempts apply once using an in-memory seen set, which is lost on restart and does not provide durable deduplication."
+          }
+        }
       ]
     },
     {
@@ -502,32 +1902,32 @@
         "en": "Deliver a KV data-path portfolio"
       },
       "lesson": {
-        "zh": "十天项目的价值是展示你能建立正确模型、设计可复现实验并识别结论边界。报告既要回答数据是否正确，也要回答哪种对象大小与并发适合当前路径、共享有什么前提、失败后如何处理。将 CPU/TCP 实测、RDMA 计划、GPU 集成与纯模拟分层陈述，让评审知道哪些能力已经验证、哪些仍待硬件，而不是用一个吞吐数字概括系统。",
-        "en": "A ten-day project demonstrates that you can build a correct model, design reproducible experiments, and identify the limits of a conclusion. The report should establish data correctness, suitable object sizes and concurrency, sharing prerequisites, and failure handling. Present measured CPU/TCP results, RDMA plans, GPU integration work, and simulations as distinct evidence categories. This lets reviewers understand what is verified and what still requires hardware, rather than reducing a distributed system to a single throughput figure or overstating production readiness."
+        "zh": "结课作品要从问题到证据完整连起来：传输了什么、如何检查正确性、计时包括什么、失败如何处理。读者应该能重算你的结论，也能看懂没有验证的部分。 day10重跑前9天并导出CSV哈希和报告。只有day2含真实本机TCP计时，其他是设计或模拟。保留你的改动与参考脚本区别，不能把参考报告当作独立开发证明。",
+        "en": "A final portfolio connects a concrete question to payload correctness, measurement scope and failure handling. Readers should reproduce conclusions and identify untested parts. Day 10 reruns days 1–9 and exports CSV hashes and a report. Only day 2 measures local TCP; others are designs or simulations. Distinguish your changes from supplied reference code."
       },
       "task": {
-        "zh": "整理一个可复现作品，包含架构、版本、传输校验、Store 行为、性能表、容量推演、故障报告和下一步计划。用一页解释：何时应采用 Mooncake，何时更简单的本地方案就够用。",
-        "en": "Package architecture, versions, transfer checks, Store behavior, benchmark tables, capacity analysis, failure reports, and next steps into a reproducible portfolio. Explain in one page when Mooncake is appropriate and when a simpler local approach is sufficient."
+        "zh": "实现student.py的传输时间计算，通过check.py；补齐报告中自己的改动和失败分析。",
+        "en": "Implement transfer cost in student.py, pass check.py and complete personal changes/failure analysis."
       },
       "evidence": {
-        "zh": "项目 README、实验原始数据和工程决策记录；可作为分布式存储或推理岗位的作品链接。",
-        "en": "A project README, raw experimental data, and an engineering decision record for distributed-storage or inference-role applications."
+        "zh": "out/REPORT.md、summary.csv、environment.json及个人代码差异。",
+        "en": "out/REPORT.md, summary.csv, environment.json and your code diff."
       },
       "checklist": {
         "zh": [
-          "至少一个正确性结果与一个性能/成本结果可复算",
-          "清楚区分 TCP、RDMA、GPU 与模拟证据",
-          "包含不适用场景和未完成验证"
+          "能解释本日具体算例及至少一个假设",
+          "命令能运行，原始结果与自己的修改均保留",
+          "完成两道题并解释一个失败或反例"
         ],
         "en": [
-          "Make at least one correctness and one performance/cost result reproducible",
-          "Distinguish TCP, RDMA, GPU, and simulated evidence",
-          "Include unsuitable scenarios and uncompleted validation"
+          "Explain the worked example and at least one assumption",
+          "Run the commands and preserve raw results and your changes",
+          "Answer both quizzes and explain a failure or counterexample"
         ]
       },
       "noGpu": {
-        "zh": "以 CPU 数据通路项目交付完整成果，附可在有硬件后继续执行的验证清单；无需把尚未运行的部分包装成完成。",
-        "en": "Deliver the complete CPU data-path project with a checklist for future hardware validation. Do not present unexecuted work as completed."
+        "zh": "本课标准库主线可在CPU完成。标记真实本机代码、设计与模拟；未运行框架、GPU、RDMA或集群时，不填写对应性能结论。",
+        "en": "The standard-library route runs on CPU. Distinguish local execution, design and simulation; do not claim framework, GPU, RDMA or cluster performance without running it."
       },
       "reading": [
         {
@@ -542,7 +1942,174 @@
           "title": "Mooncake Store architecture",
           "url": "https://kvcache-ai.github.io/Mooncake/design/store/mooncake-store.html"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把机制讲清楚",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "结课作品要从问题到证据完整连起来：传输了什么、如何检查正确性、计时包括什么、失败如何处理。读者应该能重算你的结论，也能看懂没有验证的部分。",
+            "en": "A final portfolio connects a concrete question to payload correctness, measurement scope and failure handling. Readers should reproduce conclusions and identify untested parts."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、口径与边界",
+            "en": "Worked example and boundaries"
+          },
+          "body": {
+            "zh": "day10重跑前9天并导出CSV哈希和报告。只有day2含真实本机TCP计时，其他是设计或模拟。保留你的改动与参考脚本区别，不能把参考报告当作独立开发证明。",
+            "en": "Day 10 reruns days 1–9 and exports CSV hashes and a report. Only day 2 measures local TCP; others are designs or simulations. Distinguish your changes from supplied reference code."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "交付 KV 数据通路作品 · 图解",
+          "en": "Deliver a KV data-path portfolio · Diagram"
+        },
+        "nodes": [
+          {
+            "zh": "问题",
+            "en": "Question"
+          },
+          {
+            "zh": "可复现代码",
+            "en": "Reproducible code"
+          },
+          {
+            "zh": "原始证据",
+            "en": "Raw evidence"
+          },
+          {
+            "zh": "边界与下一步",
+            "en": "Limits/next step"
+          }
+        ],
+        "caption": {
+          "zh": "这是概念流程图；各实验的 measured-local、design 或 simulated 标记决定证据范围。",
+          "en": "This is a conceptual flow. The experiment’s measured-local, design or simulated label defines its evidence scope."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并对照",
+            "en": "Run and compare"
+          },
+          "body": {
+            "zh": "保持在实验包目录；输出保存在out/。需要保留不同版本结果时增加 --out out/my-run。",
+            "en": "Stay in the lab directory. Results go to out/. Use --out out/my-run to preserve a separate variant."
+          },
+          "command": "python3 lab.py day10",
+          "expected": {
+            "zh": "生成9份JSON、summary.csv、environment.json、REPORT.md。",
+            "en": "Produces nine JSON files, summary.csv, environment.json and REPORT.md."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一次自己的改动",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "实现student.py的传输时间计算，通过check.py；补齐报告中自己的改动和失败分析。",
+            "en": "Implement transfer cost in student.py, pass check.py and complete personal changes/failure analysis."
+          },
+          "command": "python3 check.py",
+          "expected": {
+            "zh": "阅读字段并对照上面的数值；修改一个变量前先写预测。首次NOT YET表示student.py尚未实现；完成后应PASS，参考解通过不算本人完成。",
+            "en": "Inspect fields and compare with the worked result. Predict before changing one variable. Initial NOT YET means student.py needs implementation; your implementation should then PASS. Reference checks are not your own completion."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "check.py初次NOT YET",
+            "en": "Initial check.py says NOT YET"
+          },
+          "fix": {
+            "zh": "这是student.py待实现函数；按注释完成，再运行。--reference只检查参考解。",
+            "en": "Implement the student.py TODO, then rerun. --reference checks only the supplied solution."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "报告只剩PASS截图",
+            "en": "Report contains only a PASS screenshot"
+          },
+          "fix": {
+            "zh": "补上原始记录、代码差异、复现命令与未验证边界。",
+            "en": "Add raw records, code diffs, commands and untested boundaries."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "本包能证明Mooncake的RDMA性能吗？",
+            "en": "Does this pack establish Mooncake RDMA performance?"
+          },
+          "options": [
+            {
+              "zh": "能直接写生产加速倍数",
+              "en": "It gives production speedups"
+            },
+            {
+              "zh": "只看最快一轮即可",
+              "en": "Only the fastest run matters"
+            },
+            {
+              "zh": "不能",
+              "en": "No"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "答案：不能。结课作品要从问题到证据完整连起来：传输了什么、如何检查正确性、计时包括什么、失败如何处理。读者应该能重算你的结论，也能看懂没有验证的部分。",
+            "en": "Answer: No. A final portfolio connects a concrete question to payload correctness, measurement scope and failure handling. Readers should reproduce conclusions and identify untested parts."
+          }
+        },
+        {
+          "question": {
+            "zh": "报告中的本人贡献应该写什么？",
+            "en": "What belongs in personal contribution?"
+          },
+          "options": [
+            {
+              "zh": "只贴PASS截图",
+              "en": "Only a PASS screenshot"
+            },
+            {
+              "zh": "自己改的代码与判断",
+              "en": "Your changes and reasoning"
+            },
+            {
+              "zh": "把示例都称原创",
+              "en": "Claim all examples as original"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "答案：自己改的代码与判断。day10重跑前9天并导出CSV哈希和报告。只有day2含真实本机TCP计时，其他是设计或模拟。保留你的改动与参考脚本区别，不能把参考报告当作独立开发证明。",
+            "en": "Answer: Your changes and reasoning. Day 10 reruns days 1–9 and exports CSV hashes and a report. Only day 2 measures local TCP; others are designs or simulations. Distinguish your changes from supplied reference code."
+          }
+        }
       ]
     }
-  ]
+  ],
+  "lab": {
+    "path": "mooncake",
+    "title": {
+      "zh": "下载 mooncake 实验包",
+      "en": "Download the mooncake lab"
+    },
+    "description": {
+      "zh": "Python 3.9+ 标准库主线；包含10日实验、独立挑战、参考解与报告导出。框架/集群选做环境见README，未经实测不写为性能结论。",
+      "en": "Python 3.9+ standard-library route with ten daily labs, independent challenges, references and report export. Optional SDK/cluster requirements are in README; unmeasured runs are not performance evidence."
+    }
+  }
 }

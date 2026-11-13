@@ -11,8 +11,8 @@
     "en": "Turn slow multi-GPU work into measurable questions"
   },
   "description": {
-    "zh": "理解集合通信语义、GPU 拓扑、带宽测量与故障定位，把一次通信基准转化为可信的性能分析。",
-    "en": "Understand collectives, GPU topology, bandwidth measurements and diagnostics. Turn a communication benchmark into credible performance analysis."
+    "zh": "理解集合通信语义、GPU 拓扑、带宽测量与故障定位，把一次通信基准转化为可信的性能分析。 每日补充图解、可运行CPU实验、预期输出、排错和解析题；保留真实框架选做路线。",
+    "en": "Understand collectives, GPU topology, bandwidth measurements and diagnostics. Turn a communication benchmark into credible performance analysis. Every day includes diagrams, runnable CPU exercises, expected outputs, troubleshooting and explained quizzes, with an optional real-framework path."
   },
   "level": "advanced",
   "hoursPerDay": {
@@ -24,10 +24,10 @@
     "en": "Python/C++, tensor operations and multiprocessing; complete PyTorch distributed first if possible."
   },
   "hardware": {
-    "zh": "真实 NCCL 测量需兼容 NVIDIA GPU；多卡与多节点结论分别需要对应硬件。CPU 可完成语义模拟与分析练习。",
-    "en": "Actual NCCL measurements need compatible NVIDIA GPUs. Multi-GPU and multi-node claims require matching hardware; CPU-only semantic simulations remain useful."
+    "zh": "普通电脑可完成Python 3.9+标准库的数值/系统语义实验；真实框架路线见实验包README，须另备对应环境。CPU模型与GPU实测分开标记。",
+    "en": "A laptop runs Python 3.9+ standard-library numerical/system exercises. Optional real-framework routes require the environment in the lab README. Label CPU models and hardware measurements separately."
   },
-  "hardwareTier": "multi-gpu",
+  "hardwareTier": "gpu-optional",
   "tags": [
     "NCCL",
     "Distributed Systems",
@@ -51,6 +51,18 @@
   },
   "lastVerified": "2026-11-13",
   "resources": [
+    {
+      "title": "NCCL collective operations",
+      "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html"
+    },
+    {
+      "title": "NCCL-tests bandwidth conventions",
+      "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
+    },
+    {
+      "title": "PyTorch pinned installation versions",
+      "url": "https://pytorch.org/get-started/previous-versions/"
+    },
     {
       "title": "NVIDIA · NCCL User Guide",
       "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/index.html"
@@ -80,33 +92,196 @@
         "en": "AllReduce, AllGather and ReduceScatter solve different data-distribution problems. Correctness depends on each rank’s input, call order, data type and expected output, not merely a successful return. NCCL is a GPU communication library. CPU list operations are not an NCCL performance test, but small semantic simulations reveal misunderstandings before hardware enters the picture."
       },
       "task": {
-        "zh": "用四个 rank 的小整数数组，手工推演 sum AllReduce、AllGather、ReduceScatter 的输出。再写 CPU 参考函数，与手工结果对照。",
-        "en": "Work through sum AllReduce, AllGather and ReduceScatter for four small integer arrays. Write CPU reference functions and compare their outputs with your manual results."
+        "zh": "改成3rank输入，手算sum与mean，再检查每rank输出相同。",
+        "en": "Try three ranks, hand-calculate sum/mean and verify identical rank outputs."
       },
       "evidence": {
-        "zh": "通信语义表与可运行的 CPU 参考实现。",
-        "en": "A collective-semantics table and runnable CPU reference implementation."
+        "zh": "day01.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day01.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "每个操作都写清各 rank 的最终数据",
-          "明确参考函数只验证语义，不测 GPU 性能"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Specify final data on every rank for every operation",
-          "Label the reference as semantic validation, not a GPU benchmark"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "本日完整在 CPU 完成；至少构造一个不等长输入反例并解释接口约束。",
-        "en": "Complete this day on CPU, including an unequal-input counterexample and an explanation of interface constraints."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "NCCL · Collective Operations",
+          "title": "NCCL collective operations",
           "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html"
+        },
+        {
+          "title": "NCCL-tests bandwidth conventions",
+          "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先区分求和与收集",
+            "en": "Separate reduction from collection"
+          },
+          "body": {
+            "zh": "rank0=[1,2]、rank1=[3,4]时，AllReduce(sum)让两边都得到[4,6]；若想要平均还需除以2。AllGather保留各rank输入，得到[1,2,3,4]，输出形状和语义不同。",
+            "en": "With rank0=[1,2] and rank1=[3,4], AllReduce(sum) returns [4,6] to both; averaging additionally divides by two. AllGather preserves contributions as [1,2,3,4], with a different shape and meaning."
+          }
+        },
+        {
+          "title": {
+            "zh": "CPU列表只检验语义",
+            "en": "CPU lists verify semantics only"
+          },
+          "body": {
+            "zh": "本实验在单个Python进程上计算列表，方便手算和检查shape。它不执行GPU通信，也不能测NVLink带宽。先验证语义后再运行可选的真实NCCL例，避免把错误结果的速度当优化。",
+            "en": "The list implementation runs in one Python process for hand checks and shape validation. It neither communicates on GPUs nor measures NVLink. Verify semantics before optional hardware runs so incorrect results are not celebrated as optimization."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "两rank输入[1,2]和[3,4]，sum结果？",
+            "en": "Sum of rank inputs [1,2] and [3,4]?"
+          },
+          "options": [
+            {
+              "zh": "[4,6]",
+              "en": "[4,6]"
+            },
+            {
+              "zh": "[2,3]",
+              "en": "[2,3]"
+            },
+            {
+              "zh": "[1,2,3,4]",
+              "en": "[1,2,3,4]"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "逐位置相加，所有rank获得相同结果。",
+            "en": "Add corresponding elements and return the same result to all."
+          }
+        },
+        {
+          "question": {
+            "zh": "本CPU列表能测NCCL带宽吗？",
+            "en": "Can CPU lists measure NCCL bandwidth?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能",
+              "en": "No"
+            },
+            {
+              "zh": "等于NVLink速度",
+              "en": "They equal NVLink speed"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "没有调用NCCL或GPU。",
+            "en": "No NCCL or GPU is invoked."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：先学会集合通信的语义",
+          "en": "Lesson flow: Understand collective semantics first"
+        },
+        "nodes": [
+          {
+            "zh": "每rank输入",
+            "en": "Per-rank inputs"
+          },
+          {
+            "zh": "逐元素求和",
+            "en": "Elementwise sum"
+          },
+          {
+            "zh": "分发给所有rank",
+            "en": "Return to every rank"
+          },
+          {
+            "zh": "需要时求平均",
+            "en": "Average if required"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "先下载并解压实验ZIP，在终端进入 nccl 文件夹（父目录执行 cd nccl）。需要Python 3.9+，Windows可将python3换为py -3。",
+            "en": "Download and extract the ZIP; enter nccl (cd nccl from its parent). Use Python3.9+; Windows can substitute py -3."
+          },
+          "command": "python3 lab.py day1",
+          "expected": {
+            "zh": "sum=[[4,6],[4,6]]，average=[[2,3],[2,3]]。",
+            "en": "sum=[[4,6],[4,6]], average=[[2,3],[2,3]]."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "改成3rank输入，手算sum与mean，再检查每rank输出相同。",
+            "en": "Try three ranks, hand-calculate sum/mean and verify identical rank outputs."
+          },
+          "command": "python3 -c \"from lab import allreduce; print(allreduce([[1],[2],[3]]))\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把sum当mean",
+            "en": "Sum mistaken for mean"
+          },
+          "fix": {
+            "zh": "明确reduction op；NCCL SUM不会自动除world size。",
+            "en": "Specify the reduction; SUM does not automatically divide by world size."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "不同rank元素数量不同",
+            "en": "Different element counts"
+          },
+          "fix": {
+            "zh": "先在CPU侧拒绝shape不一致；真实不匹配可能挂起，别故意制造GPU死锁。",
+            "en": "Reject incompatible shapes offline; do not deliberately hang real collectives."
+          }
+        }
+      ],
+      "interactive": "collective-cost"
     },
     {
       "day": 2,
@@ -119,39 +294,193 @@
         "en": "A rank is a logical index within a communicator, not automatically a node number or physical GPU number. Applications must map processes to devices, define communicator membership and establish connections. Incorrect mapping can reuse a device unintentionally or wait for an absent participant. Document processes, nodes, devices and software versions together."
       },
       "task": {
-        "zh": "为单机四卡与双机四卡两种环境各画一张 rank 映射图。检查自己的真实环境，记录驱动、CUDA、NCCL、设备和启动器版本。",
-        "en": "Draw rank maps for a four-GPU single node and four GPUs across two nodes. Inventory your real driver, CUDA, NCCL, devices and launcher versions."
+        "zh": "画两节点四卡映射图，说明每个rank的host和device，不实际启动远程集群。",
+        "en": "Draw the two-host/four-device mapping without launching a remote cluster."
       },
       "evidence": {
-        "zh": "rank 映射图、兼容关系记录和可用硬件清单。",
-        "en": "Rank maps, compatibility notes and a hardware inventory."
+        "zh": "day02.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day02.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "区分 global rank、local rank 与设备索引",
-          "记录缺少的硬件，不补造拓扑"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Distinguish global rank, local rank and device index",
-          "Document missing hardware without inventing topology"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "用标为假设的环境完成映射设计，并填写真实 CPU 环境记录。",
-        "en": "Design maps for clearly labeled hypothetical setups and record your actual CPU environment."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "NVIDIA · NCCL User Guide",
-          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/index.html"
+          "title": "NCCL collective operations",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html"
         },
         {
-          "title": "NCCL · Installation Guide",
-          "url": "https://docs.nvidia.com/deeplearning/nccl/install-guide/index.html"
+          "title": "NCCL-tests bandwidth conventions",
+          "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "global与local映射",
+            "en": "Global versus local mapping"
+          },
+          "body": {
+            "zh": "两台机器各2张GPU，global ranks为0/1/2/3，local ranks为0/1/0/1。每台机器设备编号从0开始；global rank2对应第二台机器的GPU0。映射写错会让进程抢同一设备或索引越界。",
+            "en": "Two hosts with two GPUs each have global ranks0/1/2/3 and local ranks0/1/0/1. Device indices restart per host; global rank2 maps to host B GPU0. Wrong mappings can collide or exceed device count."
+          }
         },
         {
-          "title": "PyTorch · Distributed communication",
-          "url": "https://docs.pytorch.org/docs/stable/distributed.html"
+          "title": {
+            "zh": "通信域决定参与者",
+            "en": "The communicator defines membership"
+          },
+          "body": {
+            "zh": "collective只在同一组成员之间完成，成员数量、操作顺序、count与dtype都要兼容。将rank映射和组成员写进报告，有助于区分启动错误与链路性能问题。",
+            "en": "Collectives operate within a group. Membership, operation order, count and dtype must be compatible. Recording mappings and group membership separates launch mistakes from link performance problems."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "第二台机器global rank2用哪张本机卡？",
+            "en": "Which local GPU for global rank2 on host B?"
+          },
+          "options": [
+            {
+              "zh": "GPU2",
+              "en": "GPU2"
+            },
+            {
+              "zh": "GPU0",
+              "en": "GPU0"
+            },
+            {
+              "zh": "GPU3",
+              "en": "GPU3"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "local rank从0重新编号。",
+            "en": "Local rank numbering restarts on each host."
+          }
+        },
+        {
+          "question": {
+            "zh": "哪些信息需在各rank匹配？",
+            "en": "Which properties must match across participants?"
+          },
+          "options": [
+            {
+              "zh": "count/dtype/通信顺序",
+              "en": "Count/dtype/collective order"
+            },
+            {
+              "zh": "日志文件名必须相同",
+              "en": "Log filenames"
+            },
+            {
+              "zh": "进程PID相同",
+              "en": "Process IDs"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "不匹配会导致错误或等待。",
+            "en": "Mismatches can cause errors or hangs."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：rank、设备与通信域",
+          "en": "Lesson flow: Map ranks, devices and communicators"
+        },
+        "nodes": [
+          {
+            "zh": "启动进程",
+            "en": "Launch processes"
+          },
+          {
+            "zh": "分配global rank",
+            "en": "Assign global rank"
+          },
+          {
+            "zh": "local rank选GPU",
+            "en": "Map local rank to GPU"
+          },
+          {
+            "zh": "建立通信组",
+            "en": "Create communicator"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day2",
+          "expected": {
+            "zh": "global=[0,1,2,3]，local与device=[0,1,0,1]。",
+            "en": "global=[0,1,2,3]; local/device=[0,1,0,1]."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "画两节点四卡映射图，说明每个rank的host和device，不实际启动远程集群。",
+            "en": "Draw the two-host/four-device mapping without launching a remote cluster."
+          },
+          "command": "python3 -c \"from lab import experiment; print(list(zip(experiment(2)['hosts'],experiment(2)['global_ranks'],experiment(2)['device_indices'])))\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "invalid device ordinal",
+            "en": "invalid device ordinal"
+          },
+          "fix": {
+            "zh": "核对CUDA_VISIBLE_DEVICES与local rank，不把global rank当设备下标。",
+            "en": "Check visible devices and local rank, not global rank as a device index."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "多个rank挤在同一GPU",
+            "en": "Ranks collide on one GPU"
+          },
+          "fix": {
+            "zh": "逐rank打印host/local rank/device，确保本教程一进程一设备。",
+            "en": "Log host/local rank/device and enforce one process per device in this example."
+          }
         }
       ]
     },
@@ -166,33 +495,196 @@
         "en": "The same GPU count can hide very different connectivity. PCIe, NVLink and inter-node networking shape transport paths, but one topology diagram cannot predict every workload’s throughput. NUMA placement and GPU–NIC affinity may matter as well. Establish reachability and structure first, then formulate hypotheses that measurement can test."
       },
       "task": {
-        "zh": "有 GPU 时保存 nvidia-smi topo -m 输出，标注两对 GPU 的路径；画一张可能的跨节点路径。区分观测事实与带宽推测。",
-        "en": "With GPUs, save nvidia-smi topo -m and annotate two GPU-pair paths. Draw a possible inter-node route and separate observed facts from bandwidth hypotheses."
+        "zh": "把消息改为1MB，手算理想传输，再列出实际测量必需的拓扑字段。",
+        "en": "Repeat the calculation for1MB and list topology fields needed for measurement."
       },
       "evidence": {
-        "zh": "拓扑图、原始命令输出与两项可检验假设。",
-        "en": "A topology diagram, raw command output and two testable hypotheses."
+        "zh": "day03.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day03.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "每个带宽数字都有来源或明确是待测量值",
-          "不通过关闭主机隔离来完成本课程"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Source every bandwidth number or mark it as unmeasured",
-          "Do not disable host isolation to complete this course"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "使用官方拓扑示意做标注练习，标题明确“文档示例分析”。",
-        "en": "Annotate an official example topology and label it as documentation analysis."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "NCCL · Troubleshooting",
-          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html"
+          "title": "NCCL collective operations",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html"
+        },
+        {
+          "title": "NCCL-tests bandwidth conventions",
+          "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "数据量与带宽统一单位",
+            "en": "Keep units consistent"
+          },
+          "body": {
+            "zh": "100MB按十进制是100,000,000字节。理想25/50/100 GB/s链路仅传输序列化成本分别4/2/1ms；这里没有计入启动、争用和多跳路由。不要把GB/s与Gb/s混用。",
+            "en": "Decimal100MB is100,000,000 bytes. At25/50/100GB/s, ideal serialization takes4/2/1ms, excluding startup, contention and routing. GB/s and Gb/s differ by eight."
+          }
+        },
+        {
+          "title": {
+            "zh": "拓扑描述实际路径",
+            "en": "Topology describes paths"
+          },
+          "body": {
+            "zh": "同节点GPU可能经过NVLink或PCIe，跨节点还涉及网卡与交换网络。名义链路规格不是某次collective能达到的速度；真实实验先保存拓扑，再比较相同消息和rank布局。",
+            "en": "Local GPUs may use NVLink or PCIe; cross-node paths add NICs and switches. Nominal link speed is not achieved collective throughput. Save topology before comparing the same message and rank layout."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "100MB在25GB/s下理想传输时间？",
+            "en": "Ideal100MB transfer at25GB/s?"
+          },
+          "options": [
+            {
+              "zh": "4ms",
+              "en": "4ms"
+            },
+            {
+              "zh": "40ms",
+              "en": "40ms"
+            },
+            {
+              "zh": "400ms",
+              "en": "400ms"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "100e6/25e9秒=0.004秒。",
+            "en": "100e6/25e9 seconds=.004 seconds."
+          }
+        },
+        {
+          "question": {
+            "zh": "100Gb/s等于100GB/s吗？",
+            "en": "Is100Gb/s equal to100GB/s?"
+          },
+          "options": [
+            {
+              "zh": "等于",
+              "en": "Yes"
+            },
+            {
+              "zh": "不等，相差8倍",
+              "en": "No; factor eight"
+            },
+            {
+              "zh": "取决于rank",
+              "en": "Depends on rank"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "一个byte为8bits。",
+            "en": "A byte contains eight bits."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：读懂 GPU 拓扑与传输路径",
+          "en": "Lesson flow: Read GPU topology and transport paths"
+        },
+        "nodes": [
+          {
+            "zh": "确定字节数",
+            "en": "Define bytes"
+          },
+          {
+            "zh": "确认GPU路径",
+            "en": "Identify GPU path"
+          },
+          {
+            "zh": "列开销",
+            "en": "List overheads"
+          },
+          {
+            "zh": "再做实测",
+            "en": "Then measure"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day3",
+          "expected": {
+            "zh": "paths的serialization_ms依次4、2、1。",
+            "en": "Serialization times are4,2,1ms."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "把消息改为1MB，手算理想传输，再列出实际测量必需的拓扑字段。",
+            "en": "Repeat the calculation for1MB and list topology fields needed for measurement."
+          },
+          "command": "python3 -c \"print(1e6/(25e9)*1000)\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "差了8倍",
+            "en": "Eightfold unit error"
+          },
+          "fix": {
+            "zh": "确认输入是bit/s还是byte/s；本课B表示byte。",
+            "en": "Check bits versus bytes; uppercase B means bytes here."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "理想值与实测差距大",
+            "en": "Ideal and measured values differ"
+          },
+          "fix": {
+            "zh": "检查启动、拓扑、多跳与争用，不能只用理论带宽判断故障。",
+            "en": "Account for startup/topology/hops/contention before diagnosing failure."
+          }
+        }
+      ],
+      "interactive": "transfer-cost"
     },
     {
       "day": 4,
@@ -205,41 +697,211 @@
         "en": "nccl-tests helps evaluate performance and result correctness. A baseline fixes software versions, participating GPUs, message ranges and launch mode, retaining raw output. One successful run is only a starting point: warm-up, repetitions, background load and errors affect interpretation. Establish a reproducible invocation before looking for faster settings."
       },
       "task": {
-        "zh": "按官方 README 编译匹配环境的 nccl-tests。有两张适配 GPU 时运行小规模 AllReduce 基线，重复三次，保存完整日志与命令；硬件不足时提交执行计划。",
-        "en": "Build nccl-tests using its README for your environment. With two compatible GPUs, run a small AllReduce baseline three times and retain commands and full logs. Otherwise submit an execution plan."
+        "zh": "手算1MiB的ring传输项，比较JSON；有两张兼容GPU再按README选做真机例。",
+        "en": "Calculate the1MiB transfer term and compare JSON; run the optional example only with two compatible GPUs."
       },
       "evidence": {
-        "zh": "基线配置、三次原始日志或明确标注的待执行计划。",
-        "en": "Baseline configuration and three raw logs, or a clearly labeled unexecuted plan."
+        "zh": "day04.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day04.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "检查正确性字段和进程退出状态",
-          "环境、设备数、消息范围和重复次数可复现"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Check correctness fields and process exit status",
-          "Record reproducible environment, device count, message range and repetitions"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "阅读测试参数并制作日志记录模板，不生成伪测试输出。",
-        "en": "Study the test arguments and prepare a log template without fabricating output."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "NVIDIA · nccl-tests",
-          "url": "https://github.com/NVIDIA/nccl-tests"
+          "title": "NCCL collective operations",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html"
+        },
+        {
+          "title": "NCCL-tests bandwidth conventions",
+          "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
         }
       ],
-      "code": {
-        "language": "bash",
-        "content": "# After building nccl-tests for a compatible two-GPU environment:\n./build/all_reduce_perf -b 8 -e 128M -f 2 -g 2",
-        "caption": {
-          "zh": "两张 GPU 的示例命令；编译方式与环境变量按所用版本的 README 配置。",
-          "en": "Example for two GPUs; configure compilation and environment for your chosen release."
+      "explanation": [
+        {
+          "title": {
+            "zh": "用模型建立可核算基线",
+            "en": "Build an auditable model baseline"
+          },
+          "body": {
+            "zh": "ring模型T=2(p−1)α+2(p−1)/p×S/B。p=4、α=5µs、B=25GB/s时，启动部分为30µs。小消息可能由启动开销主导，大消息才逐渐由传输部分主导。",
+            "en": "Use T=2(p−1)α+2(p−1)/p×S/B. With p=4, α=5µs and B=25GB/s, startup is30µs. Startup can dominate small messages while transfer increasingly dominates large ones."
+          }
+        },
+        {
+          "title": {
+            "zh": "真机基线先正确性",
+            "en": "Real baselines begin with correctness"
+          },
+          "body": {
+            "zh": "可选collective_gpu.py固定PyTorch2.6.0，调用NCCL，先预热3次再采样10次，验证每个元素求和结果。输出实际NCCL版本、设备和口径；本平台未运行该GPU脚本。",
+            "en": "Optional collective_gpu.py pins PyTorch2.6.0, invokes NCCL, warms up three times and samples ten while verifying elementwise sums. It reports actual NCCL/device versions and timing scope; it has not been GPU-run here."
+          }
         }
-      }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "4rank、每步α=5µs，ring启动项？",
+            "en": "Ring startup term for4ranks andα=5µs?"
+          },
+          "options": [
+            {
+              "zh": "5µs",
+              "en": "5µs"
+            },
+            {
+              "zh": "20µs",
+              "en": "20µs"
+            },
+            {
+              "zh": "30µs",
+              "en": "30µs"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "2×(4−1)×5=30µs。",
+            "en": "2×(4−1)×5=30µs."
+          }
+        },
+        {
+          "question": {
+            "zh": "GPU测量先验证什么？",
+            "en": "What comes before GPU performance claims?"
+          },
+          "options": [
+            {
+              "zh": "结果正确性",
+              "en": "Result correctness"
+            },
+            {
+              "zh": "宣传加速",
+              "en": "Speedup marketing"
+            },
+            {
+              "zh": "忽略失败",
+              "en": "Ignore failures"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "速度必须对应正确操作。",
+            "en": "Performance must correspond to correct operations."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：运行一次可信的基线",
+          "en": "Lesson flow: Run a credible baseline"
+        },
+        "nodes": [
+          {
+            "zh": "固定rank与payload",
+            "en": "Pin ranks/payload"
+          },
+          {
+            "zh": "正确性与预热",
+            "en": "Correctness and warmup"
+          },
+          {
+            "zh": "重复计时",
+            "en": "Repeat timing"
+          },
+          {
+            "zh": "保存口径与版本",
+            "en": "Save scope and versions"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day4",
+          "expected": {
+            "zh": "rows含3档字节数；每档startup_ms=.03，total≥startup。",
+            "en": "Three message sizes; startup_ms=.03 for each and total≥startup."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "手算1MiB的ring传输项，比较JSON；有两张兼容GPU再按README选做真机例。",
+            "en": "Calculate the1MiB transfer term and compare JSON; run the optional example only with two compatible GPUs."
+          },
+          "command": "python3 -c \"from lab import ring_time; print(ring_time(1048576))\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        },
+        {
+          "title": {
+            "zh": "可选：两GPU真实NCCL运行",
+            "en": "Optional: run actual NCCL on two GPUs"
+          },
+          "body": {
+            "zh": "Linux x86_64、两张兼容NVIDIA GPU、Python3.10–3.12和CUDA12.4兼容驱动。没有设备跳过；不要将代码审查当成GPU运行记录。脚本仅单机。",
+            "en": "Requires Linux x86_64, two compatible NVIDIA GPUs, Python3.10–3.12 and CUDA12.4-compatible drivers. Skip without hardware. Code review is not execution evidence. This example is single-node only."
+          },
+          "command": "python3.12 -m venv .venv\nsource .venv/bin/activate\npython -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124\ntorchrun --standalone --nproc-per-node=2 collective_gpu.py",
+          "expected": {
+            "zh": "正确性断言通过后rank0输出实际nccl版本、bytes/ranks/mean时间和带宽；不规定固定性能值。",
+            "en": "After correctness checks rank0 prints actual NCCL version, bytes/ranks/mean time and bandwidth; no fixed performance is promised."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把模型输出当真实延迟",
+            "en": "Model output labeled measured"
+          },
+          "fix": {
+            "zh": "保留synthetic标签，GPU测量独立保存运行环境和原始输出。",
+            "en": "Keep synthetic labels and store real measurements separately."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "CUDA初始化失败",
+            "en": "CUDA initialization fails"
+          },
+          "fix": {
+            "zh": "确认Linux/NVIDIA、两张可见GPU、驱动与cu124匹配；否则继续CPU模型。",
+            "en": "Verify Linux/NVIDIA, two visible GPUs and cu124-compatible drivers, otherwise use the CPU model."
+          }
+        }
+      ],
+      "interactive": "collective-cost"
     },
     {
       "day": 5,
@@ -252,33 +914,196 @@
         "en": "Bandwidth is meaningful only with explicit formulas and units. Algorithm bandwidth relates operation size to elapsed time; bus bandwidth applies a collective-specific conversion to estimate communication work. It is not a direct measurement of one physical cable. Comparisons across rank counts must include the operation and conversion, since equal-looking numbers can represent different transfer work."
       },
       "task": {
-        "zh": "依据 nccl-tests 性能说明，选一行实际日志复算 algbw 与 busbw，解释参与数量的影响。无日志时用明确标注的教学数值演算，禁止称为实测。",
-        "en": "Use the nccl-tests performance guide to recompute algbw and busbw from one real log row and explain the participant-count effect. Without a log, label every illustrative number as a worked example."
+        "zh": "独立实现student.bus_bandwidth，覆盖2/4rank、零字节与非法时间。",
+        "en": "Implement student.bus_bandwidth for2/4ranks, zero bytes and invalid elapsed time."
       },
       "evidence": {
-        "zh": "带单位的复算笔记与一张指标含义对照表。",
-        "en": "A calculation note with units and a metric interpretation table."
+        "zh": "day05.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day05.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "公式与对应 collective 一致",
-          "示例值和实测值明确区分"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Use the conversion for the correct collective",
-          "Distinguish illustrative values from measurements"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "完成手算与单位检查即可；教学数值不得进入性能宣传。",
-        "en": "Complete a worked example and unit checks; do not present illustrative values as performance claims."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "nccl-tests · Performance metrics",
+          "title": "NCCL collective operations",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html"
+        },
+        {
+          "title": "NCCL-tests bandwidth conventions",
           "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "algbw按应用消息计",
+            "en": "Algorithm bandwidth counts message bytes"
+          },
+          "body": {
+            "zh": "algbw=S/t，使用应用payload字节数除以一次操作耗时。100,000,000bytes、10ms得到10GB/s。它没有乘rank数，也不是所有链路累计传输字节。",
+            "en": "algbw=S/t uses application payload bytes divided by operation time.100,000,000bytes over10ms gives10GB/s. It is neither multiplied by rank count nor total traffic across all links."
+          }
+        },
+        {
+          "title": {
+            "zh": "busbw用于通信流量归一化",
+            "en": "Bus bandwidth normalizes traffic"
+          },
+          "body": {
+            "zh": "NCCL-tests对AllReduce使用busbw=algbw×2(p−1)/p。4rank系数1.5，所以15GB/s；2rank系数1。它是统计口径换算，并非又测了一条更快的网络。",
+            "en": "NCCL-tests normalizes AllReduce as busbw=algbw×2(p−1)/p. Four ranks give factor1.5, hence15GB/s; two ranks give factor1. This is a convention conversion, not another faster network measurement."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "algbw=10、4rank，busbw是多少？",
+            "en": "algbw10 on4ranks gives busbw?"
+          },
+          "options": [
+            {
+              "zh": "10",
+              "en": "10"
+            },
+            {
+              "zh": "15",
+              "en": "15"
+            },
+            {
+              "zh": "40",
+              "en": "40"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "乘2×3/4=1.5。",
+            "en": "Multiply by2×3/4=1.5."
+          }
+        },
+        {
+          "question": {
+            "zh": "busbw高于algbw说明什么？",
+            "en": "What does busbw exceeding algbw mean?"
+          },
+          "options": [
+            {
+              "zh": "测到另一条网络",
+              "en": "A different network measured"
+            },
+            {
+              "zh": "使用归一化系数",
+              "en": "A normalization factor applied"
+            },
+            {
+              "zh": "必然计算错误",
+              "en": "Necessarily a bug"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "两者是同一操作的不同统计口径。",
+            "en": "They are two conventions for the same operation."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：区分算法带宽与总线带宽",
+          "en": "Lesson flow: Interpret algorithm and bus bandwidth"
+        },
+        "nodes": [
+          {
+            "zh": "payload字节",
+            "en": "Payload bytes"
+          },
+          {
+            "zh": "耗时转秒",
+            "en": "Convert time to seconds"
+          },
+          {
+            "zh": "计算algbw",
+            "en": "Compute algbw"
+          },
+          {
+            "zh": "归一化busbw",
+            "en": "Normalize busbw"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day5",
+          "expected": {
+            "zh": "algbw_GBs=10，busbw_GBs=15。",
+            "en": "algbw_GBs=10; busbw_GBs=15."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "独立实现student.bus_bandwidth，覆盖2/4rank、零字节与非法时间。",
+            "en": "Implement student.bus_bandwidth for2/4ranks, zero bytes and invalid elapsed time."
+          },
+          "command": "python3 check.py",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "结果差1000倍",
+            "en": "Thousandfold error"
+          },
+          "fix": {
+            "zh": "毫秒先除1000变秒；不要把ms直接放进byte/s公式。",
+            "en": "Convert milliseconds to seconds first."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "对所有collective用相同系数",
+            "en": "One factor used for all collectives"
+          },
+          "fix": {
+            "zh": "AllGather与ReduceScatter等有不同归一化；本函数只针对AllReduce。",
+            "en": "Other collectives have different conventions; this function is AllReduce-only."
+          }
+        }
+      ],
+      "interactive": "collective-cost"
     },
     {
       "day": 6,
@@ -291,37 +1116,196 @@
         "en": "Small messages may be dominated by fixed launch overhead, while larger ones can expose bandwidth and contention; treat that as a hypothesis to verify. Log-spaced sweeps reveal changes across regimes, but retain latency, correctness and variability alongside throughput. The highest bandwidth point is not a representative summary of the entire system."
       },
       "task": {
-        "zh": "固定 GPU 数与测试程序，用倍增消息大小进行扫描；绘制消息大小—延迟和消息大小—带宽两张图，并标注三次运行的范围。",
-        "en": "Hold GPU count and test program fixed and sweep doubling message sizes. Plot size versus latency and size versus bandwidth, with the range across three runs."
+        "zh": "把α加倍，观察小消息与大消息相对变化；明确此变化由模型假设导致。",
+        "en": "Double α and compare relative changes for small/large messages; attribute them to model assumptions."
       },
       "evidence": {
-        "zh": "两张图、原始数据与小/大消息区间解释。",
-        "en": "Two plots, raw data and an explanation of small- and large-message regimes."
+        "zh": "day06.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day06.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "坐标轴、单位与重复次数齐全",
-          "失败样本没有被静默删除"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Include axes, units and repetition counts",
-          "Do not silently remove failures"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "为公开示例日志写解析与绘图脚本，注明数据出处与非本人实测。",
-        "en": "Write a parser and plotting script for cited public sample logs; state that you did not measure them."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "NVIDIA · nccl-tests",
-          "url": "https://github.com/NVIDIA/nccl-tests"
+          "title": "NCCL collective operations",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html"
         },
         {
-          "title": "nccl-tests · Performance metrics",
+          "title": "NCCL-tests bandwidth conventions",
           "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "按大小扫描而非单点排名",
+            "en": "Sweep message size"
+          },
+          "body": {
+            "zh": "同一α/β模型下，1KiB启动30µs，传输项很小；64MiB传输成本明显。用多档大小画延迟曲线，才能看出不同区域。固定字节单位和rank数，避免把两个变量一起改变。",
+            "en": "With fixed α/β, a1KiB message is mostly30µs startup;64MiB has substantial transfer cost. A size sweep exposes regimes. Keep byte units and rank count fixed rather than changing two variables together."
+          }
+        },
+        {
+          "title": {
+            "zh": "真实算法可能切换",
+            "en": "Real algorithms may change"
+          },
+          "body": {
+            "zh": "NCCL可以选择不同算法和协议，不保证所有区间都服从这个ring公式。实测曲线的拐点可能来自算法、拓扑或拥塞；先保存参数和日志，再提出可证伪的解释。",
+            "en": "NCCL may select different algorithms/protocols; one ring equation need not fit every regime. Measured bends can reflect algorithms, topology or congestion. Preserve parameters/logs before proposing explanations."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "增大α更明显影响哪个相对开销？",
+            "en": "Larger α most affects which relative overhead?"
+          },
+          "options": [
+            {
+              "zh": "小消息启动占比",
+              "en": "Small-message startup fraction"
+            },
+            {
+              "zh": "dtype大小自动减半",
+              "en": "Dtype automatically halves"
+            },
+            {
+              "zh": "rank编号",
+              "en": "Rank numbering"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "小消息传输项小，固定成本占比高。",
+            "en": "Small transfers have less payload cost."
+          }
+        },
+        {
+          "question": {
+            "zh": "实际NCCL一定一直用ring吗？",
+            "en": "Does NCCL always use ring?"
+          },
+          "options": [
+            {
+              "zh": "是",
+              "en": "Yes"
+            },
+            {
+              "zh": "否，可能选其他算法/协议",
+              "en": "No, algorithms/protocols may differ"
+            },
+            {
+              "zh": "只有CPU会变",
+              "en": "Only CPUs vary"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "模型不是算法选择承诺。",
+            "en": "The model is not an algorithm-selection guarantee."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：扫描消息大小，识别不同区间",
+          "en": "Lesson flow: Sweep message sizes and identify regimes"
+        },
+        "nodes": [
+          {
+            "zh": "固定rank",
+            "en": "Fix ranks"
+          },
+          {
+            "zh": "扫描消息",
+            "en": "Sweep size"
+          },
+          {
+            "zh": "拆启动/传输",
+            "en": "Separate startup/transfer"
+          },
+          {
+            "zh": "解释曲线",
+            "en": "Explain curve"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day6",
+          "expected": {
+            "zh": "4档消息，每档startup=.03ms；transfer随字节数线性增加。",
+            "en": "Four sizes, startup=.03ms each; transfer grows linearly with bytes."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "把α加倍，观察小消息与大消息相对变化；明确此变化由模型假设导致。",
+            "en": "Double α and compare relative changes for small/large messages; attribute them to model assumptions."
+          },
+          "command": "python3 -c \"from lab import ring_time; print(ring_time(1024,alpha_us=10))\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "只保留最快一档",
+            "en": "Keeping only the fastest point"
+          },
+          "fix": {
+            "zh": "保存整个扫描及失败；不同payload不能直接做速度排名。",
+            "en": "Retain the full sweep and failures; different payloads are not directly comparable."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "曲线拐点就断言NCCL缺陷",
+            "en": "A bend called an NCCL bug"
+          },
+          "fix": {
+            "zh": "先控制变量、检查算法与环境，再做小规模复现。",
+            "en": "Control variables, inspect algorithms/environment and reproduce narrowly."
+          }
+        }
+      ],
+      "interactive": "collective-cost"
     },
     {
       "day": 7,
@@ -334,37 +1318,196 @@
         "en": "Submitting work to a CUDA stream does not mean it has completed. Communication–compute overlap depends on dependencies, submission order and resource contention; more streams do not guarantee better performance. Group calls organize communication operations but have semantics that must match your version. Draw dependencies first, then use a timeline to test whether overlap reduces end-to-end time."
       },
       "task": {
-        "zh": "阅读 stream 与 group 调用说明，画出一段训练迭代的计算/同步依赖图。若有工具与硬件，比较串行与允许重叠的最小实验；保留正确性对照。",
-        "en": "Read stream and group-call guidance and draw compute/synchronization dependencies for a training iteration. With appropriate hardware and tools, compare a serialized and overlap-enabled minimal experiment, preserving correctness checks."
+        "zh": "画一个无法重叠的依赖例与一个可部分重叠的例，分别标注已知和假设时间。",
+        "en": "Draw no-overlap and partial-overlap dependencies, marking known versus assumed durations."
       },
       "evidence": {
-        "zh": "依赖图、实验假设和可选的时间线记录。",
-        "en": "A dependency graph, experimental hypothesis and optional timeline evidence."
+        "zh": "day07.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day07.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "解释数据何时可被后续计算安全读取",
-          "端到端时间与局部事件时间分开报告"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Explain when dependent computation may safely read results",
-          "Report end-to-end timing separately from local event timing"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "用时间线纸面推演依赖与可重叠区间，不把示意时间当实测。",
-        "en": "Analyze dependencies and overlap windows on paper without presenting illustrative timing as measured."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "NCCL · CUDA Stream Semantics",
-          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/streams.html"
+          "title": "NCCL collective operations",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html"
         },
         {
-          "title": "NCCL · Group Calls",
-          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/groups.html"
+          "title": "NCCL-tests bandwidth conventions",
+          "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "重叠是上界而非免费加速",
+            "en": "Overlap is a bound"
+          },
+          "body": {
+            "zh": "计算40ms、通信25ms，串行65ms；完全重叠的理想下界为max(40,25)=40ms，加速上界1.625。真实依赖和共享资源可能让它无法达到，不能直接从两段时间相加减得出实测。",
+            "en": "Compute40ms plus communication25ms gives65ms serially. Ideal full overlap lowers this to max(40,25)=40ms, speedup upper bound1.625. Dependencies/resource contention can prevent it; this is not a measured claim."
+          }
+        },
+        {
+          "title": {
+            "zh": "数据就绪限制通信开始",
+            "en": "Readiness constrains start"
+          },
+          "body": {
+            "zh": "如果下一段通信依赖尚未算出的梯度，它就不能提前开始。GPU stream事件可表达依赖，但不同stream并不自动意味着并行。实验报告需画出产生数据、等待、通信和消费数据的顺序。",
+            "en": "Communication cannot start before required gradients exist. Stream events express dependencies; different streams do not automatically run concurrently. Diagram data production, waits, communication and consumption."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "40ms与25ms理想完全重叠下界？",
+            "en": "Ideal overlap lower bound for40ms and25ms?"
+          },
+          "options": [
+            {
+              "zh": "15ms",
+              "en": "15ms"
+            },
+            {
+              "zh": "40ms",
+              "en": "40ms"
+            },
+            {
+              "zh": "65ms",
+              "en": "65ms"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "理想下界为较长者。",
+            "en": "The ideal lower bound is the longer operation."
+          }
+        },
+        {
+          "question": {
+            "zh": "不同stream一定并行吗？",
+            "en": "Do different streams guarantee parallel execution?"
+          },
+          "options": [
+            {
+              "zh": "是",
+              "en": "Yes"
+            },
+            {
+              "zh": "否，依赖和资源会限制",
+              "en": "No; dependencies/resources constrain it"
+            },
+            {
+              "zh": "与GPU无关",
+              "en": "GPU does not matter"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "需trace验证。",
+            "en": "Validate with execution traces."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：通信与计算的时间关系",
+          "en": "Lesson flow: Understand communication–compute ordering"
+        },
+        "nodes": [
+          {
+            "zh": "生成数据",
+            "en": "Produce data"
+          },
+          {
+            "zh": "依赖就绪",
+            "en": "Dependencies ready"
+          },
+          {
+            "zh": "计算/通信重叠",
+            "en": "Overlap compute/comm"
+          },
+          {
+            "zh": "同步消费",
+            "en": "Synchronize consumption"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day7",
+          "expected": {
+            "zh": "sequential=65ms，ideal_full_overlap=40ms，上界speedup=1.625。",
+            "en": "Serial65ms, ideal overlap40ms, speedup bound1.625."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "画一个无法重叠的依赖例与一个可部分重叠的例，分别标注已知和假设时间。",
+            "en": "Draw no-overlap and partial-overlap dependencies, marking known versus assumed durations."
+          },
+          "command": "python3 -c \"print({'serial':40+25,'ideal':max(40,25)})\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把两个stream当作自动重叠",
+            "en": "Two streams assumed to overlap"
+          },
+          "fix": {
+            "zh": "检查依赖事件、同步调用和资源争用；需要实际trace。",
+            "en": "Inspect dependencies, synchronization and resource contention with a trace."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "为了计时删掉必要同步",
+            "en": "Required synchronization removed"
+          },
+          "fix": {
+            "zh": "保持正确的数据依赖；变快但读到旧结果不成立。",
+            "en": "Preserve data dependencies; stale outputs invalidate speed claims."
+          }
+        }
+      ],
+      "interactive": "overlap-bound"
     },
     {
       "day": 8,
@@ -377,37 +1520,196 @@
         "en": "Gradient synchronization in data parallelism, layer communication in tensor parallelism and cache transfers need not use the same pattern. Microbenchmarks help characterize communication limits but do not replace model-level evaluation. Frameworks may choose backends or bucket tensors differently. Explain semantics and data volume rather than labeling every slowdown as a network problem."
       },
       "task": {
-        "zh": "从自己的 PyTorch 分布式或推理阅读记录中选一个场景，画出 collective/point-to-point 调用与张量大小，解释怎样把微基准结果用于提出下一次实验。",
-        "en": "Choose a PyTorch distributed or inference scenario and map collectives or point-to-point operations to tensor sizes. Explain how a microbenchmark informs the next experiment."
+        "zh": "给融合添加0.2ms等待成本，判断是否仍有收益并解释反例。",
+        "en": "Add .2ms readiness waiting to fusion and determine whether it still helps."
       },
       "evidence": {
-        "zh": "工作负载—通信模式映射与端到端验证计划。",
-        "en": "A workload-to-communication map and end-to-end validation plan."
+        "zh": "day08.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day08.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "指出一个微基准无法回答的问题",
-          "不把 NCCL 与 KV cache 存储系统混为一谈"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Name a question the microbenchmark cannot answer",
-          "Distinguish NCCL from a KV-cache storage system"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "用小张量 CPU 模拟验证数据流，明确与实际 NCCL 路径的区别。",
-        "en": "Validate data flow with small CPU tensor simulations and explain how they differ from NCCL."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "PyTorch · Distributed communication",
-          "url": "https://docs.pytorch.org/docs/stable/distributed.html"
+          "title": "NCCL collective operations",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html"
         },
         {
-          "title": "NCCL · Point-to-point Communication",
-          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/p2p.html"
+          "title": "NCCL-tests bandwidth conventions",
+          "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "融合减少启动次数",
+            "en": "Fusion reduces startup count"
+          },
+          "body": {
+            "zh": "四个1MiB调用与一个4MiB调用具有相同payload总量，在本模型里传输项相同；四次调用多付三次30µs启动，所以融合节省90µs。结果只对所声明模型成立。",
+            "en": "Four1MiB calls and one4MiB call carry equal total payload. This model has the same transfer cost but three extra30µs startups, so fusion saves90µs. The conclusion is limited to the declared model."
+          }
+        },
+        {
+          "title": {
+            "zh": "更大bucket也有等待成本",
+            "en": "Larger buckets can wait longer"
+          },
+          "body": {
+            "zh": "训练中要等更多梯度就绪才能发出大bucket，可能失去通信计算重叠。推理中的通信粒度和关键路径也不同。优化要比较端到端步骤，而不只是孤立collective耗时。",
+            "en": "Larger training buckets may wait for more gradients and lose overlap. Inference has different granularity and critical paths. Compare end-to-end steps, not only isolated collective latency."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "四次调用比一次多几个启动项？",
+            "en": "How many extra startups for four calls versus one?"
+          },
+          "options": [
+            {
+              "zh": "1",
+              "en": "1"
+            },
+            {
+              "zh": "3",
+              "en": "3"
+            },
+            {
+              "zh": "4",
+              "en": "4"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "4−1=3，当前每次30µs。",
+            "en": "4−1=3; each startup here is30µs."
+          }
+        },
+        {
+          "question": {
+            "zh": "大bucket的一个潜在代价？",
+            "en": "A potential cost of larger buckets?"
+          },
+          "options": [
+            {
+              "zh": "等待更多梯度就绪",
+              "en": "Waiting for more gradients"
+            },
+            {
+              "zh": "永远零等待",
+              "en": "Always zero wait"
+            },
+            {
+              "zh": "无需正确性",
+              "en": "No correctness needed"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "等待可能抵消启动节省。",
+            "en": "Readiness delays can offset startup savings."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：把通信问题放回训练与推理",
+          "en": "Lesson flow: Connect collectives to model workloads"
+        },
+        "nodes": [
+          {
+            "zh": "小调用成本",
+            "en": "Small-call costs"
+          },
+          {
+            "zh": "合并payload",
+            "en": "Combine payload"
+          },
+          {
+            "zh": "等待全部就绪",
+            "en": "Wait for readiness"
+          },
+          {
+            "zh": "比较端到端",
+            "en": "Compare end-to-end"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day8",
+          "expected": {
+            "zh": "unfused−fused≈0.09ms，相同payload=4194304字节。",
+            "en": "unfused−fused≈.09ms; same payload=4194304bytes."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "给融合添加0.2ms等待成本，判断是否仍有收益并解释反例。",
+            "en": "Add .2ms readiness waiting to fusion and determine whether it still helps."
+          },
+          "command": "python3 -c \"from lab import experiment; r=experiment(8); print(r['fused_1_call_ms']+.2 > r['unfused_4_calls_ms'])\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "融合必然更快",
+            "en": "Fusion assumed always faster"
+          },
+          "fix": {
+            "zh": "加入梯度就绪等待与重叠影响，比较整步。",
+            "en": "Include readiness/overlap costs and compare whole steps."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "消息总量不同却比较",
+            "en": "Different total payloads compared"
+          },
+          "fix": {
+            "zh": "对齐总字节数和rank布局后再比较调用次数。",
+            "en": "Align total bytes and rank layout before comparing call count."
+          }
+        }
+      ],
+      "interactive": "collective-cost"
     },
     {
       "day": 9,
@@ -420,35 +1722,193 @@
         "en": "Start diagnosis with participants, versions, devices and connectivity before tuning. NCCL logs and diagnostics can narrow the problem, but many simultaneous environment-variable changes obscure causes, and semantics may change by release. Change one understood setting at a time, preserve before/after evidence and keep experiments within your authorized lab environment."
       },
       "task": {
-        "zh": "从官方排障入口选一个与实际环境有关的故障类别，写排查决策树。有实验条件时复现一种可恢复错误；没有时分析公开错误示例。",
-        "en": "Choose a relevant category from the official troubleshooting guide and write a diagnostic decision tree. Reproduce one recoverable lab error if possible, or analyze a public error example."
+        "zh": "写一份故障树，分别列启动、协议、设备、网络的证据，不故意挂起真实通信。",
+        "en": "Write an evidence-based fault tree for launch/protocol/device/network without hanging real collectives."
       },
       "evidence": {
-        "zh": "排查树与包含环境、现象、证据、结论的诊断报告。",
-        "en": "A decision tree and diagnostic report covering environment, symptoms, evidence and conclusion."
+        "zh": "day09.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day09.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "每项环境变量变更说明目的与适用版本",
-          "恢复设置后能回到原始基线"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Explain the purpose and release applicability of each variable change",
-          "Restore the original baseline after the experiment"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "写文档案例分析并注明未在真实集群复现，不索取或编造内部日志。",
-        "en": "Analyze a documented case and mark it as not reproduced on a real cluster."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "NCCL · Troubleshooting",
-          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html"
+          "title": "NCCL collective operations",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html"
         },
         {
-          "title": "NCCL · Environment Variables",
-          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html"
+          "title": "NCCL-tests bandwidth conventions",
+          "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先排除协议不匹配",
+            "en": "Rule out protocol mismatches"
+          },
+          "body": {
+            "zh": "CPU实验拒绝[[1,2],[3]]，因为每rank元素个数不同。真实collective还要求dtype与调用顺序兼容。让所有rank输出step标签和shape，比直接改网络参数更容易定位逻辑错误。",
+            "en": "The CPU exercise rejects [[1,2],[3]] because counts differ. Real collectives also need compatible dtype and call order. Per-rank step/shape logs often expose logic errors before network tuning."
+          }
+        },
+        {
+          "title": {
+            "zh": "从小范围扩展",
+            "en": "Expand from a small scope"
+          },
+          "body": {
+            "zh": "先单节点、少rank、小消息验证正确性，再增加消息或节点，每次只变一个因素。超时不是证明网络有问题；缺rank、设备映射和未进入调用都可能造成等待。",
+            "en": "Start with one node, few ranks and small messages. Expand one variable at a time. A timeout alone does not prove a network fault: missing ranks, device mapping or missed calls can cause waits."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "不同count应如何处理？",
+            "en": "How should incompatible counts be handled?"
+          },
+          "options": [
+            {
+              "zh": "先离线检测并修复",
+              "en": "Detect/fix offline first"
+            },
+            {
+              "zh": "故意在GPU上挂起",
+              "en": "Deliberately hang GPUs"
+            },
+            {
+              "zh": "忽略",
+              "en": "Ignore"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "在可控环境验证输入协议。",
+            "en": "Validate the protocol safely and deterministically."
+          }
+        },
+        {
+          "question": {
+            "zh": "超时能唯一定位网络吗？",
+            "en": "Does timeout uniquely identify a network problem?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能",
+              "en": "No"
+            },
+            {
+              "zh": "只看rank0即可",
+              "en": "Only rank0 needed"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "参与者和程序逻辑同样可能导致等待。",
+            "en": "Participation and program logic can also cause waiting."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：用最少变量排查一次问题",
+          "en": "Lesson flow: Diagnose a problem with controlled changes"
+        },
+        "nodes": [
+          {
+            "zh": "rank/device检查",
+            "en": "Check rank/device"
+          },
+          {
+            "zh": "count/dtype/order",
+            "en": "Check protocol"
+          },
+          {
+            "zh": "小样本复现",
+            "en": "Small reproduction"
+          },
+          {
+            "zh": "再查拓扑日志",
+            "en": "Then topology/logs"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day9",
+          "expected": {
+            "zh": "count_mismatch_detected=true；兼容输入输出[[4,6],[4,6]]。",
+            "en": "Mismatch detected=true; compatible outputs=[[4,6],[4,6]]."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "写一份故障树，分别列启动、协议、设备、网络的证据，不故意挂起真实通信。",
+            "en": "Write an evidence-based fault tree for launch/protocol/device/network without hanging real collectives."
+          },
+          "command": "python3 -c \"from lab import allreduce; print(allreduce([[1,2],[3,4]]))\"",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "超时就加超时时间",
+            "en": "Increasing timeout as the only fix"
+          },
+          "fix": {
+            "zh": "确认每rank到达相同调用、shape/dtype一致；扩大超时只会延后暴露问题。",
+            "en": "Verify participation and compatibility; increasing timeout may only delay discovery."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "日志缺少rank信息",
+            "en": "Logs have no rank context"
+          },
+          "fix": {
+            "zh": "每条日志加入host、rank、local rank和step，便于对齐。",
+            "en": "Include host, rank, local rank and step to align logs."
+          }
         }
       ]
     },
@@ -463,43 +1923,206 @@
         "en": "A performance report is valuable when its calculations and conclusions can be questioned and reproduced. Limit claims to the recorded topology, device count, software versions, message range and workload. Include raw data, formulas and repeated-run ranges. Without multiple GPUs, a semantic implementation and experiment design are valid deliverables, but they are different from hardware measurements."
       },
       "task": {
-        "zh": "整理十天成果，写一页摘要：场景、方法、观察、局限与下一步。附可运行的分析脚本，邀请同伴复算一行结果或检查一项语义测试。",
-        "en": "Assemble the ten-day work into a one-page summary of scenario, methods, observations, limits and next steps. Include analysis scripts and invite a peer to recompute one result or check one semantic test."
+        "zh": "重算一组带宽并解释单位，完成自己的挑战，把未运行的GPU步骤列为待验证。",
+        "en": "Recompute one bandwidth result, pass your own challenge and mark unrun GPU steps pending."
       },
       "evidence": {
-        "zh": "可复现通信实验报告，或明确标注的无 GPU 分析与设计作品。",
-        "en": "A reproducible communication report, or a clearly labeled CPU-only analysis and design portfolio."
+        "zh": "day10.json（结课为final-work/REPORT.md与manifest.csv）、自己的参数/代码修改、计算过程与测验解释。",
+        "en": "day10.json (final-work/REPORT.md and manifest.csv for the final day), your parameter/code changes, calculations and quiz reasoning."
       },
       "checklist": {
         "zh": [
-          "结论没有超出实际测量条件",
-          "原始数据、公式与图表可以互相对应",
-          "至少有一项失败或未解决问题被记录"
+          "命令已运行且预期数值或边界吻合",
+          "完成一次个人修改/反例，并解释其原因",
+          "区分CPU模型、真实框架执行和未运行的步骤"
         ],
         "en": [
-          "Keep conclusions within measured conditions",
-          "Link raw data, formulas and plots consistently",
-          "Record at least one failure or unresolved question"
+          "Run the command and match expected values or boundaries",
+          "Complete and explain one personal change or counterexample",
+          "Distinguish CPU models, real framework runs and unexecuted steps"
         ]
       },
       "noGpu": {
-        "zh": "交付 CPU 语义测试、指标复算工具、拓扑分析与待执行硬件计划。",
-        "en": "Deliver CPU semantic tests, metric-calculation tools, topology analysis and an unexecuted hardware plan."
+        "zh": "完整CPU路线不需要GPU：下载实验包并运行lab.py。真实框架脚本是选做；未运行时请保留待验证标签，不能把模型毫秒值写成GPU性能。",
+        "en": "The complete CPU path needs no GPU: download the pack and run lab.py. Real-framework scripts are optional; mark unrun work pending and do not label model times as GPU performance."
       },
       "reading": [
         {
-          "title": "NVIDIA · nccl-tests",
-          "url": "https://github.com/NVIDIA/nccl-tests"
+          "title": "NCCL collective operations",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html"
         },
         {
-          "title": "nccl-tests · Performance metrics",
+          "title": "NCCL-tests bandwidth conventions",
           "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "报告必须可重算",
+            "en": "Reports must be recomputable"
+          },
+          "body": {
+            "zh": "保留payload字节、rank数、耗时单位及带宽公式，让别人从原始数据重算algbw/busbw。CPU模型报告还需列α和B假设，不能只给一张没有单位的性能图。",
+            "en": "Keep payload bytes, ranks, timing units and bandwidth conventions so algbw/busbw can be recomputed. CPU model reports also need α/B assumptions, not an unlabeled performance chart."
+          }
         },
         {
-          "title": "NCCL · Troubleshooting",
-          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html"
+          "title": {
+            "zh": "将语义、模型、实测分开",
+            "en": "Separate semantics/model/measurement"
+          },
+          "body": {
+            "zh": "结课生成9个JSON与manifest，学生填写独立带宽函数、消息扫描与融合反例。实际GPU脚本仅在你成功运行后形成measured证据，须同时保存设备拓扑、版本和样本。",
+            "en": "The final export contains nine JSON files and a manifest. Add your independent bandwidth function, size sweep and fusion counterexample. Hardware becomes measured evidence only after a successful run with topology, versions and samples preserved."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "重算带宽最少需哪些字段？",
+            "en": "What inputs are needed to recompute bandwidth?"
+          },
+          "options": [
+            {
+              "zh": "字节、耗时、rank与口径",
+              "en": "Bytes,time,ranks,convention"
+            },
+            {
+              "zh": "截图颜色",
+              "en": "Chart color"
+            },
+            {
+              "zh": "仓库star数",
+              "en": "Repository stars"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "必须保留单位和归一化定义。",
+            "en": "Units and normalization are essential."
+          }
+        },
+        {
+          "question": {
+            "zh": "未跑GPU的报告该怎么标？",
+            "en": "How should an unrun-GPU report be labeled?"
+          },
+          "options": [
+            {
+              "zh": "实测NCCL性能",
+              "en": "Measured NCCL performance"
+            },
+            {
+              "zh": "CPU语义/模型与待验证计划",
+              "en": "CPU semantics/model and pending plan"
+            },
+            {
+              "zh": "生产认证",
+              "en": "Production certification"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "课程结论必须对应证据。",
+            "en": "Claims must match evidence."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "本课流程：完成一份可信的通信性能报告",
+          "en": "Lesson flow: Publish a credible communication report"
+        },
+        "nodes": [
+          {
+            "zh": "验证语义",
+            "en": "Verify semantics"
+          },
+          {
+            "zh": "验收个人函数",
+            "en": "Check own function"
+          },
+          {
+            "zh": "保存原始证据",
+            "en": "Save raw evidence"
+          },
+          {
+            "zh": "解释适用范围",
+            "en": "Explain scope"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑流程示意；CPU语义/成本模型不代表真实GPU调度、内存布局或吞吐。",
+          "en": "Logical flow only: CPU semantics/cost models do not establish GPU scheduling, layout or throughput."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并核对本日实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "沿用第1天解压后的实验目录。先手算本页算例，再执行命令并保留JSON。",
+            "en": "Use the extracted lab directory from day1. Hand-calculate the example, run the command and retain the JSON."
+          },
+          "command": "python3 lab.py day10 --out final-work",
+          "expected": {
+            "zh": "生成REPORT.md、manifest.csv和9个day JSON，TODO需要个人填写。",
+            "en": "REPORT.md, manifest.csv and nine daily JSON files; fill personal TODOs."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立修改与边界挑战",
+            "en": "Independent modification and boundary challenge"
+          },
+          "body": {
+            "zh": "重算一组带宽并解释单位，完成自己的挑战，把未运行的GPU步骤列为待验证。",
+            "en": "Recompute one bandwidth result, pass your own challenge and mark unrun GPU steps pending."
+          },
+          "command": "python3 check.py",
+          "expected": {
+            "zh": "按本页算例核对。check.py初次显示NOT YET，完成student.py后应PASS；--reference仅验证参考解法。记录自己修改后的结果与解释。",
+            "en": "Check against today’s worked example. check.py initially says NOT YET; complete student.py for your own PASS. --reference checks only the supplied solution. Record your changed result and reasoning."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "只有busbw没有原始值",
+            "en": "busbw without raw values"
+          },
+          "fix": {
+            "zh": "补齐字节、时间、rank和公式，才能被复核。",
+            "en": "Add bytes/time/ranks/formula for verification."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "参考解法当个人贡献",
+            "en": "Reference solution claimed as own"
+          },
+          "fix": {
+            "zh": "保留自己的实现diff、测试与反例，说明引用的示例。",
+            "en": "Include your own diff/tests/counterexamples and identify supplied examples."
+          }
         }
       ]
     }
-  ]
+  ],
+  "lab": {
+    "path": "nccl",
+    "title": {
+      "zh": "下载逐日实验与独立挑战",
+      "en": "Download daily labs and independent challenges"
+    },
+    "description": {
+      "zh": "Python 3.9+ 标准库CPU实验；解压后在 nccl 目录执行。另附真实框架可选示例与明确环境，GPU示例未在平台真机运行。",
+      "en": "Python 3.9+ standard-library CPU labs. Extract and run inside nccl. Optional real-framework examples include explicit environments; GPU examples are not hardware-tested here."
+    }
+  }
 }

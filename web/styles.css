@@ -2816,6 +2816,8 @@ body:has(dialog[open]) {
   .site-header nav {
     gap: 10px;
     font-size: 11px;
+    flex-wrap: wrap;
+    min-width: 0;
   }
 
   .site-header nav a[href^="mailto:"] {
@@ -3427,4 +3429,20 @@ body:has(dialog[open]) {
 
 /* Featured guided courses. */
 .guided-start { margin-bottom: 24px; border-color: #c9d9b6; background: #eff5e5; }
+.curriculum-note { color: var(--muted); max-width: 850px; line-height: 1.9; margin: 24px 0; }
+.curriculum-controls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; padding: 22px; margin-bottom: 20px; border: 1px solid var(--line); border-radius: 14px; background: #edf3e7; }
+.curriculum-controls label { display: block; margin-bottom: 10px; font-size: 13px; font-weight: 700; }
+.curriculum-controls select { width: 100%; min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 7px; background: white; color: var(--ink); font: inherit; font-size: 13px; }
+.path-core { padding-top: 8px; font-size: 12px; }
+.path-core strong { color: #3f652e; }
+.path-electives { padding: 12px 0; border-top: 1px solid var(--line); margin-bottom: 12px; font-size: 12px; }
+.path-electives summary { cursor: pointer; color: #42657a; font-weight: 650; }
+.path-card.is-selected { border-color: #698b57; box-shadow: inset 0 0 0 1px #698b57; }
+.requirement-label { align-self: flex-start; display: inline-block; padding: 5px 8px; margin-bottom: 12px; border-radius: 5px; font-size: 11px; line-height: 1.7; }
+.requirement-label.required { background: #dfeccf; color: #38552c; }
+.requirement-label.elective { background: #e1edf3; color: #355a72; }
+.course-group-heading { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid var(--line); padding: 18px 0 12px; }
+.course-group-heading h3 { font-size: 23px; margin: 0; }
+.course-group-heading span { color: var(--muted); font-size: 12px; }
+@media (max-width: 620px) { .curriculum-controls { grid-template-columns: 1fr; padding: 16px; } }
 .guided-badge { display: inline-block; padding: 4px 8px; margin-bottom: 9px; border-radius: 5px; background: #e9f1dd; color: #426330; font-size: 10px; font-weight: 750; line-height: 1.7; }

@@ -11,8 +11,8 @@
     "en": "From a local server to caching and scheduling experiments"
   },
   "description": {
-    "zh": "用同一个可复现服务贯穿十天：接口、负载、前缀缓存、调度、量化、HiCache 和 PD 分离。最终交付一份解释性能取舍的工程作品。",
-    "en": "Follow one reproducible service through APIs, workload design, prefix reuse, scheduling, quantization, HiCache and disaggregation. Finish with an engineering portfolio that explains trade-offs."
+    "zh": "10天逐步拆解SGLang：每天有原理图、可运行CPU实验、对照结果、排错和测验。用带原始记录的工程作品连接学习与求职；真实引擎扩展和教学模拟分别说明。",
+    "en": "Ten guided days for SGLang: diagrams, runnable CPU models, controls, troubleshooting and quizzes, culminating in an evidence-backed portfolio. Real-engine extensions are clearly separate from simulations."
   },
   "level": "intermediate",
   "hoursPerDay": {
@@ -24,10 +24,10 @@
     "en": "Python, Linux and HTTP; complete inference foundations and understand prefill/decode and KV cache."
   },
   "hardware": {
-    "zh": "基础分析可用 CPU；真实服务测试需适配设备与可装入的小模型；PD 扩展通常需至少两张兼容 GPU。",
-    "en": "CPU for analysis; compatible hardware and a fitting small model for real serving. PD extensions typically need at least two compatible GPUs."
+    "zh": "CPU教学实验：Python3.9+标准库和普通电脑。真实框架/模型/GPU扩展见实验包README的版本、环境和步骤；当前发布未做GPU实测。",
+    "en": "CPU exercises: Python3.9+ standard library and a laptop. See lab README for versions, environments and steps for real-framework/GPU extensions; this publication did not run GPU benchmarks."
   },
-  "hardwareTier": "gpu-required",
+  "hardwareTier": "gpu-optional",
   "tags": [
     "SGLang",
     "Serving",
@@ -46,11 +46,23 @@
     ]
   },
   "outcome": {
-    "zh": "可复现服务 + 负载与缓存实验 + 性能取舍报告",
-    "en": "A reproducible service, workload/cache experiments and a performance trade-off report"
+    "zh": "一个包含逐日原始JSON、对照CSV、独立函数挑战、文件哈希与个人分析报告的工程作品；清楚区分模拟和真实框架记录。",
+    "en": "A portfolio containing daily raw JSON, comparison CSV, an independent function challenge, file hashes and your analysis, separating simulation from actual framework records."
   },
   "lastVerified": "2026-11-13",
   "resources": [
+    {
+      "title": "SGLang installation",
+      "url": "https://docs.sglang.io/docs/get-started/install"
+    },
+    {
+      "title": "SGLang request tutorial",
+      "url": "https://docs.sglang.io/docs/basic_usage/send_request"
+    },
+    {
+      "title": "SGLang 0.5.23 release",
+      "url": "https://github.com/sgl-project/sglang/releases/tag/v0.5.23"
+    },
     {
       "title": "SGLang · Quickstart",
       "url": "https://docs.sglang.io/docs/get-started/quickstart"
@@ -99,81 +111,405 @@
         "en": "Map the engine and pin the environment"
       },
       "lesson": {
-        "zh": "服务启动成功只证明进程能运行，还没有证明模型、API 和设备配置正确。先把一个请求拆成接收、tokenize、排队、prefill、decode 和输出六段，再标出调度器、KV cache 与执行后端负责的部分。SGLang 的功能覆盖依赖模型和硬件组合；滚动文档中的示例不是你本机的兼容性证明。建立版本清单，是之后每个性能结论能被复现的前提。",
-        "en": "A running process is only the beginning of a working inference service. Separate request handling, tokenization, queueing, prefill, decode and response delivery, then identify which component owns each stage. Feature availability depends on the chosen model, device and execution backend. A command in rolling documentation does not validate your particular combination. A pinned environment manifest lets someone reproduce your result and helps distinguish a model issue from a runtime or configuration issue."
+        "zh": "一个请求依次经过接口适配、tokenizer、调度、执行与响应。SGLang提供其中的推理运行时，模型权重和客户端分别是不同输入与组件。今天的脚本只输出组件地图，尚未启动框架；这样可以先把“哪里坏了”与“哪个参数快”分开。",
+        "en": "A request crosses an API adapter, tokenizer, scheduler, executor and response path. SGLang provides the inference runtime; weights and clients are separate components. Today prints a component map without starting the framework, separating failure location from optimization."
       },
       "task": {
-        "zh": "建立课程仓库，记录 SGLang release/commit、Python、运行时、设备、模型 revision 与使用许可。画一张请求生命周期图，给每个阶段标注输入、输出和可能等待的位置。",
-        "en": "Create a course repository with framework release/commit, Python, runtime, device and model revision. Record model-use permissions. Draw the request lifecycle with inputs, outputs and possible waits."
+        "zh": "给五个组件各写一个输入和输出，指出驱动不兼容与请求字段缺失分别在哪一层发现。",
+        "en": "Write one input/output per component and locate incompatible drivers versus missing request fields."
       },
       "evidence": {
-        "zh": "environment.md、请求流程图，以及三个待验证的性能问题。",
-        "en": "An environment manifest, a request-flow diagram and three testable performance questions."
+        "zh": "day01.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day01.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "版本清单包含模型 revision，不能只写 latest。",
-          "能解释排队时间与模型执行时间的区别。"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "The manifest records a model revision rather than only latest.",
-          "Explain queueing time separately from model execution."
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "用官方源码与文档完成地图；设备栏写“未运行”，列出计划使用的兼容硬件和模型内存预算。",
-        "en": "Build the map from source and docs. Mark execution as not run and record a compatible hardware plan and model-memory budget."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "SGLang · Quickstart",
-          "url": "https://docs.sglang.io/docs/get-started/quickstart"
+          "title": "SGLang installation",
+          "url": "https://docs.sglang.io/docs/get-started/install"
         },
         {
-          "title": "SGLang · Installation",
-          "url": "https://docs.sglang.io/docs/get-started/install"
+          "title": "SGLang request tutorial",
+          "url": "https://docs.sglang.io/docs/basic_usage/send_request"
         }
       ],
-      "day": 1
+      "day": 1,
+      "explanation": [
+        {
+          "title": {
+            "zh": "引擎地图先于参数调优",
+            "en": "Map the engine before tuning"
+          },
+          "body": {
+            "zh": "一个请求依次经过接口适配、tokenizer、调度、执行与响应。SGLang提供其中的推理运行时，模型权重和客户端分别是不同输入与组件。今天的脚本只输出组件地图，尚未启动框架；这样可以先把“哪里坏了”与“哪个参数快”分开。",
+            "en": "A request crosses an API adapter, tokenizer, scheduler, executor and response path. SGLang provides the inference runtime; weights and clients are separate components. Today prints a component map without starting the framework, separating failure location from optimization."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "基线输出五个组件和版本0.5.23。changed情境变成错误模型名：请求应在实际模型执行前被拒绝。不要把返回HTTP错误当成模型推理变慢；也不要把图上的五个框当成五台独立机器。",
+            "en": "The baseline lists five components and release 0.5.23. The changed scenario has an invalid model name: reject it before model execution. An HTTP error is not slow inference, and five logical boxes do not imply five machines."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "引擎地图先于参数调优 · 流程",
+          "en": "Map the engine before tuning · flow"
+        },
+        "nodes": [
+          {
+            "zh": "接口",
+            "en": "API"
+          },
+          {
+            "zh": "分词",
+            "en": "Tokenize"
+          },
+          {
+            "zh": "调度",
+            "en": "Schedule"
+          },
+          {
+            "zh": "执行",
+            "en": "Execute"
+          },
+          {
+            "zh": "响应",
+            "en": "Respond"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "点击上方下载实验包；在终端进入ZIP所在目录后执行下列命令。Windows可右键解压，再在sglang文件夹打开终端，将python3换为py -3。后续每天都在同一个实验目录运行。Python3.9+无需pip安装。",
+            "en": "Download the lab ZIP above and open a terminal in its download directory. Run the commands below. On Windows, extract with the file manager, open a terminal in sglang and replace python3 with py -3. Run subsequent days in this same lab directory. Python3.9+ needs no pip packages."
+          },
+          "command": "unzip sglang.zip\ncd sglang\npython3 --version\npython3 lab.py selfcheck\npython3 lab.py day1 --out out/day01-base",
+          "expected": {
+            "zh": "components 有5项；not_installed_here=true。 文件为out/day01-base/day01.json。",
+            "en": "Five components; not_installed_here=true. File:out/day01-base/day01.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "给五个组件各写一个输入和输出，指出驱动不兼容与请求字段缺失分别在哪一层发现。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Write one input/output per component and locate incompatible drivers versus missing request fields. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day1 --variant changed --out out/day01-changed",
+          "expected": {
+            "zh": "scenario 明确为错误模型名在执行前被拒绝。",
+            "en": "Scenario identifies rejection before execution."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "python3找不到",
+            "en": "python3 is missing"
+          },
+          "fix": {
+            "zh": "使用已安装的Python3.9+；Windows可用py -3，并在后续命令一致替换。",
+            "en": "Use Python 3.9+; on Windows py -3 can replace python3 consistently."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "lab.py找不到",
+            "en": "lab.py is missing"
+          },
+          "fix": {
+            "zh": "先解压实验包，再进入sglang目录；不要在ZIP预览中执行。",
+            "en": "Extract the ZIP and enter sglang; do not run inside an archive preview."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "脚本输出组件地图能证明什么？",
+            "en": "What does the component map prove?"
+          },
+          "options": [
+            {
+              "zh": "已完成GPU压测",
+              "en": "A GPU benchmark passed"
+            },
+            {
+              "zh": "能解释逻辑职责",
+              "en": "You can explain logical responsibilities"
+            },
+            {
+              "zh": "已验证驱动兼容",
+              "en": "Driver compatibility is verified"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "地图描述职责；运行GPU与验证驱动需要另外的真实实验。",
+            "en": "A map describes responsibilities. GPU execution and driver validation require separate experiments."
+          }
+        },
+        {
+          "question": {
+            "zh": "错误模型名应怎样处理？",
+            "en": "How should an invalid model name be handled?"
+          },
+          "options": [
+            {
+              "zh": "在执行前校验并返回错误",
+              "en": "Validate and reject before execution"
+            },
+            {
+              "zh": "自动替换成任何模型",
+              "en": "Silently use any model"
+            },
+            {
+              "zh": "永远重试",
+              "en": "Retry indefinitely"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "明确拒绝保留接口语义，避免客户端误以为获得目标模型结果。",
+            "en": "Explicit rejection preserves API semantics and prevents substitution being mistaken for the requested model."
+          }
+        }
+      ]
     },
     {
       "title": {
-        "zh": "运行最小服务并验证协议",
-        "en": "Serve a model and test the API"
+        "zh": "校验请求协议，再选做真实服务",
+        "en": "Validate requests before optional real serving"
       },
       "lesson": {
-        "zh": "先建立简单可信的基线，再开启优化。选择能放入设备的小模型，用固定输入检查普通请求、流式响应和错误响应。输出看起来合理不等于接口正确：还要检查模型名、结束原因、token 统计及客户端超时。流式数据可能把多个 token 合并到一个网络片段，因此不能直接把每个接收片段当作一个 token 来测量解码速度。",
-        "en": "Start with a small, reproducible baseline before enabling optimizations. Test a normal request, streaming and error handling using fixed inputs. A plausible answer does not establish protocol correctness: model names, finish reasons, usage information and client timeouts also matter. Network chunks can contain several tokens, so timing each received chunk is not automatically a valid inter-token-latency measurement. Keep client-side observation separate from metrics reported by the engine."
+        "zh": "本地协议模型验证JSON对象、模型名和messages中的字符串内容。它只演示请求校验，不生成文本。真实服务的状态码还受具体API与版本影响，所以先固定自己的合约，再将真实响应逐项对照。",
+        "en": "The offline protocol model validates an object, model name and string message content. It does not generate text. Real status codes depend on endpoint/version; establish a contract and then compare actual responses."
       },
       "task": {
-        "zh": "按所选版本官方指南启动服务，仅在本机实验入口发送五类请求：普通、流式、空输入、超长输入、主动取消。记录返回状态与资源是否释放。",
-        "en": "Follow the guide for your pinned release. Send normal, streaming, empty, oversized and cancelled requests to your local test endpoint. Record statuses and whether resources are released."
+        "zh": "自行加入空messages、数字content和正确请求，先预测状态再运行validate_request。真实GPU路线见README，服务与客户端各开一个终端。",
+        "en": "Add empty messages, numeric content and a valid request; predict their status before calling validate_request. See README for the separate server/client GPU terminals."
       },
       "evidence": {
-        "zh": "最小启动配置、脱敏请求样例、五类请求的接口记录。",
-        "en": "A minimal launch configuration, sanitized requests and an API behavior table."
+        "zh": "day02.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day02.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "至少一次普通请求和一次流式请求可重现。",
-          "错误请求有明确结果，取消后没有无限等待。"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Reproduce one normal and one streaming request.",
-          "Invalid and cancelled requests have bounded, documented outcomes."
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "编写请求和预期响应契约，用 Python 标准库建立只返回固定内容的本地模拟服务；明确它不能验证模型计算。",
-        "en": "Write API contracts and a local fixed-response server with the Python standard library. Label it as a protocol exercise, not inference validation."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "SGLang · Quickstart",
-          "url": "https://docs.sglang.io/docs/get-started/quickstart"
+          "title": "SGLang installation",
+          "url": "https://docs.sglang.io/docs/get-started/install"
+        },
+        {
+          "title": "SGLang request tutorial",
+          "url": "https://docs.sglang.io/docs/basic_usage/send_request"
         }
       ],
-      "day": 2
+      "day": 2,
+      "explanation": [
+        {
+          "title": {
+            "zh": "把协议错误变成可复查的记录",
+            "en": "Turn protocol failures into inspectable records"
+          },
+          "body": {
+            "zh": "本地协议模型验证JSON对象、模型名和messages中的字符串内容。它只演示请求校验，不生成文本。真实服务的状态码还受具体API与版本影响，所以先固定自己的合约，再将真实响应逐项对照。",
+            "en": "The offline protocol model validates an object, model name and string message content. It does not generate text. Real status codes depend on endpoint/version; establish a contract and then compare actual responses."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "四种基线分别得到200、404、400、400。changed增加content=null，仍应400。输入验证先于性能计时；失败行也必须留下request_id和错误原因，不可为了好看的平均值删除。",
+            "en": "Baseline cases return 200, 404, 400, 400. The changed null-content case also returns 400. Validate before performance measurement and retain failed IDs and reasons rather than deleting them from statistics."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "把协议错误变成可复查的记录 · 流程",
+          "en": "Turn protocol failures into inspectable records · flow"
+        },
+        "nodes": [
+          {
+            "zh": "请求对象",
+            "en": "Request object"
+          },
+          {
+            "zh": "模型校验",
+            "en": "Model validation"
+          },
+          {
+            "zh": "消息校验",
+            "en": "Message validation"
+          },
+          {
+            "zh": "状态记录",
+            "en": "Status record"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的sglang目录，先阅读lab.py中day2函数，预测结果再运行。",
+            "en": "Inside the extracted sglang directory, read day2 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day2 --out out/day02-base",
+          "expected": {
+            "zh": "status_codes=[200,404,400,400]。 文件为out/day02-base/day02.json。",
+            "en": "status_codes=[200,404,400,400]. File:out/day02-base/day02.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "自行加入空messages、数字content和正确请求，先预测状态再运行validate_request。真实GPU路线见README，服务与客户端各开一个终端。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Add empty messages, numeric content and a valid request; predict their status before calling validate_request. See README for the separate server/client GPU terminals. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day2 --variant changed --out out/day02-changed",
+          "expected": {
+            "zh": "增加第5项400，表示拒绝null内容。",
+            "en": "A fifth 400 rejects null content."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把200当成模型正确",
+            "en": "Treating 200 as model correctness"
+          },
+          "fix": {
+            "zh": "HTTP成功只是传输/协议层证据；另查输出内容、模型标识和实际执行。",
+            "en": "HTTP success concerns the protocol; check output, model identity and actual execution separately."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "真实服务连不上",
+            "en": "Real service connection refused"
+          },
+          "fix": {
+            "zh": "核对README的30000端口，等待终端A成功启动，终端B再请求；CPU脚本没有启动端口。",
+            "en": "Use port 30000, wait for server readiness in A, then request from B. The CPU model opens no port."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "错误模型名在这个模型中返回？",
+            "en": "Which status represents an unknown model here?"
+          },
+          "options": [
+            {
+              "zh": "200",
+              "en": "200"
+            },
+            {
+              "zh": "404",
+              "en": "404"
+            },
+            {
+              "zh": "GPU利用率",
+              "en": "GPU utilization"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "404是本练习定义的未知模型合约；不代表所有接口都采用同一错误码。",
+            "en": "404 is this exercise’s unknown-model contract, not a universal API rule."
+          }
+        },
+        {
+          "question": {
+            "zh": "为什么要保留失败请求？",
+            "en": "Why retain failed requests?"
+          },
+          "options": [
+            {
+              "zh": "它们增加token吞吐",
+              "en": "They increase token throughput"
+            },
+            {
+              "zh": "可以省略分母",
+              "en": "To omit the denominator"
+            },
+            {
+              "zh": "它们影响成功率和可用性",
+              "en": "They affect success rate and availability"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "只统计成功请求的延迟可以，但成功率分母要包含所有提交请求。",
+            "en": "Successful-only latency is useful, but success-rate denominators include all submitted requests."
+          }
+        }
+      ]
     },
     {
       "title": {
@@ -181,38 +517,211 @@
         "en": "Build a comparable workload"
       },
       "lesson": {
-        "zh": "吞吐需要说明是请求数还是输出 token 数，TTFT 则包含用户等待首个 token 的时间。固定并发的闭环客户端会在慢响应时自动降低到达率；固定请求率的开环负载更容易暴露排队压力。二者回答不同问题，不能混在同一条曲线上。还要固定输入输出长度、重复前缀比例、预热方式和失败统计，避免只保留最快的一次。",
-        "en": "Throughput needs a unit: requests per second and output tokens per second are different quantities. TTFT measures a user's wait for the first token. A closed-loop client with fixed concurrency reduces offered load when responses slow down, while an open-loop arrival process exposes queue growth. These workloads answer different questions. Keep prompt/output lengths, shared-prefix ratio, warm-up and failed-request accounting explicit, and report repeated measurements instead of selecting the fastest run."
+        "zh": "短问答与长上下文共享一个总体平均值，会隐藏哪一类受影响。本练习保留类别与样本量，用nearest-rank分位数：排序后取ceil(p×N)位置。小样本的p95常等于最大值，不能据此承诺生产SLO。",
+        "en": "An overall average hides which workload class suffers. Keep classes and counts; nearest-rank percentiles select ceil(p×N) after sorting. With few samples p95 often equals the maximum, insufficient for production SLO claims."
       },
       "task": {
-        "zh": "构造短问答与长输入两组负载。分别运行三档并发或请求率，每组至少重复三次，导出原始记录并绘制 TTFT p50/p95、吞吐和失败率。",
-        "en": "Create short-question and long-input workloads. Sweep three concurrency or arrival-rate settings, repeat each at least three times, and export raw TTFT p50/p95, throughput and error rates."
+        "zh": "将长请求复制10次，检查平均值、p95和每类数量；解释总体指标变化但短请求未变的原因。",
+        "en": "Duplicate long requests ten times; inspect mean, p95 and counts, and explain why aggregate metrics change while short requests do not."
       },
       "evidence": {
-        "zh": "负载生成器、原始 JSONL/CSV、指标定义与基线图表。",
-        "en": "A workload generator, raw JSONL/CSV, metric definitions and baseline plots."
+        "zh": "day03.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day03.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "图表包含单位、样本数、预热和失败处理规则。",
-          "不同配置使用相同请求集合与输出长度约束。"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Plots report units, sample counts, warm-up and error handling.",
-          "Compared configurations use the same request set and output-length constraints."
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "生成带固定随机种子的到达时间与长度分布，再用明确标记的合成延迟练习统计；不得将图表标为 SGLang 性能。",
-        "en": "Generate seeded arrival and length distributions, then practice statistics on explicitly synthetic latency. Do not label those plots as SGLang performance."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "SGLang · Bench Serving",
-          "url": "https://docs.sglang.io/docs/developer_guide/bench_serving"
+          "title": "SGLang installation",
+          "url": "https://docs.sglang.io/docs/get-started/install"
+        },
+        {
+          "title": "SGLang request tutorial",
+          "url": "https://docs.sglang.io/docs/basic_usage/send_request"
         }
       ],
-      "day": 3
+      "day": 3,
+      "explanation": [
+        {
+          "title": {
+            "zh": "分开看不同长度的请求",
+            "en": "Separate workload classes"
+          },
+          "body": {
+            "zh": "短问答与长上下文共享一个总体平均值，会隐藏哪一类受影响。本练习保留类别与样本量，用nearest-rank分位数：排序后取ceil(p×N)位置。小样本的p95常等于最大值，不能据此承诺生产SLO。",
+            "en": "An overall average hides which workload class suffers. Keep classes and counts; nearest-rank percentiles select ceil(p×N) after sorting. With few samples p95 often equals the maximum, insufficient for production SLO claims."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "基线短请求[10,12,14,16]的p95=16，长请求[70,90]的p95=90。changed只给长请求增加110和130，总体p95升到130，短请求仍16；这说明总体变差可能来自流量构成。",
+            "en": "Short requests [10,12,14,16] have p95=16; long [70,90] have p95=90. Adding 110 and 130 only to the long class raises overall p95 to 130 while short p95 stays 16: the mix can explain deterioration."
+          }
+        },
+        {
+          "title": {
+            "zh": "动手调参：连接图解与实验",
+            "en": "Change parameters: connect widget and lab"
+          },
+          "body": {
+            "zh": "拖动排队时间，保持prefill/decode不变，观察TTFT增加而decode本身不变。交互图描述一个请求的分解；本日JSON的P95来自一组请求，两种视角不能混写成同一个统计量。",
+            "en": "Increase queue time while holding prefill/decode fixed: TTFT rises without changing decode work. The widget decomposes one request; the daily JSON summarizes a population with P95. They are different statistics."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "分开看不同长度的请求 · 流程",
+          "en": "Separate workload classes · flow"
+        },
+        "nodes": [
+          {
+            "zh": "标记类别",
+            "en": "Label classes"
+          },
+          {
+            "zh": "保存逐请求记录",
+            "en": "Keep records"
+          },
+          {
+            "zh": "分别排序",
+            "en": "Sort each class"
+          },
+          {
+            "zh": "比较分位数",
+            "en": "Compare percentiles"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的sglang目录，先阅读lab.py中day3函数，预测结果再运行。",
+            "en": "Inside the extracted sglang directory, read day3 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day3 --out out/day03-base",
+          "expected": {
+            "zh": "short_p95_ms=16，long与overall均90。 文件为out/day03-base/day03.json。",
+            "en": "short p95=16; long and overall p95=90. File:out/day03-base/day03.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "将长请求复制10次，检查平均值、p95和每类数量；解释总体指标变化但短请求未变的原因。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Duplicate long requests ten times; inspect mean, p95 and counts, and explain why aggregate metrics change while short requests do not. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day3 --variant changed --out out/day03-changed",
+          "expected": {
+            "zh": "short仍16，long与overall均130，long_count=4。",
+            "en": "Short remains 16; long/overall become130; long_count=4."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把p95写成平均值",
+            "en": "Reporting mean as p95"
+          },
+          "fix": {
+            "zh": "写明nearest-rank算法并手算排序位置，保留样本数。",
+            "en": "State nearest-rank, calculate the sorted index and retain sample counts."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "空样本显示0毫秒",
+            "en": "Empty samples shown as zero latency"
+          },
+          "fix": {
+            "zh": "空样本应为null/无数据；0会被误读为超快响应。",
+            "en": "Use null/no data; zero incorrectly suggests an extremely fast response."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "基线短请求p95是多少？",
+            "en": "What is baseline short-request p95?"
+          },
+          "options": [
+            {
+              "zh": "13 ms",
+              "en": "13 ms"
+            },
+            {
+              "zh": "16 ms",
+              "en": "16 ms"
+            },
+            {
+              "zh": "90 ms",
+              "en": "90 ms"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "ceil(0.95×4)=4，取排序后的第4项16。",
+            "en": "ceil(0.95×4)=4, selecting the fourth sorted value, 16."
+          }
+        },
+        {
+          "question": {
+            "zh": "总体p95变差一定表示每类都变慢吗？",
+            "en": "Does worse aggregate p95 mean every class slowed?"
+          },
+          "options": [
+            {
+              "zh": "不一定，流量比例也会改变",
+              "en": "No, the workload mix can change"
+            },
+            {
+              "zh": "一定",
+              "en": "Always"
+            },
+            {
+              "zh": "只看GPU型号即可",
+              "en": "GPU model alone answers it"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "分组指标与样本量能区分负载构成与组内性能变化。",
+            "en": "Grouped metrics and counts distinguish workload composition from within-class performance changes."
+          }
+        }
+      ],
+      "interactive": "timeline"
     },
     {
       "title": {
@@ -220,124 +729,613 @@
         "en": "Understand token prefixes and eviction"
       },
       "lesson": {
-        "zh": "前缀复用依赖 token 序列及相关计算状态，而不只是人眼看到的相同文字。聊天模板、系统提示或开头一个字符的变化，都可能改变可重用的最长前缀。缓存容量有限，保留热门前缀也有机会成本：为一个长前缀保留的空间可能挤出多个短会话。比较策略时，需要同时观察命中 token 数、占用和端到端延迟。",
-        "en": "Prefix reuse concerns token sequences and compatible computation state, not just visually similar text. Chat templates or a change near the beginning can alter the reusable prefix. Finite cache capacity also creates opportunity costs: one long prefix may displace several shorter sessions. A useful experiment measures reusable tokens, memory pressure and end-to-end latency together. Treat a small prefix simulator as an explanation of the mechanism rather than a faithful replacement for the engine's radix-cache implementation."
+        "zh": "Radix缓存利用token序列的公共前缀；字符相似不等于token相同。本练习先比较人工token ID，再用整项LRU理解容量压力。LRU字典并不是SGLang实际radix树，也没有实现被活动请求锁定的块。",
+        "en": "Radix caching reuses common token prefixes; similar text need not tokenize identically. Compare synthetic token IDs, then use whole-entry LRU to study pressure. This dictionary is not SGLang’s radix tree and does not model pinned active blocks."
       },
       "task": {
-        "zh": "准备完全共享、部分共享、不共享三组提示。固定其他变量，分别从冷缓存和热缓存开始测试；再在固定容量下加入新前缀，观察命中变化。",
-        "en": "Prepare fully shared, partially shared and unrelated prefixes. Test cold and warm states while holding other variables fixed, then add new prefixes under a fixed capacity and observe changes."
+        "zh": "完成student.py的prefix_length；再尝试空数组、完全相同、只共享首项三种边界。",
+        "en": "Implement prefix_length in student.py; test empty, identical and one-token shared-prefix arrays."
       },
       "evidence": {
-        "zh": "token 前缀对照表、冷热实验记录与淘汰现象说明。",
-        "en": "A token-prefix comparison, cold/warm records and an explanation of eviction behavior."
+        "zh": "day04.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day04.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "能指出文本相似但 token 前缀不同的例子。",
-          "说明如何重置缓存，避免把预热当作命中收益。"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Show text similarity that does not preserve the token prefix.",
-          "Document cache reset and distinguish warm-up from cache reuse."
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "用整数 token 列表实现最长公共前缀和容量受限的 LRU，手工追踪一组访问序列；标注这是教学模型。",
-        "en": "Implement longest-common-prefix and bounded LRU over integer token lists. Trace an access sequence and label it an educational model."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "SGLang · Radix Cache Eviction",
-          "url": "https://docs.sglang.io/docs/advanced_features/radix_eviction_policy"
+          "title": "SGLang installation",
+          "url": "https://docs.sglang.io/docs/get-started/install"
+        },
+        {
+          "title": "SGLang request tutorial",
+          "url": "https://docs.sglang.io/docs/basic_usage/send_request"
         }
       ],
-      "code": {
-        "language": "python",
-        "content": "def shared_prefix(a, b):\n    n = 0\n    for left, right in zip(a, b):\n        if left != right:\n            break\n        n += 1\n    return n\n\nbase = [10, 20, 30, 40]\nfor request in ([10, 20, 99], [10, 20, 30, 40], [99, 20, 30]):\n    print(request, shared_prefix(base, request))\n",
+      "day": 4,
+      "explanation": [
+        {
+          "title": {
+            "zh": "前缀匹配与淘汰是两件事",
+            "en": "Prefix matching and eviction are distinct"
+          },
+          "body": {
+            "zh": "Radix缓存利用token序列的公共前缀；字符相似不等于token相同。本练习先比较人工token ID，再用整项LRU理解容量压力。LRU字典并不是SGLang实际radix树，也没有实现被活动请求锁定的块。",
+            "en": "Radix caching reuses common token prefixes; similar text need not tokenize identically. Compare synthetic token IDs, then use whole-entry LRU to study pressure. This dictionary is not SGLang’s radix tree and does not model pinned active blocks."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "A,B,A,C,B在容量2时仅第三次A命中，之后B已淘汰；容量3时最后B也命中。两token序列[10,20,30,40]与[10,20,31]只共享前两个ID。命中意味着可复用状态，不直接意味着decode加速。",
+            "en": "A,B,A,C,B with capacity2 hits only the repeated A; B is later evicted. Capacity3 also retains B. The two supplied token arrays share exactly two IDs. A hit enables reuse but does not directly accelerate decoding."
+          }
+        },
+        {
+          "title": {
+            "zh": "动手调参：连接图解与实验",
+            "en": "Change parameters: connect widget and lab"
+          },
+          "body": {
+            "zh": "在交互图中修改共享前缀比例，再解释为什么整项LRU的命中次数不直接等于token命中比例。实验中的A/B/C是整项缓存键；真正的前缀树可共享部分路径，这正是简化模型的边界。",
+            "en": "Change the shared-prefix fraction and explain why whole-entry LRU hits do not equal token hit ratio. A/B/C are whole-entry keys; a radix tree can share partial paths, which marks the limit of this model."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "前缀匹配与淘汰是两件事 · 流程",
+          "en": "Prefix matching and eviction are distinct · flow"
+        },
+        "nodes": [
+          {
+            "zh": "比较token",
+            "en": "Compare tokens"
+          },
+          {
+            "zh": "查前缀",
+            "en": "Look up prefix"
+          },
+          {
+            "zh": "检查驻留",
+            "en": "Check residency"
+          },
+          {
+            "zh": "锁定或淘汰",
+            "en": "Pin or evict"
+          }
+        ],
         "caption": {
-          "zh": "CPU 教学示例：整数代表 token id，不模拟实际缓存吞吐。",
-          "en": "CPU teaching example: integers represent token IDs; this is not a cache-performance model."
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
         }
       },
-      "day": 4
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的sglang目录，先阅读lab.py中day4函数，预测结果再运行。",
+            "en": "Inside the extracted sglang directory, read day4 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day4 --out out/day04-base",
+          "expected": {
+            "zh": "common_prefix_tokens=2，hits=1，trace记录每次淘汰。 文件为out/day04-base/day04.json。",
+            "en": "common_prefix_tokens=2; hits=1; trace records evictions. File:out/day04-base/day04.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "完成student.py的prefix_length；再尝试空数组、完全相同、只共享首项三种边界。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Implement prefix_length in student.py; test empty, identical and one-token shared-prefix arrays. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day4 --variant changed --out out/day04-changed",
+          "expected": {
+            "zh": "capacity=3，hits=2，没有容量淘汰。",
+            "en": "capacity=3; hits=2; no capacity eviction."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "LRU结果与直觉不同",
+            "en": "Unexpected LRU outcome"
+          },
+          "fix": {
+            "zh": "命中也会更新最近使用顺序；逐行检查resident数组。",
+            "en": "Hits update recency too; inspect the resident array after each access."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "中文文本相同却未命中",
+            "en": "Apparently identical text misses"
+          },
+          "fix": {
+            "zh": "比较模板后的token ID、模型revision和缓存状态，不只比较显示文字。",
+            "en": "Compare templated token IDs, model revision and cache state, not displayed text alone."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "两组示例token共享多少项？",
+            "en": "How many token IDs are shared in the example?"
+          },
+          "options": [
+            {
+              "zh": "2",
+              "en": "2"
+            },
+            {
+              "zh": "3",
+              "en": "3"
+            },
+            {
+              "zh": "4",
+              "en": "4"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "第三项30与31不同，匹配在此停止。",
+            "en": "The third IDs 30 and31 differ, so matching stops there."
+          }
+        },
+        {
+          "question": {
+            "zh": "扩大缓存容量总能降低真实延迟吗？",
+            "en": "Does more cache always reduce real latency?"
+          },
+          "options": [
+            {
+              "zh": "一定",
+              "en": "Always"
+            },
+            {
+              "zh": "不一定，要看命中、管理成本和负载",
+              "en": "No, hits, overhead and workloads matter"
+            },
+            {
+              "zh": "命中会免除所有decode",
+              "en": "Hits remove all decoding"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "容量解决驻留问题，实际收益还依赖复用与调度/搬运成本。",
+            "en": "Capacity improves residency; benefits still depend on reuse and scheduling/transfer costs."
+          }
+        }
+      ],
+      "interactive": "prefix-cache"
     },
     {
       "title": {
-        "zh": "调度、分块 prefill 与显存预算",
-        "en": "Study scheduling and memory budgets"
+        "zh": "分析分块 prefill 的阻塞与代价",
+        "en": "Analyze chunked-prefill blocking and overhead"
       },
       "lesson": {
-        "zh": "长 prompt 的 prefill 与逐步生成的 decode 会争用计算和显存。让更多请求进入批次可能增加吞吐，也可能拉长尾延迟；分块 prefill 把大任务拆小，但新增的调度与重复开销也需要测量。显存预算必须同时考虑模型权重、KV cache、临时张量和运行时保留量。调参时先固定负载，每次只改变一个因素。",
-        "en": "Long-prompt prefill and token-by-token decode compete for compute and memory. Larger active batches may improve throughput while worsening tail latency. Chunking prefill changes how work is interleaved, but its scheduling overhead and workload dependence still need measurement. Budget memory for weights, KV state, temporary tensors and runtime reservations. Change one factor at a time on a fixed workload so a throughput gain can be connected to its latency and memory costs."
+        "zh": "把长prefill拆成块可以给其他工作插入机会，但每次切换有成本。本模型用每token0.1ms的prefill成本，块间插入5ms decode。它展示一个调度取舍，不复现SGLang完整调度器。",
+        "en": "Chunking long prefill can create scheduling opportunities, but switching costs time. This model assumes0.1ms per input token and5ms decode between chunks. It illustrates a tradeoff, not the complete SGLang scheduler."
       },
       "task": {
-        "zh": "选一个与你的版本匹配的调度或容量参数，测试三个设置。加入长短混合请求，记录吞吐、TTFT、输出 token 延迟、显存与失败；不要同时切换多个开关。",
-        "en": "Choose one scheduling or capacity parameter documented for your release and test three settings. Use a mixed-length workload and record throughput, TTFT, token latency, memory and failures."
+        "zh": "把chunk改为512，预测块数和间隔成本，再说明短请求与长请求可能有不同偏好。",
+        "en": "Try chunk512, predict count and overhead, then explain why short and long requests may prefer different settings."
       },
       "evidence": {
-        "zh": "单变量实验表、显存预算、一次参数取舍说明。",
-        "en": "A single-variable experiment, a memory budget and one justified configuration trade-off."
+        "zh": "day05.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day05.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "所有比较仅改变一个参数。",
-          "结论包含尾延迟或资源成本，不能只报告吞吐。"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Only one parameter changes in each comparison.",
-          "Report tail latency or resource costs alongside throughput."
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "用离散事件表模拟长短作业交错，对比分块与不分块的等待时间；写清楚没有模拟 GPU 内核和真实调度器。",
-        "en": "Use a discrete-event table to compare chunked and unchunked long/short jobs. Explicitly exclude GPU kernels and real scheduler behavior from the model."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "SGLang · Hyperparameter Tuning",
-          "url": "https://docs.sglang.io/docs/advanced_features/hyperparameter_tuning"
+          "title": "SGLang installation",
+          "url": "https://docs.sglang.io/docs/get-started/install"
+        },
+        {
+          "title": "SGLang request tutorial",
+          "url": "https://docs.sglang.io/docs/basic_usage/send_request"
         }
       ],
-      "day": 5
+      "day": 5,
+      "explanation": [
+        {
+          "title": {
+            "zh": "分块减小阻塞，也增加切换成本",
+            "en": "Smaller chunks trade blocking for overhead"
+          },
+          "body": {
+            "zh": "把长prefill拆成块可以给其他工作插入机会，但每次切换有成本。本模型用每token0.1ms的prefill成本，块间插入5ms decode。它展示一个调度取舍，不复现SGLang完整调度器。",
+            "en": "Chunking long prefill can create scheduling opportunities, but switching costs time. This model assumes0.1ms per input token and5ms decode between chunks. It illustrates a tradeoff, not the complete SGLang scheduler."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "1024token按256分成4块，每块25.6ms，间隔总开销15ms；按128分成8块，每块12.8ms，间隔成本35ms。长请求总计算量没减少，单次占用却缩短了。",
+            "en": "1024 tokens become four256-token chunks,25.6ms each and15ms interleaving overhead. Eight128-token chunks cost12.8ms each and35ms overhead. Total prefill work stays constant while each uninterrupted interval shrinks."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "分块减小阻塞，也增加切换成本 · 流程",
+          "en": "Smaller chunks trade blocking for overhead · flow"
+        },
+        "nodes": [
+          {
+            "zh": "输入长度",
+            "en": "Input length"
+          },
+          {
+            "zh": "分成块",
+            "en": "Split chunks"
+          },
+          {
+            "zh": "交替推进",
+            "en": "Interleave work"
+          },
+          {
+            "zh": "统计等待与开销",
+            "en": "Measure waits and overhead"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的sglang目录，先阅读lab.py中day5函数，预测结果再运行。",
+            "en": "Inside the extracted sglang directory, read day5 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day5 --out out/day05-base",
+          "expected": {
+            "zh": "prefill_chunks=4，max_single_prefill_block_ms=25.6，overhead=15。 文件为out/day05-base/day05.json。",
+            "en": "4 chunks;25.6ms maximum block;15ms overhead. File:out/day05-base/day05.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "把chunk改为512，预测块数和间隔成本，再说明短请求与长请求可能有不同偏好。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Try chunk512, predict count and overhead, then explain why short and long requests may prefer different settings. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day5 --variant changed --out out/day05-changed",
+          "expected": {
+            "zh": "8块、12.8ms单块、35ms切换开销。",
+            "en": "8 chunks;12.8ms per block;35ms overhead."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "块数算成小数",
+            "en": "Fractional chunk count"
+          },
+          "fix": {
+            "zh": "不能处理半个调度块；用ceil(input/chunk)，最后一块可不足整块。",
+            "en": "Use ceil(input/chunk); the last chunk may be partial."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "只看到阻塞缩短就宣布更快",
+            "en": "Declaring a win from shorter blocking"
+          },
+          "fix": {
+            "zh": "同时比较切换开销、长请求完成和短请求等待。",
+            "en": "Compare switching overhead, long-request completion and short-request waits together."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "chunk由256减到128，prefill工作量怎样？",
+            "en": "What happens to total prefill work when chunk256 becomes128?"
+          },
+          "options": [
+            {
+              "zh": "减半",
+              "en": "Halved"
+            },
+            {
+              "zh": "不变，切换次数增加",
+              "en": "Unchanged, with more switches"
+            },
+            {
+              "zh": "变为0",
+              "en": "Becomes zero"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "输入token总数不变；模型只改变执行切分和插入开销。",
+            "en": "The input token count is unchanged; only partitioning and interleaving overhead change."
+          }
+        },
+        {
+          "question": {
+            "zh": "为什么不能把本图当真实benchmark？",
+            "en": "Why is this not a real benchmark?"
+          },
+          "options": [
+            {
+              "zh": "用了英文术语",
+              "en": "It uses English terms"
+            },
+            {
+              "zh": "输入太短所以必假",
+              "en": "Short inputs are always fake"
+            },
+            {
+              "zh": "时间由教学常数给定",
+              "en": "Times come from teaching constants"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "真实引擎需要硬件、版本、负载和原始测量；这里是公式推演。",
+            "en": "Real measurements require hardware, versions, workload and raw observations; this is a formula model."
+          }
+        }
+      ]
     },
     {
       "title": {
-        "zh": "量化要同时检查精度与性能",
-        "en": "Evaluate quantization with correctness"
+        "zh": "量化误差与反例：精度不等于速度",
+        "en": "Quantization error: accuracy is not speed"
       },
       "lesson": {
-        "zh": "减少位宽可以降低部分内存流量，但未必让所有设备和形状更快。权重量化、激活量化与 KV cache 量化改变的是不同对象，支持的后端也可能不同。比较时要确认使用同一个模型来源、模板、任务与输出约束。把错误率和质量回归与时延并列呈现，比只展示更小的文件或更快的某次请求更有价值。",
-        "en": "Lower precision can reduce memory traffic, but acceleration depends on hardware, shapes and supported kernels. Weight, activation and KV-cache quantization change different objects and may require different backends. Comparisons need consistent model provenance, templates, tasks and output constraints. Pair latency and memory results with correctness or quality regression checks. A smaller artifact or one fast response is insufficient evidence that the chosen quantization is appropriate for the intended workload."
+        "zh": "标量对称量化用最大绝对值确定scale，再舍入到整数格点。本练习比较4位和8位误差，不包含真实kernel、模型层或精度评测。位数少意味着表示范围更粗，不自动意味着目标GPU更快。",
+        "en": "Symmetric scalar quantization sets scale from maximum absolute value and rounds to integer levels. This exercise compares4- and8-bit error without kernels or model evaluation. Fewer bits imply coarser levels, not guaranteed GPU acceleration."
       },
       "task": {
-        "zh": "选择官方明确支持的一种精度对照，准备至少十个可检查结果的测试输入。先做正确性检查，再测相同负载的延迟与显存；记录不支持的组合。",
-        "en": "Select one officially supported precision comparison. Prepare at least ten checkable inputs, validate correctness first, then measure latency and memory on the same workload. Record unsupported combinations."
+        "zh": "新增极端值100，观察其他小数的误差；解释全数组共享scale的代价。",
+        "en": "Add an outlier100, inspect errors on the small values, and explain the cost of a shared scale."
       },
       "evidence": {
-        "zh": "精度/质量检查表、性能对比、支持条件与回退建议。",
-        "en": "A correctness/quality table, performance comparison, support conditions and rollback recommendation."
+        "zh": "day06.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day06.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "明确被量化的是权重、激活还是 KV。",
-          "失败或质量下降样例保留在报告中。"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Identify whether weights, activations or KV state are quantized.",
-          "Keep failures and quality-regression examples in the report."
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "写一个标量量化与反量化脚本，观察缩放因子、舍入和饱和误差；完成实机评测计划，不推断模型质量。",
-        "en": "Implement scalar quantization/dequantization to inspect scaling, rounding and saturation. Prepare a hardware evaluation plan without inferring model quality."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "SGLang · Quantization",
-          "url": "https://docs.sglang.io/docs/advanced_features/quantization"
+          "title": "SGLang installation",
+          "url": "https://docs.sglang.io/docs/get-started/install"
+        },
+        {
+          "title": "SGLang request tutorial",
+          "url": "https://docs.sglang.io/docs/basic_usage/send_request"
         }
       ],
-      "day": 6
+      "day": 6,
+      "explanation": [
+        {
+          "title": {
+            "zh": "量化误差需要反例",
+            "en": "Quantization needs counterexamples"
+          },
+          "body": {
+            "zh": "标量对称量化用最大绝对值确定scale，再舍入到整数格点。本练习比较4位和8位误差，不包含真实kernel、模型层或精度评测。位数少意味着表示范围更粗，不自动意味着目标GPU更快。",
+            "en": "Symmetric scalar quantization sets scale from maximum absolute value and rounds to integer levels. This exercise compares4- and8-bit error without kernels or model evaluation. Fewer bits imply coarser levels, not guaranteed GPU acceleration."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "基线数组含不能精确落在格点上的小数，8位误差较小。changed数组[0,1]两种精度都可精确表示，最大误差都是0；所以不存在对所有输入固定的误差改进比例。",
+            "en": "The baseline contains decimals between quantization levels, giving smaller8-bit error. The changed [0,1] array is exactly representable at both precisions, producing zero error and disproving any fixed universal improvement ratio."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "量化误差需要反例 · 流程",
+          "en": "Quantization needs counterexamples · flow"
+        },
+        "nodes": [
+          {
+            "zh": "选输入",
+            "en": "Choose inputs"
+          },
+          {
+            "zh": "算scale",
+            "en": "Compute scale"
+          },
+          {
+            "zh": "舍入恢复",
+            "en": "Round and reconstruct"
+          },
+          {
+            "zh": "比较误差",
+            "en": "Compare error"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的sglang目录，先阅读lab.py中day6函数，预测结果再运行。",
+            "en": "Inside the extracted sglang directory, read day6 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day6 --out out/day06-base",
+          "expected": {
+            "zh": "两组bits=4/8；8位max_abs_error更小。 文件为out/day06-base/day06.json。",
+            "en": "Rows for4/8 bits;8-bit max_abs_error is smaller. File:out/day06-base/day06.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "新增极端值100，观察其他小数的误差；解释全数组共享scale的代价。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Add an outlier100, inspect errors on the small values, and explain the cost of a shared scale. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day6 --variant changed --out out/day06-changed",
+          "expected": {
+            "zh": "values=[0,1]，两组max_abs_error=0。",
+            "en": "values=[0,1]; both max_abs_error values are0."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把量化当无损压缩",
+            "en": "Treating quantization as lossless"
+          },
+          "fix": {
+            "zh": "保留原数组并比较重建误差；是否可接受取决于任务。",
+            "en": "Keep originals and compare reconstruction errors; acceptability depends on the task."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "误差比例除以0",
+            "en": "Dividing error ratios by zero"
+          },
+          "fix": {
+            "zh": "参考误差为0时报告绝对误差，不计算无定义比值。",
+            "en": "When reference error is zero, report absolute errors instead of an undefined ratio."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "本实验可验证什么？",
+            "en": "What can this experiment verify?"
+          },
+          "options": [
+            {
+              "zh": "标量重建误差",
+              "en": "Scalar reconstruction error"
+            },
+            {
+              "zh": "模型任务准确率",
+              "en": "Model task accuracy"
+            },
+            {
+              "zh": "GPU吞吐",
+              "en": "GPU throughput"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "模型质量与kernel性能都不在这个标量实验中。",
+            "en": "Model quality and kernel performance are outside this scalar experiment."
+          }
+        },
+        {
+          "question": {
+            "zh": "[0,1]的4位与8位最大误差？",
+            "en": "What are the maximum errors for[0,1]?"
+          },
+          "options": [
+            {
+              "zh": "4位一定大于0",
+              "en": "4-bit must be positive"
+            },
+            {
+              "zh": "都为0",
+              "en": "Both zero"
+            },
+            {
+              "zh": "8位误差更大",
+              "en": "8-bit is larger"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "端点与零恰好落在两个格式的格点上。",
+            "en": "Both formats represent the endpoints and zero exactly."
+          }
+        }
+      ]
     },
     {
       "title": {
@@ -345,38 +1343,211 @@
         "en": "Explore hierarchical caching"
       },
       "lesson": {
-        "zh": "把缓存移出 GPU 可以扩大可保留状态的容量，但重新使用前仍需支付查找和数据移动的代价。GPU、主机内存和外部存储具有不同延迟与带宽，层级更多不自动意味着服务更快。真正的比较应让数据分别命中不同层，记录读取量与用户可感知的延迟，并控制引擎本地缓存，避免把 GPU 命中误判为外部层收益。",
-        "en": "Moving cache state outside GPU memory expands potential reuse capacity, but lookup and transfer still cost time. GPU memory, host memory and external storage have different latency and bandwidth characteristics. Additional tiers do not automatically improve serving. Construct requests that deliberately hit different tiers and connect transferred bytes to user-visible latency. Control the engine's local state so a GPU hit cannot be mistaken for evidence that an external storage tier helped."
+        "zh": "GPU层命中后不访问CPU；CPU层命中率应在GPU未命中的请求中计算。顺序访问模型先付1ms GPU查找，未命中再付10ms CPU查找，仍未命中再付100ms重算。实际HiCache可能重叠传输，本模型没有。",
+        "en": "CPU lookup occurs only after a GPU miss, so CPU hit probability is conditional on that miss. The sequential model pays1ms GPU lookup, then10ms CPU lookup on miss, then100ms recomputation on both misses. It excludes HiCache transfer overlap."
       },
       "task": {
-        "zh": "阅读 HiCache 及对应存储适配器文档，画出三层数据路径。选一种支持的层级配置测试容量压力；若连接 Mooncake，记录每个组件版本与数据来源。",
-        "en": "Map HiCache tiers and the chosen storage adapter. Test capacity pressure with one supported configuration. If using Mooncake, record every component version and identify the source of reused data."
+        "zh": "手算GPU命中为0与1两个极端，再用副本代码验证；写清条件概率分母。",
+        "en": "Calculate GPU hit0 and1 extremes by hand, verify in a copy, and state each probability denominator."
       },
       "evidence": {
-        "zh": "分层图、每层容量/延迟预算，以及至少一个层级切换案例。",
-        "en": "A tier diagram, per-tier capacity/latency budget and one tier-transition case."
+        "zh": "day07.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day07.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "能区分本地命中、主机命中和外部读取。",
-          "报告同时包含容量收益与读取开销。"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Distinguish local hits, host hits and external retrieval.",
-          "Report capacity benefits together with retrieval cost."
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "根据给定的合成带宽/延迟参数绘制重计算与读取的盈亏边界，明确参数不是设备实测值。",
-        "en": "Plot a recompute-versus-retrieve boundary using explicitly synthetic bandwidth and latency inputs, not measured device performance."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "SGLang · HiCache",
-          "url": "https://docs.sglang.io/docs/advanced_features/hicache"
+          "title": "SGLang installation",
+          "url": "https://docs.sglang.io/docs/get-started/install"
+        },
+        {
+          "title": "SGLang request tutorial",
+          "url": "https://docs.sglang.io/docs/basic_usage/send_request"
         }
       ],
-      "day": 7
+      "day": 7,
+      "explanation": [
+        {
+          "title": {
+            "zh": "分层命中率要写清条件",
+            "en": "State conditional cache-hit probabilities"
+          },
+          "body": {
+            "zh": "GPU层命中后不访问CPU；CPU层命中率应在GPU未命中的请求中计算。顺序访问模型先付1ms GPU查找，未命中再付10ms CPU查找，仍未命中再付100ms重算。实际HiCache可能重叠传输，本模型没有。",
+            "en": "CPU lookup occurs only after a GPU miss, so CPU hit probability is conditional on that miss. The sequential model pays1ms GPU lookup, then10ms CPU lookup on miss, then100ms recomputation on both misses. It excludes HiCache transfer overlap."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "GPU命中0.5、CPU条件命中0.8时，期望=1+0.5×(10+0.2×100)=16ms；CPU条件命中降到0.2，期望46ms。两层命中率不可直接相加。",
+            "en": "With GPU hit0.5 and conditional CPU hit0.8, expectation is1+0.5×(10+0.2×100)=16ms. Reducing CPU hit to0.2 gives46ms. The two hit probabilities cannot simply be added."
+          }
+        },
+        {
+          "title": {
+            "zh": "动手调参：连接图解与实验",
+            "en": "Change parameters: connect widget and lab"
+          },
+          "body": {
+            "zh": "把本地命中设为50%、远端条件命中设为80%、远端访问10ms，重算固定100ms，可复现16ms均值。把远端条件命中降到20%，得到46ms；两个百分比的分母不同，不要相加。",
+            "en": "Set local hits to50%, conditional remote hits to80% and remote latency to10ms; fixed recomputation100ms yields16ms. Reducing conditional remote hits to20% yields46ms. The probabilities have different denominators."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "分层命中率要写清条件 · 流程",
+          "en": "State conditional cache-hit probabilities · flow"
+        },
+        "nodes": [
+          {
+            "zh": "GPU查找",
+            "en": "GPU lookup"
+          },
+          {
+            "zh": "未命中转CPU",
+            "en": "Miss to CPU"
+          },
+          {
+            "zh": "再未命中重算",
+            "en": "Miss to recompute"
+          },
+          {
+            "zh": "加权平均",
+            "en": "Weighted expectation"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的sglang目录，先阅读lab.py中day7函数，预测结果再运行。",
+            "en": "Inside the extracted sglang directory, read day7 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day7 --out out/day07-base",
+          "expected": {
+            "zh": "expected_ms约16。 文件为out/day07-base/day07.json。",
+            "en": "expected_ms is approximately16. File:out/day07-base/day07.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "手算GPU命中为0与1两个极端，再用副本代码验证；写清条件概率分母。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Calculate GPU hit0 and1 extremes by hand, verify in a copy, and state each probability denominator. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day7 --variant changed --out out/day07-changed",
+          "expected": {
+            "zh": "CPU条件命中率0.2，expected_ms约46。",
+            "en": "Conditional CPU hit0.2; expected_ms approximately46."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "命中率超过100%",
+            "en": "Hit rate exceeds100%"
+          },
+          "fix": {
+            "zh": "不要相加条件概率，写出每层访问树与分母。",
+            "en": "Do not add conditional probabilities; draw access branches and denominators."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "预测与HiCache实测不符",
+            "en": "Model differs from HiCache observations"
+          },
+          "fix": {
+            "zh": "检查异步预取、重叠和实际传输成本；本模型假设同步串行访问。",
+            "en": "Check asynchronous prefetch, overlap and transfer costs; this model assumes serial synchronous access."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "CPU命中率0.8的分母是什么？",
+            "en": "What is the denominator for CPU hit0.8?"
+          },
+          "options": [
+            {
+              "zh": "全部请求总数",
+              "en": "All requests"
+            },
+            {
+              "zh": "GPU未命中的请求",
+              "en": "GPU-miss requests"
+            },
+            {
+              "zh": "GPU容量",
+              "en": "GPU capacity"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "顺序分层访问只在上层未命中后进入下一层。",
+            "en": "Sequential hierarchy accesses the next tier only after an upper-tier miss."
+          }
+        },
+        {
+          "question": {
+            "zh": "0.5+0.8=1.3是否为总命中率？",
+            "en": "Is0.5+0.8=1.3 the total hit rate?"
+          },
+          "options": [
+            {
+              "zh": "是",
+              "en": "Yes"
+            },
+            {
+              "zh": "只对GPU成立",
+              "en": "Only for GPUs"
+            },
+            {
+              "zh": "不是，应算0.5+0.5×0.8=0.9",
+              "en": "No; use0.5+0.5×0.8=0.9"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "CPU条件概率须乘到达CPU层的概率。",
+            "en": "Multiply conditional CPU probability by the probability of reaching that tier."
+          }
+        }
+      ],
+      "interactive": "cache-tiers"
     },
     {
       "title": {
@@ -384,38 +1555,211 @@
         "en": "Decide when disaggregation helps"
       },
       "lesson": {
-        "zh": "PD 分离把 prefill 和 decode 放到不同资源池，目的是让不同工作更独立地调度与扩展。代价是传输 KV、额外排队、配置复杂度与失效路径。短输入或网络较慢时，转移状态的成本可能抵消收益。评估要保持相同模型、总设备预算和负载，观察首 token、输出节奏和失败率，而不是仅比较两个系统的峰值吞吐。",
-        "en": "Prefill/decode disaggregation places different phases in separate resource pools so they can be scheduled and scaled independently. The trade-off includes KV transfer, extra queues, configuration complexity and failure paths. Short prompts or slow links can erase the expected benefit. Compare equivalent model, total device budget and workloads, and observe TTFT, output cadence and failures. Peak throughput from unequal hardware is not evidence that disaggregation improves a deployment."
+        "zh": "Prefill与Decode分开后，单请求仍要依次完成prefill、传输和decode；吞吐可能因流水线并行改善。比较时必须保留GPU资源预算，不能把一张卡与两张卡的差异都归给架构。",
+        "en": "Separated prefill/decode still execute sequentially for one request with a transfer between them, while pipelining may improve throughput. Hold hardware budgets explicit; comparing one GPU with two does not isolate architecture."
       },
       "task": {
-        "zh": "根据官方支持路径设计一个最小 PD 拓扑，标出路由、prefill、decode、传输和侧信道端口。有硬件时与聚合基线对照；先确认输出正确，再增加负载。",
-        "en": "Design a minimal supported PD topology with router, prefill, decode, transfer and side-channel ports. With hardware, compare against an aggregated baseline, verifying correctness before increasing load."
+        "zh": "把传输量翻倍与带宽翻倍分别作为两个独立实验，解释单请求延迟与吞吐上限如何不同。",
+        "en": "Double payload and bandwidth in separate experiments; distinguish single-request latency from throughput ceilings."
       },
       "evidence": {
-        "zh": "拓扑与端口表、传输预算、聚合/分离对照或明确标注的实验计划。",
-        "en": "A topology, port map, transfer budget and an aggregated/disaggregated comparison or labeled test plan."
+        "zh": "day08.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day08.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "写明总 GPU 数、网络和模型版本，比较条件对齐。",
-          "给出一个不建议采用 PD 的负载场景。"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "State total GPUs, network and model versions with matched comparison conditions.",
-          "Describe one workload where PD is not recommended."
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "用 KV 字节数/有效带宽加固定开销估算传输下界，与假设的 prefill 收益对比；给出敏感性分析。",
-        "en": "Estimate transfer lower bounds from KV bytes, effective bandwidth and fixed overhead, then compare with hypothetical prefill savings and vary the assumptions."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "SGLang · PD Disaggregation",
-          "url": "https://docs.sglang.io/docs/advanced_features/pd_disaggregation"
+          "title": "SGLang installation",
+          "url": "https://docs.sglang.io/docs/get-started/install"
+        },
+        {
+          "title": "SGLang request tutorial",
+          "url": "https://docs.sglang.io/docs/basic_usage/send_request"
         }
       ],
-      "day": 8
+      "day": 8,
+      "explanation": [
+        {
+          "title": {
+            "zh": "PD分离先检查数据搬运",
+            "en": "Check transfer before disaggregating P/D"
+          },
+          "body": {
+            "zh": "Prefill与Decode分开后，单请求仍要依次完成prefill、传输和decode；吞吐可能因流水线并行改善。比较时必须保留GPU资源预算，不能把一张卡与两张卡的差异都归给架构。",
+            "en": "Separated prefill/decode still execute sequentially for one request with a transfer between them, while pipelining may improve throughput. Hold hardware budgets explicit; comparing one GPU with two does not isolate architecture."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "0.2GB在10GB/s下传20ms，单请求40+20+80=140ms。带宽降至1GB/s，传输200ms且流水线理论上限由传输限制为5请求/s。使用十进制GB，不把Gb/s直接代入。",
+            "en": "0.2GB at10GB/s takes20ms; one request totals40+20+80=140ms. At1GB/s transfer takes200ms and limits the ideal pipeline to5 requests/s. Units are decimal GB, not Gb/s."
+          }
+        },
+        {
+          "title": {
+            "zh": "动手调参：连接图解与实验",
+            "en": "Change parameters: connect widget and lab"
+          },
+          "body": {
+            "zh": "交互图只建模P/D计算：1个P、1个D、decode80ms得到12.5请求/秒。随后看脚本加入传输的反例：带宽降到1GB/s后上限只有5请求/秒。组件图上的理想计算平衡不包含网络瓶颈。",
+            "en": "The widget models P/D computation only:1P,1D and80ms decode yield12.5requests/s. The script adds transfer: at1GB/s its ceiling falls to5requests/s. Balanced compute alone does not include network limits."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "PD分离先检查数据搬运 · 流程",
+          "en": "Check transfer before disaggregating P/D · flow"
+        },
+        "nodes": [
+          {
+            "zh": "Prefill",
+            "en": "Prefill"
+          },
+          {
+            "zh": "传KV",
+            "en": "Transfer KV"
+          },
+          {
+            "zh": "Decode",
+            "en": "Decode"
+          },
+          {
+            "zh": "识别瓶颈",
+            "en": "Find bottleneck"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的sglang目录，先阅读lab.py中day8函数，预测结果再运行。",
+            "en": "Inside the extracted sglang directory, read day8 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day8 --out out/day08-base",
+          "expected": {
+            "zh": "transfer_ms=20，split=140，理想上限12.5请求/s。 文件为out/day08-base/day08.json。",
+            "en": "transfer_ms=20; split140ms; ideal ceiling12.5requests/s. File:out/day08-base/day08.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "把传输量翻倍与带宽翻倍分别作为两个独立实验，解释单请求延迟与吞吐上限如何不同。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Double payload and bandwidth in separate experiments; distinguish single-request latency from throughput ceilings. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day8 --variant changed --out out/day08-changed",
+          "expected": {
+            "zh": "transfer_ms=200，split=320，上限5请求/s。",
+            "en": "transfer_ms=200; split320ms; ceiling5requests/s."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把Gb/s当GB/s",
+            "en": "Confusing Gb/s and GB/s"
+          },
+          "fix": {
+            "zh": "先除以8换算bit到byte，再声明是否使用十进制单位。",
+            "en": "Divide bits by8 to get bytes, and state decimal versus binary units."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "吞吐比单阶段能力更高",
+            "en": "Ceiling exceeds a stage capacity"
+          },
+          "fix": {
+            "zh": "流水线稳态上限取各阶段容量最小值，不是相加。",
+            "en": "Steady-state capacity is the minimum stage capacity, not their sum."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "0.2GB/10GB每秒是多少？",
+            "en": "What is0.2GB/10GB per second?"
+          },
+          "options": [
+            {
+              "zh": "20ms",
+              "en": "20ms"
+            },
+            {
+              "zh": "2ms",
+              "en": "2ms"
+            },
+            {
+              "zh": "200ms",
+              "en": "200ms"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "0.02秒乘1000等于20毫秒。",
+            "en": "0.02seconds multiplied by1000 equals20milliseconds."
+          }
+        },
+        {
+          "question": {
+            "zh": "PD分离一定降低单请求延迟吗？",
+            "en": "Does P/D separation always reduce one-request latency?"
+          },
+          "options": [
+            {
+              "zh": "一定",
+              "en": "Always"
+            },
+            {
+              "zh": "不一定，新增传输可能增大延迟",
+              "en": "No, transfer can increase latency"
+            },
+            {
+              "zh": "只需看缓存容量",
+              "en": "Cache size alone decides"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "流水线吞吐收益与单请求串行关键路径不同。",
+            "en": "Pipeline throughput benefits differ from the sequential critical path of one request."
+          }
+        }
+      ],
+      "interactive": "pd-balance"
     },
     {
       "title": {
@@ -423,38 +1767,200 @@
         "en": "Connect telemetry with failure recovery"
       },
       "lesson": {
-        "zh": "单个平均值很难解释用户经历。请求延迟、排队、缓存命中、资源占用与错误要在同一时间线上观察；计数器重启后可能重置，直方图的分桶也限制分位数精度。日志中的 prompt 可能包含隐私，练习使用合成输入即可。故障实验的目标是明确结果和恢复边界，不是让所有错误都被重试隐藏。",
-        "en": "Averages rarely explain an individual user's experience. Correlate latency, queue depth, reuse, resource use and errors over the same timeline. Counters may reset on restart, and histogram buckets affect percentile estimates. Synthetic prompts are enough for this exercise and avoid exposing private request content. A failure experiment should reveal outcomes and recovery boundaries rather than hide every problem behind retries. Track unfinished work and resources as well as visible responses."
+        "zh": "可观测性应把成功数、错误数与超时数合起来。成功请求延迟分位数描述成功的速度，不能替代成功率。全部失败时延迟统计应是null，而不是0ms或删除整轮。",
+        "en": "Observability reconciles successful, failed and timed-out requests. Successful-request percentiles describe speed among successes, not success rate. All-failed runs produce null latency, not zero or an omitted experiment."
       },
       "task": {
-        "zh": "启用所选版本的指标，记录正常、过载和受控重启三段时间线。对每段写一个现象、假设、证据链；检查客户端取消后的活动请求变化。",
-        "en": "Enable metrics for your release and capture normal, overloaded and controlled-restart periods. Write an observation, hypothesis and evidence chain for each, including active-request behavior after cancellation."
+        "zh": "为模型名错误、超时分别写检查顺序和停止条件；不要把所有失败设为无限重试。",
+        "en": "Write checks and stopping conditions for unknown-model errors and timeouts; avoid infinite retries for every failure."
       },
       "evidence": {
-        "zh": "脱敏指标样例、时间线与三条可操作的排障建议。",
-        "en": "Sanitized metric samples, a timeline and three actionable troubleshooting notes."
+        "zh": "day09.json的基线与changed两份记录；本人修改的代码差异和对照解释。",
+        "en": "Baseline and changed day09.json records, your code diff and an explanation of the comparison."
       },
       "checklist": {
         "zh": [
-          "每条结论能指向原始指标或日志。",
-          "区分客户端错误、服务错误与实验未完成。"
+          "能手算一个例子并说清假设",
+          "保留两组原始输出并解释变化",
+          "完成两题与独立修改，不把模拟标成框架实测"
         ],
         "en": [
-          "Link conclusions to raw metrics or logs.",
-          "Distinguish client errors, server errors and incomplete experiments."
+          "Calculate one example by hand and state assumptions",
+          "Keep both raw outputs and explain differences",
+          "Complete both questions and your own change; do not label models as framework measurements"
         ]
       },
       "noGpu": {
-        "zh": "使用自己生成的模拟监控序列，识别计数器重置、突发排队和异常尾延迟；把诊断规则写成测试。",
-        "en": "Generate synthetic monitoring sequences with counter resets, queue bursts and latency tails. Express the diagnosis rules as tests."
+        "zh": "本日CPU教学实验无需GPU；它验证模型或状态机的逻辑。README中的真实框架扩展需要相应环境，未运行部分标记待验证。",
+        "en": "The CPU exercise needs no GPU and validates a model or state machine. Real-framework extensions in README need the stated environment; label unexecuted work pending."
       },
       "reading": [
         {
-          "title": "SGLang · Observability",
-          "url": "https://docs.sglang.io/docs/advanced_features/observability"
+          "title": "SGLang installation",
+          "url": "https://docs.sglang.io/docs/get-started/install"
+        },
+        {
+          "title": "SGLang request tutorial",
+          "url": "https://docs.sglang.io/docs/basic_usage/send_request"
         }
       ],
-      "day": 9
+      "day": 9,
+      "explanation": [
+        {
+          "title": {
+            "zh": "错误与恢复也进入实验报告",
+            "en": "Include failures and recovery in the report"
+          },
+          "body": {
+            "zh": "可观测性应把成功数、错误数与超时数合起来。成功请求延迟分位数描述成功的速度，不能替代成功率。全部失败时延迟统计应是null，而不是0ms或删除整轮。",
+            "en": "Observability reconciles successful, failed and timed-out requests. Successful-request percentiles describe speed among successes, not success rate. All-failed runs produce null latency, not zero or an omitted experiment."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算与反例",
+            "en": "Worked example and counterexample"
+          },
+          "body": {
+            "zh": "基线四条状态有两成功、一超时、一错误，成功率0.5，成功延迟p95=30。changed只保留超时和错误，成功率0且p95=null。保留失败后才能比较恢复动作是否改善可用性。",
+            "en": "Two successes, one timeout and one error give success rate0.5 and successful p95=30. The changed all-failed run has success rate0 and p95=null. Retaining failures permits a meaningful recovery comparison."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "错误与恢复也进入实验报告 · 流程",
+          "en": "Include failures and recovery in the report · flow"
+        },
+        "nodes": [
+          {
+            "zh": "保留状态",
+            "en": "Retain status"
+          },
+          {
+            "zh": "分类原因",
+            "en": "Classify causes"
+          },
+          {
+            "zh": "执行恢复",
+            "en": "Recover"
+          },
+          {
+            "zh": "重跑smoke test",
+            "en": "Rerun smoke test"
+          }
+        ],
+        "caption": {
+          "zh": "逻辑示意；数字来自明确的教学假设，不是框架性能实测。",
+          "en": "Logical illustration: numbers follow stated teaching assumptions, not measured framework performance."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行基线并保留原始文件",
+            "en": "Run the baseline and keep raw files"
+          },
+          "body": {
+            "zh": "进入解压后的sglang目录，先阅读lab.py中day9函数，预测结果再运行。",
+            "en": "Inside the extracted sglang directory, read day9 in lab.py and predict results before running."
+          },
+          "command": "python3 lab.py day9 --out out/day09-base",
+          "expected": {
+            "zh": "total=4，successes=2，p95=30。 文件为out/day09-base/day09.json。",
+            "en": "total4; successes2; p95=30. File:out/day09-base/day09.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改变一个条件，再解释差异",
+            "en": "Change one condition and explain the difference"
+          },
+          "body": {
+            "zh": "为模型名错误、超时分别写检查顺序和停止条件；不要把所有失败设为无限重试。 用--variant changed运行提供的对照，再在副本中做自己的修改。",
+            "en": "Write checks and stopping conditions for unknown-model errors and timeouts; avoid infinite retries for every failure. Run the supplied --variant changed control, then make your own change in a copy."
+          },
+          "command": "python3 lab.py day9 --variant changed --out out/day09-changed",
+          "expected": {
+            "zh": "success_rate=0，successful_p95_ms=null。",
+            "en": "success_rate0; successful_p95_ms=null."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "null导致绘图报错",
+            "en": "null breaks plotting"
+          },
+          "fix": {
+            "zh": "把无样本显示为缺失，不转换成0；旁边保留失败数。",
+            "en": "Plot it as missing, not zero, and retain failure counts."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "重试制造更多负载",
+            "en": "Retries amplify load"
+          },
+          "fix": {
+            "zh": "先分类失败，限制重试次数与并发，并观察队列。",
+            "en": "Classify failures first, bound retries/concurrency and inspect queues."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "全部失败时成功延迟p95应为？",
+            "en": "What is successful p95 when all requests fail?"
+          },
+          "options": [
+            {
+              "zh": "0",
+              "en": "0"
+            },
+            {
+              "zh": "null/无数据",
+              "en": "null/no data"
+            },
+            {
+              "zh": "无限大token吞吐",
+              "en": "Infinite token throughput"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "没有成功样本，分位数未定义。",
+            "en": "There are no successful samples, so the percentile is undefined."
+          }
+        },
+        {
+          "question": {
+            "zh": "恢复后应该保留什么？",
+            "en": "What should a recovery record retain?"
+          },
+          "options": [
+            {
+              "zh": "删除原错误",
+              "en": "Delete the original error"
+            },
+            {
+              "zh": "只留最快一次",
+              "en": "Keep only the fastest run"
+            },
+            {
+              "zh": "故障、动作和重试结果",
+              "en": "Failure, action and retry result"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "可复查的因果链需要恢复前后证据。",
+            "en": "An inspectable causal chain needs evidence before and after recovery."
+          }
+        }
+      ]
     },
     {
       "title": {
@@ -462,16 +1968,16 @@
         "en": "Deliver a reproducible serving project"
       },
       "lesson": {
-        "zh": "工程作品的核心不是功能数量，而是别人能否理解问题、重现结果并判断适用边界。把十天积累收敛成一个问题，例如重复前缀负载下如何在固定显存预算内降低 TTFT。保留基线、失败实验和不支持的组合，给出有条件的建议。十天结束时应能独立解释这份作品；生产运维与更复杂模型仍需要后续实践。",
-        "en": "A strong engineering portfolio lets another person understand the problem, reproduce the result and assess its limits. Narrow the previous work to one question, such as reducing TTFT for shared-prefix traffic under a fixed memory budget. Keep a baseline, failed trials and unsupported combinations, then make conditional recommendations. Completing ten days means you can explain this project independently; it does not establish mastery of every model family or production operational scenario."
+        "zh": "结课作品围绕一个可证伪的问题：选择前九天的一项假设，保持输入和其余参数一致，比较基线与改动。自动生成的报告只整理证据，不替你解释结果。需要完成自己的函数挑战，并说明示例代码与个人贡献。",
+        "en": "Build a falsifiable project around one assumption from the previous days. Hold inputs and other parameters fixed while comparing baseline and change. Generated reports organize evidence, not explanations. Complete your own function challenge and distinguish supplied code from personal contributions."
       },
       "task": {
-        "zh": "整理 README、环境锁定、启动与测试说明、原始数据、图表和复盘。请一位同伴按文档复查；无法获得复现时，将外部复核状态写为待完成。",
-        "en": "Package the README, pinned environment, launch/test instructions, raw data, plots and retrospective. Ask a peer to check reproducibility; if none is available, mark independent verification as pending."
+        "zh": "复现两组报告，完成student.py并通过check.py，再把一个真实反例与本人改动写入报告。",
+        "en": "Reproduce both reports, implement student.py and pass check.py, then document a counterexample and your contribution."
       },
       "evidence": {
-        "zh": "一个公开或可分享的作品仓库，以及 5 分钟技术讲解提纲。",
-        "en": "A shareable project repository and a five-minute technical walkthrough."
+        "zh": "两份实验目录、通过学生检查的实现、无TODO的报告和复现说明。",
+        "en": "Two experiment directories, your passing implementation, a completed report and reproduction instructions."
       },
       "checklist": {
         "zh": [
@@ -486,20 +1992,201 @@
         ]
       },
       "noGpu": {
-        "zh": "提交完整的模拟/设计作品，标题明确为“无 GPU 设计与分析路线”；保留真机验证清单，不能补写虚构性能。",
-        "en": "Submit the complete simulation/design portfolio labeled as a no-GPU track, with a hardware-validation checklist and no fabricated measurements."
+        "zh": "CPU路径可完成全部模型与作品；必须标明simulated。真实SDK/GPU实验不是本机已验证部分。",
+        "en": "The CPU path completes all models and the portfolio; label it simulated. SDK/GPU execution was not validated here."
       },
       "reading": [
         {
-          "title": "SGLang · Bench Serving",
-          "url": "https://docs.sglang.io/docs/developer_guide/bench_serving"
+          "title": "SGLang installation",
+          "url": "https://docs.sglang.io/docs/get-started/install"
         },
         {
-          "title": "SGLang · Source and contribution",
-          "url": "https://github.com/sgl-project/sglang"
+          "title": "SGLang request tutorial",
+          "url": "https://docs.sglang.io/docs/basic_usage/send_request"
         }
       ],
-      "day": 10
+      "day": 10,
+      "explanation": [
+        {
+          "title": {
+            "zh": "可复现链条",
+            "en": "Reproduction chain"
+          },
+          "body": {
+            "zh": "day10会重新运行九个教学实验，保存逐日JSON、汇总CSV和文件哈希。分别使用两个输出目录，避免把前后结果覆盖。重复确定性模拟只验证重放一致，不能建立硬件加速的统计置信度。",
+            "en": "day10 reruns nine experiments, saving daily JSON, summary CSV and hashes. Use separate output directories. Repeating deterministic models checks replay consistency; it does not establish statistical confidence in hardware speedups."
+          }
+        },
+        {
+          "title": {
+            "zh": "用自己的解释完成作品",
+            "en": "Finish with your own explanation"
+          },
+          "body": {
+            "zh": "填写REPORT.md的所有TODO，写明问题、本人改动、输入、对照、一个不改善的条件和下一次实验。check.py默认检查student.py；--reference只验证随包参考实现，不能据此声称自己的挑战已完成。",
+            "en": "Fill every REPORT.md TODO: question, own change, inputs, controls, a no-benefit condition and the next experiment. check.py checks student.py by default; --reference checks the supplied solution and does not demonstrate your implementation."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立函数的输入输出",
+            "en": "Independent function contracts"
+          },
+          "body": {
+            "zh": "独立实现完整块对齐的公共前缀长度与仅成功请求的nearest-rank P95。例：[1,2,3]与[1,2,4]、块长2得到2；1至20共20个成功延迟的P95为19。加入超时99999后成功P95不变，但报告的成功率必须降低。块长0或成功延迟NaN应拒绝。",
+            "en": "Implement block-aligned common-prefix length and nearest-rank P95 for successful requests. Prefixes[1,2,3]/[1,2,4] with block2 return2; successful latencies1..20 give P95=19. Adding a99999ms timeout must not change successful P95, but lowers success rate. Reject zero block size and NaN success latency."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "从实验到作品",
+          "en": "From experiments to portfolio"
+        },
+        "nodes": [
+          {
+            "zh": "选择问题",
+            "en": "Choose question"
+          },
+          {
+            "zh": "固定条件",
+            "en": "Fix controls"
+          },
+          {
+            "zh": "保存证据",
+            "en": "Keep evidence"
+          },
+          {
+            "zh": "独立挑战",
+            "en": "Independent challenge"
+          },
+          {
+            "zh": "解释与复现",
+            "en": "Explain and reproduce"
+          }
+        ],
+        "caption": {
+          "zh": "作品可以是清楚标注的模拟分析；没有真机实验就不写真实引擎性能结论。",
+          "en": "A portfolio may contain clearly labeled simulation analysis; do not claim real-engine performance without measurements."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "在两个目录复现全部实验",
+            "en": "Reproduce all experiments in separate directories"
+          },
+          "body": {
+            "zh": "以下脚本只运行CPU教学模型，不连接真实服务；检查每份文件的evidence字段。",
+            "en": "These scripts run CPU models only and connect to no real service. Inspect evidence labels."
+          },
+          "command": "python3 lab.py day10 --out out/final-base\npython3 lab.py day10 --variant changed --out out/final-changed",
+          "expected": {
+            "zh": "每个目录包含9个dayXX.json、results.csv、manifest.json和REPORT.md。",
+            "en": "Each directory contains nine daily JSON files, results.csv, manifest.json and REPORT.md."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成独立挑战与报告",
+            "en": "Complete your challenge and report"
+          },
+          "body": {
+            "zh": "编辑student.py中的TODO，再运行检查。第一次未完成时显示NOT YET是预期结果；可以看提示，最后再核对参考解。",
+            "en": "Edit student.py TODOs before checking. An initial NOT YET is expected. Use the hints and compare the reference only after attempting your own solution."
+          },
+          "command": "python3 check.py\npython3 lab.py selfcheck",
+          "expected": {
+            "zh": "完成后student检查显示PASS；报告的TODO由你填写，selfcheck通过不代表报告已完成。",
+            "en": "Your completed student check shows PASS. Fill report TODOs yourself; selfcheck does not complete the report."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "check.py显示NOT YET",
+            "en": "check.py reports NOT YET"
+          },
+          "fix": {
+            "zh": "先实现student.py，不要把--reference通过误当自己的通过；参考边界案例定位。",
+            "en": "Implement student.py; passing --reference is not passing your own work. Use the boundary cases to debug."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "报告只有数字没有解释",
+            "en": "Report has numbers without explanations"
+          },
+          "fix": {
+            "zh": "补充假设、改动、反例与未验证项；请同伴从命令重算一项结论。",
+            "en": "Add assumptions, changes, counterexamples and unverified claims; ask a peer to recompute one conclusion."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "确定性模拟重复三次能证明GPU加速吗？",
+            "en": "Do three deterministic replays prove GPU acceleration?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能，只检查重放一致",
+              "en": "No, they check replay consistency"
+            },
+            {
+              "zh": "等于官方认证",
+              "en": "They are official certification"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "硬件结论需要真实运行、环境、负载与波动记录。",
+            "en": "Hardware conclusions require measurements, environment, workload and variation."
+          }
+        },
+        {
+          "question": {
+            "zh": "以下哪项最能体现个人贡献？",
+            "en": "Which best expresses personal contribution?"
+          },
+          "options": [
+            {
+              "zh": "只下载代码",
+              "en": "Downloading code"
+            },
+            {
+              "zh": "复制报告标题",
+              "en": "Copying the report title"
+            },
+            {
+              "zh": "展示自己的修改、证据和局限",
+              "en": "Showing your changes, evidence and limitations"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "可解释的改动和证据让别人能审阅你的判断。",
+            "en": "Explainable changes and evidence let others review your judgement."
+          }
+        }
+      ]
     }
-  ]
+  ],
+  "lab": {
+    "path": "sglang",
+    "title": {
+      "zh": "10 天实战 SGLang · 实验包",
+      "en": "SGLang in 10 Days · lab kit"
+    },
+    "description": {
+      "zh": "Python3.9+标准库，普通电脑可完成全部CPU教学实验；含独立挑战、参考检查和报告导出。真实框架路线见README，需另备兼容环境。",
+      "en": "Python3.9+ standard library: laptop-ready teaching experiments, independent challenges, reference checks and report export. Real-framework routes in README require compatible environments."
+    }
+  }
 }

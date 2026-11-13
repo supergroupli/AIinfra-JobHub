@@ -10,9 +10,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 if __package__:
-    from .learning import CATEGORIES, LEVELS, course_body, course_hero, course_markdown, course_nav, esc
+    from .learning import CATEGORIES, LEVELS, INTERACTIVE_KINDS, course_body, course_hero, course_markdown, course_nav, esc
 else:
-    from learning import CATEGORIES, LEVELS, course_body, course_hero, course_markdown, course_nav, esc
+    from learning import CATEGORIES, LEVELS, INTERACTIVE_KINDS, course_body, course_hero, course_markdown, course_nav, esc
 
 ROOT = Path(__file__).resolve().parents[1]
 TECHNOLOGIES = {"Serving", "KV Cache", "vLLM", "SGLang", "LMCache", "Mooncake", "Dynamo", "CUDA", "Triton", "PyTorch", "Ray", "NCCL", "Kubernetes", "Distributed Systems", "Observability"}
@@ -149,7 +149,7 @@ def validate_teaching_step(step, context, required=False):
         nodes = diagram.get("nodes")
         require(isinstance(nodes, list) and 3 <= len(nodes) <= 6 and all(bilingual(node) for node in nodes), f"{context}: invalid diagram nodes")
     if "interactive" in step:
-        require(step["interactive"] in ("timeline", "kv-cache", "prefix-cache"), f"{context}: unknown interactive diagram")
+        require(step["interactive"] in INTERACTIVE_KINDS, f"{context}: unknown interactive diagram")
 
 
 def package_labs(courses, out):
@@ -181,6 +181,11 @@ def validate_paths(paths, courses):
         seen.add(path["id"])
         require(bilingual(path.get("title")) and bilingual(path.get("description")), "Career paths must be bilingual")
         require(isinstance(path.get("courses"), list) and path["courses"] and all(ident in ids for ident in path["courses"]), f"{path['id']}: unknown course reference")
+        required, electives = path.get("requiredCourses"), path.get("electiveCourses")
+        require(isinstance(required, list) and required and isinstance(electives, list), f"{path['id']}: required/elective groups missing")
+        require(all(ident in ids for ident in required + electives), f"{path['id']}: unknown requirement reference")
+        require(len(set(required + electives)) == len(required + electives), f"{path['id']}: overlapping/duplicate requirements")
+        require(path["courses"] == required + electives, f"{path['id']}: course order must match required then elective")
 
 
 def public_site_url(repository):
@@ -257,6 +262,17 @@ def build():
     validate_tracks(tracks)
     paths = read_json("content/paths.json")
     validate_paths(paths, tracks)
+    for course in tracks:
+        required_for = [path for path in paths if course["id"] in path["requiredCourses"]]
+        common = len(required_for) == len(paths)
+        course["curriculum"] = {
+            "common": common,
+            "requiredFor": [path["id"] for path in required_for],
+            "label": {
+                "zh": "所有路线共同必修" if common else ("岗位必修 · " + " / ".join(path["title"]["zh"] for path in required_for) if required_for else "方向选修 · 按项目需要选择"),
+                "en": "Common core for every path" if common else ("Role core · " + " / ".join(path["title"]["en"] for path in required_for) if required_for else "Elective · choose for your project")
+            }
+        }
     projects = validate_projects(read_json("web/projects/projects.json"), tracks)
     summaries = [{**{key: value for key, value in course.items() if key != "steps"}, "steps": [{"day": step["day"], "title": step["title"]} for step in course["steps"]]} for course in tracks]
     data = {
