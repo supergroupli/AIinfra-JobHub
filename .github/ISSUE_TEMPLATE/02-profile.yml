@@ -1,0 +1,94 @@
+name: "Share my portfolio / 公开我的作品名片"
+description: "Opt in to a public builder profile / 本人主动提交公开名片"
+title: "[Builder] Display name — Focus"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is a PUBLIC profile, not a private job application. The issue is public immediately.
+        Submit only your own profile. A pseudonym is welcome. Do not include a phone number,
+        home address, ID document or confidential employer data.
+        这是公开名片，不是私密求职申请，Issue 提交后立即公开。仅本人提交，可使用昵称。
+        不要提交电话、住址、证件或雇主机密；不适合保密求职。
+  - type: input
+    id: name
+    attributes:
+      label: "Display name / 显示名称"
+    validations:
+      required: true
+  - type: input
+    id: github
+    attributes:
+      label: "Your GitHub profile / 本人 GitHub 主页"
+    validations:
+      required: true
+  - type: input
+    id: portfolio
+    attributes:
+      label: "Portfolio URL / 公开作品链接"
+      description: "A project, benchmark report, source notes or documentation contribution / 项目、测试报告、源码笔记或文档贡献均可。"
+    validations:
+      required: true
+  - type: textarea
+    id: contribution
+    attributes:
+      label: "What I built or learned / 我的工作与收获"
+      description: "Explain your own contribution, evidence and limitations. A merged upstream PR is not required. English or Chinese is welcome. / 说明本人贡献、证据和局限，不要求上游 PR 合入，可用中英文。"
+    validations:
+      required: true
+  - type: dropdown
+    id: technologies
+    attributes:
+      label: "Technologies / 技术方向"
+      multiple: true
+      options:
+        - Serving
+        - KV Cache
+        - vLLM
+        - SGLang
+        - LMCache
+        - CUDA
+        - Triton
+        - Kubernetes
+        - Distributed Systems
+    validations:
+      required: true
+  - type: dropdown
+    id: arrangement
+    attributes:
+      label: "Preferred work arrangement / 期望协作方式"
+      options:
+        - remote-global
+        - remote-regional
+        - hybrid
+        - onsite
+    validations:
+      required: true
+  - type: textarea
+    id: availability
+    attributes:
+      label: "Location, languages and availability / 地区、语言与时间安排"
+      description: "Broad region, timezone overlap, languages and collaboration interests. No precise address or identity information. / 可公开的大致地区、时区、语言和合作意向，不填写具体住址或证件信息。"
+    validations:
+      required: true
+  - type: input
+    id: contact
+    attributes:
+      label: "Public contact link (optional) / 公开联系入口（可选）"
+      description: "Use your GitHub profile or portfolio contact page. There is no private messaging on this site. / 可用 GitHub 主页或作品网站的联系页；本站不提供私聊。"
+  - type: input
+    id: expiry
+    attributes:
+      label: "Expiry date / 展示截止日期"
+      description: "YYYY-MM-DD; 1–90 days after confirmation / 确认后 1–90 天。"
+    validations:
+      required: true
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: "Public display consent / 公开展示同意"
+      options:
+        - label: "This is my own profile, and I agree to public display of the submitted information on this community site. / 这是我本人的资料，我同意社区网站公开展示所提交的信息。"
+          required: true
+        - label: "I understand issues are public immediately, removal requires maintainer action, and copies or Git history may persist. / 我理解 Issue 立即公开，撤下需维护者操作，已有副本或 Git 历史可能仍保留。"
+          required: true

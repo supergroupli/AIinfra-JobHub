@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="AI Infra Commons — an open community to learn AI infrastructure, share your work and find your people. 学习、展示作品、发现全球 AI Infra 机会。">
+  <meta name="theme-color" content="#183c35">
+  <title>AI Infra Commons · Learn. Build. Connect.</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="skip">跳到内容</a>
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="AI Infra Commons home"><span class="brand-mark" aria-hidden="true">ic<span>·</span></span><span>AI Infra <strong>Commons</strong></span></a>
+    <nav aria-label="Main navigation">
+      <a href="#learn" data-i18n="navLearn">学习路线</a>
+      <a href="#opportunities" data-i18n="navJobs">机会广场</a>
+      <a href="#people" data-i18n="navPeople">开发者</a>
+      <a href="#community" data-i18n="navCommunity">社区</a>
+    </nav>
+    <button id="language-toggle" class="language-button" type="button" aria-label="Switch to English">EN <span aria-hidden="true">↗</span></button>
+  </header>
+  <main id="main">
+    <section class="hero section-shell" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="live-dot" aria-hidden="true"></span><span data-i18n="eyebrow">开放共建 · 面向全球 AI INFRA 开发者</span></div>
+        <h1 id="hero-title"><span data-i18n="heroLine1">一起构建 AI 的底座，</span><br><em data-i18n="heroLine2">也找到同行的人。</em></h1>
+        <p class="hero-description" data-i18n="heroDescription">从第一份学习笔记，到可复现的工程作品，再到下一次合作。让技术、机会和做技术的人，在这里连接。</p>
+        <div class="hero-actions"><a class="button primary" href="#learn"><span data-i18n="startLearning">开始学习</span> <span aria-hidden="true">↗</span></a><a class="button outline" href="#opportunities" data-i18n="exploreJobs">发现工作与合作</a></div>
+        <p class="hero-note" data-i18n="heroNote">社区驱动 · 免费参与 · 用作品表达能力</p>
+      </div>
+      <div class="journey" aria-label="Learn, build, connect">
+        <div class="journey-top"><span class="mono">YOUR NEXT CHAPTER</span><span class="orbit" aria-hidden="true">✳</span></div>
+        <div class="journey-step"><span class="step-number">01</span><div><span class="small-label">LEARN</span><h2 data-i18n="journeyLearn">学懂一个系统</h2><p>vLLM · SGLang · LMCache</p></div><span class="step-glyph" aria-hidden="true">⌘</span></div>
+        <div class="journey-step"><span class="step-number">02</span><div><span class="small-label">BUILD</span><h2 data-i18n="journeyBuild">留下真实的作品</h2><p data-i18n="journeyBuildNote">代码 / 实验 / 技术复盘</p></div><span class="step-glyph" aria-hidden="true">↳</span></div>
+        <div class="journey-step last"><span class="step-number">03</span><div><span class="small-label">CONNECT</span><h2 data-i18n="journeyConnect">遇见下一位伙伴</h2><p data-i18n="journeyConnectNote">工作 / 开源 / 全球协作</p></div><span class="step-glyph" aria-hidden="true">↗</span></div>
+        <div class="journey-bottom"><span class="tiny-dot" aria-hidden="true"></span><span data-i18n="journeyBottom">每一次贡献，都可以是一个新的开始。</span></div>
+      </div>
+    </section>
+    <div class="ecosystem section-shell"><span data-i18n="ecosystem">从推理生态出发</span><span>vLLM</span><span>SGLang</span><span>LMCache</span><span class="ecosystem-next" data-i18n="ecosystemNext">更多方向，由社区一起补全 ↗</span></div>
+    <div id="load-error" class="notice section-shell" role="alert" hidden></div>
+    <noscript><p class="notice section-shell">此网站需要 JavaScript 展示学习路线和筛选功能。This site needs JavaScript for learning paths and filters.</p></noscript>
+    <section id="learn" class="section-shell content-section" aria-labelledby="learn-title">
+      <div class="section-top"><div><div class="eyebrow muted">01 / LEARN IN PUBLIC</div><h2 id="learn-title" data-i18n="learnTitle">学技术，也积累作品。</h2></div><a class="text-link" href="./resources/portfolio-template.md" download data-i18n="downloadTemplate">下载作品记录模板 ↓</a></div>
+      <p class="section-description" data-i18n="learnDescription">四条起步路线：官方资料 + 动手任务 + 可展示的交付物。按自己的节奏学习，再把成果带到社区。</p>
+      <div id="tracks" class="track-grid" aria-live="polite"><p data-i18n="loading">正在加载学习路线…</p></div>
+      <div class="learning-foot"><span><span class="small-dot" aria-hidden="true"></span> <span data-i18n="learningNote">进度仅保存在本浏览器；任务勾选是自我记录，不代表认证。</span></span><span data-i18n="hardwareNote">平台不提供在线 GPU</span></div>
+    </section>
+    <section id="opportunities" class="opportunity-section" aria-labelledby="jobs-title"><div class="section-shell content-section">
+      <div class="section-top"><div><div class="eyebrow muted">02 / FIND YOUR NEXT</div><h2 id="jobs-title" data-i18n="jobsTitle">找到值得投入的问题。</h2></div><button class="button primary" type="button" data-submit="job"><span data-i18n="postJob">发布机会</span> <span aria-hidden="true">＋</span></button></div>
+      <p class="section-description" data-i18n="jobsDescription">全职、实习、研究与开源协作。先看技术方向，再确认工作地区、语言和远程范围。</p>
+      <div class="filter-box">
+        <div class="filter-fields"><div class="search-field"><label for="search" data-i18n="searchLabel">搜索职位与开发者</label><input id="search" type="search" placeholder="技术、公司、地区或关键词" autocomplete="off" data-placeholder="searchPlaceholder"></div><div><label for="work-mode" data-i18n="workModeLabel">协作方式</label><select id="work-mode"><option value="" data-i18n="anyMode">所有方式</option><option value="remote-global" data-i18n="remoteGlobal">全球远程</option><option value="remote-regional" data-i18n="remoteRegional">指定地区远程</option><option value="hybrid" data-i18n="hybrid">混合办公</option><option value="onsite" data-i18n="onsite">线下办公</option></select></div></div>
+        <div class="tag-row" id="skill-filters" role="group" aria-label="Technology filters"></div>
+        <div class="filter-note"><span data-i18n="matchingNote">多选技术按任一交集筛选；同时筛选下方开发者。不计算个人能力分数。</span><button type="button" class="text-button" id="reset-filters" data-i18n="resetFilters">清空筛选</button></div>
+      </div>
+      <div class="list-heading"><span data-i18n="publicJobs">公开机会</span><span id="jobs-count" class="mono" role="status"></span></div>
+      <div id="jobs-list" class="listing-grid" aria-live="polite"></div>
+    </div></section>
+    <section id="people" class="section-shell content-section" aria-labelledby="people-title">
+      <div class="section-top"><div><div class="eyebrow muted">03 / MEET THE BUILDERS</div><h2 id="people-title" data-i18n="peopleTitle">看见作品背后的人。</h2></div><button class="button outline" type="button" data-submit="profile"><span data-i18n="addProfile">公开我的作品名片</span> <span aria-hidden="true">↗</span></button></div>
+      <p class="section-description" data-i18n="peopleDescription">一份基准测试、一篇源码解读、一个独立项目，都可以成为认识你的开始。由本人自愿公开，不抓取个人资料。</p>
+      <div class="list-heading"><span data-i18n="peopleFilterNote">沿用机会广场的搜索与筛选</span><span id="people-count" class="mono" role="status"></span></div>
+      <div id="people-list" class="listing-grid" aria-live="polite"></div>
+    </section>
+    <section id="community" class="section-shell community-section" aria-labelledby="community-title">
+      <div class="community-heading"><div class="eyebrow">BUILT TOGETHER. OPEN TO EVERYONE.</div><h2 id="community-title" data-i18n="communityTitle">一个人的经验，<br>可以成为很多人的起点。</h2><p data-i18n="communityDescription">提问、分享实验、讨论工程难题，或者帮助别人完成第一份作品。一起把社区慢慢搭起来。</p><button class="button cream" type="button" data-submit="discussion"><span data-i18n="joinDiscussion">进入 GitHub 讨论区</span> <span aria-hidden="true">↗</span></button></div>
+      <div class="community-principles"><div><span>01</span><h3 data-i18n="principle1">开放的知识</h3><p data-i18n="principle1Note">链接官方资料，补充实践路径，让经验可以被复现。</p></div><div><span>02</span><h3 data-i18n="principle2">具体的机会</h3><p data-i18n="principle2Note">说清职责、报酬、地区和技术要求，减少双方的信息差。</p></div><div><span>03</span><h3 data-i18n="principle3">相互尊重的人</h3><p data-i18n="principle3Note">尊重不同背景与贡献形式，也欢迎刚进入这个领域的人。</p></div></div>
+    </section>
+  </main>
+  <footer class="site-footer section-shell"><div><a class="brand" href="#"><span class="brand-mark" aria-hidden="true">ic<span>·</span></span><span>AI Infra <strong>Commons</strong></span></a><p data-i18n="footerNote">独立社区项目，与所列开源项目无官方隶属关系。</p></div><div class="footer-links"><button class="text-button" type="button" data-submit="repository" data-i18n="sourceCode">项目仓库 ↗</button><button class="text-button" id="privacy-button" type="button" data-i18n="privacy">公开资料与隐私</button><span class="mono">LEARN. BUILD. CONNECT.</span></div></footer>
+  <dialog id="detail-dialog" aria-labelledby="dialog-title"><div class="dialog-header"><span class="mono">AI INFRA COMMONS</span><button class="close-button" id="close-dialog" type="button" aria-label="关闭 / Close">×</button></div><div id="dialog-content"></div></dialog>
+</body>
+</html>

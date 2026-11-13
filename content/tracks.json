@@ -1,0 +1,79 @@
+[
+  {
+    "id": "foundations",
+    "number": "01",
+    "title": {"zh": "推理系统基础", "en": "Inference foundations"},
+    "subtitle": {"zh": "先建立一张系统地图", "en": "Start with a system map"},
+    "description": {"zh": "从请求进入服务，到第一个 token 返回。理解 prefill、decode、KV cache 和延迟指标。", "en": "Follow a request from arrival to its first token. Explore prefill, decode, KV cache and latency metrics."},
+    "tags": ["Serving", "KV Cache"],
+    "hardware": {"zh": "入门任务无需 GPU", "en": "Start without a GPU"},
+    "outcome": {"zh": "一份推理系统解读与实验计划", "en": "A system walkthrough and experiment plan"},
+    "resources": [
+      {"title": "vLLM · Documentation", "url": "https://docs.vllm.ai/en/latest/"},
+      {"title": "SGLang · Documentation", "url": "https://docs.sglang.io/"}
+    ],
+    "steps": [
+      {"title": {"zh": "画出请求生命周期", "en": "Map the request lifecycle"}, "task": {"zh": "阅读官方文档，画出队列、prefill、decode 与响应的关系。用自己的话解释 TTFT、每 token 延迟和吞吐量为什么不能相互替代。", "en": "Read the official documentation. Draw the queue, prefill, decode and response stages. Explain why TTFT, per-token latency and throughput answer different questions."}, "evidence": {"zh": "提交架构图和一页指标说明，注明资料版本与日期。", "en": "Publish a diagram and one-page metrics guide with source versions and dates."}},
+      {"title": {"zh": "估算 KV cache 占用", "en": "Estimate KV cache memory"}, "task": {"zh": "选择一种标准 Transformer 架构，列出层数、KV heads、head dimension、精度、序列长度和并发数，估算 KV cache 占用，并说明架构差异会如何改变假设。", "en": "For a standard Transformer, record layers, KV heads, head dimension, precision, sequence length and concurrency. Estimate KV cache memory and explain the architecture assumptions."}, "evidence": {"zh": "提交计算脚本、单位说明和两组可复算样例。", "en": "Publish a calculation script, units and two reproducible examples."}},
+      {"title": {"zh": "设计一次公平对比", "en": "Design a fair comparison"}, "task": {"zh": "写出固定模型、硬件、版本、输入输出长度和请求分布的测试方案。区分冷启动、预热和缓存命中；没有设备时交付方案，不编造结果。", "en": "Specify model, hardware, versions, input/output lengths and request distribution. Separate cold starts, warm-up and cache hits. Without hardware, submit the plan without fabricated results."}, "evidence": {"zh": "提交实验计划、预期限制和待验证问题。", "en": "Publish a plan, limitations and open questions."}}
+    ]
+  },
+  {
+    "id": "vllm",
+    "number": "02",
+    "title": {"zh": "vLLM 服务与性能", "en": "Serving with vLLM"},
+    "subtitle": {"zh": "从启动服务到读懂瓶颈", "en": "From first request to bottlenecks"},
+    "description": {"zh": "围绕一个可复现的推理服务，学习部署、批处理、性能测量与可观测性。", "en": "Build a reproducible inference service and explore deployment, batching, measurement and observability."},
+    "tags": ["vLLM", "Serving"],
+    "hardware": {"zh": "实验需自备兼容硬件", "en": "Bring compatible hardware"},
+    "outcome": {"zh": "一个服务仓库与基准测试报告", "en": "A serving repository and benchmark report"},
+    "resources": [
+      {"title": "vLLM · Documentation", "url": "https://docs.vllm.ai/en/latest/"},
+      {"title": "vLLM · Source", "url": "https://github.com/vllm-project/vllm"}
+    ],
+    "steps": [
+      {"title": {"zh": "部署最小服务", "en": "Deploy a minimal service"}, "task": {"zh": "按与你所选版本匹配的官方指南，选择有权使用且能装入设备的模型，运行一次请求。记录框架、模型 revision、驱动和设备信息；没有设备可先完成配置评审。", "en": "Use the guide for your chosen release and a model you can use and fit on your hardware. Run a request and record framework, model revision, drivers and devices. Without hardware, review the configuration first."}, "evidence": {"zh": "提交可复现 README、启动配置与脱敏示例。", "en": "Publish a reproducible README, launch configuration and sanitized example."}},
+      {"title": {"zh": "比较并发与延迟", "en": "Compare concurrency and latency"}, "task": {"zh": "固定输入输出长度，测试至少三档并发，记录 TTFT、输出 token 吞吐和失败率。重复实验并报告 p50、p95 和原始记录。", "en": "Hold input/output lengths fixed. Test at least three concurrency levels and record TTFT, output-token throughput and failure rate. Repeat runs and report p50, p95 and raw observations."}, "evidence": {"zh": "提交脚本、原始数据、图表和一段瓶颈分析。", "en": "Publish scripts, raw data, plots and a bottleneck analysis."}},
+      {"title": {"zh": "把结果变成作品", "en": "Turn the result into a portfolio"}, "task": {"zh": "解释一项配置变化的收益与代价，包括显存、尾延迟或失败率。写出硬件限制和无法推广的结论。", "en": "Explain the benefit and cost of one configuration change, including memory, tail latency or errors. Document hardware limits and conclusions that may not generalize."}, "evidence": {"zh": "提交一页技术复盘，链接到代码、配置和测试记录。", "en": "Publish a one-page retrospective linking code, configuration and measurements."}}
+    ]
+  },
+  {
+    "id": "sglang",
+    "number": "03",
+    "title": {"zh": "SGLang 与前缀复用", "en": "SGLang & prefix reuse"},
+    "subtitle": {"zh": "理解请求模式如何影响性能", "en": "Understand how workloads shape performance"},
+    "description": {"zh": "通过可控的重复前缀请求，观察缓存复用与工作负载之间的关系。", "en": "Use controlled shared-prefix requests to explore the relationship between cache reuse and workloads."},
+    "tags": ["SGLang", "KV Cache"],
+    "hardware": {"zh": "实验需自备兼容硬件", "en": "Bring compatible hardware"},
+    "outcome": {"zh": "一份前缀缓存实验与源码阅读笔记", "en": "A prefix-cache experiment and source notes"},
+    "resources": [
+      {"title": "SGLang · Documentation", "url": "https://docs.sglang.io/"},
+      {"title": "SGLang · Source", "url": "https://github.com/sgl-project/sglang"}
+    ],
+    "steps": [
+      {"title": {"zh": "沿着源码找一次请求", "en": "Trace a request through the code"}, "task": {"zh": "固定一个 release 或 commit，查找调度与前缀缓存相关入口。画出请求路径并解释缓存复用的前提。", "en": "Pin a release or commit. Locate scheduling and prefix-cache entry points, draw a request path and explain the prerequisites for reuse."}, "evidence": {"zh": "提交带固定 commit 链接的源码阅读笔记。", "en": "Publish source notes with links to a fixed commit."}},
+      {"title": {"zh": "构造共享前缀负载", "en": "Build a shared-prefix workload"}, "task": {"zh": "构造长度相近的共享前缀和不共享前缀请求。控制缓存初始状态、并发与输出长度，比较 TTFT 和吞吐；说明 tokenizer 对前缀一致性的影响。", "en": "Create similarly sized requests with and without shared prefixes. Control initial cache state, concurrency and output length. Compare TTFT and throughput and explain tokenizer effects."}, "evidence": {"zh": "提交请求生成器、版本信息与对比记录。", "en": "Publish a workload generator, versions and comparison records."}},
+      {"title": {"zh": "复现并解释一个现象", "en": "Reproduce and explain an observation"}, "task": {"zh": "选择一个与直觉不一致的结果，提出假设，改变一个变量重测。可将有价值的文档修正作为社区贡献，不要求必须合入上游。", "en": "Choose a surprising result, propose a hypothesis and rerun with one variable changed. A useful documentation fix can become a contribution; an upstream merge is not required."}, "evidence": {"zh": "提交复现步骤、解释与仍未解决的问题。", "en": "Publish reproduction steps, an explanation and unresolved questions."}}
+    ]
+  },
+  {
+    "id": "lmcache",
+    "number": "04",
+    "title": {"zh": "LMCache 与缓存分层", "en": "LMCache & cache tiers"},
+    "subtitle": {"zh": "理解计算、内存与传输的取舍", "en": "Explore compute, memory and transfer trade-offs"},
+    "description": {"zh": "连接推理引擎与 KV cache 管理，研究缓存卸载、复用和端到端收益。", "en": "Connect inference engines with KV cache management. Investigate offloading, reuse and end-to-end trade-offs."},
+    "tags": ["LMCache", "KV Cache"],
+    "hardware": {"zh": "实验需自备兼容硬件", "en": "Bring compatible hardware"},
+    "outcome": {"zh": "一份缓存方案评估与复现实验", "en": "A cache-design evaluation and reproducible experiment"},
+    "resources": [
+      {"title": "LMCache · Documentation", "url": "https://docs.lmcache.ai/"},
+      {"title": "LMCache · Source", "url": "https://github.com/LMCache/LMCache"},
+      {"title": "LMCache · Quickstart", "url": "https://docs.lmcache.ai/getting_started/quickstart.html"}
+    ],
+    "steps": [
+      {"title": {"zh": "先核对兼容关系", "en": "Check compatibility first"}, "task": {"zh": "按当前官方兼容说明选择引擎与 LMCache 版本，记录 CUDA、模型、连接器和存储后端。画出 KV cache 在各层之间移动的路径。", "en": "Choose engine and LMCache versions using current official compatibility guidance. Record CUDA, model, connector and storage backend. Map how KV cache moves between tiers."}, "evidence": {"zh": "提交版本表、配置说明和数据流图。", "en": "Publish a version matrix, configuration notes and data-flow diagram."}},
+      {"title": {"zh": "对比重计算与读取", "en": "Compare recomputation and retrieval"}, "task": {"zh": "保持负载相同，对比关闭缓存、冷缓存和热缓存三种情况。记录 TTFT、命中情况、内存占用与传输开销，解释何时缓存不划算。", "en": "Keep the workload fixed and compare cache disabled, cold cache and warm cache. Record TTFT, hits, memory and transfer costs. Explain when caching is not beneficial."}, "evidence": {"zh": "提交配置、原始记录与收益边界分析。", "en": "Publish configurations, raw measurements and an analysis of the benefit boundary."}},
+      {"title": {"zh": "写出生产化评估", "en": "Write an operational assessment"}, "task": {"zh": "讨论缓存容量、淘汰、服务重启与故障回退如何影响结果。把未实验验证的判断标为假设。", "en": "Discuss capacity, eviction, restarts and fallback behavior. Label claims you have not tested as hypotheses."}, "evidence": {"zh": "提交设计说明，区分测量结果、推断与后续计划。", "en": "Publish a design note separating measurements, inferences and future work."}}
+    ]
+  }
+]

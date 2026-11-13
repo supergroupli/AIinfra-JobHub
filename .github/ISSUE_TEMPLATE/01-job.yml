@@ -1,0 +1,108 @@
+name: "Post an opportunity / 发布职位或合作"
+description: "Submit a real AI infrastructure opportunity for review / 提交真实机会供维护者审核"
+title: "[Opportunity] Company — Role"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue is PUBLIC immediately. Website publication requires maintainer review.
+        Please submit only an opportunity you are authorized to represent. No placement fees.
+        本 Issue 提交后立即公开；网站收录需维护者审核。请只发布有权代表的真实机会，不收求职费用。
+        Do not include private resumes, identity documents or confidential information.
+  - type: input
+    id: company
+    attributes:
+      label: "Company or project / 公司或项目"
+      description: "Include the official website / 附官方链接"
+    validations:
+      required: true
+  - type: input
+    id: role
+    attributes:
+      label: "Role and experience / 职位与经验要求"
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: "Opportunity type / 机会类型"
+      options:
+        - full-time
+        - internship
+        - contract
+        - research
+        - open-source
+    validations:
+      required: true
+  - type: dropdown
+    id: technologies
+    attributes:
+      label: "Technologies / 技术方向"
+      multiple: true
+      options:
+        - Serving
+        - KV Cache
+        - vLLM
+        - SGLang
+        - LMCache
+        - CUDA
+        - Triton
+        - Kubernetes
+        - Distributed Systems
+    validations:
+      required: true
+  - type: textarea
+    id: work
+    attributes:
+      label: "Work and evidence / 实际工作与能力证据"
+      description: "Describe the problem, responsibilities, required vs optional skills, and useful portfolio evidence. English or Chinese is welcome; maintainers can help translate. / 说明问题、职责、必需与可选技能，以及希望看到的作品。可用中英文，维护者协助翻译。"
+    validations:
+      required: true
+  - type: dropdown
+    id: arrangement
+    attributes:
+      label: "Work arrangement / 协作方式"
+      options:
+        - remote-global
+        - remote-regional
+        - hybrid
+        - onsite
+    validations:
+      required: true
+  - type: textarea
+    id: location
+    attributes:
+      label: "Location, eligibility and hours / 地区、雇佣限制与时间"
+      description: "State eligible countries/regions, work authorization or sponsorship, timezone overlap, languages and expected hours. Remote does not automatically mean worldwide. / 说明可雇佣地区、工作许可或签证支持、时区重叠、语言和工作时间；远程不等于全球可雇佣。"
+    validations:
+      required: true
+  - type: input
+    id: compensation
+    attributes:
+      label: "Compensation / 报酬"
+      description: "Range, currency and period, e.g. USD 100k–140k/year. For volunteer work, explicitly state unpaid. / 范围、币种与计薪周期；志愿合作明确写无薪。"
+    validations:
+      required: true
+  - type: input
+    id: application
+    attributes:
+      label: "Official application URL / 官方申请入口"
+      description: "Use an HTTPS company or project application page; do not ask applicants to post private resumes here. / 使用 HTTPS 官方申请页，不要求求职者公开简历。"
+    validations:
+      required: true
+  - type: input
+    id: expiry
+    attributes:
+      label: "Expiry date / 展示截止日期"
+      description: "YYYY-MM-DD; reconfirm within 90 days, preferably 30 / 最长 90 天，建议 30 天后重新确认。"
+    validations:
+      required: true
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: "Public submission / 公开提交"
+      options:
+        - label: "I am authorized to post this opportunity and agree to public display on the community site. / 我有权发布该机会，并同意社区网站公开展示。"
+          required: true
+        - label: "I understand the issue is public immediately, will update or withdraw stale information, and will not charge applicants. / 我理解提交后立即公开，会更新或撤回过期信息，不向求职者收费。"
+          required: true
