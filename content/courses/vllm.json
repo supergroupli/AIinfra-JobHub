@@ -7,12 +7,12 @@
     "en": "vLLM inference engineering"
   },
   "subtitle": {
-    "zh": "10 天从首个请求走到可复现的性能优化",
-    "en": "From a first request to a reproducible optimization in 10 days"
+    "zh": "10 天，跟着实验做出第一份推理工程作品",
+    "en": "Build your first inference engineering portfolio in 10 guided days"
   },
   "description": {
-    "zh": "搭建一个版本固定的小型 vLLM 服务，理解调度、KV cache、基准测试、量化与扩展方式。用一份受控实验完成结课；目标是具备入门工程能力，不承诺 10 天掌握所有生产运维细节。",
-    "en": "Build a small, version-pinned vLLM service and study scheduling, KV cache, benchmarking, quantization and scaling. Finish with a controlled experiment. The goal is practical foundations, not mastery of every production concern in ten days."
+    "zh": "从可运行的本机模拟服务出发，逐步掌握请求、指标、缓存、参数实验和排错；有兼容 GPU 时接入固定版本 vLLM 实测。每天提供图解、代码、操作步骤、结果对照与测验，最后交付可复查的工程报告。",
+    "en": "Start with a runnable local mock, then learn requests, metrics, caching, controlled tuning and debugging. With a compatible GPU, connect the same tools to a pinned vLLM service. Each day has diagrams, code, instructions, expected results and quizzes, ending with an auditable report."
   },
   "level": "intermediate",
   "hoursPerDay": {
@@ -20,14 +20,14 @@
     "en": "120–150 minutes a day; about 20–25 hours total"
   },
   "prerequisites": {
-    "zh": "完成系统基础路线或理解 TTFT、吞吐量、KV cache；能使用 Python、HTTP、终端与独立环境。",
-    "en": "Complete the foundations path or understand TTFT, throughput and KV cache. Be comfortable with Python, HTTP, a terminal and isolated environments."
+    "zh": "完成系统基础；会运行 Python 文件、读列表/字典与 JSON。GPU 路线另需 Linux 终端与虚拟环境基础。第一天先跑 CPU 自检，不要求先买 GPU。",
+    "en": "Complete foundations; run Python scripts and read lists, dictionaries and JSON. The GPU route also needs Linux terminal and virtual-environment skills. Begin with the CPU self-check; no GPU purchase is required."
   },
   "hardware": {
-    "zh": "实测建议一块所选 vLLM 版本支持、能容纳小模型与缓存的 GPU。第 8 天多卡为选做；无 GPU 可完成配置评审、源码阅读和数据分析，但要标注未运行的实验。",
-    "en": "Measurements need a supported GPU with room for a small model and cache. Multi-GPU work on day 8 is optional. Without a GPU, complete configuration reviews, source reading and analysis while labeling experiments that were not run."
+    "zh": "CPU 路径：Python 3.9+ 标准库，普通电脑即可；GPU 路径：Linux x86_64、Python 3.12、vLLM 0.33.0、兼容 NVIDIA GPU（本示例建议空闲 8 GiB 以上，容量建议非保证）及匹配 CUDA 的驱动。GPU 命令已对照官方资料，尚未由本站真机验证；模拟不会运行模型。",
+    "en": "CPU route: Python 3.9+ standard library on a laptop. GPU route: Linux x86_64, Python 3.12, vLLM 0.33.0, a compatible NVIDIA GPU (8 GiB or more free is a teaching budget, not a guarantee), and a matching CUDA driver. GPU commands were checked against official sources but not executed on GPU by this site. The simulator runs no model."
   },
-  "hardwareTier": "gpu-required",
+  "hardwareTier": "gpu-optional",
   "tags": [
     "vLLM",
     "Serving",
@@ -46,11 +46,27 @@
     ]
   },
   "outcome": {
-    "zh": "一个可启动的推理服务、受控基准脚本、优化前后证据和运行手册；无 GPU 路径交付明确标注的设计与分析作品。",
-    "en": "A reproducible inference service, controlled benchmark, before/after evidence and runbook; the no-GPU path produces an explicitly labeled design and analysis portfolio."
+    "zh": "一个带原始 JSONL、汇总 CSV、实验配置、校验脚本和技术复盘的作品目录。CPU 作品标注 simulated/design；只有真实 vLLM 运行记录才标 measured。",
+    "en": "A portfolio directory with raw JSONL, summary CSV, experiment settings, validation and a technical review. Label CPU work simulated/design; reserve measured for actual vLLM runs."
   },
   "lastVerified": "2026-11-13",
   "resources": [
+    {
+      "title": "vLLM 0.33.0 release",
+      "url": "https://github.com/vllm-project/vllm/releases/tag/v0.33.0"
+    },
+    {
+      "title": "vLLM 0.33.0 · GPU installation",
+      "url": "https://docs.vllm.ai/en/v0.33.0/getting_started/installation/gpu/"
+    },
+    {
+      "title": "vLLM 0.33.0 · serve CLI",
+      "url": "https://docs.vllm.ai/en/v0.33.0/cli/serve/"
+    },
+    {
+      "title": "Qwen2.5-0.5B-Instruct · pinned revision",
+      "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/tree/7ae557604adf67be50417f59c2c2f167def9a775"
+    },
     {
       "title": "vLLM · Quickstart",
       "url": "https://docs.vllm.ai/en/latest/getting_started/quickstart/"
@@ -108,32 +124,50 @@
         "en": "Pin the environment and a minimal model"
       },
       "lesson": {
-        "zh": "vLLM 是推理引擎与服务系统，模型权重只是其中一个输入。驱动、加速器、PyTorch、框架版本和模型结构共同决定能否运行；官方 latest 文档不必然匹配你安装的 release。先选择一个适合设备的小模型并固定 revision，再记录环境。把安装问题与模型容量问题分开排查，比不断尝试未记录的命令更容易复现。",
-        "en": "vLLM is an inference engine and serving system; model weights are only one input. Drivers, accelerators, PyTorch, framework versions and model architecture jointly determine compatibility. The latest documentation may not match an installed release. Select a small model that fits your device, pin its revision and record the environment. Separating installation failures from capacity problems makes debugging more reproducible than trying undocumented commands repeatedly."
+        "zh": "先把“客户端能收到响应”和“模型在 GPU 上计算”分开。今天先用 Python 模拟服务确认工作目录、请求格式与输出文件都正确，再选择 GPU 路线。模拟返回固定文字，不加载权重；因此它能验证客户端，却不能证明 vLLM 的性能。安装版本、模型 revision 和启动参数要一起记录，否则同一条命令以后可能运行出不同的软件组合。",
+        "en": "Separate receiving a response from running model computation on a GPU. First use the Python mock to verify your directory, request format and output files; then choose the GPU route. The mock returns fixed text and loads no weights, so it tests the client without establishing vLLM performance. Record the package version, model revision and launch settings together."
       },
       "task": {
-        "zh": "核对对应 release 的安装与支持矩阵，建立独立环境并启动官方最小示例。记录框架版本、模型 revision、驱动、设备和实际启动命令；保存一次请求的脱敏输出。",
-        "en": "Check installation and support guidance for your chosen release. Create an isolated environment and run the official minimal example. Record framework version, model revision, drivers, device and launch command, then save a sanitized request result."
+        "zh": "按下面步骤完成当天实验；先预测结果，再执行命令。把实际输出、你改动的一处代码或参数，以及一个未理解的问题写入当天笔记。",
+        "en": "Follow the steps below: predict, run, then record actual output, one code/parameter change and one remaining question."
       },
       "evidence": {
-        "zh": "environment.json、固定版本的依赖说明、启动日志和 smoke-test 记录。",
-        "en": "environment.json, pinned dependency notes, startup logs and a smoke-test record."
+        "zh": "Day 1 笔记、对应 out/ 实验文件、两道测验解析，以及本人修改与观察；第 10 天汇总为 REPORT.md。",
+        "en": "Day 1 notes, corresponding out/ artifacts, two explained quiz answers and your change/observation; consolidate into REPORT.md on day 10."
       },
       "checklist": {
         "zh": [
-          "环境与模型版本可以追溯，说明选择该模型的容量依据",
-          "区分已运行、失败与尚未运行的步骤"
+          "能够解释当天图解中的输入、处理和输出",
+          "保存实际运行结果，区分模拟、设计和GPU实测",
+          "完成独立修改并解释至少一个错误/局限"
         ],
         "en": [
-          "Make environment and model versions traceable and explain the memory choice",
-          "Distinguish completed, failed and unexecuted steps"
+          "Explain the diagram’s inputs, processing and outputs",
+          "Save actual results and distinguish simulation, design and GPU measurement",
+          "Complete an independent change and explain an error or limitation"
         ]
       },
       "noGpu": {
-        "zh": "完成环境兼容表与容量估算；若 CPU 后端适配你的系统，可按该版本官方 CPU 指南选做，不把配置评审记成 GPU 实测。",
-        "en": "Create a compatibility matrix and memory estimate. If the release's CPU backend supports your system, try its official CPU guide; configuration review is not a GPU measurement."
+        "zh": "本日 CPU 命令可以完成；mock/虚拟时间结果标 simulated，容量和部署方案标 design。仅 GPU 可选步骤暂缓，不能把它们标记为已实测。",
+        "en": "Complete today’s CPU commands. Label mock/virtual-time data simulated and capacity/deployment plans design. Defer GPU-only steps without marking them measured."
       },
       "reading": [
+        {
+          "title": "vLLM 0.33.0 release",
+          "url": "https://github.com/vllm-project/vllm/releases/tag/v0.33.0"
+        },
+        {
+          "title": "vLLM 0.33.0 · GPU installation",
+          "url": "https://docs.vllm.ai/en/v0.33.0/getting_started/installation/gpu/"
+        },
+        {
+          "title": "vLLM 0.33.0 · serve CLI",
+          "url": "https://docs.vllm.ai/en/v0.33.0/cli/serve/"
+        },
+        {
+          "title": "Qwen2.5-0.5B-Instruct · pinned revision",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/tree/7ae557604adf67be50417f59c2c2f167def9a775"
+        },
         {
           "title": "vLLM · Quickstart",
           "url": "https://docs.vllm.ai/en/latest/getting_started/quickstart/"
@@ -143,14 +177,222 @@
           "url": "https://docs.vllm.ai/en/latest/configuration/conserving_memory/"
         }
       ],
-      "code": {
-        "language": "python",
-        "caption": {
-          "zh": "记录当前环境，不代替版本兼容性检查",
-          "en": "Record the environment; this does not replace compatibility checks"
+      "explanation": [
+        {
+          "title": {
+            "zh": "今天的两条路线",
+            "en": "Two routes today"
+          },
+          "body": {
+            "zh": "CPU 路线只使用 Python 标准库；所有实验数据必须写 simulated。GPU 路线选 Qwen2.5-0.5B-Instruct，固定 revision 7ae557604adf67be50417f59c2c2f167def9a775。权重约 1 GB，但运行时还有缓存、激活和框架开销，不能按权重大小挑显存。",
+            "en": "The CPU route only uses the standard library and labels data simulated. The GPU route pins Qwen2.5-0.5B-Instruct to revision 7ae557604adf67be50417f59c2c2f167def9a775. Roughly 1 GB of weights is only part of the memory requirement: cache, activations and runtime also need space."
+          }
         },
-        "content": "import importlib.metadata as metadata\nimport json\nimport platform\n\nversions = {\"python\": platform.python_version(), \"platform\": platform.platform()}\nfor name in (\"vllm\", \"torch\", \"transformers\"):\n    try:\n        versions[name] = metadata.version(name)\n    except metadata.PackageNotFoundError:\n        versions[name] = \"not installed\"\nprint(json.dumps(versions, indent=2))"
-      }
+        {
+          "title": {
+            "zh": "先判断环境，再安装",
+            "en": "Check the environment first"
+          },
+          "body": {
+            "zh": "GPU 示例面向 Linux NVIDIA：官方 0.33.0 要求计算能力至少 7.5；这里使用 Python 3.12 独立环境。先看 nvidia-smi，驱动必须兼容所安装 wheel 的 CUDA；官方 CUDA 13 镜像常规运行要求 R580 或更新。Mac 和不兼容设备先走 CPU 路线。本站未在 GPU 执行下面的命令，不把资料核对写成实测通过。",
+            "en": "The NVIDIA example targets Linux; version 0.33.0 lists compute capability 7.5 or above. Use a separate Python 3.12 environment and inspect nvidia-smi first. The driver must support the wheel CUDA runtime; official CUDA 13 images normally require R580 or newer. Use the CPU route on incompatible devices. The following GPU commands have not been GPU-tested by this site."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "从命令到可检查的结果",
+          "en": "From command to inspectable result"
+        },
+        "nodes": [
+          {
+            "zh": "终端运行脚本",
+            "en": "Run script"
+          },
+          {
+            "zh": "构造请求",
+            "en": "Build request"
+          },
+          {
+            "zh": "本机服务",
+            "en": "Local service"
+          },
+          {
+            "zh": "保存响应与配置",
+            "en": "Save response and settings"
+          }
+        ],
+        "caption": {
+          "zh": "绿色路线是接口练习；换成 vLLM 后才包含模型推理。",
+          "en": "The mock route practices the interface; model inference occurs only after switching to vLLM."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "下载、解压、自检",
+            "en": "Download, unzip, check"
+          },
+          "body": {
+            "zh": "点击本页实验包，解压得到 vllm 文件夹。在终端进入该文件夹；以下所有天数都从这里运行。Windows CPU 路线可把 python3 换成 py -3。",
+            "en": "Download this page’s lab ZIP and unzip the vllm folder. Run every day from inside it. On Windows, replace python3 with py -3 for the CPU route."
+          },
+          "command": "cd vllm\npython3 lab.py selfcheck\npython3 lab.py env",
+          "expected": {
+            "zh": "显示 PASS；out/environment.json 记录 Python 和包版本。vllm=not installed 对 CPU 路线正常。",
+            "en": "PASS appears; out/environment.json records Python and packages. vllm=not installed is normal on the CPU route."
+          }
+        },
+        {
+          "title": {
+            "zh": "CPU 终端 A：启动并保持服务",
+            "en": "CPU terminal A: start and keep the service running"
+          },
+          "body": {
+            "zh": "从 vllm 目录运行下面一条命令。终端会一直被服务占用，这是正常现象；保持它运行，另开终端 B 完成下一步。需要结束时在终端 A 按 Ctrl+C。",
+            "en": "Run this one command from the vllm directory. The terminal remains occupied by the server; this is expected. Leave it running and open terminal B for the next step. Ctrl+C in A stops it."
+          },
+          "expected": {
+            "zh": "看到 SIMULATED 与 127.0.0.1:8000。此终端暂时不会返回命令提示符。",
+            "en": "SIMULATED and 127.0.0.1:8000 appear. This terminal does not return to its prompt yet."
+          },
+          "command": "python3 lab.py mock"
+        },
+        {
+          "title": {
+            "zh": "CPU 终端 B：发送首个请求",
+            "en": "CPU terminal B: send the first request"
+          },
+          "body": {
+            "zh": "新开一个终端，进入刚才解压出来的 vllm 文件夹（与终端 A 相同的目录），再执行下面命令。不要在仍运行服务的终端 A 粘贴。",
+            "en": "Open a new terminal and enter the same extracted vllm folder as terminal A. Run the command here, not in the occupied server terminal."
+          },
+          "expected": {
+            "zh": "summary 中 ok=1；requests.jsonl 的 response 为 MOCK OK、evidence 为 simulated。之后 CPU 练习继续保留终端 A 的 mock。",
+            "en": "Summary shows ok=1; requests.jsonl contains MOCK OK and evidence simulated. Keep the mock in A running for subsequent CPU exercises."
+          },
+          "command": "python3 lab.py request --out out/first"
+        },
+        {
+          "title": {
+            "zh": "GPU 可选：准备独立环境",
+            "en": "Optional GPU: prepare a separate environment"
+          },
+          "body": {
+            "zh": "仅在符合上方硬件要求的 Linux GPU 机器执行。进入解压后的 vllm 目录，安装固定版本并检查将要运行的命令。下面尚未启动服务；CPU 学习者跳过全部 GPU 可选步骤。",
+            "en": "Run only on a Linux GPU machine meeting the requirements above. Enter the extracted vllm directory, install the pinned version and inspect the launch command. This step does not start the server. CPU learners skip GPU-only steps."
+          },
+          "expected": {
+            "zh": "输出完整启动命令并返回命令提示符；out/ 内保存环境和依赖记录。",
+            "en": "The complete launch command is printed and the prompt returns. Environment and dependency records are saved in out/."
+          },
+          "command": "nvidia-smi\npython3.12 -m venv .venv\nsource .venv/bin/activate\npython -m pip install \"vllm==0.33.0\"\npython lab.py env\npython -m pip freeze > out/requirements.lock.txt\npython serve.py --dry-run"
+        },
+        {
+          "title": {
+            "zh": "GPU 终端 A：启动真实服务",
+            "en": "GPU terminal A: start the real service"
+          },
+          "body": {
+            "zh": "在刚才激活环境的终端启动。它固定模型/tokenizer revision、1024 上下文、4 个序列、FP16、50% 显存预算和 eager 模式，监听 8001。等待下载、编译及就绪日志，保持终端运行；后续命令在新终端 B 执行。",
+            "en": "Start from the activated environment. The launcher pins model/tokenizer revision, 1024 context, 4 sequences, FP16, 50% memory budget and eager mode on port 8001. Wait through download/compilation for readiness. Keep this terminal running and use a new terminal B for requests."
+          },
+          "expected": {
+            "zh": "服务日志显示启动成功。当前终端被服务占用属于正常情况，不继续在这里粘贴客户端命令。",
+            "en": "Server logs show successful startup. The occupied terminal is expected; do not paste client commands here."
+          },
+          "command": "python serve.py --cache off"
+        },
+        {
+          "title": {
+            "zh": "GPU 终端 B：激活环境并请求",
+            "en": "GPU terminal B: activate the environment and request"
+          },
+          "body": {
+            "zh": "打开第二个 GPU 终端，进入同一个 vllm 目录，然后执行下面命令。真实 GPU 使用 8001；CPU mock 使用 8000，二者不能混用。本站没有执行真机验证，以你的实际运行记录验收。",
+            "en": "Open a second GPU terminal and enter the same vllm directory, then run these commands. Real GPU uses 8001; the CPU mock uses 8000. This site has not GPU-tested the instructions; validate using your own run records."
+          },
+          "expected": {
+            "zh": "客户端 ok=1；模型文字可变，以 JSON 结构和状态验收。没有成功运行就保留错误，不填写实测通过。",
+            "en": "The client reports ok=1. Model wording can vary; validate JSON structure/status. Preserve failures instead of claiming a successful measurement."
+          },
+          "command": "source .venv/bin/activate\npython lab.py request --port 8001 --model Qwen/Qwen2.5-0.5B-Instruct --evidence measured --out out/gpu-first"
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "找不到 lab.py",
+            "en": "lab.py not found"
+          },
+          "fix": {
+            "zh": "终端必须位于解压后的 vllm 文件夹。用 pwd（Windows 用 cd）查看目录，再列出 lab.py。",
+            "en": "Enter the extracted vllm folder. Check pwd (cd on Windows) and confirm lab.py exists."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "Connection refused / CUDA 显存或驱动错误",
+            "en": "Connection refused / CUDA memory or driver error"
+          },
+          "fix": {
+            "zh": "先确认 mock 8000 或 GPU 8001 服务仍在运行。GPU 出错先保存日志；检查驱动兼容性及空闲显存，尝试 python serve.py --context 512 --sequences 1。仍失败就完成 CPU 路线，保留失败说明。",
+            "en": "Confirm the mock on 8000 or GPU service on 8001 is running. Preserve GPU logs, check driver compatibility/free memory, and try python serve.py --context 512 --sequences 1. If still blocked, complete the CPU route and record the failure."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "mock 返回 MOCK OK，证明了什么？",
+            "en": "What does MOCK OK establish?"
+          },
+          "options": [
+            {
+              "zh": "客户端能访问本机模拟接口",
+              "en": "The client reached the local mock API"
+            },
+            {
+              "zh": "vLLM 已完成 GPU 推理",
+              "en": "vLLM performed GPU inference"
+            },
+            {
+              "zh": "模型质量已经达标",
+              "en": "Model quality is sufficient"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "mock 没有模型或 tokenizer，只能验证请求和响应路径。",
+            "en": "The mock has no model or tokenizer; it validates the request/response path."
+          }
+        },
+        {
+          "question": {
+            "zh": "复现 GPU 实验至少要固定什么？",
+            "en": "What must a reproducible GPU run pin?"
+          },
+          "options": [
+            {
+              "zh": "只写模型昵称",
+              "en": "Only a model nickname"
+            },
+            {
+              "zh": "框架版本、模型 revision、完整启动参数",
+              "en": "Framework version, model revision and launch settings"
+            },
+            {
+              "zh": "只记录 GPU 利用率",
+              "en": "Only GPU utilization"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "同名模型、默认参数和软件版本都可能变化；硬件和负载也要记录。",
+            "en": "Model revisions, defaults and software can change; hardware and workload must also be recorded."
+          }
+        }
+      ]
     },
     {
       "day": 2,
@@ -163,26 +405,28 @@
         "en": "A usable service is more than a text response. Clients need the model name, chat template, sampling parameters, timeouts and error handling. Streaming requires separate connection, first-token and completion events. API compatibility does not imply identical behavior for every extension. Fix request content and templates, then build success and failure cases before integrating an application. This prevents request-format errors from being mistaken for performance problems."
       },
       "task": {
-        "zh": "仅在自己的本地服务测试非流式、流式、错误模型名、缺失字段和超时五种情况。确认聊天模板的来源，保存请求 JSON 与响应状态，写一个带超时的最小客户端。",
-        "en": "Test non-streaming, streaming, an invalid model name, missing fields and a timeout against your own local service. Verify the chat-template source, preserve request JSON and response status, and write a minimal client with a timeout."
+        "zh": "按下面步骤完成当天实验；先预测结果，再执行命令。把实际输出、你改动的一处代码或参数，以及一个未理解的问题写入当天笔记。",
+        "en": "Follow the steps below: predict, run, then record actual output, one code/parameter change and one remaining question."
       },
       "evidence": {
-        "zh": "client.py、五个 API 用例和接口行为说明。",
-        "en": "client.py, five API cases and an interface-behavior note."
+        "zh": "Day 2 笔记、对应 out/ 实验文件、两道测验解析，以及本人修改与观察；第 10 天汇总为 REPORT.md。",
+        "en": "Day 2 notes, corresponding out/ artifacts, two explained quiz answers and your change/observation; consolidate into REPORT.md on day 10."
       },
       "checklist": {
         "zh": [
-          "正常请求可复现，错误用例有明确处理",
-          "记录实际服务模型名、模板和采样设置"
+          "能够解释当天图解中的输入、处理和输出",
+          "保存实际运行结果，区分模拟、设计和GPU实测",
+          "完成独立修改并解释至少一个错误/局限"
         ],
         "en": [
-          "Successful requests reproduce and failures have explicit handling",
-          "Record the served model name, template and sampling settings"
+          "Explain the diagram’s inputs, processing and outputs",
+          "Save actual results and distinguish simulation, design and GPU measurement",
+          "Complete an independent change and explain an error or limitation"
         ]
       },
       "noGpu": {
-        "zh": "可用一个本地 mock HTTP 服务返回自建响应，验证客户端解析和错误处理；必须标明它没有执行模型推理。",
-        "en": "Use a local mock HTTP service with self-created responses to test client parsing and failures. Clearly state that it performs no model inference."
+        "zh": "本日 CPU 命令可以完成；mock/虚拟时间结果标 simulated，容量和部署方案标 design。仅 GPU 可选步骤暂缓，不能把它们标记为已实测。",
+        "en": "Complete today’s CPU commands. Label mock/virtual-time data simulated and capacity/deployment plans design. Defer GPU-only steps without marking them measured."
       },
       "reading": [
         {
@@ -192,6 +436,197 @@
         {
           "title": "vLLM · Quickstart",
           "url": "https://docs.vllm.ai/en/latest/getting_started/quickstart/"
+        }
+      ],
+      "interactive": "timeline",
+      "explanation": [
+        {
+          "title": {
+            "zh": "一次响应有多个时间点",
+            "en": "A response has several timestamps"
+          },
+          "body": {
+            "zh": "从发送请求到完整响应是端到端延迟；流式接口能更早收到片段。脚本记录首个非空 content 事件，它可能包含多个 token，因此这里叫 first_content_latency_ms，不直接命名 TTFT。非流式请求没有这个时间点，应保留 null，不能把完整响应耗时当首 token 延迟。",
+            "en": "End-to-end latency runs from sending to completion. Streaming can expose content earlier. The client times the first non-empty content event, which may contain several tokens, so it calls the field first_content_latency_ms rather than TTFT. Non-streaming requests leave it null."
+          }
+        },
+        {
+          "title": {
+            "zh": "让错误成为数据",
+            "en": "Make errors part of the data"
+          },
+          "body": {
+            "zh": "成功、HTTP 错误和超时都要有 request_id。404 常表示模型名或路径错误；超时表示客户端等待预算耗尽，不代表服务器必然停止了计算。模拟器提供显式注入标记，方便在自己的本机练习恢复步骤。",
+            "en": "Every success, HTTP error and timeout needs a request ID. A 404 often indicates the model name or path. A timeout means the client exhausted its wait budget, not necessarily that server computation stopped. The mock provides explicit fault markers for local practice."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "流式响应时间线",
+          "en": "Streaming response timeline"
+        },
+        "nodes": [
+          {
+            "zh": "发送",
+            "en": "Send"
+          },
+          {
+            "zh": "建立连接 / 排队",
+            "en": "Connect / queue"
+          },
+          {
+            "zh": "首个内容事件",
+            "en": "First content event"
+          },
+          {
+            "zh": "后续内容",
+            "en": "More content"
+          },
+          {
+            "zh": "完成",
+            "en": "Finish"
+          }
+        ],
+        "caption": {
+          "zh": "客户端只能看到外部时间；无法仅从这条时间线分离真实排队和计算耗时。",
+          "en": "Client timing alone cannot separate real queueing and computation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "先确认 CPU mock 正在运行",
+            "en": "First confirm the CPU mock is running"
+          },
+          "body": {
+            "zh": "本日默认 HTTP 命令访问 8000 端口的 CPU mock。若第 1 天的 mock 已停止，请在单独的服务终端 A、vllm 目录中运行下面命令并保持它运行；若已运行则跳过，避免重复占用端口。另一个客户端终端 B 进入同一 vllm 目录执行后续命令。8001 的 GPU 服务不会响应默认 8000 请求；故障注入仅对 mock 有效。",
+            "en": "Today’s default HTTP commands target the CPU mock on port 8000. If the day-1 mock stopped, run the command below in a separate server terminal A inside vllm and leave it running. Skip it if already running to avoid a port conflict. Use client terminal B in the same directory for following commands. GPU port 8001 does not answer default port-8000 requests; fault injection works only on the mock."
+          },
+          "expected": {
+            "zh": "终端 A 显示 127.0.0.1:8000，随后保持服务；切到终端 B 执行后续步骤。",
+            "en": "Terminal A shows 127.0.0.1:8000 and stays occupied. Switch to terminal B for the following steps."
+          },
+          "command": "python3 lab.py mock"
+        },
+        {
+          "title": {
+            "zh": "比较流式与非流式",
+            "en": "Compare streaming and non-streaming"
+          },
+          "body": {
+            "zh": "保留第一天 mock 服务。读取两个目录的 requests.jsonl，比较 first_content_latency_ms 与 latency_ms。",
+            "en": "Keep the day-1 mock running. Compare both timing fields in the two requests.jsonl files."
+          },
+          "command": "python3 lab.py request --out out/plain\npython3 lab.py request --stream --out out/stream",
+          "expected": {
+            "zh": "两次都成功；plain 的首内容时间为 null，stream 为非负数，且不大于完整响应耗时。",
+            "en": "Both succeed. The plain first-content time is null; the streaming value is nonnegative and no larger than end-to-end latency."
+          }
+        },
+        {
+          "title": {
+            "zh": "复现错误和超时",
+            "en": "Reproduce errors and timeouts"
+          },
+          "body": {
+            "zh": "这些注入标记只对教学 mock 生效，不发送到真实模型来模拟故障。每次使用独立输出目录。",
+            "en": "Fault markers work only on the teaching mock. Do not send them to a real model as a fault simulator. Keep separate output directories."
+          },
+          "command": "python3 lab.py request --model wrong-model --out out/wrong-model\npython3 lab.py request --prompt INJECT_ERROR --out out/error\npython3 lab.py request --prompt INJECT_TIMEOUT --timeout 0.05 --out out/timeout",
+          "expected": {
+            "zh": "分别得到 error/404、error/500、timeout。没有成功样本时延迟分位数与 token 吞吐应为 null。",
+            "en": "Results are error/404, error/500 and timeout. With no successful samples, latency percentiles and token throughput remain null."
+          }
+        },
+        {
+          "title": {
+            "zh": "自己的修改",
+            "en": "Your modification"
+          },
+          "body": {
+            "zh": "阅读 request_one，找到开始、首内容、结束三个时间点。修改提示词，再用 GPU 服务（如已有）运行相同客户端；证据类型要分别保存。",
+            "en": "Find the start, first-content and end timestamps in request_one. Change the prompt; if a GPU service is available, run the same client there with separate evidence labels."
+          },
+          "command": "python3 lab.py request --stream --prompt \"Explain a queue in one sentence.\" --out out/my-request",
+          "expected": {
+            "zh": "保存一条请求并在笔记中说明为什么首内容时间不是总延迟。",
+            "en": "Save the request and explain why first-content latency differs from total latency."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "流式首内容时间为空",
+            "en": "Streaming first-content time is null"
+          },
+          "fix": {
+            "zh": "检查 status、响应类型和 choices.delta.content；错误响应或没有内容的事件不会产生这个指标。",
+            "en": "Check status, response type and choices.delta.content; errors or content-free events do not produce it."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "超时后误以为服务已停止",
+            "en": "Assuming timeout stopped the service"
+          },
+          "fix": {
+            "zh": "再发一次正常请求；客户端超时和服务进程存活是两件事。不要把失败请求从结果分母删除。",
+            "en": "Send a normal request again. Client timeout and server liveness are separate; retain failures in the denominator."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "非流式响应耗时 1 秒，可以直接说 TTFT=1 秒吗？",
+            "en": "Can a 1-second non-streaming response establish TTFT=1s?"
+          },
+          "options": [
+            {
+              "zh": "可以",
+              "en": "Yes"
+            },
+            {
+              "zh": "不可以，没有观测首 token",
+              "en": "No, the first token was not observed"
+            },
+            {
+              "zh": "只要模型小就可以",
+              "en": "Only for a small model"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "一次返回完整响应，不能知道生成第一个 token 的时刻。",
+            "en": "A complete response does not expose when the first token was generated."
+          }
+        },
+        {
+          "question": {
+            "zh": "12 个请求中 2 个超时，成功率的分母是多少？",
+            "en": "With 12 requests and 2 timeouts, what is the success-rate denominator?"
+          },
+          "options": [
+            {
+              "zh": "10",
+              "en": "10"
+            },
+            {
+              "zh": "2",
+              "en": "2"
+            },
+            {
+              "zh": "12",
+              "en": "12"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "所有已发出的请求都进入分母；失败不能静默消失。",
+            "en": "All submitted requests belong in the denominator."
+          }
         }
       ]
     },
@@ -206,26 +641,28 @@
         "en": "After admission, the scheduler decides which tokens to process and the execution layer performs model computation. KV cache holds state for in-flight sequences, limiting the work that can advance concurrently. Block-based management reduces dependence on large contiguous allocations but does not remove every memory constraint. Pin a commit and trace request objects, scheduler outputs and cache allocation rather than memorizing class names that may change between versions."
       },
       "task": {
-        "zh": "从所用版本定位调度和 KV cache 管理入口，画出一次短请求与长请求的路径。结合启动日志或指标，解释上下文长度和并发为何影响可用缓存。",
-        "en": "Locate scheduling and KV-management entry points in your pinned version. Diagram short and long request paths. Use startup logs or metrics to explain how context length and concurrency affect cache availability."
+        "zh": "按下面步骤完成当天实验；先预测结果，再执行命令。把实际输出、你改动的一处代码或参数，以及一个未理解的问题写入当天笔记。",
+        "en": "Follow the steps below: predict, run, then record actual output, one code/parameter change and one remaining question."
       },
       "evidence": {
-        "zh": "source-walkthrough.md，包含固定 commit 链接、对象流图与内存估算。",
-        "en": "source-walkthrough.md with fixed-commit links, object-flow diagrams and memory estimates."
+        "zh": "Day 3 笔记、对应 out/ 实验文件、两道测验解析，以及本人修改与观察；第 10 天汇总为 REPORT.md。",
+        "en": "Day 3 notes, corresponding out/ artifacts, two explained quiz answers and your change/observation; consolidate into REPORT.md on day 10."
       },
       "checklist": {
         "zh": [
-          "图中区分调度决策与模型执行",
-          "源码链接固定到 commit，至少一个判断有日志或配置证据"
+          "能够解释当天图解中的输入、处理和输出",
+          "保存实际运行结果，区分模拟、设计和GPU实测",
+          "完成独立修改并解释至少一个错误/局限"
         ],
         "en": [
-          "Separate scheduling decisions from model execution",
-          "Use commit-pinned links and support at least one claim with a log or configuration"
+          "Explain the diagram’s inputs, processing and outputs",
+          "Save actual results and distinguish simulation, design and GPU measurement",
+          "Complete an independent change and explain an error or limitation"
         ]
       },
       "noGpu": {
-        "zh": "源码阅读与容量计算在 CPU 上完成；可以分析公开官方示例，但引用的数据必须保留来源与环境。",
-        "en": "Read source and calculate budgets on CPU. If analyzing official published examples, preserve their source and environment."
+        "zh": "本日 CPU 命令可以完成；mock/虚拟时间结果标 simulated，容量和部署方案标 design。仅 GPU 可选步骤暂缓，不能把它们标记为已实测。",
+        "en": "Complete today’s CPU commands. Label mock/virtual-time data simulated and capacity/deployment plans design. Defer GPU-only steps without marking them measured."
       },
       "reading": [
         {
@@ -235,6 +672,182 @@
         {
           "title": "vLLM · Engine arguments",
           "url": "https://docs.vllm.ai/en/latest/configuration/engine_args/"
+        }
+      ],
+      "interactive": "kv-cache",
+      "explanation": [
+        {
+          "title": {
+            "zh": "把缓存公式代入具体模型",
+            "en": "Substitute a real model configuration"
+          },
+          "body": {
+            "zh": "对本课 Qwen2.5-0.5B 的普通全注意力 KV 估算：字节数=2（K/V）×24 层×2 个 KV heads×64 head dimension×2 字节×token 数×序列数。1024 token、1 序列得到 12 MiB；4 序列是 48 MiB。这里用 KV heads，不是 14 个 query heads。",
+            "en": "For this model’s full-attention KV estimate: bytes = 2 (K/V) × 24 layers × 2 KV heads × 64 head dimension × 2 bytes × tokens × sequences. 1024 tokens for one sequence gives 12 MiB; four give 48 MiB. Use KV heads rather than the 14 query heads."
+          }
+        },
+        {
+          "title": {
+            "zh": "缓存大小与调度的联系",
+            "en": "Cache capacity meets scheduling"
+          },
+          "body": {
+            "zh": "每个活跃序列都需要状态；长上下文与更多并发会占用更多缓存。调度器决定哪些 token 前进，执行器负责计算，缓存管理负责可用块。公式不包含权重、激活、块填充和运行时开销，所以不能直接把总显存除以公式结果当最大并发。",
+            "en": "Active sequences need state; longer contexts and more concurrent sequences consume more cache. The scheduler selects work, the executor computes, and cache management tracks available blocks. The formula excludes weights, activations, padding and runtime overhead, so it cannot directly predict maximum concurrency."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "请求、调度与状态",
+          "en": "Requests, scheduling and state"
+        },
+        "nodes": [
+          {
+            "zh": "请求进入队列",
+            "en": "Request enters queue"
+          },
+          {
+            "zh": "调度 token 预算",
+            "en": "Schedule token budget"
+          },
+          {
+            "zh": "分配 / 复用 KV 块",
+            "en": "Allocate / reuse KV blocks"
+          },
+          {
+            "zh": "执行模型计算",
+            "en": "Execute model"
+          },
+          {
+            "zh": "更新状态再调度",
+            "en": "Update and reschedule"
+          }
+        ],
+        "caption": {
+          "zh": "这是职责图；实际实现存在循环与并行，不是每次请求都顺序走完一次。",
+          "en": "A responsibility map; actual execution loops and overlaps."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "手算并运行",
+            "en": "Calculate then run"
+          },
+          "body": {
+            "zh": "先用纸笔计算 1024 token 的 KV 字节数，再运行脚本比较。MiB 使用 2^20 字节。",
+            "en": "Calculate the 1024-token footprint by hand, then compare. MiB means 2^20 bytes."
+          },
+          "command": "python3 lab.py kv --tokens 1024 --sequences 1",
+          "expected": {
+            "zh": "kv_bytes=12582912，kv_MiB=12.0，evidence=design。",
+            "en": "kv_bytes=12582912, kv_MiB=12.0, evidence=design."
+          }
+        },
+        {
+          "title": {
+            "zh": "一次改变一个变量",
+            "en": "Change one variable at a time"
+          },
+          "body": {
+            "zh": "先翻倍上下文，再翻倍序列数。把三个结果画在笔记里，解释比例变化。",
+            "en": "Double context first, then sequences. Sketch the three results and explain proportional changes."
+          },
+          "command": "python3 lab.py kv --tokens 2048 --sequences 1\npython3 lab.py kv --tokens 2048 --sequences 2",
+          "expected": {
+            "zh": "分别为 24 MiB、48 MiB；这不是 nvidia-smi 的总占用。",
+            "en": "The results are 24 and 48 MiB, not total nvidia-smi memory."
+          }
+        },
+        {
+          "title": {
+            "zh": "改成另一个模型的估算",
+            "en": "Estimate a different model"
+          },
+          "body": {
+            "zh": "阅读 lab.py 的 kv 函数。复制一个新函数，把层数改为 32，其他不变；先预测再执行，不把新值写成 Qwen 实际结构。",
+            "en": "Copy kv() and change layers to 32 while keeping other factors fixed. Predict before running and label the configuration hypothetical."
+          },
+          "command": "python3 lab.py selfcheck",
+          "expected": {
+            "zh": "原始函数测试仍通过；新函数应在同条件给出 16 MiB，并标注 hypothetical/design。",
+            "en": "Original checks still pass; the new function should give 16 MiB under the same conditions and be labeled hypothetical/design."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "结果比示例大 7 倍",
+            "en": "The result is 7 times larger"
+          },
+          "fix": {
+            "zh": "检查是否误用 14 个 query heads。这个 GQA 模型只有 2 个 KV heads。",
+            "en": "Check whether you used 14 query heads instead of this GQA model’s 2 KV heads."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "估算能装下，GPU 仍然 OOM",
+            "en": "Estimate fits but GPU still OOMs"
+          },
+          "fix": {
+            "zh": "公式只估 KV；还需权重、激活和框架空间。记录完整启动日志，先缩短 context、减少 sequences，再检查实际可用显存。",
+            "en": "KV is only one allocation. Account for weights, activations and runtime; save startup logs and reduce context/sequences before inspecting free memory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "1024 token、1 序列需要 12 MiB，2048 token、4 序列是多少？",
+            "en": "If 1024 tokens × 1 sequence needs 12 MiB, what about 2048 × 4?"
+          },
+          "options": [
+            {
+              "zh": "24 MiB",
+              "en": "24 MiB"
+            },
+            {
+              "zh": "48 MiB",
+              "en": "48 MiB"
+            },
+            {
+              "zh": "96 MiB",
+              "en": "96 MiB"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "12×2×4=96；假定 dtype 和模型结构不变。",
+            "en": "12×2×4=96, assuming unchanged dtype and model structure."
+          }
+        },
+        {
+          "question": {
+            "zh": "KV 估算中应使用哪一种头数量？",
+            "en": "Which head count belongs in the KV estimate?"
+          },
+          "options": [
+            {
+              "zh": "KV heads",
+              "en": "KV heads"
+            },
+            {
+              "zh": "总层数",
+              "en": "Total layers"
+            },
+            {
+              "zh": "query heads 一定相同",
+              "en": "Query heads are always equal"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "GQA 的 KV 头数可少于 query 头数，必须读模型配置。",
+            "en": "GQA can have fewer KV heads than query heads; read the model configuration."
+          }
         }
       ]
     },
@@ -249,26 +862,28 @@
         "en": "Online inference performance depends on the workload. Short-input long-output, long-input short-output and bursty requests stress different parts of the system. Before comparing settings, fix lengths, arrivals, model and sampling parameters. Report latency, throughput, success rate and completed request count together. A small repeated baseline provides evidence for later changes; a single peak number cannot tell you whether an optimization improves the intended workload."
       },
       "task": {
-        "zh": "根据当前版本 Benchmark CLI 设计三档并发，每档重复至少三次。保存完整参数、原始结果与失败数，汇总 TTFT、端到端延迟和输出 token 吞吐，并解释客户端与服务端指标边界。",
-        "en": "Use the current release's Benchmark CLI to test three concurrency levels with at least three repeats each. Save parameters, raw results and failures. Summarize TTFT, end-to-end latency and output-token throughput, explaining client/server measurement boundaries."
+        "zh": "按下面步骤完成当天实验；先预测结果，再执行命令。把实际输出、你改动的一处代码或参数，以及一个未理解的问题写入当天笔记。",
+        "en": "Follow the steps below: predict, run, then record actual output, one code/parameter change and one remaining question."
       },
       "evidence": {
-        "zh": "baseline/ 原始结果、运行脚本与 benchmark-method.md。",
-        "en": "Raw baseline/ results, a run script and benchmark-method.md."
+        "zh": "Day 4 笔记、对应 out/ 实验文件、两道测验解析，以及本人修改与观察；第 10 天汇总为 REPORT.md。",
+        "en": "Day 4 notes, corresponding out/ artifacts, two explained quiz answers and your change/observation; consolidate into REPORT.md on day 10."
       },
       "checklist": {
         "zh": [
-          "各配置使用相同工作负载与预热策略",
-          "报告包含样本数、失败率和运行间波动"
+          "能够解释当天图解中的输入、处理和输出",
+          "保存实际运行结果，区分模拟、设计和GPU实测",
+          "完成独立修改并解释至少一个错误/局限"
         ],
         "en": [
-          "Use the same workload and warm-up policy across configurations",
-          "Report sample count, failures and run-to-run variation"
+          "Explain the diagram’s inputs, processing and outputs",
+          "Save actual results and distinguish simulation, design and GPU measurement",
+          "Complete an independent change and explain an error or limitation"
         ]
       },
       "noGpu": {
-        "zh": "先在自建合成记录上验证统计脚本与图表，不填写虚构的 vLLM 性能值；保留以后实测的运行清单。",
-        "en": "Validate statistics and plots with labeled synthetic records. Do not invent vLLM performance values; preserve a run manifest for later measurement."
+        "zh": "本日 CPU 命令可以完成；mock/虚拟时间结果标 simulated，容量和部署方案标 design。仅 GPU 可选步骤暂缓，不能把它们标记为已实测。",
+        "en": "Complete today’s CPU commands. Label mock/virtual-time data simulated and capacity/deployment plans design. Defer GPU-only steps without marking them measured."
       },
       "reading": [
         {
@@ -278,6 +893,196 @@
         {
           "title": "vLLM · Reproducibility",
           "url": "https://docs.vllm.ai/en/latest/usage/reproducibility/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先固定负载，再比较配置",
+            "en": "Fix the workload before comparing settings"
+          },
+          "body": {
+            "zh": "workload() 生成 12 条固定请求，分为共享上下文和不同上下文两组。simulate 使用虚拟时间和已知服务成本，方便验证统计；bench 则向本机接口发送真实 HTTP 请求。两者不能混成一张硬件性能排行榜。",
+            "en": "workload() creates 12 fixed requests with shared and different contexts. simulate uses virtual time and explicit service costs to test statistics; bench sends HTTP requests to a local endpoint. These evidence types must not be mixed into a hardware ranking."
+          }
+        },
+        {
+          "title": {
+            "zh": "读懂 p95 和吞吐的分母",
+            "en": "Understand p95 and throughput denominators"
+          },
+          "body": {
+            "zh": "本实验按成功请求计算延迟，并使用 nearest-rank 分位数：排序后取 ceil(0.95×N) 的元素。只有 12 条时 p95 接近最慢样本，因此必须保留样本量。吞吐是成功请求数除以整轮时间，包含失败耗时；没有真实 token 数时输出 null，不用字符数替代。",
+            "en": "Latency uses successful requests and nearest-rank percentiles: sort, then choose ceil(0.95×N). With only 12 requests p95 is near the slowest sample, so retain sample size. Throughput divides successes by total run time including failures; unavailable token counts remain null."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "从原始记录到可复核结论",
+          "en": "From raw records to auditable conclusions"
+        },
+        "nodes": [
+          {
+            "zh": "固定请求集",
+            "en": "Fixed workload"
+          },
+          {
+            "zh": "逐请求记录",
+            "en": "Per-request rows"
+          },
+          {
+            "zh": "保留失败",
+            "en": "Retain failures"
+          },
+          {
+            "zh": "汇总分位数和吞吐",
+            "en": "Aggregate metrics"
+          },
+          {
+            "zh": "独立重算",
+            "en": "Recompute"
+          }
+        ],
+        "caption": {
+          "zh": "原始 JSONL 是证据；图表应能够从它重新生成。",
+          "en": "Raw JSONL is the evidence; charts should be regenerated from it."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "先确认 CPU mock 正在运行",
+            "en": "First confirm the CPU mock is running"
+          },
+          "body": {
+            "zh": "本日默认 HTTP 命令访问 8000 端口的 CPU mock。若第 1 天的 mock 已停止，请在单独的服务终端 A、vllm 目录中运行下面命令并保持它运行；若已运行则跳过，避免重复占用端口。另一个客户端终端 B 进入同一 vllm 目录执行后续命令。8001 的 GPU 服务不会响应默认 8000 请求；故障注入仅对 mock 有效。",
+            "en": "Today’s default HTTP commands target the CPU mock on port 8000. If the day-1 mock stopped, run the command below in a separate server terminal A inside vllm and leave it running. Skip it if already running to avoid a port conflict. Use client terminal B in the same directory for following commands. GPU port 8001 does not answer default port-8000 requests; fault injection works only on the mock."
+          },
+          "expected": {
+            "zh": "终端 A 显示 127.0.0.1:8000，随后保持服务；切到终端 B 执行后续步骤。",
+            "en": "Terminal A shows 127.0.0.1:8000 and stays occupied. Switch to terminal B for the following steps."
+          },
+          "command": "python3 lab.py mock"
+        },
+        {
+          "title": {
+            "zh": "生成确定性基线",
+            "en": "Generate a deterministic baseline"
+          },
+          "body": {
+            "zh": "无服务也能运行。这里 12 条请求每 10ms 到达，prefill 40ms，每后续 token 5ms；默认输出 16 个虚拟 token。",
+            "en": "No service is required. Twelve requests arrive every 10ms; prefill is 40ms and each later token costs 5ms, with 16 virtual output tokens."
+          },
+          "command": "python3 lab.py simulate --out out/baseline\npython3 lab.py check out/baseline",
+          "expected": {
+            "zh": "12 成功，虚拟总时间 1380ms；输出 JSONL、CSV、summary 和 config，验收 PASS。",
+            "en": "12 successes and 1380ms virtual elapsed time; JSONL, CSV, summary and config are saved, and checks PASS."
+          }
+        },
+        {
+          "title": {
+            "zh": "实际运行本机客户端",
+            "en": "Run the local client"
+          },
+          "body": {
+            "zh": "mock 服务运行时先测试并发 1 和 2。GPU 路线追加 --port 8001 --model Qwen/Qwen2.5-0.5B-Instruct --evidence measured，分别保存到新目录。",
+            "en": "With the mock running, compare concurrency 1 and 2. On the GPU route append --port 8001 --model Qwen/Qwen2.5-0.5B-Instruct --evidence measured and save separate directories."
+          },
+          "command": "python3 lab.py bench --concurrency 1 --out out/http-c1\npython3 lab.py bench --concurrency 2 --out out/http-c2",
+          "expected": {
+            "zh": "两轮各 12 条记录；实际耗时会波动。mock 的 completion_tokens_per_second 为 null。",
+            "en": "Each run contains 12 rows; wall times vary. Mock completion_tokens_per_second is null."
+          }
+        },
+        {
+          "title": {
+            "zh": "重算一次 p95",
+            "en": "Recompute p95 yourself"
+          },
+          "body": {
+            "zh": "独立打开 CSV，把 status=ok 的 latency_ms 排序。算出 p95 并和 summary 对照。真实 GPU 每配置至少重复 3 次，给每轮新目录；这是有限并发突发测试，不是固定到达率测试。",
+            "en": "Sort successful latency_ms values from CSV and recompute p95. Repeat actual GPU conditions at least three times with separate directories. This is bounded-concurrency burst testing, not a fixed arrival-rate benchmark."
+          },
+          "command": "python3 lab.py check out/http-c1",
+          "expected": {
+            "zh": "PASS；笔记包含样本量、统计口径、运行间波动和不适用范围。",
+            "en": "PASS; notes include sample size, definitions, variation and limits."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "p95 不等于平均值",
+            "en": "p95 differs from the mean"
+          },
+          "fix": {
+            "zh": "p95 是排序位置，平均值是求和除以数量；先确认采用的分位数定义。",
+            "en": "p95 is a ranked observation; the mean is sum/count. Check the percentile convention."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "报告吞吐突然变得非常高",
+            "en": "Reported throughput suddenly looks very high"
+          },
+          "fix": {
+            "zh": "检查时间是否以毫秒代替秒，或只统计了成功请求各自时间。脚本使用整轮 wall time；不要只保留最快一次。",
+            "en": "Check milliseconds versus seconds and the denominator. The script uses whole-run wall time; do not retain only the fastest repetition."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "成功耗时 [10,20,30,40]ms 的 nearest-rank p95 是多少？",
+            "en": "What is nearest-rank p95 of [10,20,30,40]ms?"
+          },
+          "options": [
+            {
+              "zh": "25ms",
+              "en": "25ms"
+            },
+            {
+              "zh": "40ms",
+              "en": "40ms"
+            },
+            {
+              "zh": "38.5ms",
+              "en": "38.5ms"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "ceil(0.95×4)=4，取第 4 个元素。",
+            "en": "ceil(0.95×4)=4, so use the fourth observation."
+          }
+        },
+        {
+          "question": {
+            "zh": "mock 没有 token usage，应该报告多少 token/s？",
+            "en": "The mock has no token usage. What token/s should be reported?"
+          },
+          "options": [
+            {
+              "zh": "字符数/秒",
+              "en": "Characters/second"
+            },
+            {
+              "zh": "请求数×16",
+              "en": "Requests×16"
+            },
+            {
+              "zh": "null，并说明未测量",
+              "en": "null, explicitly unmeasured"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "没有 tokenizer 和生成 token 证据，不能从文字长度伪造 token 吞吐。",
+            "en": "Without tokenizer/output-token evidence, text length cannot establish token throughput."
+          }
         }
       ]
     },
@@ -292,28 +1097,46 @@
         "en": "Prefix caching reuses historical state for matching prefixes, reducing repeated prefill work rather than eliminating generation of new tokens. Reuse depends on token sequences and model semantics, and cold and warm states must be separated. Short prompts, overhead or changing workloads can reduce the benefit. An experiment should establish that differences come from caching, not changed prompt lengths or inconsistent warm-up conditions."
       },
       "task": {
-        "zh": "生成两组长度可比的请求：共享长前缀与无共享前缀。按所用版本控制缓存开关和初始状态，比较冷/热请求的 TTFT 与吞吐，同时记录实际 token 数和命中指标。",
-        "en": "Generate similarly sized requests with a shared long prefix and without reuse. Control cache settings and initial state for your release. Compare cold/warm TTFT and throughput while recording token counts and available hit metrics."
+        "zh": "按下面步骤完成当天实验；先预测结果，再执行命令。把实际输出、你改动的一处代码或参数，以及一个未理解的问题写入当天笔记。",
+        "en": "Follow the steps below: predict, run, then record actual output, one code/parameter change and one remaining question."
       },
       "evidence": {
-        "zh": "prefix-workload.py、缓存条件矩阵、原始结果与因果解释。",
-        "en": "prefix-workload.py, a cache-condition matrix, raw results and a causal explanation."
+        "zh": "Day 5 笔记、对应 out/ 实验文件、两道测验解析，以及本人修改与观察；第 10 天汇总为 REPORT.md。",
+        "en": "Day 5 notes, corresponding out/ artifacts, two explained quiz answers and your change/observation; consolidate into REPORT.md on day 10."
       },
       "checklist": {
         "zh": [
-          "冷、热与关闭缓存条件定义清楚",
-          "至少给出一个缓存收益有限的条件并说明依据"
+          "能够解释当天图解中的输入、处理和输出",
+          "保存实际运行结果，区分模拟、设计和GPU实测",
+          "完成独立修改并解释至少一个错误/局限"
         ],
         "en": [
-          "Define cold, warm and disabled conditions precisely",
-          "Explain at least one condition with limited caching benefit"
+          "Explain the diagram’s inputs, processing and outputs",
+          "Save actual results and distinguish simulation, design and GPU measurement",
+          "Complete an independent change and explain an error or limitation"
         ]
       },
       "noGpu": {
-        "zh": "用基础路线的缓存模型验证请求分组和 token 前缀一致性，提交实验设计与待测指标，不宣称已经验证引擎加速。",
-        "en": "Use the foundations cache model to validate workload grouping and prefix identity. Submit the design and metrics to measure, without claiming an engine speedup."
+        "zh": "本日 CPU 命令可以完成；mock/虚拟时间结果标 simulated，容量和部署方案标 design。仅 GPU 可选步骤暂缓，不能把它们标记为已实测。",
+        "en": "Complete today’s CPU commands. Label mock/virtual-time data simulated and capacity/deployment plans design. Defer GPU-only steps without marking them measured."
       },
       "reading": [
+        {
+          "title": "vLLM 0.33.0 release",
+          "url": "https://github.com/vllm-project/vllm/releases/tag/v0.33.0"
+        },
+        {
+          "title": "vLLM 0.33.0 · GPU installation",
+          "url": "https://docs.vllm.ai/en/v0.33.0/getting_started/installation/gpu/"
+        },
+        {
+          "title": "vLLM 0.33.0 · serve CLI",
+          "url": "https://docs.vllm.ai/en/v0.33.0/cli/serve/"
+        },
+        {
+          "title": "Qwen2.5-0.5B-Instruct · pinned revision",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/tree/7ae557604adf67be50417f59c2c2f167def9a775"
+        },
         {
           "title": "vLLM · Automatic prefix caching",
           "url": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/"
@@ -321,6 +1144,242 @@
         {
           "title": "vLLM · Production metrics",
           "url": "https://docs.vllm.ai/en/latest/usage/metrics/"
+        }
+      ],
+      "interactive": "prefix-cache",
+      "explanation": [
+        {
+          "title": {
+            "zh": "复用的是前缀状态",
+            "en": "Reuse prefix state"
+          },
+          "body": {
+            "zh": "前缀缓存减少已处理输入的重复计算；新生成 token 的工作仍然存在。玩具模型把命中后的 prefill 从 40ms 改成 10ms，decode 每 token 仍为 5ms。第一次共享请求必须先完成，后续请求才可能使用缓存；并发尚未完成的请求不算命中。",
+            "en": "Prefix reuse saves repeated input computation; generating new output remains. The toy changes hit prefill from 40ms to 10ms while decoding stays at 5ms per later token. The first shared request must complete before subsequent requests can reuse its cache."
+          }
+        },
+        {
+          "title": {
+            "zh": "冷态、热态和关闭缓存",
+            "en": "Cold, warm and disabled cache"
+          },
+          "body": {
+            "zh": "关闭缓存提供对照；开启冷缓存时第一次请求还没有可复用状态；热缓存需要明确记录预热请求。真实 vLLM 的命中取决于实际 token 前缀与块管理，字符串看起来相同并不代替 tokenizer 检查。缓存也可能被容量压力驱逐。",
+            "en": "Disabled caching is the control. Enabled-cold has no reusable state for its first request; warm measurements require recorded warm-up requests. Real vLLM reuse depends on token prefixes and block management, and capacity pressure can evict state."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "一次缓存实验的三个条件",
+          "en": "Three cache experiment conditions"
+        },
+        "nodes": [
+          {
+            "zh": "固定模型与请求",
+            "en": "Fix model and workload"
+          },
+          {
+            "zh": "关闭缓存基线",
+            "en": "Disabled baseline"
+          },
+          {
+            "zh": "开启，首次冷请求",
+            "en": "Enabled, first cold request"
+          },
+          {
+            "zh": "相同前缀热请求",
+            "en": "Warm shared prefix"
+          },
+          {
+            "zh": "比较并保留局限",
+            "en": "Compare with limitations"
+          }
+        ],
+        "caption": {
+          "zh": "条件之间需隔离进程/记录预热；流程图不表示性能必然提升。",
+          "en": "Isolate processes and record warm-up between conditions; improvement is not guaranteed."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "先验证因果模型",
+            "en": "Verify the causal model first"
+          },
+          "body": {
+            "zh": "只改变 --cache，其他参数保持一致。查看 shared 与 unique 请求的 cache_hit；图中数字是教学假设。",
+            "en": "Change only --cache. Inspect cache_hit for shared and unique requests. All timing constants are teaching assumptions."
+          },
+          "command": "python3 lab.py simulate --out out/cache-off\npython3 lab.py simulate --cache --out out/cache-on",
+          "expected": {
+            "zh": "off 所有 hit=false；on 的第一个共享请求不命中，后续串行共享请求可命中，总虚拟时间较短。",
+            "en": "All off hits are false. The first on shared request misses; later sequential shared requests can hit, shortening virtual elapsed time."
+          }
+        },
+        {
+          "title": {
+            "zh": "GPU 可选：终端 B 检查 token 前缀",
+            "en": "Optional GPU: terminal B checks token prefixes"
+          },
+          "body": {
+            "zh": "在 GPU 机器打开客户端终端 B，进入解压后的 vllm 目录并激活环境。tokenizer 检查只下载对应 tokenizer 资料，不启动新服务。无 GPU 路线可跳过这些 GPU 步骤，继续最后的 CPU 反例。",
+            "en": "On the GPU host open client terminal B, enter the extracted vllm directory and activate the environment. This tokenizer check does not start a new server. CPU learners may skip these GPU steps and continue to the final CPU counterexample."
+          },
+          "expected": {
+            "zh": "共享请求的 token 前缀更长。聊天模板也可能为不同问题提供少量共享前缀；此结果不是缓存命中率。",
+            "en": "Shared requests have a longer token prefix. Templates may also create a short prefix for different questions. This does not measure cache hits."
+          },
+          "command": "source .venv/bin/activate\npython token_prefix.py"
+        },
+        {
+          "title": {
+            "zh": "GPU 终端 A：重启为缓存关闭",
+            "en": "GPU terminal A: restart with caching disabled"
+          },
+          "body": {
+            "zh": "在运行第 1 天 GPU 服务的终端 A 按 Ctrl+C，等待回到命令提示符；确认仍在 vllm 目录及已激活环境，再执行下面单条命令。保持服务运行，切到终端 B 做下一步。",
+            "en": "Press Ctrl+C in terminal A to stop the day-1 GPU server and wait for the prompt. Confirm the vllm directory and active environment, then run this one command. Leave it running and switch to B for the next step."
+          },
+          "expected": {
+            "zh": "日志确认服务在 8001 就绪，缓存关闭。",
+            "en": "Logs confirm readiness on 8001 with caching disabled."
+          },
+          "command": "python serve.py --cache off"
+        },
+        {
+          "title": {
+            "zh": "GPU 终端 B：保存关闭缓存基线",
+            "en": "GPU terminal B: save the disabled-cache baseline"
+          },
+          "body": {
+            "zh": "服务就绪后，在客户端终端 B 执行。保存本轮配置与环境；每次独立重复改用新目录（如 gpu-off-r2），至少 3 次。",
+            "en": "After readiness, run in client terminal B. Save the run configuration and environment. Use a fresh directory such as gpu-off-r2 for each independent repeat, at least three runs."
+          },
+          "expected": {
+            "zh": "生成 12 条请求记录及对应配置；失败也保留，不只挑成功的轮次。",
+            "en": "Twelve request records and corresponding settings are saved; retain failures rather than selecting only successful runs."
+          },
+          "command": "python lab.py bench --port 8001 --model Qwen/Qwen2.5-0.5B-Instruct --evidence measured --stream --out out/gpu-off\ncp out/server-config.json out/gpu-off/server-config.json\ncp out/environment.json out/gpu-off/environment.json"
+        },
+        {
+          "title": {
+            "zh": "GPU 终端 A：停止并开启缓存",
+            "en": "GPU terminal A: stop and enable caching"
+          },
+          "body": {
+            "zh": "回到终端 A 按 Ctrl+C，等待旧服务完全退出再执行下面命令。必须重启才能得到清楚的缓存初始状态；不要把命令粘贴到尚在运行的服务里。",
+            "en": "Return to terminal A, press Ctrl+C and wait until the old server exits before running this command. Restart for a defined initial cache state; do not paste into the running service."
+          },
+          "expected": {
+            "zh": "新进程就绪，缓存开启且尚未被本实验请求预热。",
+            "en": "The new process is ready, with caching enabled and no warm-up from this experiment yet."
+          },
+          "command": "python serve.py --cache on"
+        },
+        {
+          "title": {
+            "zh": "GPU 终端 B：记录首次与重复请求",
+            "en": "GPU terminal B: record first and repeated requests"
+          },
+          "body": {
+            "zh": "在终端 B 先跑首次负载，再跑相同负载。首次整轮包含冷转热，不能都称纯冷态；首次运行本身就是后续运行的预热证据。保留配置并至少重复三组重启实验，各组使用新目录。",
+            "en": "In B run the first workload, then the same workload again. The first batch transitions from cold to warm, and records the warm-up for the next batch. Preserve settings and repeat three restart groups using fresh directories."
+          },
+          "expected": {
+            "zh": "两轮都保存逐请求结果；是否更快由实测决定。结果无收益也保留。",
+            "en": "Both runs preserve per-request results. Let measurements determine improvement; retain no-benefit outcomes."
+          },
+          "command": "python lab.py bench --port 8001 --model Qwen/Qwen2.5-0.5B-Instruct --evidence measured --stream --out out/gpu-on-first\npython lab.py bench --port 8001 --model Qwen/Qwen2.5-0.5B-Instruct --evidence measured --stream --out out/gpu-on-repeat\ncp out/server-config.json out/gpu-on-first/server-config.json\ncp out/server-config.json out/gpu-on-repeat/server-config.json"
+        },
+        {
+          "title": {
+            "zh": "构造收益变小的反例",
+            "en": "Construct a smaller-benefit case"
+          },
+          "body": {
+            "zh": "把输出 token 改为 128，比较缓存关闭与开启。计算总时间下降比例，并解释为什么 decode 占比影响总收益。",
+            "en": "Set output tokens to 128 and compare cache off/on. Calculate the total-time reduction and explain the decoding share."
+          },
+          "command": "python3 lab.py simulate --tokens 128 --out out/long-off\npython3 lab.py simulate --tokens 128 --cache --out out/long-on",
+          "expected": {
+            "zh": "仍是 simulated；输出较长时，相同 prefill 节省占总时间的比例变小。",
+            "en": "Still simulated: with longer outputs, the same prefill saving is a smaller part of total time."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "第一次请求没有加速",
+            "en": "The first request did not improve"
+          },
+          "fix": {
+            "zh": "检查是否真的有预热；第一次请求通常是在建立缓存。对比应保留关闭、首次与后续三种条件。",
+            "en": "Check whether warm-up actually occurred. The first request typically populates cache; keep disabled, first and repeated conditions separate."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "开启缓存却没有收益",
+            "en": "Caching gives no benefit"
+          },
+          "fix": {
+            "zh": "先看实际 token 前缀、输出长度、显存压力和测量噪声。保存无收益结果；不要改成不同输入再宣布优化成功。",
+            "en": "Inspect token prefixes, output length, memory pressure and noise. Retain no-benefit results rather than changing inputs to manufacture improvement."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "前缀缓存通常直接减少哪部分重复工作？",
+            "en": "Which repeated work does prefix caching directly reduce?"
+          },
+          "options": [
+            {
+              "zh": "输入 prefill",
+              "en": "Input prefill"
+            },
+            {
+              "zh": "所有新 token 的 decode",
+              "en": "All new-token decode"
+            },
+            {
+              "zh": "HTTP 建连",
+              "en": "HTTP connection setup"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "缓存复用历史输入状态，不会免除所有新输出的计算。",
+            "en": "Reusing input state does not eliminate new-output computation."
+          }
+        },
+        {
+          "question": {
+            "zh": "首轮 12 条请求里后面的共享请求已命中，整轮能叫纯冷缓存吗？",
+            "en": "Later shared requests hit during the first batch. Is the whole batch purely cold?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能，应标明冷转热",
+              "en": "No, label the cold-to-warm transition"
+            },
+            {
+              "zh": "只要第一次未命中就能",
+              "en": "Yes if the first request missed"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "缓存状态在一轮中变化，聚合名称必须保留这个事实。",
+            "en": "Cache state changes within a batch; the aggregate label must preserve that fact."
+          }
         }
       ]
     },
@@ -335,26 +1394,28 @@
         "en": "Concurrency, context limits and scheduled-token budgets interact with memory, queuing and latency. Larger settings are not automatically better: more in-flight work can raise tail latency, and memory pressure can add scheduling costs. Define the comparison matrix first, change one variable at a time and start from a small working configuration. Preserve failed conditions as evidence instead of displaying only successful combinations."
       },
       "task": {
-        "zh": "选择两项当前 release 支持的调度或内存参数，按单变量方式各比较至少三档。保持第 4 天负载不变，记录吞吐、p95 延迟、失败和内存，选出符合你自定义延迟目标的配置。",
-        "en": "Choose two scheduling or memory parameters supported by your release and sweep at least three values for each, one variable at a time. Reuse day-4 workloads and record throughput, p95 latency, failures and memory. Select a configuration meeting a stated latency target."
+        "zh": "按下面步骤完成当天实验；先预测结果，再执行命令。把实际输出、你改动的一处代码或参数，以及一个未理解的问题写入当天笔记。",
+        "en": "Follow the steps below: predict, run, then record actual output, one code/parameter change and one remaining question."
       },
       "evidence": {
-        "zh": "tuning-matrix.csv、一张吞吐与尾延迟关系图和选择理由。",
-        "en": "tuning-matrix.csv, a throughput/tail-latency plot and a justified configuration choice."
+        "zh": "Day 6 笔记、对应 out/ 实验文件、两道测验解析，以及本人修改与观察；第 10 天汇总为 REPORT.md。",
+        "en": "Day 6 notes, corresponding out/ artifacts, two explained quiz answers and your change/observation; consolidate into REPORT.md on day 10."
       },
       "checklist": {
         "zh": [
-          "比较只改变声明的变量，失败组合保留",
-          "最优配置针对明确目标而不是所有场景通用"
+          "能够解释当天图解中的输入、处理和输出",
+          "保存实际运行结果，区分模拟、设计和GPU实测",
+          "完成独立修改并解释至少一个错误/局限"
         ],
         "en": [
-          "Change only declared variables and retain failed combinations",
-          "Define the workload and objective for which the configuration is preferred"
+          "Explain the diagram’s inputs, processing and outputs",
+          "Save actual results and distinguish simulation, design and GPU measurement",
+          "Complete an independent change and explain an error or limitation"
         ]
       },
       "noGpu": {
-        "zh": "完成容量计算、扫描脚本与结果 schema；用合成数据验证绘图，但将所有优化结论留作假设。",
-        "en": "Complete capacity calculations, sweep scripts and a result schema. Test plots with synthetic data and leave optimization conclusions as hypotheses."
+        "zh": "本日 CPU 命令可以完成；mock/虚拟时间结果标 simulated，容量和部署方案标 design。仅 GPU 可选步骤暂缓，不能把它们标记为已实测。",
+        "en": "Complete today’s CPU commands. Label mock/virtual-time data simulated and capacity/deployment plans design. Defer GPU-only steps without marking them measured."
       },
       "reading": [
         {
@@ -365,39 +1426,231 @@
           "title": "vLLM · Conserving memory",
           "url": "https://docs.vllm.ai/en/latest/configuration/conserving_memory/"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "并发上限与到达率不同",
+            "en": "Concurrency cap differs from arrival rate"
+          },
+          "body": {
+            "zh": "并发上限控制同时在途请求，固定到达率控制每秒进入的请求。本课 bench 把一批任务交给有限线程，适合比较客户端并发，不能声称测试了某个固定 QPS。模拟器则显式每 10ms 到达一次；观察结果时要区分这两种负载。",
+            "en": "A concurrency cap limits in-flight work; arrival rate controls how often new work appears. bench submits a burst through bounded threads, so it does not establish fixed-QPS behavior. The simulator explicitly uses 10ms arrivals. Keep these workloads distinct."
+          }
+        },
+        {
+          "title": {
+            "zh": "每次只改一个参数",
+            "en": "Change one setting at a time"
+          },
+          "body": {
+            "zh": "服务端 max-num-seqs、客户端并发和上下文上限是不同变量。如果同时修改，结果变化就难以归因。先固定缓存关闭、模型和负载，比较客户端 1/2/4；再固定客户端，比较服务端 1/2/4，记录失败和每次完整命令。",
+            "en": "Server max-num-seqs, client concurrency and context limit are different controls. Changing all at once obscures causality. Hold caching/model/workload fixed, compare client concurrency 1/2/4, then hold the client fixed and vary server sequences 1/2/4."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "参数实验矩阵",
+          "en": "Parameter experiment matrix"
+        },
+        "nodes": [
+          {
+            "zh": "固定基线",
+            "en": "Fix baseline"
+          },
+          {
+            "zh": "只改一列参数",
+            "en": "Change one parameter"
+          },
+          {
+            "zh": "重复三轮",
+            "en": "Repeat three runs"
+          },
+          {
+            "zh": "比较延迟/成功率",
+            "en": "Compare latency/success"
+          },
+          {
+            "zh": "说明选择理由",
+            "en": "Explain selection"
+          }
+        ],
+        "caption": {
+          "zh": "模拟器中的多个 worker 是独立服务台，不是 vLLM 连续批处理的精确实现。",
+          "en": "The simulator workers are independent servers, not an exact vLLM continuous-batching implementation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "先确认 CPU mock 正在运行",
+            "en": "First confirm the CPU mock is running"
+          },
+          "body": {
+            "zh": "本日默认 HTTP 命令访问 8000 端口的 CPU mock。若第 1 天的 mock 已停止，请在单独的服务终端 A、vllm 目录中运行下面命令并保持它运行；若已运行则跳过，避免重复占用端口。另一个客户端终端 B 进入同一 vllm 目录执行后续命令。8001 的 GPU 服务不会响应默认 8000 请求；故障注入仅对 mock 有效。",
+            "en": "Today’s default HTTP commands target the CPU mock on port 8000. If the day-1 mock stopped, run the command below in a separate server terminal A inside vllm and leave it running. Skip it if already running to avoid a port conflict. Use client terminal B in the same directory for following commands. GPU port 8001 does not answer default port-8000 requests; fault injection works only on the mock."
+          },
+          "expected": {
+            "zh": "终端 A 显示 127.0.0.1:8000，随后保持服务；切到终端 B 执行后续步骤。",
+            "en": "Terminal A shows 127.0.0.1:8000 and stays occupied. Switch to terminal B for the following steps."
+          },
+          "command": "python3 lab.py mock"
+        },
+        {
+          "title": {
+            "zh": "先在虚拟时间里观察排队",
+            "en": "Inspect queueing in virtual time"
+          },
+          "body": {
+            "zh": "保持到达间隔和服务成本不变，只改独立 worker 数。结果说明排队模型，不表示增加 GPU 并发一定获得相同收益。",
+            "en": "Keep arrival intervals and service costs fixed and vary independent workers. This illustrates queueing, not guaranteed GPU scaling."
+          },
+          "command": "python3 lab.py simulate --concurrency 1 --out out/c1\npython3 lab.py simulate --concurrency 2 --out out/c2\npython3 lab.py simulate --concurrency 4 --out out/c4",
+          "expected": {
+            "zh": "总虚拟完成时间减少；每条请求的等待时间可由 start_ms-arrival_ms 重算。",
+            "en": "Virtual completion time decreases; compute each wait as start_ms-arrival_ms."
+          }
+        },
+        {
+          "title": {
+            "zh": "建立客户端扫描",
+            "en": "Build a client sweep"
+          },
+          "body": {
+            "zh": "mock 或 GPU 服务保持原配置不变。每轮存单独目录；GPU 在下面命令追加真实端口、模型名和 evidence measured。",
+            "en": "Keep the mock/GPU server unchanged. Save each repetition separately; append the real port/model and evidence measured on the GPU route."
+          },
+          "command": "python3 lab.py bench --concurrency 1 --out out/sweep-1\npython3 lab.py bench --concurrency 2 --out out/sweep-2\npython3 lab.py bench --concurrency 4 --out out/sweep-4",
+          "expected": {
+            "zh": "各目录都有 12 条记录及 configuration；CPU mock 数据不用于选择真实GPU生产参数。",
+            "en": "Each directory has 12 records and config; mock results do not select production GPU settings."
+          }
+        },
+        {
+          "title": {
+            "zh": "做出一个有条件的选择",
+            "en": "Make a conditional choice"
+          },
+          "body": {
+            "zh": "自定义一个延迟目标，例如教学模拟 p95<500ms。对照三个 summary，先筛选满足目标的配置，再比较吞吐。实际服务的目标由应用需求决定。",
+            "en": "Define a target such as toy-model p95<500ms. Filter the three summaries by this target before comparing throughput. Real targets come from application needs."
+          },
+          "command": "python3 lab.py check out/c1\npython3 lab.py check out/c2\npython3 lab.py check out/c4",
+          "expected": {
+            "zh": "写出选择、代价和未验证项；目标不满足时允许结论为“需要继续实验”。",
+            "en": "Record the choice, costs and unknowns. If no setting meets the target, further experiments are a valid conclusion."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "并发更高但响应更慢",
+            "en": "Higher concurrency makes responses slower"
+          },
+          "fix": {
+            "zh": "请求可能在队列或资源上竞争。看 p95、失败率和完整 wall time，不只看吞吐。",
+            "en": "Requests can compete or queue. Examine p95, failures and whole-run time alongside throughput."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "配置间输入长度不同",
+            "en": "Input lengths differ between configurations"
+          },
+          "fix": {
+            "zh": "恢复同一个 workload() 和 max_tokens；保存请求记录后再对比，不能跨负载直接比较。",
+            "en": "Restore the same workload() and max_tokens; preserve requests before comparing."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "同时改变并发、模型和缓存，能把收益归因给并发吗？",
+            "en": "Can gains be attributed to concurrency after also changing model and cache?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能，需要控制变量",
+              "en": "No, control the other variables"
+            },
+            {
+              "zh": "最快一次可以",
+              "en": "Only the fastest run"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "多个变量同时改变，无法区分各自贡献。",
+            "en": "Multiple changes obscure each variable’s contribution."
+          }
+        },
+        {
+          "question": {
+            "zh": "两个配置都成功，吞吐更高的一定更适合聊天吗？",
+            "en": "Is higher throughput always better for chat?"
+          },
+          "options": [
+            {
+              "zh": "是",
+              "en": "Yes"
+            },
+            {
+              "zh": "只看显存即可",
+              "en": "Only memory matters"
+            },
+            {
+              "zh": "还要满足延迟目标",
+              "en": "It must also meet latency goals"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "交互应用的等待时间也是目标，需在约束下比较吞吐。",
+            "en": "Interactive waiting time matters; compare throughput subject to latency constraints."
+          }
+        }
       ]
     },
     {
       "day": 7,
       "title": {
-        "zh": "评估量化的收益与代价",
-        "en": "Evaluate quantization trade-offs"
+        "zh": "用数值小实验理解量化取舍",
+        "en": "Understand quantization with a numerical experiment"
       },
       "lesson": {
         "zh": "量化可能减少权重或缓存的存储量，但权重量化和 KV cache 量化解决的是不同成本。支持的格式、算子和硬件会随版本变化，较少的位数也不保证更快，因为数据转换与内核实现同样重要。评估时要固定任务与模型来源，分别检查内存、延迟和任务质量；只比较生成文本是否一模一样不是充分的质量判断。",
         "en": "Quantization can reduce weight or cache storage, but weight quantization and KV-cache quantization address different costs. Supported formats, kernels and hardware vary by release. Fewer bits do not guarantee lower latency because conversion overhead and kernel implementation matter. Keep task and model provenance fixed while assessing memory, latency and task quality separately. Exact equality between generated texts is not a sufficient quality evaluation."
       },
       "task": {
-        "zh": "选择一种官方支持且适配设备的量化方案，与可运行基线比较。使用至少 20 个自建、有明确判定规则的小任务，记录质量变化、内存和延迟；无法公平对比时解释不兼容条件。",
-        "en": "Choose one officially supported scheme compatible with your device and compare it with a working baseline. Use at least 20 self-created tasks with explicit evaluation rules. Record quality, memory and latency changes, or explain why a fair comparison is unavailable."
+        "zh": "按下面步骤完成当天实验；先预测结果，再执行命令。把实际输出、你改动的一处代码或参数，以及一个未理解的问题写入当天笔记。",
+        "en": "Follow the steps below: predict, run, then record actual output, one code/parameter change and one remaining question."
       },
       "evidence": {
-        "zh": "quantization-review.md、评估题集、判定标准与测量/未测项清单。",
-        "en": "quantization-review.md, evaluation cases, scoring rules and a measured/unmeasured checklist."
+        "zh": "Day 7 笔记、对应 out/ 实验文件、两道测验解析，以及本人修改与观察；第 10 天汇总为 REPORT.md。",
+        "en": "Day 7 notes, corresponding out/ artifacts, two explained quiz answers and your change/observation; consolidate into REPORT.md on day 10."
       },
       "checklist": {
         "zh": [
-          "区分权重精度与 KV cache 精度",
-          "结论同时覆盖质量与性能，说明小样本的局限"
+          "能够解释当天图解中的输入、处理和输出",
+          "保存实际运行结果，区分模拟、设计和GPU实测",
+          "完成独立修改并解释至少一个错误/局限"
         ],
         "en": [
-          "Distinguish weight precision from KV-cache precision",
-          "Discuss both quality and performance and the limits of a small evaluation set"
+          "Explain the diagram’s inputs, processing and outputs",
+          "Save actual results and distinguish simulation, design and GPU measurement",
+          "Complete an independent change and explain an error or limitation"
         ]
       },
       "noGpu": {
-        "zh": "完成硬件支持表和评估题集；可用 CPU 数值量化小数组理解误差，但不把它等同于模型质量评测。",
-        "en": "Create a compatibility matrix and evaluation set. Quantize small CPU arrays to explore numerical error without presenting that as model-quality evaluation."
+        "zh": "本日 CPU 命令可以完成；mock/虚拟时间结果标 simulated，容量和部署方案标 design。仅 GPU 可选步骤暂缓，不能把它们标记为已实测。",
+        "en": "Complete today’s CPU commands. Label mock/virtual-time data simulated and capacity/deployment plans design. Defer GPU-only steps without marking them measured."
       },
       "reading": [
         {
@@ -407,6 +1660,181 @@
         {
           "title": "vLLM · Conserving memory",
           "url": "https://docs.vllm.ai/en/latest/configuration/conserving_memory/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先量化五个数字",
+            "en": "Quantize five numbers first"
+          },
+          "body": {
+            "zh": "实验对 [-0.95,-0.31,0.02,0.47,1.0] 做对称整数近似：scale=max(abs(x))/(2^(bits-1)-1)，整数为 round(x/scale)，重建为整数×scale。4 位和 8 位都能执行，先比较最大绝对误差，再讨论存储位数。",
+            "en": "The experiment approximates five numbers with symmetric integers: scale=max(abs(x))/(2^(bits-1)-1), quantized=round(x/scale), reconstructed=quantized×scale. Compare maximum absolute error for 4 and 8 bits before discussing storage."
+          }
+        },
+        {
+          "title": {
+            "zh": "从数值误差到模型评估还有距离",
+            "en": "Numerical error is not model evaluation"
+          },
+          "body": {
+            "zh": "数组误差更小不自动说明回答质量更好；位数更少也不保证算子更快。真实模型量化需要适配权重格式、内核、GPU，并用任务题集检查质量。今天交付的是数值机制实验和 GPU 评估设计，课程不把数组结果写成模型加速结论。",
+            "en": "Smaller array error does not establish better answer quality, and fewer bits do not guarantee faster kernels. Model quantization requires compatible formats, kernels and hardware plus task-based quality checks. Today delivers a numerical experiment and an evaluation design, not a model speedup."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "量化与重建",
+          "en": "Quantization and reconstruction"
+        },
+        "nodes": [
+          {
+            "zh": "浮点数组",
+            "en": "Float array"
+          },
+          {
+            "zh": "计算 scale",
+            "en": "Compute scale"
+          },
+          {
+            "zh": "取整为低位整数",
+            "en": "Round to integers"
+          },
+          {
+            "zh": "重建浮点数",
+            "en": "Reconstruct floats"
+          },
+          {
+            "zh": "计算误差",
+            "en": "Measure error"
+          }
+        ],
+        "caption": {
+          "zh": "对称整数教学模型；不模拟所有实际量化格式。",
+          "en": "A symmetric-integer teaching model, not every real quantization format."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并手算一个值",
+            "en": "Run and hand-calculate one value"
+          },
+          "body": {
+            "zh": "先算 4 位的最大正整数 7，再算 0.47 的重建值。对照脚本，不把 bits 当成字节数。",
+            "en": "Compute the 4-bit positive maximum 7, then reconstruct 0.47. Compare with the script; bits are not bytes."
+          },
+          "command": "python3 lab.py quant",
+          "expected": {
+            "zh": "输出两组结果；本数组 8 位最大误差小于 4 位，均为 simulated。",
+            "en": "Two results appear; 8-bit maximum error is lower for this array. Both are simulated."
+          }
+        },
+        {
+          "title": {
+            "zh": "自己构造一个反例",
+            "en": "Construct a counterexample"
+          },
+          "body": {
+            "zh": "复制 quantize 调用，数组改为 [0.0,1.0]；观察 4 位与 8 位是否都能精确重建。再增加一个小数，说明误差与数值分布有关。",
+            "en": "Copy the quantize call with [0.0,1.0]. Check whether both precisions reconstruct exactly, then add a fractional value and explain the distribution effect."
+          },
+          "command": "python3 -c \"from lab import quantize; print(quantize([0.0,1.0],4)); print(quantize([0.0,1.0],8))\"",
+          "expected": {
+            "zh": "两组 max_abs_error 都为 0；不能把原数组的误差比例推广到所有输入。",
+            "en": "Both max_abs_error values are 0; the first array’s error ratio is not universal."
+          }
+        },
+        {
+          "title": {
+            "zh": "写出真实模型评估计划",
+            "en": "Write a real-model evaluation plan"
+          },
+          "body": {
+            "zh": "准备 10 个有标准答案的自建简单任务，记录原精度与拟用量化方案的正确性判定、延迟和内存。当前未运行 GPU 量化，所以标 design，不能勾成实测通过。",
+            "en": "Create 10 simple tasks with known answers and define correctness, latency and memory comparisons for original and proposed precision. Without GPU quantization runs label this design, not measured."
+          },
+          "command": "python3 lab.py env",
+          "expected": {
+            "zh": "保存环境记录，并在笔记里列出题集、判定规则和未执行项。",
+            "en": "Save environment details and document the task set, grading criteria and unexecuted steps."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把数组误差当成模型准确率",
+            "en": "Treating array error as model accuracy"
+          },
+          "fix": {
+            "zh": "准确率来自任务判定；这里仅报告 max_abs_error。把两类指标分开。",
+            "en": "Task accuracy needs task judgments. Here report only max_abs_error and keep metrics separate."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "较低位数并没有更快",
+            "en": "Lower bits are not faster"
+          },
+          "fix": {
+            "zh": "数据转换、内核实现和硬件都会影响速度；没有实际测量就保留为假设。",
+            "en": "Conversion, kernels and hardware affect speed. Keep it a hypothesis without measurement."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "4 位有符号对称量化本例最大正整数是多少？",
+            "en": "What positive integer limit does this 4-bit symmetric example use?"
+          },
+          "options": [
+            {
+              "zh": "4",
+              "en": "4"
+            },
+            {
+              "zh": "7",
+              "en": "7"
+            },
+            {
+              "zh": "16",
+              "en": "16"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "2^(4-1)-1=7。",
+            "en": "2^(4-1)-1=7."
+          }
+        },
+        {
+          "question": {
+            "zh": "五个数的误差降低，可以证明模型回答更准确吗？",
+            "en": "Does lower error on five numbers prove better model answers?"
+          },
+          "options": [
+            {
+              "zh": "不能，还需要任务评估",
+              "en": "No, task evaluation is needed"
+            },
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "只看模型大小",
+              "en": "Only model size matters"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "小数组没有执行模型，也没有任务质量测量。",
+            "en": "The array exercise performs neither model inference nor task evaluation."
+          }
         }
       ]
     },
@@ -421,26 +1849,28 @@
         "en": "Tensor parallelism splits model computation across devices, while data parallelism uses replicas for different requests. They have different memory and communication costs. A model that fits on one device may gain little from extra tensor parallelism if communication offsets the compute benefit. Multi-node setups add networking, routing and failure boundaries. Identify whether the problem is capacity, throughput or latency before selecting a scaling strategy."
       },
       "task": {
-        "zh": "为一个单卡基线设计两种扩展方案，画出进程、GPU、副本与请求路由。具备兼容多卡时选做一项受控对比；否则计算容量与通信需求，并列出需要实测的假设。",
-        "en": "Design two scaling options from your single-device baseline and diagram processes, GPUs, replicas and request routing. If compatible multiple devices are available, run one controlled comparison. Otherwise estimate costs and identify hypotheses requiring measurement."
+        "zh": "按下面步骤完成当天实验；先预测结果，再执行命令。把实际输出、你改动的一处代码或参数，以及一个未理解的问题写入当天笔记。",
+        "en": "Follow the steps below: predict, run, then record actual output, one code/parameter change and one remaining question."
       },
       "evidence": {
-        "zh": "scaling-design.md、资源/通信预算与可选的实测记录。",
-        "en": "scaling-design.md, resource and communication budgets, plus optional measurements."
+        "zh": "Day 8 笔记、对应 out/ 实验文件、两道测验解析，以及本人修改与观察；第 10 天汇总为 REPORT.md。",
+        "en": "Day 8 notes, corresponding out/ artifacts, two explained quiz answers and your change/observation; consolidate into REPORT.md on day 10."
       },
       "checklist": {
         "zh": [
-          "解释为什么选择 TP、DP 或保持单卡",
-          "明确单机结果不能直接外推到多机"
+          "能够解释当天图解中的输入、处理和输出",
+          "保存实际运行结果，区分模拟、设计和GPU实测",
+          "完成独立修改并解释至少一个错误/局限"
         ],
         "en": [
-          "Explain the choice of TP, DP or staying on one device",
-          "State why single-node results do not establish multi-node performance"
+          "Explain the diagram’s inputs, processing and outputs",
+          "Save actual results and distinguish simulation, design and GPU measurement",
+          "Complete an independent change and explain an error or limitation"
         ]
       },
       "noGpu": {
-        "zh": "用逻辑设备画图与计算即可；不要伪造 GPU 资源，也不要求购买多卡硬件。",
-        "en": "Use logical-device diagrams and calculations. Do not fake GPU resources or buy multi-device hardware to complete the design."
+        "zh": "本日 CPU 命令可以完成；mock/虚拟时间结果标 simulated，容量和部署方案标 design。仅 GPU 可选步骤暂缓，不能把它们标记为已实测。",
+        "en": "Complete today’s CPU commands. Label mock/virtual-time data simulated and capacity/deployment plans design. Defer GPU-only steps without marking them measured."
       },
       "reading": [
         {
@@ -450,6 +1880,181 @@
         {
           "title": "vLLM · Architecture overview",
           "url": "https://docs.vllm.ai/en/latest/design/arch_overview/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先判断是容量还是流量问题",
+            "en": "Capacity versus traffic"
+          },
+          "body": {
+            "zh": "模型单卡装不下时，拆分模型可能解决容量问题，但引入跨设备通信。模型装得下、请求太多时，多副本可能提高总处理能力，每个副本仍要放完整权重。把“模型太大”和“用户太多”分开，才知道应画哪种资源图。",
+            "en": "Splitting a model may address capacity but adds inter-device communication. If the model fits and demand is high, replicas can increase aggregate capacity while each holds full weights. Separate model-too-large from too-many-users before drawing a resource plan."
+          }
+        },
+        {
+          "title": {
+            "zh": "玩具并行不等于张量并行",
+            "en": "Toy workers are not tensor parallelism"
+          },
+          "body": {
+            "zh": "simulate --concurrency 2 建模两个独立服务台，没有 GPU、集合通信、batching 或负载不均衡成本。它帮助理解排队，不证明 TP=2 或 DP=2 会按同样比例加速。今天多卡部署是设计练习，不要求拥有多卡。",
+            "en": "simulate --concurrency 2 models independent servers without GPUs, collectives, batching or imbalance costs. It teaches queues without establishing TP=2 or DP=2 speedups. Multi-GPU deployment is a design exercise today."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "选择扩展方式前先提问",
+          "en": "Ask before choosing a scaling strategy"
+        },
+        "nodes": [
+          {
+            "zh": "模型是否装得下？",
+            "en": "Does the model fit?"
+          },
+          {
+            "zh": "目标是容量/吞吐/延迟？",
+            "en": "Capacity, throughput or latency?"
+          },
+          {
+            "zh": "考虑拆分或副本",
+            "en": "Consider sharding or replicas"
+          },
+          {
+            "zh": "估算通信与内存",
+            "en": "Budget communication and memory"
+          },
+          {
+            "zh": "列出待验证实验",
+            "en": "List validation experiments"
+          }
+        ],
+        "caption": {
+          "zh": "拆分与副本是不同分支；图示是决策检查顺序。",
+          "en": "Sharding and replicas are alternatives; this is a decision checklist."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "生成设计底稿",
+            "en": "Generate a design scaffold"
+          },
+          "body": {
+            "zh": "脚本给出单卡、张量并行、数据并行的职责描述。打开文件，把 student_task 替换为你自己的方案。",
+            "en": "Generate notes about single GPU, tensor parallelism and data parallelism. Replace student_task with your own design."
+          },
+          "command": "python3 lab.py plan",
+          "expected": {
+            "zh": "out/scaling-plan.json 的 evidence=design。",
+            "en": "out/scaling-plan.json contains evidence=design."
+          }
+        },
+        {
+          "title": {
+            "zh": "把独立 worker 与单 worker 比较",
+            "en": "Compare independent workers"
+          },
+          "body": {
+            "zh": "重复 CPU 队列模型；在笔记中明确它最接近独立服务台，并未实现模型切分。",
+            "en": "Repeat the CPU queue model and state that it represents independent service stations, not a sharded model."
+          },
+          "command": "python3 lab.py simulate --concurrency 1 --out out/design-one\npython3 lab.py simulate --concurrency 2 --out out/design-two",
+          "expected": {
+            "zh": "两份 simulated 结果；不能据此给真实 TP 写加速倍数。",
+            "en": "Two simulated runs; they cannot establish a real TP speedup."
+          }
+        },
+        {
+          "title": {
+            "zh": "给方案写验收条件",
+            "en": "Define validation criteria"
+          },
+          "body": {
+            "zh": "写两个场景：模型超过单卡容量；模型可装下但吞吐不足。分别列出权重副本数、GPU 数、通信需求、路由方式和失败后怎样处理。",
+            "en": "Design two cases: a model larger than one GPU and a fitting model with insufficient throughput. Specify copies, devices, communication, routing and failure handling."
+          },
+          "command": "python3 lab.py kv --tokens 1024 --sequences 4",
+          "expected": {
+            "zh": "KV 逻辑预算为 48 MiB；不要假定 TP 后所有开销都精确除以卡数。",
+            "en": "Logical KV budget is 48 MiB; do not assume every overhead divides exactly by device count under TP."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "直接按 GPU 数预测线性加速",
+            "en": "Predicting linear scaling from GPU count"
+          },
+          "fix": {
+            "zh": "列出通信、同步、路由和副本开销。没有多卡实验就写待验证。",
+            "en": "List communication, synchronization, routing and replication costs; mark multi-GPU claims unverified."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "把客户端并发当成 GPU 数",
+            "en": "Treating client concurrency as GPU count"
+          },
+          "fix": {
+            "zh": "客户端并发只是同时请求数，服务设备数量由服务端部署决定。",
+            "en": "Client concurrency counts requests; the deployment determines device count."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "同一模型的两个独立副本主要属于哪种思路？",
+            "en": "What does two independent copies of a model represent?"
+          },
+          "options": [
+            {
+              "zh": "数据并行服务",
+              "en": "Data-parallel serving"
+            },
+            {
+              "zh": "张量切分",
+              "en": "Tensor sharding"
+            },
+            {
+              "zh": "降低权重精度",
+              "en": "Lower weight precision"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "不同请求路由到不同副本，不把一个算子拆到两张卡。",
+            "en": "Requests route to separate replicas instead of splitting one operator."
+          }
+        },
+        {
+          "question": {
+            "zh": "CPU 两个 worker 加速 2 倍，可以证明双卡 TP 加速 2 倍吗？",
+            "en": "Can a 2× CPU worker speedup prove 2× two-GPU TP speedup?"
+          },
+          "options": [
+            {
+              "zh": "可以",
+              "en": "Yes"
+            },
+            {
+              "zh": "不可以，模型缺少通信等成本",
+              "en": "No, the model omits communication and other costs"
+            },
+            {
+              "zh": "只要输出一样就可以",
+              "en": "Yes if outputs match"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "模拟假设决定结论适用范围。",
+            "en": "Simulation assumptions limit the conclusion."
+          }
         }
       ]
     },
@@ -464,26 +2069,28 @@
         "en": "A failed request may originate in validation, queuing, model execution, response transport or client timeout. Observability should map symptoms to likely components rather than showing only GPU utilization. Metric names and labels can change, so verify them against the running release. A runbook should explain what to inspect first, how to return to a known working configuration and what evidence supports or refutes each hypothesis."
       },
       "task": {
-        "zh": "保存本地服务的一份指标快照并解释请求量、队列、缓存与延迟指标。用无效请求和客户端超时进行小规模演练，写出检查顺序；记录一次正常重启后的 smoke-test。",
-        "en": "Capture metrics from your local service and explain request, queue, cache and latency signals. Rehearse small invalid-request and client-timeout cases, write an inspection order and record a smoke test after a normal restart."
+        "zh": "按下面步骤完成当天实验；先预测结果，再执行命令。把实际输出、你改动的一处代码或参数，以及一个未理解的问题写入当天笔记。",
+        "en": "Follow the steps below: predict, run, then record actual output, one code/parameter change and one remaining question."
       },
       "evidence": {
-        "zh": "runbook.md、脱敏指标样例、错误分类表与重启验证记录。",
-        "en": "runbook.md, sanitized metric samples, an error taxonomy and restart verification."
+        "zh": "Day 9 笔记、对应 out/ 实验文件、两道测验解析，以及本人修改与观察；第 10 天汇总为 REPORT.md。",
+        "en": "Day 9 notes, corresponding out/ artifacts, two explained quiz answers and your change/observation; consolidate into REPORT.md on day 10."
       },
       "checklist": {
         "zh": [
-          "指标来自实际版本或明确标注的官方示例",
-          "每种故障都有检查步骤、恢复动作与成功条件"
+          "能够解释当天图解中的输入、处理和输出",
+          "保存实际运行结果，区分模拟、设计和GPU实测",
+          "完成独立修改并解释至少一个错误/局限"
         ],
         "en": [
-          "Metrics come from the running version or a labeled official example",
-          "Each failure includes inspection steps, recovery action and a success condition"
+          "Explain the diagram’s inputs, processing and outputs",
+          "Save actual results and distinguish simulation, design and GPU measurement",
+          "Complete an independent change and explain an error or limitation"
         ]
       },
       "noGpu": {
-        "zh": "基于官方指标说明与自建 mock 日志写排障手册；标记真实服务上的待验证步骤。",
-        "en": "Use official metric definitions and mock logs to write the runbook, marking steps still needing verification on a real service."
+        "zh": "本日 CPU 命令可以完成；mock/虚拟时间结果标 simulated，容量和部署方案标 design。仅 GPU 可选步骤暂缓，不能把它们标记为已实测。",
+        "en": "Complete today’s CPU commands. Label mock/virtual-time data simulated and capacity/deployment plans design. Defer GPU-only steps without marking them measured."
       },
       "reading": [
         {
@@ -493,6 +2100,196 @@
         {
           "title": "vLLM · Troubleshooting",
           "url": "https://docs.vllm.ai/en/latest/usage/troubleshooting/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "按症状定位到一层",
+            "en": "Map symptoms to a layer"
+          },
+          "body": {
+            "zh": "连接拒绝先看进程与端口；404 先看路径和模型名；400 看请求格式；超时看时间预算和负载；OOM 看容量。每次先保留错误和完整命令，再尝试一个恢复动作。不要一次修改全部配置，否则不知道哪一步解决了问题。",
+            "en": "For connection refusal check process/port; for 404 check path/model; for 400 check format; for timeout inspect budget/load; for OOM inspect capacity. Preserve the error and command before trying one recovery action at a time."
+          }
+        },
+        {
+          "title": {
+            "zh": "故障不能从报表消失",
+            "en": "Failures must remain in the report"
+          },
+          "body": {
+            "zh": "模拟器显式制造一次 error 和一次 timeout，12 个请求中成功 10 个。成功延迟分位数不包含失败，但成功率分母仍是 12，吞吐的时间范围仍包括整轮。没有成功样本时显示 null 比显示 0ms 更诚实。",
+            "en": "The simulator injects one error and one timeout, leaving 10 successes out of 12. Success latency percentiles exclude failures, but success rate retains all 12 and throughput uses whole-run time. With no successes, null is more informative than 0ms."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "一次排错闭环",
+          "en": "A debugging loop"
+        },
+        "nodes": [
+          {
+            "zh": "保存症状与命令",
+            "en": "Save symptom and command"
+          },
+          {
+            "zh": "定位可能组件",
+            "en": "Locate likely component"
+          },
+          {
+            "zh": "只做一次改动",
+            "en": "Make one change"
+          },
+          {
+            "zh": "重新发送正常请求",
+            "en": "Retry a normal request"
+          },
+          {
+            "zh": "记录恢复证据",
+            "en": "Record recovery evidence"
+          }
+        ],
+        "caption": {
+          "zh": "恢复成功也要有正常请求证据，不以“进程还在”替代服务正确。",
+          "en": "A live process alone is insufficient; retain a successful recovery request."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "先确认 CPU mock 正在运行",
+            "en": "First confirm the CPU mock is running"
+          },
+          "body": {
+            "zh": "本日默认 HTTP 命令访问 8000 端口的 CPU mock。若第 1 天的 mock 已停止，请在单独的服务终端 A、vllm 目录中运行下面命令并保持它运行；若已运行则跳过，避免重复占用端口。另一个客户端终端 B 进入同一 vllm 目录执行后续命令。8001 的 GPU 服务不会响应默认 8000 请求；故障注入仅对 mock 有效。",
+            "en": "Today’s default HTTP commands target the CPU mock on port 8000. If the day-1 mock stopped, run the command below in a separate server terminal A inside vllm and leave it running. Skip it if already running to avoid a port conflict. Use client terminal B in the same directory for following commands. GPU port 8001 does not answer default port-8000 requests; fault injection works only on the mock."
+          },
+          "expected": {
+            "zh": "终端 A 显示 127.0.0.1:8000，随后保持服务；切到终端 B 执行后续步骤。",
+            "en": "Terminal A shows 127.0.0.1:8000 and stays occupied. Switch to terminal B for the following steps."
+          },
+          "command": "python3 lab.py mock"
+        },
+        {
+          "title": {
+            "zh": "验收失败分母",
+            "en": "Validate failure accounting"
+          },
+          "body": {
+            "zh": "无需服务器，生成明确注入的虚拟失败。查看 summary 并核对计数之和。",
+            "en": "Generate deterministic injected failures without a server and verify count totals."
+          },
+          "command": "python3 lab.py simulate --failures --out out/faults\npython3 lab.py check out/faults",
+          "expected": {
+            "zh": "ok=10、error=1、timeout=1、total=12，验收 PASS。",
+            "en": "ok=10, error=1, timeout=1, total=12, and checks PASS."
+          }
+        },
+        {
+          "title": {
+            "zh": "本机演练恢复",
+            "en": "Practice local recovery"
+          },
+          "body": {
+            "zh": "mock 运行时先注入错误再发正常请求。不要把 INJECT_ERROR 发送给 GPU 当作真实故障机制。",
+            "en": "With the mock running, inject an error then send a normal request. INJECT_ERROR is not a real GPU failure mechanism."
+          },
+          "command": "python3 lab.py request --prompt INJECT_ERROR --out out/broken\npython3 lab.py request --out out/recovered",
+          "expected": {
+            "zh": "前一次 error/500，后一次 ok；两个目录都保留。",
+            "en": "First error/500, then ok; retain both directories."
+          }
+        },
+        {
+          "title": {
+            "zh": "自己写三条排障记录",
+            "en": "Write three runbook entries"
+          },
+          "body": {
+            "zh": "每条使用“症状→检查→动作→恢复判据”结构。至少覆盖连接拒绝、模型名错误和超时；注明哪些在 mock 验证、哪些 GPU 待验证。",
+            "en": "Use symptom → check → action → recovery criterion for connection refusal, wrong model and timeout. Label mock-verified and GPU-unverified steps."
+          },
+          "command": "python3 lab.py check out/recovered",
+          "expected": {
+            "zh": "正常请求记录能通过重算；笔记包含实际错误文本和恢复请求目录。",
+            "en": "The recovered request passes recomputation; notes include actual error text and recovery directory."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把失败请求删除后曲线更好看",
+            "en": "Removing failures makes charts look better"
+          },
+          "fix": {
+            "zh": "恢复原始请求集，分开报告成功延迟与全体成功率。图表必须带样本数。",
+            "en": "Restore all requests; report success latency separately from overall success rate and show sample counts."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "持续重试导致更多超时",
+            "en": "Repeated retries cause more timeouts"
+          },
+          "fix": {
+            "zh": "先停止测试并降低并发，确认单请求能恢复；本课没有自动无限重试。",
+            "en": "Stop load and lower concurrency, then confirm one request works. This lab does not retry indefinitely."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "12 个请求成功10个、错误1个、超时1个，成功率是多少？",
+            "en": "With 10 successes, 1 error and 1 timeout out of 12, what is the success rate?"
+          },
+          "options": [
+            {
+              "zh": "100%",
+              "en": "100%"
+            },
+            {
+              "zh": "10/11",
+              "en": "10/11"
+            },
+            {
+              "zh": "10/12",
+              "en": "10/12"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "超时也是已提交请求，必须保留在分母。",
+            "en": "Timeouts are submitted requests and stay in the denominator."
+          }
+        },
+        {
+          "question": {
+            "zh": "修改配置后进程还在，是否足以证明恢复？",
+            "en": "Does a live process after a config change prove recovery?"
+          },
+          "options": [
+            {
+              "zh": "不够，还需正常请求验证",
+              "en": "No, validate a normal request"
+            },
+            {
+              "zh": "足够",
+              "en": "Yes"
+            },
+            {
+              "zh": "看网页颜色即可",
+              "en": "Check the page color"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "存活和能够正确处理请求是不同状态。",
+            "en": "Liveness and correct request handling are different states."
+          }
         }
       ]
     },
@@ -507,28 +2304,28 @@
         "en": "Center the capstone on one concrete problem, such as reducing first-token wait for a fixed workload or increasing completed requests within a latency target. Compare a baseline and one change using the same protocol, and explain costs and failure conditions. Negative results are useful too. Engineering judgment is demonstrated by reproducible evidence, not a universal speedup number detached from hardware, version and workload."
       },
       "task": {
-        "zh": "选取第 5–7 天的一项实验，补齐代码、配置、原始记录、环境、质量检查与运行手册。请自己从干净目录重跑，写出 300 字中文或 200 词英文的技术摘要，并链接到全部证据。",
-        "en": "Choose one experiment from days 5–7 and package code, configuration, raw results, environment, quality checks and the runbook. Rerun from a clean directory and write a concise technical summary linking every claim to evidence."
+        "zh": "按下面步骤完成当天实验；先预测结果，再执行命令。把实际输出、你改动的一处代码或参数，以及一个未理解的问题写入当天笔记。",
+        "en": "Follow the steps below: predict, run, then record actual output, one code/parameter change and one remaining question."
       },
       "evidence": {
-        "zh": "vLLM 作品仓库、基线与改动报告、复现日志和下一步改进清单。",
-        "en": "A vLLM portfolio repository, baseline/change report, reproduction log and improvement backlog."
+        "zh": "Day 10 笔记、对应 out/ 实验文件、两道测验解析，以及本人修改与观察；第 10 天汇总为 REPORT.md。",
+        "en": "Day 10 notes, corresponding out/ artifacts, two explained quiz answers and your change/observation; consolidate into REPORT.md on day 10."
       },
       "checklist": {
         "zh": [
-          "结论可追溯到原始结果，包含失败与局限",
-          "README 可让另一名开发者复现或准确理解未执行项",
-          "不将课程完成表述为官方认证或生产专家资格"
+          "能够解释当天图解中的输入、处理和输出",
+          "保存实际运行结果，区分模拟、设计和GPU实测",
+          "完成独立修改并解释至少一个错误/局限"
         ],
         "en": [
-          "Trace conclusions to raw results and include failures and limitations",
-          "README supports reproduction or clearly identifies unexecuted work",
-          "Do not present course completion as official certification or production expertise"
+          "Explain the diagram’s inputs, processing and outputs",
+          "Save actual results and distinguish simulation, design and GPU measurement",
+          "Complete an independent change and explain an error or limitation"
         ]
       },
       "noGpu": {
-        "zh": "交付配置审查、源码分析、基准脚本和明确标注的未实测计划。待有设备或授权同伴复现后，再补上性能结论。",
-        "en": "Deliver configuration review, source analysis, benchmark scripts and a clearly unmeasured plan. Add performance conclusions only after a real run on available or authorized hardware."
+        "zh": "本日 CPU 命令可以完成；mock/虚拟时间结果标 simulated，容量和部署方案标 design。仅 GPU 可选步骤暂缓，不能把它们标记为已实测。",
+        "en": "Complete today’s CPU commands. Label mock/virtual-time data simulated and capacity/deployment plans design. Defer GPU-only steps without marking them measured."
       },
       "reading": [
         {
@@ -539,7 +2336,193 @@
           "title": "vLLM · Benchmark CLI",
           "url": "https://docs.vllm.ai/en/latest/benchmarking/cli/"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "用证据回答一个小问题",
+            "en": "Answer one small question with evidence"
+          },
+          "body": {
+            "zh": "选一个边界明确的问题，例如“教学队列模型在固定输入下，增加独立 worker 如何影响等待？”或“我的 GPU 上重复前缀是否降低首内容等待？”报告必须把你的假设、一次改动、原始记录、反例和适用范围连起来。",
+            "en": "Choose a bounded question: how independent workers affect waits in the fixed toy workload, or whether repeated prefixes reduce first-content delay on your GPU. Connect the hypothesis, one change, raw records, counterexample and scope."
+          }
+        },
+        {
+          "title": {
+            "zh": "自动报告是底稿，解释需要你写",
+            "en": "The generated report is a scaffold"
+          },
+          "body": {
+            "zh": "report 会重算汇总并为原始文件生成 SHA-256 清单，帮助发现文件变化；它不能证明数据来自真实 GPU，也不能代替本人解释。保留 TODO 表示作品未完成，删掉 TODO 前必须写清本人修改和局限。",
+            "en": "report recomputes the summary and hashes source files to expose later changes. Hashes do not prove GPU provenance or replace your explanation. A remaining TODO means the portfolio is unfinished; explain your own change and limitations before removing it."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "把十天成果变成作品",
+          "en": "Turn ten days into a portfolio"
+        },
+        "nodes": [
+          {
+            "zh": "提出问题",
+            "en": "State question"
+          },
+          {
+            "zh": "固定实验条件",
+            "en": "Fix conditions"
+          },
+          {
+            "zh": "保存原始证据",
+            "en": "Preserve evidence"
+          },
+          {
+            "zh": "解释结果与失败",
+            "en": "Explain results/failures"
+          },
+          {
+            "zh": "他人复现",
+            "en": "Independent reproduction"
+          }
+        ],
+        "caption": {
+          "zh": "结课不是官方认证；招聘方应能查看你的贡献和复现步骤。",
+          "en": "Completion is not official certification; reviewers should see your contribution and reproduction steps."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "生成基线与改动报告",
+            "en": "Generate baseline and changed reports"
+          },
+          "body": {
+            "zh": "从一个干净输出目录重跑两组实验。CPU 路线使用下面缓存例子；GPU 路线使用自己的真实数据目录。",
+            "en": "Rerun two conditions into clean output directories. CPU learners can use this cache example; GPU learners should use their measured directories."
+          },
+          "command": "python3 lab.py simulate --out out/final-base\npython3 lab.py simulate --cache --out out/final-change\npython3 lab.py report out/final-base\npython3 lab.py report out/final-change",
+          "expected": {
+            "zh": "两个目录各有 REPORT.md 和 manifest.json，证据为 simulated。",
+            "en": "Each directory has REPORT.md and manifest.json with simulated evidence."
+          }
+        },
+        {
+          "title": {
+            "zh": "补齐本人的解释",
+            "en": "Add your own explanation"
+          },
+          "body": {
+            "zh": "阅读 README 的挑战和参考分析。填写 REPORT.md 中问题、本人改动、原始证据链接、一次失败或无收益结果、局限和下一实验。不要把示例模拟常数写成设备实测。",
+            "en": "Read README challenges and reference analysis. Fill in the question, own change, evidence links, a failure/no-benefit case, limitations and next experiment. Never present toy constants as device measurements."
+          },
+          "command": "python3 lab.py check out/final-base\npython3 lab.py check out/final-change",
+          "expected": {
+            "zh": "两次 PASS；报告没有未填写的 TODO，并且说明没有真实GPU时的证据边界。",
+            "en": "Both PASS; the report has no unanswered TODOs and explains evidence limits without a real GPU."
+          }
+        },
+        {
+          "title": {
+            "zh": "让另一个人从零复现",
+            "en": "Ask someone to reproduce from scratch"
+          },
+          "body": {
+            "zh": "分享代码、环境、运行命令和小样本，邀请同学复跑；尚未发生时写“未完成独立复现”。把作品链接整理进聘枢作品档案，不必公开个人敏感信息。",
+            "en": "Share code, environment, commands and a small sample for a peer to reproduce. Until it happens, mark independent reproduction pending. Add the project link to your JobHub portfolio without private personal data."
+          },
+          "command": "python3 lab.py selfcheck",
+          "expected": {
+            "zh": "同学能解释数据来源并重算汇总；记录实际复现日期/差异，未复现就如实标记。",
+            "en": "A peer can identify evidence sources and recompute metrics; record actual reproduction and differences or mark it pending."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "check 报 summary 不一致",
+            "en": "check reports a mismatched summary"
+          },
+          "fix": {
+            "zh": "不要手改汇总数字；从原始 JSONL 重新计算，检查是否混用了不同实验目录。",
+            "en": "Do not hand-edit metrics. Recompute from raw JSONL and check for mixed experiment directories."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "报告只有代码，没有结论",
+            "en": "The report has code but no conclusion"
+          },
+          "fix": {
+            "zh": "补一句有条件的结论：在什么环境/负载下，改了什么，观察到什么，还有什么不能推断。",
+            "en": "Add a conditional conclusion stating environment/workload, change, observation and what remains unknown."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "manifest 哈希能证明数据一定来自 GPU 吗？",
+            "en": "Do manifest hashes prove GPU provenance?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能，只帮助检查文件内容是否变化",
+              "en": "No, they help detect changed file contents"
+            },
+            {
+              "zh": "只要文件多就能",
+              "en": "Only when there are many files"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "真实性还依赖运行记录、环境和可复现性，哈希本身不证明来源。",
+            "en": "Provenance requires run records, environment and reproducibility; a hash alone does not establish it."
+          }
+        },
+        {
+          "question": {
+            "zh": "CPU 模拟作品应该怎样写进简历？",
+            "en": "How should a CPU simulation project be described?"
+          },
+          "options": [
+            {
+              "zh": "实现并验证模拟工具，明确模型假设和局限",
+              "en": "Implemented/validated simulation tools with stated assumptions and limits"
+            },
+            {
+              "zh": "vLLM 已在生产提速",
+              "en": "Accelerated production vLLM"
+            },
+            {
+              "zh": "虚构一个 GPU 配置",
+              "en": "Invent a GPU configuration"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "真实呈现工具、分析和本人贡献，同样能体现工程能力。",
+            "en": "Honest tooling, analysis and personal contribution can demonstrate engineering ability."
+          }
+        }
       ]
     }
-  ]
+  ],
+  "lab": {
+    "path": "vllm",
+    "title": {
+      "zh": "下载 vLLM 实验包",
+      "en": "Download the vLLM lab"
+    },
+    "description": {
+      "zh": "Python 标准库模拟器、本机 HTTP 服务与客户端、GPU 启动器、数据验收和作品报告。解压后进入 vllm 目录。",
+      "en": "Standard-library simulator, local HTTP service/client, GPU launcher, data checks and portfolio report. Unzip and enter the vllm directory."
+    }
+  }
 }

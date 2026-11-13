@@ -5,3 +5,8 @@ __pycache__/
 .env
 .env.*
 !.env.example
+web/labs/*/out/
+web/labs/*/outputs/
+web/labs/*/results/
+web/labs/*/output/
+web/labs/*/artifacts/

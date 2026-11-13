@@ -11,8 +11,8 @@
     "en": "Map the stack and build your first engineering portfolio in 10 days"
   },
   "description": {
-    "zh": "从请求、张量和资源预算入手，逐步理解调度、缓存、测量与可观测性。课程使用 CPU 可完成的小实验，把「知道名词」变成能解释取舍、复现实验和识别证据边界。",
-    "en": "Start with requests, tensors and resource budgets, then explore scheduling, caching, measurement and observability. CPU-friendly exercises turn vocabulary into the ability to explain trade-offs, reproduce experiments and recognize evidence limits."
+    "zh": "用普通电脑跟做 10 天：看懂请求时间线，运行内存计算器与排队模拟器，独立计算指标，再生成一份有原始数据的工程作品。每天提供图解、实验命令、输出对照、报错排查与带解析测验。",
+    "en": "Follow ten laptop-friendly days: visualize a request, run a memory calculator and queue simulator, calculate metrics independently, and produce an evidence-backed project. Each day includes diagrams, commands, expected results, troubleshooting and explained quizzes."
   },
   "level": "beginner",
   "hoursPerDay": {
@@ -24,8 +24,8 @@
     "en": "Run Python scripts, understand lists, functions and basic algebra, and use a terminal and Git. No prior LLM deployment experience is required."
   },
   "hardware": {
-    "zh": "普通 CPU 电脑即可；Python 3 与少量本地文件。所有模拟都明确标注，不能当作真实 GPU 性能。",
-    "en": "An ordinary CPU computer, Python 3 and small local files. All simulations must be labeled and are not evidence of GPU performance."
+    "zh": "普通电脑，Python 3.9 或更新版本，仅使用标准库，无需安装依赖、下载模型或购买 GPU。所有教学时钟与缓存示例均为模拟；第 4 天仅测本机 Python CPU 操作。",
+    "en": "An ordinary computer with Python 3.9+, standard library only. No packages, model download or GPU purchase required. Teaching clocks and cache examples are synthetic; day 4 times only local Python CPU work."
   },
   "hardwareTier": "cpu",
   "tags": [
@@ -46,8 +46,8 @@
     ]
   },
   "outcome": {
-    "zh": "一份包含系统图、内存计算器、请求调度模拟器、指标分析和复现说明的基础作品仓库。",
-    "en": "A portfolio repository with a system map, memory calculator, scheduling simulator, metric analysis and reproduction guide."
+    "zh": "一个可复现的基础实验作品：包含 10 日脚本、JSON/JSONL 原始记录、CSV 对照表、环境与代码哈希、独立实现的指标函数和本人填写的技术报告。",
+    "en": "A reproducible foundations project with ten daily scripts, raw JSON/JSONL, a comparison CSV, environment and source hashes, independently implemented metric functions and your own technical report."
   },
   "lastVerified": "2026-11-13",
   "resources": [
@@ -108,37 +108,200 @@
         "en": "Map the journey of an AI request"
       },
       "lesson": {
-        "zh": "AI Infra 不只是启动模型。一次请求通常经过接口校验、分词、排队、调度、模型计算和输出流；每一层都有独立的资源、错误与延迟。训练会更新参数，推理在既定权重上生成结果，两者的瓶颈不同。先把控制流和数据流分开，才能判断问题该由客户端、服务框架还是硬件层解决。",
-        "en": "AI infrastructure includes more than starting a model. A request passes through validation, tokenization, queuing, scheduling, model execution and response delivery. Each stage owns resources and can introduce latency or failure. Training updates parameters; inference uses existing weights, so their bottlenecks differ. Separating control flow from data flow helps you identify whether a problem belongs in the client, serving framework or hardware layer."
+        "zh": "先把一个 AI 请求看成沿着时间轴经过多个组件的工作。用户发出请求后，输入会被校验，随后可能排队；模型处理输入的阶段称为 prefill，随后逐步生成输出称为 decode。第一次看到输出与收到全部输出发生在不同时间，因此“响应快”至少包含首个输出等待与整体完成两个问题。今天用一个确定的教学时间线看清这些阶段，不启动模型，也不把它当作真实服务测量。",
+        "en": "View an AI request as work moving through components on a timeline. Validation can be followed by queuing. Prefill processes input; decode incrementally produces output. Seeing the first output and receiving the complete answer happen at different times, so responsiveness includes both first-output waiting and overall completion. Today uses a deterministic teaching timeline, not a running model or a real service measurement."
       },
       "task": {
-        "zh": "选择一个聊天请求，画出上述七个阶段。给每一段标上输入、输出、可能失败的原因与负责组件；再补一条训练数据到检查点的路径，对比两条链。",
-        "en": "Choose a chat request and draw these seven stages. Label each stage's input, output, possible failure and owning component. Add a training-data-to-checkpoint path and compare the two."
+        "zh": "运行 day1，检查 JSON 并手算各阶段时长；画出自己的请求流程，注明可能在输入、排队、执行、交付哪个阶段失败。",
+        "en": "Run day1, inspect its JSON, calculate each duration and draw a request flow with possible failures in input, queue, execution and delivery."
       },
       "evidence": {
-        "zh": "system-map.md：两张流程图、一个术语表和三个待验证问题。",
-        "en": "system-map.md: two flow diagrams, a glossary and three open questions."
+        "zh": "day01-timeline.json 与一张本人解释的请求流程图；标明教学模拟。",
+        "en": "day01-timeline.json plus your annotated request-flow diagram, labeled as a teaching simulation."
       },
       "checklist": {
         "zh": [
-          "图中区分训练与推理，包含排队和输出传输",
-          "至少列出三个不属于模型精度的问题"
+          "能解释本日算例与至少一个限制",
+          "执行实验并核对预期结果，保留原始输出",
+          "完成两道测验；用自己的话记录一次错误或反例"
         ],
         "en": [
-          "Separate training from inference and include queuing and response transport",
-          "Identify at least three problems that are not model-accuracy problems"
+          "Explain today’s example and at least one limitation",
+          "Run the lab, compare expected results and retain raw output",
+          "Complete both quizzes and describe one error or counterexample in your own words"
         ]
       },
       "noGpu": {
-        "zh": "全部任务可在 CPU 电脑上完成。用图和文档解释数据流即可，不需要下载模型权重。",
-        "en": "Complete everything on a CPU computer. Explain the data flow with diagrams; no model weights are needed."
+        "zh": "本课全程支持普通 CPU 电脑，无需 GPU。使用实验包即可；输出中的模拟时间不可当作真实模型性能。",
+        "en": "This entire course runs on an ordinary CPU computer without a GPU. Use the lab pack; synthetic times are not real model measurements."
       },
       "reading": [
         {
           "title": "vLLM · Architecture overview",
           "url": "https://docs.vllm.ai/en/latest/design/arch_overview/"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先认识输入与输出",
+            "en": "Identify inputs and outputs"
+          },
+          "body": {
+            "zh": "把聊天文本想成任务材料，模型权重是执行任务所需的参数。HTTP 服务负责接收与返回，调度器安排何时执行，模型执行层完成计算。某个环节出错时，需要先定位它属于哪一层。例如格式无效的请求通常还没进入模型计算。",
+            "en": "Think of chat text as the task material and weights as the parameters used to perform the task. HTTP handles receipt and responses, the scheduler decides when work runs, and the executor performs computation. An invalid request can fail before model computation begins."
+          }
+        },
+        {
+          "title": {
+            "zh": "亲手读一条时间线",
+            "en": "Read one timeline by hand"
+          },
+          "body": {
+            "zh": "本例校验从 0 到 2 ms，排队到 12 ms，prefill 到 32 ms，decode 到 62 ms，最终交付到 65 ms。假设第一个可见 token 在 32 ms，因此首输出等待是 32 ms，整体完成是 65 ms。真实客户端还可能遇到网络、流式缓冲与分词差异；本例有意省略它们。",
+            "en": "Validation runs from 0 to 2 ms, queuing ends at 12, prefill at 32, decode at 62, and delivery at 65. The example assumes the first visible token at 32 ms, so first-output waiting is 32 ms and completion is 65 ms. Real clients add network, streaming-buffer and tokenization effects, deliberately omitted here."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "一条请求经过哪些阶段？",
+          "en": "Where does one request go?"
+        },
+        "nodes": [
+          {
+            "zh": "输入校验 0–2 ms",
+            "en": "Validate 0–2 ms"
+          },
+          {
+            "zh": "排队 2–12 ms",
+            "en": "Queue 2–12 ms"
+          },
+          {
+            "zh": "Prefill 12–32 ms",
+            "en": "Prefill 12–32 ms"
+          },
+          {
+            "zh": "Decode 32–62 ms",
+            "en": "Decode 32–62 ms"
+          },
+          {
+            "zh": "交付完成 65 ms",
+            "en": "Delivery at 65 ms"
+          }
+        ],
+        "caption": {
+          "zh": "教学示意：第一个可见 token 设在 32 ms，时间不是硬件实测。",
+          "en": "Teaching example: the first visible token is assumed at 32 ms. These are not hardware measurements."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "下载、解压并确认 Python",
+            "en": "Download, unzip and check Python"
+          },
+          "body": {
+            "zh": "点击课程顶部的实验包，解压得到 foundations 文件夹，在终端进入该文件夹。下面命令假定你已在解压位置；若终端还在下载目录，先执行 cd foundations。Windows 可把 python3 替换为 py -3。",
+            "en": "Download the lab above and unzip it to a foundations folder. Open a terminal there; from its parent directory use cd foundations. On Windows, replace python3 with py -3 if needed."
+          },
+          "command": "python3 --version\npython3 lab.py day1",
+          "expected": {
+            "zh": "显示 Python 3.9 或更新版本；输出 first visible token = 32 ms; completion = 65 ms，并生成 artifacts/day01-timeline.json。",
+            "en": "Python 3.9 or later; prints first visible token = 32 ms; completion = 65 ms and creates artifacts/day01-timeline.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "查看文件并解释时间",
+            "en": "Inspect the file and explain the times"
+          },
+          "body": {
+            "zh": "用编辑器打开 JSON，按 start_ms 和 end_ms 手算每段时长。不要先改代码；先在笔记写出为什么 32 与 65 是两个不同指标。然后复制实验目录，尝试只改变排队阶段，说明哪些后续时间也必须平移。",
+            "en": "Open the JSON in an editor and subtract stage endpoints. Explain why 32 and 65 measure different things before editing. In a copied lab, change the queue stage and identify the later timestamps that must also shift."
+          },
+          "command": "python3 -m json.tool artifacts/day01-timeline.json",
+          "expected": {
+            "zh": "五个阶段都有开始与结束时间，边界字段明确写着 teaching simulation。",
+            "en": "All five stages have start/end times and the boundary explicitly says teaching simulation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "找不到 python3",
+            "en": "python3 is not found"
+          },
+          "fix": {
+            "zh": "先确认已安装 Python 3.9+；Windows 尝试 py -3 --version，并把后续命令中的 python3 替换为 py -3。",
+            "en": "Confirm Python 3.9+ is installed. On Windows try py -3 --version and use py -3 in later commands."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "can't open file 'lab.py'",
+            "en": "can't open file 'lab.py'"
+          },
+          "fix": {
+            "zh": "终端不在解压后的 foundations 文件夹；进入含 lab.py、student.py、README.md 的目录再运行，不要直接在 ZIP 预览中运行。",
+            "en": "Enter the extracted foundations folder containing lab.py, student.py and README.md. Do not run from inside a ZIP preview."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "时间线中首次输出在 32 ms、完成在 65 ms，整体延迟是多少？",
+            "en": "First output is at 32 ms and completion at 65 ms. What is end-to-end latency?"
+          },
+          "options": [
+            {
+              "zh": "32 ms",
+              "en": "32 ms"
+            },
+            {
+              "zh": "65 ms",
+              "en": "65 ms"
+            },
+            {
+              "zh": "33 ms",
+              "en": "33 ms"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "请求从 0 ms 开始，整体延迟为 65−0。33 ms 是首次输出到完成的差值。",
+            "en": "The request starts at 0, so end-to-end latency is 65−0. The 33 ms difference covers only first output to completion."
+          }
+        },
+        {
+          "question": {
+            "zh": "这个脚本能证明哪件事？",
+            "en": "What does this script establish?"
+          },
+          "options": [
+            {
+              "zh": "你的 GPU 能在 32 ms 返回 token",
+              "en": "Your GPU returns a token in 32 ms"
+            },
+            {
+              "zh": "vLLM 一定比其他引擎快",
+              "en": "vLLM is always faster than other engines"
+            },
+            {
+              "zh": "你能读取并解释给定的请求阶段",
+              "en": "You can read and explain the supplied request stages"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "脚本使用固定的教学时间，没有执行模型或访问 GPU。",
+            "en": "The script uses fixed teaching timestamps without executing a model or accessing a GPU."
+          }
+        }
+      ],
+      "interactive": "timeline"
     },
     {
       "day": 2,
@@ -147,30 +310,32 @@
         "en": "Understand tokens, tensors and KV cache"
       },
       "lesson": {
-        "zh": "字符数不是 token 数；同一句话在不同分词器、模板或语言下会得到不同长度。自回归模型先处理提示词，再逐步生成新 token；KV cache 保存历史注意力状态，以减少重复工作。标准注意力模型的缓存容量与层数、KV heads、head dimension、精度、上下文和并发共同相关，不能只看模型参数量。",
-        "en": "Characters are not tokens: tokenizers, chat templates and languages change sequence lengths. An autoregressive model processes its prompt and then generates tokens incrementally. Its KV cache stores attention state to avoid repeating historical work. For a standard attention model, cache memory depends on layers, KV heads, head dimension, precision, sequence length and concurrency. Parameter count alone does not describe the memory required by a serving workload."
+        "zh": "token 是模型使用的离散单位，字符数通常不等于 token 数。张量形状描述数据有多少个元素，精度决定每个元素占多少字节。自回归模型可保存已经处理的 token 对应的 K/V 状态，以减少后续重复计算；但这些状态要占用内存。今天从一个明确写出维度的教学模型出发，手算并运行 KV 容量计算器。",
+        "en": "Tokens are the discrete units used by a model; character counts usually differ from token counts. Tensor shape determines the element count and precision determines bytes per element. Autoregressive models can retain K/V state from processed tokens to avoid repeated computation, at a memory cost. Today calculates that cost for explicitly declared teaching dimensions."
       },
       "task": {
-        "zh": "选一个公开模型配置，记录层数、KV heads、head dimension 和缓存精度。写容量计算器，比较 2K/8K 上下文与 1/8 并发。列出模型结构、缓存压缩或分片会使公式失效或需要修正的条件。",
-        "en": "Read a public model configuration and record layers, KV heads, head dimension and cache precision. Build a calculator comparing 2K/8K contexts and concurrency 1/8. List architecture, compression or sharding conditions that require changing the formula."
+        "zh": "完成四组容量表，再把精度或并发改一个值，先预测再运行验证；记录公式成立的假设。",
+        "en": "Complete four capacity cases, predict and test one precision or concurrency change, and record the assumptions."
       },
       "evidence": {
-        "zh": "kv_budget.py 与计算表，包含输入参数、单位、公式假设和两组手算核对。",
-        "en": "kv_budget.py and a table containing inputs, units, assumptions and two hand-checked examples."
+        "zh": "day02-kv.json、手算过程和一个单变量容量对照。",
+        "en": "day02-kv.json, a hand calculation and a one-variable comparison."
       },
       "checklist": {
         "zh": [
-          "区分 KV heads 与 query heads，使用 bytes 而非把 bit 当 byte",
-          "说明结果仅为 KV cache 估算，不包含权重和运行时开销"
+          "能解释本日算例与至少一个限制",
+          "执行实验并核对预期结果，保留原始输出",
+          "完成两道测验；用自己的话记录一次错误或反例"
         ],
         "en": [
-          "Distinguish KV heads from query heads and bits from bytes",
-          "State that the estimate excludes weights and runtime overhead"
+          "Explain today’s example and at least one limitation",
+          "Run the lab, compare expected results and retain raw output",
+          "Complete both quizzes and describe one error or counterexample in your own words"
         ]
       },
       "noGpu": {
-        "zh": "读取模型配置与运行计算器都不需要 GPU；不必下载整个模型。",
-        "en": "Reading model configuration and running the calculator need no GPU or full weight download."
+        "zh": "本课全程支持普通 CPU 电脑，无需 GPU。使用实验包即可；输出中的模拟时间不可当作真实模型性能。",
+        "en": "This entire course runs on an ordinary CPU computer without a GPU. Use the lab pack; synthetic times are not real model measurements."
       },
       "reading": [
         {
@@ -182,14 +347,167 @@
           "url": "https://huggingface.co/docs/transformers/main/en/cache_explanation"
         }
       ],
-      "code": {
-        "language": "python",
-        "caption": {
-          "zh": "标准、未分片 KV cache 的教学估算；实际架构需核对",
-          "en": "A teaching estimate for standard unsharded KV cache; check your architecture"
+      "explanation": [
+        {
+          "title": {
+            "zh": "把公式拆成可数的维度",
+            "en": "Count the dimensions"
+          },
+          "body": {
+            "zh": "在每层都保留完整历史、无共享/压缩/分片的简化情况下：字节数 = 2 × 层数 × KV 头数 × 每头维度 × token 数 × 序列数 × 每元素字节数。最前面的 2 表示 K 和 V；KV 头数不能直接用 query 头数替换。",
+            "en": "For a full-history cache in every layer, without sharing, compression or sharding: bytes = 2 × layers × KV heads × head dimension × tokens × sequences × bytes per element. The first 2 counts K and V. KV-head count is not interchangeable with query-head count."
+          }
         },
-        "content": "def kv_bytes(layers, kv_heads, head_dim, tokens, sequences, bytes_per_element):\n    return 2 * layers * kv_heads * head_dim * tokens * sequences * bytes_per_element\n\nsize = kv_bytes(32, 8, 128, 2048, 8, 2)\nprint(f\"Estimated KV cache: {size / 2**30:.2f} GiB\")\n# Excludes model weights, activations, allocator overhead and architecture-specific state."
-      }
+        {
+          "title": {
+            "zh": "先验证一个小算例",
+            "en": "Check one worked example"
+          },
+          "body": {
+            "zh": "示例设 32 层、8 个 KV 头、每头 128 维、2 字节精度。一条 2048-token 序列需要 268435456 字节，即 0.25 GiB。上下文扩大到 8192 是 4 倍，8 条序列再乘 8。这里只算 KV，不包含权重、激活或运行时工作区。",
+            "en": "With 32 layers, 8 KV heads, dimension 128 and two-byte elements, one 2048-token sequence needs 268435456 bytes, or 0.25 GiB. Increasing context to 8192 multiplies this by four; eight sequences multiply it by eight again. This excludes weights, activations and runtime workspace."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "从 token 到显存估算",
+          "en": "From tokens to a memory estimate"
+        },
+        "nodes": [
+          {
+            "zh": "历史 token 数",
+            "en": "Historical token count"
+          },
+          {
+            "zh": "每层 K 与 V",
+            "en": "Per-layer K and V"
+          },
+          {
+            "zh": "KV 头 × 维度",
+            "en": "KV heads × dimension"
+          },
+          {
+            "zh": "精度 × 序列数",
+            "en": "Precision × sequences"
+          },
+          {
+            "zh": "字节 → GiB",
+            "en": "Bytes → GiB"
+          }
+        ],
+        "caption": {
+          "zh": "GiB 使用 2 的 30 次方换算；公式仅适用于这里声明的缓存结构。",
+          "en": "A GiB is 2^30 bytes. The formula applies only to the declared cache structure."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行四组容量",
+            "en": "Run four capacity cases"
+          },
+          "body": {
+            "zh": "先在纸上算 2048 token、1 条序列的容量，再运行代码，核对四个组合。",
+            "en": "Calculate the 2048-token, one-sequence case on paper, then compare all four scripted combinations."
+          },
+          "command": "python3 lab.py day2",
+          "expected": {
+            "zh": "按顺序得到 0.25、2.0、1.0、8.0 GiB；组合写在 day02-kv.json。",
+            "en": "Outputs 0.25, 2.0, 1.0 and 8.0 GiB in order; combinations are recorded in day02-kv.json."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个参数",
+            "en": "Change one variable"
+          },
+          "body": {
+            "zh": "直接调用 kv_bytes，把序列数改成 2。检查它是否恰好翻倍。再试用 0 作为 token 数，观察输入检查。",
+            "en": "Call kv_bytes with two sequences and verify the exact doubling. Then try zero tokens to observe input validation."
+          },
+          "command": "python3 -c \"from lab import kv_bytes; print(kv_bytes(32, 8, 128, 2048, 2) / 2**30)\"",
+          "expected": {
+            "zh": "输出 0.5。输入 0 时应报 ValueError，而不是悄悄接受无效容量。",
+            "en": "Prints 0.5. Zero input should raise ValueError instead of accepting an invalid capacity."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "计算结果差了约 7%",
+            "en": "Result differs by about 7%"
+          },
+          "fix": {
+            "zh": "检查使用的是 GB（10^9）还是 GiB（2^30）；不要混用单位。",
+            "en": "Check whether the denominator is GB (10^9) or GiB (2^30); do not mix the units."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "把估算值当作实际启动需要的总显存",
+            "en": "Treating KV size as total required device memory"
+          },
+          "fix": {
+            "zh": "还要加入权重、工作区、额外缓冲和余量；滑动窗口、MLA、共享与分片还会改变缓存模型。",
+            "en": "Add weights, workspace, extra buffers and reserve. Sliding windows, MLA, sharing and sharding can also change the cache model."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "本例把序列数从 1 改为 8，其他条件不变，KV 估算如何变化？",
+            "en": "In this model, changing sequences from 1 to 8 changes the KV estimate how?"
+          },
+          "options": [
+            {
+              "zh": "乘 8",
+              "en": "Multiply by 8"
+            },
+            {
+              "zh": "不变",
+              "en": "No change"
+            },
+            {
+              "zh": "除以 8",
+              "en": "Divide by 8"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "无共享的线性模型里，每条序列都有自己的历史状态。",
+            "en": "In this unshared linear model, each sequence has its own historical state."
+          }
+        },
+        {
+          "question": {
+            "zh": "公式中的第一个 2 表示什么？",
+            "en": "What does the first 2 in the formula represent?"
+          },
+          "options": [
+            {
+              "zh": "两张 GPU",
+              "en": "Two GPUs"
+            },
+            {
+              "zh": "K 和 V 两份状态",
+              "en": "The K and V states"
+            },
+            {
+              "zh": "batch size 必须为 2",
+              "en": "Batch size must equal 2"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "精度占用已由 bytes_per_element 单独计算。",
+            "en": "Precision is already accounted for separately by bytes_per_element."
+          }
+        }
+      ],
+      "interactive": "kv-cache"
     },
     {
       "day": 3,
@@ -198,30 +516,32 @@
         "en": "Translate user experience into metrics"
       },
       "lesson": {
-        "zh": "TTFT 衡量从发起请求到收到第一个 token 的等待；端到端延迟衡量完整响应；输出吞吐衡量一段时间内完成的工作量。TPOT 的统计口径也要写清，例如用首尾 token 间隔除以其间 token 数。平均值会掩盖长尾，p95 也依赖样本量与失败处理。公平报告应同时记录请求数、失败数、输入输出长度与测量位置。",
-        "en": "TTFT measures the wait for the first token, end-to-end latency covers the complete response, and throughput describes completed work over time. Define TPOT explicitly, such as the interval between first and last token divided by the intervening token count. Averages hide tails, while p95 depends on sample size and failure handling. A useful report also records request counts, failures, lengths and where timestamps were collected."
+        "zh": "性能报告需要明确时间起点、成功范围与统计口径。TTFT 是请求发出到首 token 的等待，端到端延迟是发出到完成；平均 TPOT 常用首 token 到末 token 的时间除以其间 token 间隔数。先把这些公式放到固定合成记录上，检查错误、超时、空数据和只生成一个 token 的边界，再迁移到真实服务。",
+        "en": "A performance report needs explicit timing origins, success criteria and aggregation rules. TTFT covers request start to the first token; end-to-end latency covers start to completion. Mean TPOT commonly divides first-to-last-token time by the number of token intervals. Verify formulas on fixed synthetic records, including errors, timeouts, empty input and one-token outputs, before using them on a real service."
       },
       "task": {
-        "zh": "制作至少 20 条带开始、首 token、结束时间与输出长度的合成记录。计算 TTFT、端到端延迟、TPOT、p50/p95 和失败率；加入超时以及只生成一个 token 的边界样本。",
-        "en": "Create at least 20 synthetic records with start, first-token and end timestamps plus output lengths. Calculate TTFT, end-to-end latency, TPOT, p50/p95 and failure rate. Include timeouts and one-token outputs."
+        "zh": "核对 JSONL 中三个边界样本，实现 student.py 的两个指标函数并通过独立验收。",
+        "en": "Inspect three boundary cases in JSONL, implement both student.py functions and pass independent checks."
       },
       "evidence": {
-        "zh": "metrics.csv、analysis.py 和一页口径说明；醒目标注数据为合成样例。",
-        "en": "metrics.csv, analysis.py and a one-page definitions note, clearly labeled as synthetic examples."
+        "zh": "day03-requests.jsonl、day03-summary.json、student.py 和验收输出。",
+        "en": "day03-requests.jsonl, day03-summary.json, student.py and check output."
       },
       "checklist": {
         "zh": [
-          "时间单位一致，单 token 情况不会除以零",
-          "失败请求没有被静默删除，分位数算法与样本量明确"
+          "能解释本日算例与至少一个限制",
+          "执行实验并核对预期结果，保留原始输出",
+          "完成两道测验；用自己的话记录一次错误或反例"
         ],
         "en": [
-          "Use consistent time units and avoid division by zero for one-token outputs",
-          "Do not silently discard failures; document percentile method and sample size"
+          "Explain today’s example and at least one limitation",
+          "Run the lab, compare expected results and retain raw output",
+          "Complete both quizzes and describe one error or counterexample in your own words"
         ]
       },
       "noGpu": {
-        "zh": "使用手工或脚本生成的合成时间戳即可；这些结果只验证分析程序，不代表任何引擎性能。",
-        "en": "Use manually created or generated timestamps. Results validate the analyzer, not an inference engine's performance."
+        "zh": "本课全程支持普通 CPU 电脑，无需 GPU。使用实验包即可；输出中的模拟时间不可当作真实模型性能。",
+        "en": "This entire course runs on an ordinary CPU computer without a GPU. Use the lab pack; synthetic times are not real model measurements."
       },
       "reading": [
         {
@@ -232,6 +552,162 @@
           "title": "Prometheus · Metric types",
           "url": "https://prometheus.io/docs/concepts/metric_types/"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "一个请求，三种时间",
+            "en": "One request, three timing measures"
+          },
+          "body": {
+            "zh": "若 start=100、first=125、end=165 ms，生成 5 个 token，则 TTFT=25 ms，整体=65 ms，TPOT=(165−125)/(5−1)=10 ms。只生成一个 token 时不存在后续间隔，TPOT 应记为无数据，而不是除以零或强行写 0。",
+            "en": "For start=100, first=125 and end=165 ms with five output tokens, TTFT=25 ms, total latency=65 ms and TPOT=(165−125)/(5−1)=10 ms. One-token output has no later token interval, so TPOT is unavailable, not zero."
+          }
+        },
+        {
+          "title": {
+            "zh": "分位数与失败都要留下",
+            "en": "Keep percentiles and failures"
+          },
+          "body": {
+            "zh": "本课采用最近秩定义：排序后取 ceil(q×n) 个值，计数从 1 开始。20 个值的 p95 是第 19 个。成功延迟只统计成功请求，但失败率分母必须包含全部请求；不要静默删除超时。不同工具的分位数插值方法可能不同，报告应写明定义。",
+            "en": "We use nearest rank: take the ceil(q×n)-th sorted value, counting from one. For 20 values, p95 is the 19th. Successful latency uses successful requests, while failure-rate denominators include every request. Tools can use different interpolation rules; state your definition."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "保留原始记录，再做统计",
+          "en": "Preserve records before aggregation"
+        },
+        "nodes": [
+          {
+            "zh": "24 条合成记录",
+            "en": "24 synthetic records"
+          },
+          {
+            "zh": "22 成功 / 2 失败",
+            "en": "22 success / 2 failure"
+          },
+          {
+            "zh": "成功延迟数组",
+            "en": "Successful latencies"
+          },
+          {
+            "zh": "分位数与失败率",
+            "en": "Percentiles and failure rate"
+          }
+        ],
+        "caption": {
+          "zh": "失败仍保留在原始日志中；单 token 请求不进入 TPOT 平均值。",
+          "en": "Failures remain in raw logs. One-token requests are excluded from mean TPOT."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "生成并核对记录",
+            "en": "Generate and inspect records"
+          },
+          "body": {
+            "zh": "运行脚本后打开 JSONL，每行是一条请求。找到 r00、r22 与 r23，解释为什么它们的统计处理不同。",
+            "en": "Run the script and open JSONL, one request per line. Locate r00, r22 and r23 and explain their different treatment."
+          },
+          "command": "python3 lab.py day3",
+          "expected": {
+            "zh": "24 条记录、22 成功、1 错误、1 超时；p95 TTFT=35 ms，TPOT 样本数=21。",
+            "en": "24 records, 22 successes, one error and one timeout; p95 TTFT=35 ms; 21 TPOT samples."
+          }
+        },
+        {
+          "title": {
+            "zh": "开始自己的指标函数",
+            "en": "Start your own metric functions"
+          },
+          "body": {
+            "zh": "打开 student.py，实现 failure_rate 与 nearest_rank。先用空列表、单值、包含超时的记录手算，再执行 check.py。遇到 NOT YET 说明挑战尚未完成，不是环境安装失败；提示见 README。",
+            "en": "Implement failure_rate and nearest_rank in student.py. Hand-check empty, single-value and timeout examples before running check.py. NOT YET means the exercise is incomplete, not an installation failure; see README hints."
+          },
+          "command": "python3 check.py",
+          "expected": {
+            "zh": "完成后显示 PASS: student boundary checks。参考代码可用 python3 check.py --reference 单独核验。",
+            "en": "After implementation: PASS: student boundary checks. Verify the supplied reference separately with python3 check.py --reference."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "ZeroDivisionError",
+            "en": "ZeroDivisionError"
+          },
+          "fix": {
+            "zh": "TPOT 只接收 output_tokens>1 的成功记录；空请求集的失败率返回 None。",
+            "en": "Compute TPOT only for successful records with output_tokens>1; return None for an empty failure-rate input."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "算出的失败率是 0",
+            "en": "Failure rate appears as zero"
+          },
+          "fix": {
+            "zh": "检查是否在统计失败率之前把失败请求过滤掉了；本例应为 2/24，约 8.33%。",
+            "en": "Check whether failures were filtered out before calculating the rate. This dataset has 2/24 failures, about 8.33%."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "5 个输出 token 的 first=20、end=60 ms，TPOT 是多少？",
+            "en": "Five output tokens have first=20 and end=60 ms. What is TPOT?"
+          },
+          "options": [
+            {
+              "zh": "8 ms",
+              "en": "8 ms"
+            },
+            {
+              "zh": "10 ms",
+              "en": "10 ms"
+            },
+            {
+              "zh": "40 ms",
+              "en": "40 ms"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "5 个 token 有 4 个相邻间隔，40/4=10。",
+            "en": "Five tokens create four intervals, so 40/4=10."
+          }
+        },
+        {
+          "question": {
+            "zh": "空数据集的 p95 应该输出什么？",
+            "en": "What should p95 return for an empty dataset?"
+          },
+          "options": [
+            {
+              "zh": "0，表示性能很好",
+              "en": "0, meaning excellent performance"
+            },
+            {
+              "zh": "无数据，并说明没有样本",
+              "en": "Unavailable, with no samples stated"
+            },
+            {
+              "zh": "沿用上次结果",
+              "en": "Reuse the previous result"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "零会把缺少测量误表述为零延迟；本实验使用 None。",
+            "en": "Zero would misrepresent missing measurements as zero latency; this lab uses None."
+          }
+        }
       ]
     },
     {
@@ -241,35 +717,197 @@
         "en": "Separate compute from data movement"
       },
       "lesson": {
-        "zh": "加速器性能不由一个 FLOPS 数字决定。算术强度是完成一份工作所需的计算量与搬运字节数之比；数据复用差的算子可能受内存带宽限制，复杂算子也可能受计算或同步限制。读取一次参数服务多个元素，往往能提高复用。这里建立的是分析框架，真实瓶颈仍需目标设备上的测量，不能把 CPU 小实验直接外推到 GPU。",
-        "en": "Peak FLOPS is not a complete performance model. Arithmetic intensity compares computation with bytes moved. Operators with little data reuse may be bandwidth-bound; others may be limited by computation or synchronization. Reusing a loaded value across more work can change that balance. This is an analytical model, not a measured diagnosis: the actual bottleneck must be tested on the target device, and CPU experiments do not predict GPU speed."
+        "zh": "一个算子既要计算，也要搬运数据。只看运算次数或 GPU 利用率，无法解释所有性能问题。算术强度用 FLOP/byte 描述理想计算量与数据量的比例；它帮助提出瓶颈假设，但不能单独预测实际速度。今天对向量加法和矩阵乘法手算，再用 Python 列表观察本机 CPU 时间，明确理想模型与真实实现的差别。",
+        "en": "An operator both computes and moves data. Operation count or GPU utilization alone cannot explain every performance issue. Arithmetic intensity, in FLOP/byte, compares ideal compute with data movement. It suggests bottleneck hypotheses but does not alone predict speed. Today contrasts vector addition and matrix multiplication, then observes local Python list timings while separating an ideal model from an actual implementation."
       },
       "task": {
-        "zh": "分别估算向量加法和矩阵乘法的理想读写量与计算量，写出忽略的缓存和复用假设。用 CPU 上的小数组观察不同规模的运行时间，仅用于理解固定开销与规模效应。",
-        "en": "Estimate ideal byte traffic and operation counts for vector addition and matrix multiplication. State assumptions about caching and reuse. Time small CPU arrays at several sizes to explore fixed overhead and scale."
+        "zh": "运行并重复 CPU 计时，手算两种理想强度，写清至少两个估算或测量限制。",
+        "en": "Run and repeat CPU timings, calculate both ideal intensities and state at least two estimation or measurement limits."
       },
       "evidence": {
-        "zh": "roofline-notes.md：两个算子的计算表、CPU 时间记录与不可外推说明。",
-        "en": "roofline-notes.md: two operator estimates, CPU timings and explicit limits on generalization."
+        "zh": "day04-cost.json、重复结果和一页计算/搬运分析。",
+        "en": "day04-cost.json, repeated results and a short compute/traffic analysis."
       },
       "checklist": {
         "zh": [
-          "写清 FLOPs、bytes 与秒的单位",
-          "至少提出一个需要硬件 profiler 才能检验的假设"
+          "能解释本日算例与至少一个限制",
+          "执行实验并核对预期结果，保留原始输出",
+          "完成两道测验；用自己的话记录一次错误或反例"
         ],
         "en": [
-          "Label FLOPs, bytes and seconds",
-          "Identify at least one hypothesis requiring a hardware profiler"
+          "Explain today’s example and at least one limitation",
+          "Run the lab, compare expected results and retain raw output",
+          "Complete both quizzes and describe one error or counterexample in your own words"
         ]
       },
       "noGpu": {
-        "zh": "用 CPU 与纸笔完成；理论带宽或峰值仅可引用设备规格，不作为实测值。",
-        "en": "Use CPU experiments and hand calculations. Hardware specification values must remain labeled as theoretical, not measured."
+        "zh": "本课全程支持普通 CPU 电脑，无需 GPU。使用实验包即可；输出中的模拟时间不可当作真实模型性能。",
+        "en": "This entire course runs on an ordinary CPU computer without a GPU. Use the lab pack; synthetic times are not real model measurements."
       },
       "reading": [
         {
           "title": "NVIDIA · CUDA best practices",
           "url": "https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "向量加法的低复用",
+            "en": "Low reuse in vector addition"
+          },
+          "body": {
+            "zh": "假设 float32 向量加法 c=a+b，每个元素读取 a 和 b 共 8 字节，写 c 4 字节，完成 1 次加法。理想强度为 1/12≈0.0833 FLOP/byte。忽略缓存、写分配等细节后，这个量提示数据搬运可能很重要。",
+            "en": "For float32 c=a+b, each element reads eight bytes from a and b, writes four bytes to c and performs one addition. Ideal intensity is 1/12≈0.0833 FLOP/byte. This ignores cache and write-allocation effects, but highlights potentially important data movement."
+          }
+        },
+        {
+          "title": {
+            "zh": "矩阵乘法依靠复用",
+            "en": "Matrix multiplication relies on reuse"
+          },
+          "body": {
+            "zh": "n×n 矩阵乘法约有 2n³ 次浮点运算，若 A、B 各读一次且 C 写一次，理想数据量为 12n² 字节，强度为 n/6。n=384 时是 64 FLOP/byte。这个上界依赖充分复用；朴素循环不保证达到它，Python float 对象也不是紧凑 float32 数组。",
+            "en": "An n×n multiplication has about 2n³ floating-point operations. Reading A and B once and writing C once costs 12n² bytes, giving intensity n/6: 64 FLOP/byte at n=384. This ideal requires reuse; naive loops do not guarantee it, and Python float objects are not packed float32 arrays."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "从计算量和流量提出假设",
+          "en": "Build a hypothesis from compute and traffic"
+        },
+        "nodes": [
+          {
+            "zh": "定义算子与精度",
+            "en": "Define operator and precision"
+          },
+          {
+            "zh": "估计 FLOP",
+            "en": "Estimate FLOPs"
+          },
+          {
+            "zh": "估计搬运字节",
+            "en": "Estimate transferred bytes"
+          },
+          {
+            "zh": "说明复用假设",
+            "en": "State reuse assumptions"
+          },
+          {
+            "zh": "实测检验假设",
+            "en": "Test with measurement"
+          }
+        ],
+        "caption": {
+          "zh": "本课 CPU 时间用于观察实现开销，不能推导 GPU 带宽。",
+          "en": "CPU timings illustrate implementation overhead and cannot establish GPU bandwidth."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行成本算例与 CPU 计时",
+            "en": "Run cost examples and CPU timings"
+          },
+          "body": {
+            "zh": "脚本会对三个列表规模进行加法，验证结果正确并记录 perf_counter 时间。",
+            "en": "The script adds lists at three sizes, checks correctness and records perf_counter elapsed time."
+          },
+          "command": "python3 lab.py day4",
+          "expected": {
+            "zh": "理想强度分别为 0.083333 与 64 FLOP/byte；CPU 时间随电脑和当时负载变化。",
+            "en": "Ideal intensities are 0.083333 and 64 FLOP/byte. CPU times vary with the machine and its load."
+          }
+        },
+        {
+          "title": {
+            "zh": "重复并记录限制",
+            "en": "Repeat and document limitations"
+          },
+          "body": {
+            "zh": "把第二次结果保存到另一个目录，与第一次比较。不要因为一次大规模运行更快就推断计算复杂度变了；记录进程负载、计时分辨率和 Python 开销。",
+            "en": "Save a second run to another directory and compare. A larger sample being faster once does not imply changed complexity; document system load, timer resolution and Python overhead."
+          },
+          "command": "python3 lab.py day4 --out repeat-day4",
+          "expected": {
+            "zh": "repeat-day4/day04-cost.json 包含第二组时间；数值不要求相同。",
+            "en": "repeat-day4/day04-cost.json contains a second set of timings; equality is not expected."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "重复计时不一样",
+            "en": "Repeated timings differ"
+          },
+          "fix": {
+            "zh": "这是本机实际 CPU 计时，受调度等因素影响。保留多次观测并说明范围，不挑最快值冒充稳定性能。",
+            "en": "These are actual CPU timings affected by scheduling. Preserve multiple observations and their range instead of presenting the fastest as stable performance."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "用 Python 对象大小代入 float32 公式",
+            "en": "Using Python object sizes in the float32 formula"
+          },
+          "fix": {
+            "zh": "公式描述理想紧凑数组；当前代码实现是 Python 列表。两者分开报告，不把估算字节数除以列表时间当作硬件带宽。",
+            "en": "The formula models packed arrays; the implementation uses Python lists. Report them separately instead of dividing ideal bytes by list time to claim hardware bandwidth."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "float32 向量加法的理想每元素数据量是多少？",
+            "en": "What is the ideal float32 vector-add traffic per element?"
+          },
+          "options": [
+            {
+              "zh": "4 字节",
+              "en": "4 bytes"
+            },
+            {
+              "zh": "8 字节",
+              "en": "8 bytes"
+            },
+            {
+              "zh": "12 字节",
+              "en": "12 bytes"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "两个输入各 4 字节，再写一个 4 字节输出。",
+            "en": "Two four-byte inputs plus one four-byte output."
+          }
+        },
+        {
+          "question": {
+            "zh": "本机 Python 加法时间能直接证明 GPU 内存带宽吗？",
+            "en": "Can local Python addition timing directly establish GPU memory bandwidth?"
+          },
+          "options": [
+            {
+              "zh": "不能，执行设备与数据表示都不同",
+              "en": "No, device and representation differ"
+            },
+            {
+              "zh": "可以，只需乘核心数",
+              "en": "Yes, multiply by core count"
+            },
+            {
+              "zh": "可以，只需换算毫秒",
+              "en": "Yes, convert milliseconds"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "没有运行 GPU，也未测量 GPU 数据搬运。",
+            "en": "No GPU work or GPU data transfer was measured."
+          }
         }
       ]
     },
@@ -280,30 +918,32 @@
         "en": "Learn queuing and batching with a simulator"
       },
       "lesson": {
-        "zh": "低请求量时，批处理等待可能比节省的计算时间更明显；高请求量时，排队又可能成为尾延迟的主要来源。固定批处理等待整批完成，连续批处理允许完成的请求退出、其他请求加入，但具体调度依赖引擎实现。不要把并发数、到达速率和 batch size 当成一个参数：它们分别描述系统在途工作、外部流量与一次处理的工作集合。",
-        "en": "At low traffic, waiting to form a batch can dominate the time saved by batching. Under heavy traffic, queueing can dominate tail latency. Static batching waits for a batch, while continuous batching can replace finished requests with new work, subject to the engine's implementation. Concurrency, arrival rate and batch size are different quantities: in-flight work, incoming demand and the set processed together. Changing one does not automatically fix the others."
+        "zh": "服务没有立即处理请求时，请求会排队。批处理可以把多条请求放在一起执行，但它的收益依赖执行成本和到达方式；单条请求也可能因为额外开销变慢。今天提供一个小型、完整的 FIFO 模拟器，从两条请求手算开始，再比较均匀到达与突发到达。所有时间都是教学设定，不代表 vLLM 调度算法。",
+        "en": "Requests queue when a server cannot handle them immediately. Batching can execute several requests together, but benefits depend on service cost and arrivals; extra overhead can slow an individual request. Today starts with two hand-calculated FIFO requests and a complete small simulator, then compares steady and burst arrivals. All times are teaching assumptions, not a model of the full vLLM scheduler."
       },
       "task": {
-        "zh": "写一个离散事件模拟器，输入到达时间和服务时长，比较 FIFO 单请求与固定大小批处理。对均匀流量和突发流量各跑一组，记录等待时间分布，并列出模拟省略的调度细节。",
-        "en": "Write a discrete-event simulator using arrival times and service durations. Compare single-request FIFO with fixed-size batching under steady and bursty traffic. Record waiting-time distributions and list omitted scheduling details."
+        "zh": "跑通两请求算例与四组实验，改变到达间隔为 4 ms，解释实际批大小与等待如何变化。",
+        "en": "Run the two-request example and four conditions, then change arrivals to 4 ms apart and explain batch size and wait changes."
       },
       "evidence": {
-        "zh": "queue_sim.py、输入样例、等待时间图和模型假设。",
-        "en": "queue_sim.py, input fixtures, waiting-time plots and model assumptions."
+        "zh": "day05 原始日志、comparison.json 与本人修改到达间隔的对照说明。",
+        "en": "Day 5 raw traces, comparison.json and an explanation of your arrival-interval experiment."
       },
       "checklist": {
         "zh": [
-          "所有请求都有明确状态，不丢失或重复完成",
-          "能解释吞吐改善与等待增加同时出现的案例"
+          "能解释本日算例与至少一个限制",
+          "执行实验并核对预期结果，保留原始输出",
+          "完成两道测验；用自己的话记录一次错误或反例"
         ],
         "en": [
-          "Every request has a state and is neither lost nor completed twice",
-          "Explain a case where throughput improves while waiting increases"
+          "Explain today’s example and at least one limitation",
+          "Run the lab, compare expected results and retain raw output",
+          "Complete both quizzes and describe one error or counterexample in your own words"
         ]
       },
       "noGpu": {
-        "zh": "整个调度实验在 CPU 上运行；不要将模拟结果命名为 vLLM 或 SGLang 基准测试。",
-        "en": "Run the entire simulation on CPU. Do not label its output as a vLLM or SGLang benchmark."
+        "zh": "本课全程支持普通 CPU 电脑，无需 GPU。使用实验包即可；输出中的模拟时间不可当作真实模型性能。",
+        "en": "This entire course runs on an ordinary CPU computer without a GPU. Use the lab pack; synthetic times are not real model measurements."
       },
       "reading": [
         {
@@ -314,6 +954,166 @@
           "title": "vLLM · Architecture overview",
           "url": "https://docs.vllm.ai/en/latest/design/arch_overview/"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先用两条请求理解 FIFO",
+            "en": "Understand FIFO with two requests"
+          },
+          "body": {
+            "zh": "设两条请求在 0 和 3 ms 到达，每条服务 8 ms。第一条从 0 到 8，第二条从 8 到 16；第二条等待 8−3=5 ms。代码中的 now 表示服务可用时间，每次取 max(now,arrival)，这样既不会在请求到达前执行，也不会凭空产生等待。",
+            "en": "Two requests arrive at 0 and 3 ms, each needing 8 ms. The first runs 0–8 and the second 8–16, so the second waits 5 ms. now represents server availability; max(now, arrival) prevents execution before arrival and avoids invented waiting."
+          }
+        },
+        {
+          "title": {
+            "zh": "明确这个批处理模型",
+            "en": "Declare the batching model"
+          },
+          "body": {
+            "zh": "batch4 每次最多选择 4 条已经到达的请求，没有额外凑批等待计时器；该批次时长设为 2+最长服务时长。这个并行成本是教学假设。12 条同时到达时 FIFO 需 96 ms，batch4 需 3×10=30 ms；每 12 ms 才到一条时没有批可合并，额外 2 ms 反而增加单请求延迟。",
+            "en": "batch4 selects up to four already-arrived requests without an extra batching timer. Its duration is assumed to be 2 plus the longest service time. This parallel cost is a teaching assumption: 12 simultaneous requests take 96 ms with FIFO or 3×10=30 ms with batch4. At one arrival every 12 ms, batches remain single-item and the extra 2 ms increases latency."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "从到达时间推进模拟时钟",
+          "en": "Advance the simulated clock from arrivals"
+        },
+        "nodes": [
+          {
+            "zh": "按到达顺序排序",
+            "en": "Sort arrivals"
+          },
+          {
+            "zh": "等待服务可用",
+            "en": "Wait for availability"
+          },
+          {
+            "zh": "选择已到达请求",
+            "en": "Select arrived requests"
+          },
+          {
+            "zh": "执行一条或一批",
+            "en": "Run one item or batch"
+          },
+          {
+            "zh": "记录等待与完成",
+            "en": "Record wait and completion"
+          }
+        ],
+        "caption": {
+          "zh": "仅演示非抢占 FIFO 与固定批次，不实现连续批处理或真实 token 调度。",
+          "en": "Models non-preemptive FIFO and fixed batches, not continuous batching or real token scheduling."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "先跑两条请求",
+            "en": "Start with two requests"
+          },
+          "body": {
+            "zh": "调用 queue 并检查第二条的 start_ms 和 wait_ms。读 lab.py 中 queue 的 while 循环，对照上方手算。",
+            "en": "Call queue and inspect the second start_ms and wait_ms. Read the while loop in lab.py alongside the worked example."
+          },
+          "command": "python3 -c \"from lab import queue; print(queue([0, 3]))\"",
+          "expected": {
+            "zh": "第二条 start_ms=8、wait_ms=5、end_ms=16。",
+            "en": "The second request has start_ms=8, wait_ms=5 and end_ms=16."
+          }
+        },
+        {
+          "title": {
+            "zh": "运行四组对照",
+            "en": "Run four controlled conditions"
+          },
+          "body": {
+            "zh": "运行均匀/突发 × FIFO/batch4 的四组实验，查看 comparison 和对应原始日志。解释哪一组没有批处理收益。",
+            "en": "Run steady/burst × FIFO/batch4 and inspect the comparison plus raw traces. Explain which condition does not benefit."
+          },
+          "command": "python3 lab.py day5",
+          "expected": {
+            "zh": "突发 FIFO 完成 96 ms，batch4 完成 30 ms；均匀到达时 batch4 单次服务 10 ms，FIFO 为 8 ms。",
+            "en": "Burst FIFO completes at 96 ms and batch4 at 30 ms. With steady arrivals, batch4 service is 10 ms versus FIFO 8 ms."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "以为 batch4 总会凑够 4 条",
+            "en": "Assuming batch4 always waits for four items"
+          },
+          "fix": {
+            "zh": "检查 batch_size_actual；这里只合并已到达请求，不等待未来请求。真实凑批超时策略是另一项实验。",
+            "en": "Inspect batch_size_actual. This model batches only arrived requests; it does not wait for future ones. A batching timeout would be a separate experiment."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "把 96/30 写成 vLLM 加速倍数",
+            "en": "Reporting 96/30 as a vLLM speedup"
+          },
+          "fix": {
+            "zh": "该比值来自我们设定的服务成本，未运行任何引擎。报告写“在此教学模型和突发负载下”。",
+            "en": "The ratio follows the declared cost model; no engine ran. State “under this teaching model and burst workload.”"
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "请求在 3 ms 到达，服务在 8 ms 开始，等待多久？",
+            "en": "A request arrives at 3 ms and starts at 8 ms. What is its wait?"
+          },
+          "options": [
+            {
+              "zh": "3 ms",
+              "en": "3 ms"
+            },
+            {
+              "zh": "5 ms",
+              "en": "5 ms"
+            },
+            {
+              "zh": "8 ms",
+              "en": "8 ms"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "等待时间等于 start−arrival。",
+            "en": "Waiting time is start−arrival."
+          }
+        },
+        {
+          "question": {
+            "zh": "为什么稀疏请求在本例批处理下会变慢？",
+            "en": "Why do sparse requests get slower with batching in this example?"
+          },
+          "options": [
+            {
+              "zh": "模型增加了 2 ms 开销，但没有可合并请求",
+              "en": "The model adds 2 ms with no requests to combine"
+            },
+            {
+              "zh": "批处理一定导致错误",
+              "en": "Batching always causes errors"
+            },
+            {
+              "zh": "真实 GPU 已经满载",
+              "en": "A real GPU is saturated"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "时长由教学成本定义，稀疏流量下每批只有一条。",
+            "en": "The teaching cost adds overhead while sparse batches contain only one request."
+          }
+        }
       ]
     },
     {
@@ -323,30 +1123,32 @@
         "en": "Establish correctness before cache hits"
       },
       "lesson": {
-        "zh": "缓存复用要求缓存键与实际计算语义一致。文本相似不代表 token 前缀相同；模型版本、位置、适配器、模板或多模态输入变化也可能影响可复用性。命中率高不自动代表端到端延迟低，因为查找、传输和恢复状态也有成本。跨用户缓存还要遵守隔离要求；本课只用自建数据研究键设计，不接触其他用户内容。",
-        "en": "Cache reuse requires a key that matches the semantics of the computation. Similar text is not necessarily an identical token prefix, and model versions, positions, adapters, templates or multimodal inputs may affect reuse. A high hit rate does not guarantee low end-to-end latency because lookup and transfer also cost time. Cross-user caches require appropriate isolation. Use only self-created examples to study key design, never other users' content."
+        "zh": "缓存的第一要求是正确复用。只因为两段文字看起来相似，就复用内部状态，可能得到错误结果。今天用 Python 字典认识缓存身份：模型版本、命名空间与一组 token ID 共同决定一个键。这个小例子只做完全相同键的复用，帮助理解失配原因；它不实现 vLLM 的块哈希、部分前缀匹配或实际模型计算。",
+        "en": "A cache must reuse state correctly. Reusing internal state merely because text looks similar can be incorrect. A Python dictionary introduces cache identity: model version, namespace and token IDs jointly form a key. This example reuses only an identical key to teach mismatch causes; it does not implement vLLM block hashes, partial-prefix matching or model computation."
       },
       "task": {
-        "zh": "用 Python 字典实现教学缓存，缓存键包含你定义的模型版本、前缀 token 与命名空间。构造命中、单 token 改动、模型版本变化三类用例，记录命中与实际保存的工作。",
-        "en": "Build a teaching cache with a Python dictionary. Include model version, prefix tokens and a namespace in your key. Test exact reuse, a one-token change and a changed model version, recording hits and avoided work."
+        "zh": "运行五个缓存用例，在副本里构造缺少模型字段的错误键，再解释并修复误命中。",
+        "en": "Run five cache cases, construct an incomplete key in a copy, then explain and fix the false hit."
       },
       "evidence": {
-        "zh": "cache_model.py 与正确性测试；另写一段说明真实引擎为什么比该模型复杂。",
-        "en": "cache_model.py, correctness tests and a note explaining how real engine caches are more complex."
+        "zh": "day06-cache.json、错误键与修复键的差异、正确性解释。",
+        "en": "day06-cache.json, the incorrect/correct key diff and a correctness explanation."
       },
       "checklist": {
         "zh": [
-          "语义变化不会错误命中旧值",
-          "区分命中率、节省计算量与端到端收益"
+          "能解释本日算例与至少一个限制",
+          "执行实验并核对预期结果，保留原始输出",
+          "完成两道测验；用自己的话记录一次错误或反例"
         ],
         "en": [
-          "Semantic changes cannot incorrectly reuse old values",
-          "Distinguish hit rate, avoided computation and end-to-end benefit"
+          "Explain today’s example and at least one limitation",
+          "Run the lab, compare expected results and retain raw output",
+          "Complete both quizzes and describe one error or counterexample in your own words"
         ]
       },
       "noGpu": {
-        "zh": "可在 CPU 上完成全部键设计与正确性测试；不声称实现了真实 KV tensor 缓存。",
-        "en": "Complete key design and tests on CPU. This is not a real KV tensor cache implementation."
+        "zh": "本课全程支持普通 CPU 电脑，无需 GPU。使用实验包即可；输出中的模拟时间不可当作真实模型性能。",
+        "en": "This entire course runs on an ordinary CPU computer without a GPU. Use the lab pack; synthetic times are not real model measurements."
       },
       "reading": [
         {
@@ -357,7 +1159,164 @@
           "title": "Hugging Face · How caching works",
           "url": "https://huggingface.co/docs/transformers/main/en/cache_explanation"
         }
-      ]
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "把身份组成不可变键",
+            "en": "Build an immutable identity key"
+          },
+          "body": {
+            "zh": "键使用 (model, namespace, tuple(tokens))。tuple 让 token 列表能作为字典键；模型变化时，即使 token 相同，也不能假定内部状态相同。命名空间在本例代表隔离边界，避免把两个用途的数据当作同一个对象。实际系统还可能需要适配器、位置编码等身份因素。",
+            "en": "The key is (model, namespace, tuple(tokens)). A tuple makes tokens usable in a dictionary key. Changed model weights invalidate the assumption of identical state even with identical tokens. A namespace represents an isolation boundary here. Real systems may also need adapter, position and other identity factors."
+          }
+        },
+        {
+          "title": {
+            "zh": "命中不等于整个请求都免算",
+            "en": "A hit does not eliminate all work"
+          },
+          "body": {
+            "zh": "实验依次尝试首次、重复、改一个 token、改模型、改命名空间。只有重复命中。toy_tokens_reused 计数的是复用状态的教学 token 数，不是节省的实际计算时间。真实前缀缓存主要减少重复 prefill，后续新 token 的生成仍需要执行。",
+            "en": "The cases are first use, exact repeat, changed token, changed model and changed namespace. Only the repeat hits. toy_tokens_reused counts teaching state reuse, not measured time saved. Real prefix caching primarily reduces repeated prefill; new output tokens still require work."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "相同身份才能复用",
+          "en": "Reuse requires matching identity"
+        },
+        "nodes": [
+          {
+            "zh": "模型 / 命名空间 / token",
+            "en": "Model / namespace / tokens"
+          },
+          {
+            "zh": "构造不可变键",
+            "en": "Construct immutable key"
+          },
+          {
+            "zh": "查找键",
+            "en": "Look up key"
+          },
+          {
+            "zh": "命中复用 / 未命中创建",
+            "en": "Reuse hit / create on miss"
+          }
+        ],
+        "caption": {
+          "zh": "精确键字典是简化教学模型；真实引擎有更复杂的块与淘汰策略。",
+          "en": "An exact-key dictionary is a simplified model; real engines have more complex blocks and eviction."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行五种身份条件",
+            "en": "Run five identity cases"
+          },
+          "body": {
+            "zh": "查看每一行 case、hit、toy_tokens_reused；先预测再打开结果。",
+            "en": "Predict the result, then inspect case, hit and toy_tokens_reused in each row."
+          },
+          "command": "python3 lab.py day6",
+          "expected": {
+            "zh": "命中序列为 False, True, False, False, False。",
+            "en": "Hit sequence: False, True, False, False, False."
+          }
+        },
+        {
+          "title": {
+            "zh": "制造一次跨模型误命中",
+            "en": "Create a cross-model false hit"
+          },
+          "body": {
+            "zh": "在实验目录的副本中，把 key 改为只包含 tuple(tokens)，重跑并查看 changed-model 是否错误命中。随后恢复完整键。这是教学反例，不能用于真实缓存。",
+            "en": "In a copy of the lab, change key to only tuple(tokens), rerun and inspect changed-model for an incorrect hit. Then restore the full key; this is a teaching counterexample, never a real cache policy."
+          },
+          "command": "python3 -m json.tool artifacts/day06-cache.json",
+          "expected": {
+            "zh": "原版 changed-model 与 changed-namespace 均为 false；修改版的误命中说明键丢失了身份信息。",
+            "en": "The original changed-model and changed-namespace both miss. False hits in the modified copy expose missing identity fields."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "TypeError: unhashable type: 'list'",
+            "en": "TypeError: unhashable type: 'list'"
+          },
+          "fix": {
+            "zh": "列表可变，不能直接做字典键；将 token 列表转换为 tuple，同时保留模型与命名空间。",
+            "en": "Lists are mutable and cannot directly serve as dictionary keys. Convert tokens to a tuple while retaining model and namespace."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "认为一个 token 改动必然让真实系统全部缓存失效",
+            "en": "Assuming one changed token invalidates every real cached block"
+          },
+          "fix": {
+            "zh": "我们的例子只有完整键匹配；真实块式前缀缓存可能保留之前相同的完整块。不能把简化规则外推。",
+            "en": "This example supports only full-key equality. Real block-based prefix caches may retain preceding identical complete blocks; do not generalize this simplified rule."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "本例中 token 相同但模型版本改变，应怎么做？",
+            "en": "In this example, tokens match but the model version changes. What should happen?"
+          },
+          "options": [
+            {
+              "zh": "直接复用",
+              "en": "Reuse immediately"
+            },
+            {
+              "zh": "视为未命中",
+              "en": "Treat as a miss"
+            },
+            {
+              "zh": "只比较字符串长度",
+              "en": "Compare string length only"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "缓存状态依赖模型，身份不匹配不能证明状态可复用。",
+            "en": "Cached state depends on the model; different identity does not establish reusable state."
+          }
+        },
+        {
+          "question": {
+            "zh": "toy_tokens_reused=3 能说明什么？",
+            "en": "What does toy_tokens_reused=3 establish?"
+          },
+          "options": [
+            {
+              "zh": "真实服务节省了 3 ms",
+              "en": "A real service saved 3 ms"
+            },
+            {
+              "zh": "GPU 吞吐提高 3 倍",
+              "en": "GPU throughput tripled"
+            },
+            {
+              "zh": "教学字典复用了 3 个 token 对应的示例状态",
+              "en": "The teaching dictionary reused example state for three tokens"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "没有计时真实模型，不能推导速度收益。",
+            "en": "No model was timed, so a speed benefit cannot be inferred."
+          }
+        }
+      ],
+      "interactive": "prefix-cache"
     },
     {
       "day": 7,
@@ -366,30 +1325,32 @@
         "en": "Build an explainable resource budget"
       },
       "lesson": {
-        "zh": "模型权重能装入显存，不代表服务可以处理目标并发。运行时还需要 KV cache、临时张量、图捕获、通信缓冲与分配器余量。资源预算应分清固定占用和随请求增长的占用，并给出安全余量的理由。延长上下文、提高并发或改变精度都会影响预算；实际框架的内存参数不能直接当作应用可用显存。",
-        "en": "Fitting model weights into memory does not guarantee that a service can support the required concurrency. KV cache, temporary tensors, graph capture, communication buffers and allocator overhead also consume capacity. Separate fixed memory from request-dependent memory and explain your headroom. Longer contexts, greater concurrency and different precision change the budget. A framework memory setting is not the same as the memory available to your application."
+        "zh": "模型能否放进设备，不能只看参数量。权重、KV cache、工作区、临时张量与额外缓冲都会占用空间。预算的目的，是在运行前检查量级并声明未知项，不是保证一定不会内存不足。今天把第 2 天的 KV 计算器接入一张容量表，比较上下文变化，并讨论降级的代价。",
+        "en": "Parameter count alone does not determine whether a model fits. Weights, KV cache, workspace, temporary tensors and buffers all consume memory. A budget checks scale and declares unknowns before execution; it does not guarantee freedom from out-of-memory failures. Today combines day 2 KV estimates into a capacity table and examines context changes and fallback trade-offs."
       },
       "task": {
-        "zh": "为一个自选模型和三档上下文编写资源预算表，列出权重估算、KV 估算、未知开销与余量。给出两种内存不足时的降级选择，并说明延迟、质量或容量代价。",
-        "en": "Build a budget for one model and three context lengths, including weights, KV cache, unknown overhead and headroom. Propose two responses to insufficient memory and explain their latency, quality or capacity trade-offs."
+        "zh": "生成预算表，给超预算条件设计两种降级方法，并写出容量与服务能力的取舍。",
+        "en": "Generate the table and propose two fallbacks for the over-budget case with capacity and service trade-offs."
       },
       "evidence": {
-        "zh": "capacity-plan.md 与可修改参数的预算脚本。",
-        "en": "capacity-plan.md and a parameterized budget script."
+        "zh": "day07-budget.json、两种降级估算与未知开销说明。",
+        "en": "day07-budget.json, two fallback estimates and a note on unknown overhead."
       },
       "checklist": {
         "zh": [
-          "固定项、请求相关项与未知项分别列出",
-          "没有把估算容量写成经过实测的最大并发"
+          "能解释本日算例与至少一个限制",
+          "执行实验并核对预期结果，保留原始输出",
+          "完成两道测验；用自己的话记录一次错误或反例"
         ],
         "en": [
-          "Separate fixed, request-dependent and unknown costs",
-          "Do not present estimated capacity as a measured concurrency limit"
+          "Explain today’s example and at least one limitation",
+          "Run the lab, compare expected results and retain raw output",
+          "Complete both quizzes and describe one error or counterexample in your own words"
         ]
       },
       "noGpu": {
-        "zh": "只做模型配置与资源计算即可；没有真实机器时将建议列为待验证，不要求购买 GPU。",
-        "en": "Use model configuration and calculations. Label recommendations as untested when no target machine is available; buying a GPU is not required."
+        "zh": "本课全程支持普通 CPU 电脑，无需 GPU。使用实验包即可；输出中的模拟时间不可当作真实模型性能。",
+        "en": "This entire course runs on an ordinary CPU computer without a GPU. Use the lab pack; synthetic times are not real model measurements."
       },
       "reading": [
         {
@@ -400,6 +1361,162 @@
           "title": "Hugging Face · How caching works",
           "url": "https://huggingface.co/docs/transformers/main/en/cache_explanation"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "逐项列预算，留下未知项",
+            "en": "Budget each component and unknown"
+          },
+          "body": {
+            "zh": "示例权重为 10 亿参数 × 2 字节，约 1.86 GiB；KV 维度沿用第 2 天，8 条序列；额外工作区暂按 2 GiB。设备总量假设为 16 GiB，保留 20% 余量，因此预算上限 12.8 GiB。这里独立设置的参数只用于练习，不对应一个真实模型。",
+            "en": "Example weights use one billion parameters × two bytes, about 1.86 GiB. KV dimensions come from day 2 with eight sequences. Workspace is assumed to be 2 GiB. A hypothetical 16 GiB device reserves 20%, leaving 12.8 GiB. These independent values are illustrative and do not describe a real model."
+          }
+        },
+        {
+          "title": {
+            "zh": "降级会改变什么",
+            "en": "Understand fallback trade-offs"
+          },
+          "body": {
+            "zh": "减少并发会降低同时保存的状态，但可能降低承载量；缩短上下文会减小 KV，但限制输入长度。量化改变元素字节数，也引入支持与质量问题。不要默认所有占用都随某一个开关线性缩小；把未知工作区和余量单独写出来。",
+            "en": "Lower concurrency stores fewer simultaneous states but can reduce capacity. Shorter context reduces KV while limiting input length. Quantization changes bytes per element and adds support and quality concerns. Do not assume one switch scales every allocation; record workspace uncertainty and reserve separately."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "容量估算的四个部分",
+          "en": "Four parts of a capacity estimate"
+        },
+        "nodes": [
+          {
+            "zh": "权重估算",
+            "en": "Weight estimate"
+          },
+          {
+            "zh": "KV 估算",
+            "en": "KV estimate"
+          },
+          {
+            "zh": "工作区假设",
+            "en": "Workspace assumption"
+          },
+          {
+            "zh": "保留余量后比较",
+            "en": "Compare after reserve"
+          }
+        ],
+        "caption": {
+          "zh": "预算通过只说明假设下估算可容纳，仍需真实环境验证。",
+          "en": "Passing the estimate means only that declared assumptions fit; real execution must still be checked."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行三档上下文预算",
+            "en": "Run three context budgets"
+          },
+          "body": {
+            "zh": "查看 JSON 中 required_gib 与 budget_after_20_percent_reserve_gib，手算为什么最后一档超出。",
+            "en": "Compare required_gib with budget_after_20_percent_reserve_gib and calculate why the last case exceeds it."
+          },
+          "command": "python3 lab.py day7",
+          "expected": {
+            "zh": "2048、8192、16384 token 三档的 fits_estimate 依次为 true、true、false。",
+            "en": "The 2048, 8192 and 16384-token estimates fit as true, true and false."
+          }
+        },
+        {
+          "title": {
+            "zh": "尝试降低并发",
+            "en": "Try lower concurrency"
+          },
+          "body": {
+            "zh": "针对 16384-token 条件，把序列数从 8 降到 4，单独算 KV。再将权重和工作区加回去，说明是否低于 12.8 GiB，以及降低并发可能影响什么。",
+            "en": "For 16384 tokens, reduce sequences from eight to four and calculate KV. Add weights and workspace back, compare against 12.8 GiB and explain the concurrency trade-off."
+          },
+          "command": "python3 -c \"from lab import kv_bytes; print(kv_bytes(32, 8, 128, 16384, 4) / 2**30)\"",
+          "expected": {
+            "zh": "KV 变为 8.0 GiB；加上约 1.86 GiB 权重和 2 GiB 工作区，约 11.86 GiB。",
+            "en": "KV becomes 8.0 GiB; adding about 1.86 GiB weights and 2 GiB workspace gives about 11.86 GiB."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "估算能放下，真实运行仍 OOM",
+            "en": "Estimate fits but a real run still runs out of memory"
+          },
+          "fix": {
+            "zh": "检查遗漏的激活、运行时分配、精度和实际可用空间；这里固定的 2 GiB 工作区只是示例假设。",
+            "en": "Check omitted activations, runtime allocations, precision and actual free memory. The fixed 2 GiB workspace here is merely an assumption."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "只减权重就认为所有内存都减半",
+            "en": "Assuming halved weights halve all memory"
+          },
+          "fix": {
+            "zh": "KV 与工作区是单独项目；权重量化不自动改变缓存精度或其他缓冲。",
+            "en": "KV and workspace are separate. Weight quantization does not automatically change cache precision or other buffers."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "16 GiB 设备保留 20% 余量，预算上限是多少？",
+            "en": "What budget remains after reserving 20% of 16 GiB?"
+          },
+          "options": [
+            {
+              "zh": "16 GiB",
+              "en": "16 GiB"
+            },
+            {
+              "zh": "12.8 GiB",
+              "en": "12.8 GiB"
+            },
+            {
+              "zh": "3.2 GiB",
+              "en": "3.2 GiB"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "16×0.8=12.8；3.2 是被保留的部分。",
+            "en": "16×0.8=12.8; 3.2 is the reserved amount."
+          }
+        },
+        {
+          "question": {
+            "zh": "fits_estimate=true 代表什么？",
+            "en": "What does fits_estimate=true mean?"
+          },
+          "options": [
+            {
+              "zh": "声明的假设下估算未超预算",
+              "en": "The declared estimate stays within budget"
+            },
+            {
+              "zh": "任何版本都不会 OOM",
+              "en": "No version can run out of memory"
+            },
+            {
+              "zh": "已经完成 GPU 实测",
+              "en": "GPU measurement is complete"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "实际模型结构和运行时分配可能与示例不同。",
+            "en": "Actual architecture and runtime allocations can differ from this example."
+          }
+        }
       ]
     },
     {
@@ -409,30 +1526,32 @@
         "en": "Create a reproducible benchmark protocol"
       },
       "lesson": {
-        "zh": "基准测试不是保存一个最快数字。模型 revision、框架版本、输入输出长度、采样配置、到达模式、预热方式和缓存初始状态都会影响结果。每次只改变少量变量，保存原始记录，并把失败和波动写进报告。重复运行能显示不确定性，但重复次数少时仍不能声称统计稳健；使用同一随机种子也不保证所有平台得到完全相同的结果。",
-        "en": "A benchmark is more than its fastest number. Model revision, framework version, input/output lengths, sampling settings, arrival pattern, warm-up and initial cache state can all change the result. Change few variables at a time and preserve raw data, failures and variation. Repeated runs expose uncertainty but a few repeats do not establish statistical robustness. A shared seed also does not guarantee identical output across platforms."
+        "zh": "一次截图只能说明有人得到过一个数字，不能让别人重算结论。可复现的实验需要输入、参数、代码版本、环境与原始结果。今天将第 5 天的模拟器变成一个完整实验协议：固定相同输入，运行两种策略各三次，保存清单、每次日志和 CSV。由于模型完全确定，重复值相同是正常现象，并不代表已经获得真实系统的统计置信度。",
+        "en": "A screenshot shows that someone obtained a number, but cannot support independent recomputation. Reproducible work requires inputs, parameters, code, environment and raw results. Today turns day 5 into an experiment protocol: identical inputs, two strategies repeated three times, a manifest, raw traces and CSV. The deterministic model should repeat exactly; that does not establish statistical confidence about a real system."
       },
       "task": {
-        "zh": "为后续 vLLM 或 SGLang 学习编写实验清单与结果目录约定。对第 5 天模拟器完成三次重复，记录环境、参数、原始数据与汇总，练习一键生成报告。",
-        "en": "Write an experiment manifest and results layout for later vLLM or SGLang work. Run three repetitions of your day-5 simulator and preserve environment, parameters, raw data and summaries. Automate report generation."
+        "zh": "执行三次重复，独立从原始日志重算一个结果，写明输入哈希、代码哈希和唯一改变的变量。",
+        "en": "Run three repeats, recompute one result from raw traces and document input/source hashes and the single changed variable."
       },
       "evidence": {
-        "zh": "experiment.json、results/ 与 reproduce.md；目录中注明模拟实验。",
-        "en": "experiment.json, results/ and reproduce.md, explicitly labeled as simulation."
+        "zh": "day08-manifest.json、6 个原始结果、day08-results.csv 和复核命令。",
+        "en": "day08-manifest.json, six raw traces, day08-results.csv and a recomputation command."
       },
       "checklist": {
         "zh": [
-          "第三人能从固定输入重跑并理解结果差异",
-          "报告包含所有试验，而不只保留最快的一次"
+          "能解释本日算例与至少一个限制",
+          "执行实验并核对预期结果，保留原始输出",
+          "完成两道测验；用自己的话记录一次错误或反例"
         ],
         "en": [
-          "Another person can rerun fixed inputs and understand differences",
-          "Include all trials, not only the fastest one"
+          "Explain today’s example and at least one limitation",
+          "Run the lab, compare expected results and retain raw output",
+          "Complete both quizzes and describe one error or counterexample in your own words"
         ]
       },
       "noGpu": {
-        "zh": "复现协议先在 CPU 模拟器上验证，之后原样迁移到真实引擎实验。",
-        "en": "Validate the protocol on the CPU simulator, then reuse it for a real engine experiment."
+        "zh": "本课全程支持普通 CPU 电脑，无需 GPU。使用实验包即可；输出中的模拟时间不可当作真实模型性能。",
+        "en": "This entire course runs on an ordinary CPU computer without a GPU. Use the lab pack; synthetic times are not real model measurements."
       },
       "reading": [
         {
@@ -442,6 +1561,166 @@
         {
           "title": "vLLM · Reproducibility",
           "url": "https://docs.vllm.ai/en/latest/usage/reproducibility/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "哪些条件必须一起保存",
+            "en": "What to preserve together"
+          },
+          "body": {
+            "zh": "manifest 记录 Python 与系统版本、到达时间数组、服务时长、批处理开销、重复次数，以及输入和 lab.py 的 SHA-256。哈希用于识别内容变化，不证明程序正确。比较两组结果时，先确认输入与成本规则相同，只有 batch_size 这个变量变化。",
+            "en": "The manifest records Python and OS versions, arrivals, service time, batch overhead, repetitions and SHA-256 of the input and lab.py. A hash identifies content changes; it does not prove correctness. Before comparing results, confirm identical inputs and cost rules, with only batch_size changing."
+          }
+        },
+        {
+          "title": {
+            "zh": "区分重放与统计重复",
+            "en": "Distinguish replay from statistical repetition"
+          },
+          "body": {
+            "zh": "这次重复验证脚本是否按同样规则重放。如果真实系统存在噪声，还需要记录预热、运行顺序、负载和多次结果分布。不能把确定性模型的零波动写成“性能稳定”。CSV 是摘要，原始逐请求日志才允许检查遗漏和重新计算。",
+            "en": "These repeats verify replay under identical rules. Noisy real systems also require warm-up, run order, workloads and distributions across runs. Zero variation in a deterministic model is not evidence of stable real performance. CSV is a summary; per-request traces allow checking omissions and recomputation."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "一条可复现的实验链",
+          "en": "A reproducible experiment chain"
+        },
+        "nodes": [
+          {
+            "zh": "固定输入与规则",
+            "en": "Fix inputs and rules"
+          },
+          {
+            "zh": "保存环境与哈希",
+            "en": "Save environment and hashes"
+          },
+          {
+            "zh": "运行 2 策略 × 3 次",
+            "en": "Run 2 strategies × 3"
+          },
+          {
+            "zh": "保留逐请求日志",
+            "en": "Retain per-request traces"
+          },
+          {
+            "zh": "生成 CSV 摘要",
+            "en": "Produce CSV summary"
+          }
+        ],
+        "caption": {
+          "zh": "原始日志、配置与摘要保持在一起，不能只分享最好看的数字。",
+          "en": "Keep raw traces, configuration and summaries together rather than sharing only the best-looking number."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "生成完整实验记录",
+            "en": "Generate the experiment record"
+          },
+          "body": {
+            "zh": "运行后打开 day08-manifest.json 与 day08-results.csv。找到 6 行结果，对应 3 次重复和 2 种策略。",
+            "en": "Open day08-manifest.json and day08-results.csv after running. The six result rows correspond to three repeats and two strategies."
+          },
+          "command": "python3 lab.py day8",
+          "expected": {
+            "zh": "生成 6 个原始日志、一份 manifest 和 6 行数据的 CSV；每种策略的三次模拟结果一致。",
+            "en": "Produces six raw logs, a manifest and six CSV rows. Each strategy repeats identically."
+          }
+        },
+        {
+          "title": {
+            "zh": "从原始日志复核摘要",
+            "en": "Recompute a summary from raw traces"
+          },
+          "body": {
+            "zh": "读取第一轮 FIFO 日志，重新计算最大完成时间。再检查 batch4 的对应文件，不依赖 CSV 中已有的摘要。",
+            "en": "Read the first FIFO trace and independently calculate its maximum completion time. Repeat with batch4 rather than relying on the existing CSV."
+          },
+          "command": "python3 -c \"import json; r=json.load(open('artifacts/day08-run1-batch1.json')); print(max(x['end_ms'] for x in r))\"",
+          "expected": {
+            "zh": "FIFO 输出 96；换成 day08-run1-batch4.json 后输出 30。",
+            "en": "FIFO prints 96; changing to day08-run1-batch4.json prints 30."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "三次运行完全相同，怀疑脚本没运行",
+            "en": "All repeats match; wondering whether they ran"
+          },
+          "fix": {
+            "zh": "读取三份原始文件并检查 manifest；模型无随机或真实时钟，完全一致是设计结果。",
+            "en": "Inspect all three traces and the manifest. The model has no randomness or wall-clock input, so identical results are expected."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "代码哈希改变但没记下改动",
+            "en": "Source hash changed without documented edits"
+          },
+          "fix": {
+            "zh": "保留你的代码差异与重新运行记录；确认没有比较不同成本模型得出的数值。",
+            "en": "Save your code diff and rerun record, and check that compared results do not use different cost models."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "SHA-256 一样可以证明什么？",
+            "en": "What can matching SHA-256 hashes support?"
+          },
+          "options": [
+            {
+              "zh": "代码逻辑必然正确",
+              "en": "The program is necessarily correct"
+            },
+            {
+              "zh": "被校验内容没有检测到变化",
+              "en": "No change was detected in the checked content"
+            },
+            {
+              "zh": "GPU 性能一样",
+              "en": "GPU performance is identical"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "哈希用于内容识别，程序正确性仍需测试与审查。",
+            "en": "A hash identifies content; correctness still needs testing and review."
+          }
+        },
+        {
+          "question": {
+            "zh": "确定性模拟的三次结果相同，应怎样表述？",
+            "en": "How should identical deterministic repeats be described?"
+          },
+          "options": [
+            {
+              "zh": "证明重放一致，不证明真实系统零波动",
+              "en": "Consistent replay, not zero variation in real systems"
+            },
+            {
+              "zh": "已经证明生产稳定性",
+              "en": "Production stability is proven"
+            },
+            {
+              "zh": "可以省略所有原始日志",
+              "en": "All raw logs may be omitted"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "环境噪声与真实执行不在这个模拟中。",
+            "en": "Environmental noise and real execution are outside this model."
+          }
         }
       ]
     },
@@ -452,30 +1731,32 @@
         "en": "Turn telemetry into a diagnosis"
       },
       "lesson": {
-        "zh": "指标适合回答趋势和比例，日志说明具体事件，trace 把跨组件的一次请求连接起来。计数器、瞬时值和直方图不能混用；高维标签还会增加存储成本。排障时先建立可观察的因果链，例如到达量上升、队列增长、TTFT 变差，再寻找反例。相关性是线索，不能只凭两条同时上升的曲线认定根因。",
-        "en": "Metrics describe trends and ratios, logs capture events, and traces connect the stages of a request. Counters, gauges and histograms serve different purposes; excessive label cardinality has a cost. Build a testable causal chain, such as rising arrivals followed by a larger queue and worse TTFT, then look for counterexamples. Correlated curves suggest a hypothesis but do not prove a root cause."
+        "zh": "排队增加是一种症状，不足以确定原因。请求突然变多，或者单条服务变慢，都可能让等待变长。今天保持可解释的时间模型，分别注入这两种变化，比较请求到达、开始、完成三个时间点。诊断时先列事实，再提出原因，用能够区分不同原因的证据检验它。",
+        "en": "A longer queue is a symptom, not a complete diagnosis. More arrivals or slower per-request service can both increase waiting. Today separately injects these changes into the simple model and compares arrival, start and completion timestamps. Diagnose by listing observations, proposing causes and checking evidence that distinguishes them."
       },
       "task": {
-        "zh": "给模拟器增加请求 ID、排队时间和服务时间日志。注入一段突发流量与一段变慢的服务时长，分别写诊断。为真实服务画出三个指标和一个 trace 的观测方案。",
-        "en": "Add request IDs, queue time and service time to your simulator logs. Inject a traffic burst and a slower-service interval, then diagnose each. Design three metrics and one trace for a real service."
+        "zh": "比较三种负载的 trace，为突发与慢服务各写一份短诊断，引用 request_id 和时间字段。",
+        "en": "Compare three trace conditions and write short burst/slow-service diagnoses citing request IDs and timestamps."
       },
       "evidence": {
-        "zh": "observability.md、带注释的日志与两份故障分析。",
-        "en": "observability.md, annotated logs and two incident analyses."
+        "zh": "day09 日志和诊断摘要，两份包含原始证据引用的故障说明。",
+        "en": "Day 9 traces and summary plus two incident explanations with raw-evidence references."
       },
       "checklist": {
         "zh": [
-          "两类故障能用证据区分，而不是都归因为 GPU 慢",
-          "不把用户原始提示词写入指标标签"
+          "能解释本日算例与至少一个限制",
+          "执行实验并核对预期结果，保留原始输出",
+          "完成两道测验；用自己的话记录一次错误或反例"
         ],
         "en": [
-          "Use evidence to distinguish the two faults instead of blaming a slow GPU",
-          "Never put raw user prompts in metric labels"
+          "Explain today’s example and at least one limitation",
+          "Run the lab, compare expected results and retain raw output",
+          "Complete both quizzes and describe one error or counterexample in your own words"
         ]
       },
       "noGpu": {
-        "zh": "CPU 日志模拟足以完成诊断练习；真实 GPU 利用率与内核 trace 留待后续实测。",
-        "en": "CPU-generated logs are sufficient for this exercise. Real GPU utilization and kernel traces remain future measurements."
+        "zh": "本课全程支持普通 CPU 电脑，无需 GPU。使用实验包即可；输出中的模拟时间不可当作真实模型性能。",
+        "en": "This entire course runs on an ordinary CPU computer without a GPU. Use the lab pack; synthetic times are not real model measurements."
       },
       "reading": [
         {
@@ -486,6 +1767,162 @@
           "title": "OpenTelemetry · Traces",
           "url": "https://opentelemetry.io/docs/concepts/signals/traces/"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "从一条 trace 拆开两种时间",
+            "en": "Split two durations from a trace"
+          },
+          "body": {
+            "zh": "每条记录有 request_id、arrival_ms、start_ms、end_ms。等待=start−arrival，服务=end−start，整体=等待+服务。request_id 让你追踪同一条请求，而不是把不同阶段的数字误拼在一起。本课没有网络阶段，所以整体恰好是两段之和。",
+            "en": "Each trace has request_id, arrival_ms, start_ms and end_ms. Wait=start−arrival, service=end−start, and total=wait+service. The ID connects stages of the same request instead of mixing unrelated values. This model omits networking, so the total is exactly these two stages."
+          }
+        },
+        {
+          "title": {
+            "zh": "设计能区分原因的对照",
+            "en": "Design a discriminating comparison"
+          },
+          "body": {
+            "zh": "基线每 12 ms 来一条，服务 8 ms；突发组 12 条同时到达，服务仍为 8 ms；慢服务组仍每 12 ms 来一条，但服务变为 20 ms。后两组等待都会增加，但只有慢服务组的 service_ms 变大。实际排障还需核对输入长度、资源、错误与采样，不能只凭一条曲线定因。",
+            "en": "Baseline arrivals are 12 ms apart with 8 ms service. The burst has 12 simultaneous arrivals and unchanged 8 ms service. Slow service keeps 12 ms arrivals but uses 20 ms service. Both increase waiting, but only the latter raises service_ms. Real diagnosis also checks input lengths, resources, errors and sampling rather than asserting cause from one curve."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "同一个排队症状，两种原因",
+          "en": "One queue symptom, two possible causes"
+        },
+        "nodes": [
+          {
+            "zh": "观察等待增长",
+            "en": "Observe increased waiting"
+          },
+          {
+            "zh": "核对到达间隔",
+            "en": "Check arrival spacing"
+          },
+          {
+            "zh": "核对服务时长",
+            "en": "Check service duration"
+          },
+          {
+            "zh": "形成可检验诊断",
+            "en": "Write a testable diagnosis"
+          }
+        ],
+        "caption": {
+          "zh": "先对照原始 trace，再写“到达变化”或“服务变化”的证据。",
+          "en": "Compare raw traces before attributing the change to arrivals or service."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行故障对照",
+            "en": "Run the incident comparison"
+          },
+          "body": {
+            "zh": "打开三个 traces 文件和 diagnosis 摘要；选相同 request_id 对比等待与服务。",
+            "en": "Open all three trace files plus the diagnosis summary. Compare wait and service for the same request_id."
+          },
+          "command": "python3 lab.py day9",
+          "expected": {
+            "zh": "baseline/burst/slow_service 的服务 p95 分别是 8/8/20 ms。",
+            "en": "Service p95 for baseline/burst/slow_service is 8/8/20 ms."
+          }
+        },
+        {
+          "title": {
+            "zh": "写一次有证据的诊断",
+            "en": "Write an evidence-based diagnosis"
+          },
+          "body": {
+            "zh": "读取慢服务日志，检查第一条与最后一条等待时间，并对照突发组。写四句话：现象、证据、原因假设、下一步验证。不要写没有被模拟的“GPU 故障”。",
+            "en": "Inspect the first and last wait in slow-service traces and compare with the burst. Write four sentences: symptom, evidence, hypothesis and next test. Do not claim an unsimulated GPU failure."
+          },
+          "command": "python3 -m json.tool artifacts/day09-diagnosis.json",
+          "expected": {
+            "zh": "基线等待 p95=0；突发与慢服务等待 p95 都为 88 ms，但服务 p95 不同。",
+            "en": "Baseline wait p95=0. Both burst and slow service have wait p95=88 ms, while service p95 differs."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "只看等待就判定模型执行慢",
+            "en": "Inferring slow model execution from queue wait alone"
+          },
+          "fix": {
+            "zh": "同时查看 arrival 间隔与 service_ms；本例突发的服务仍是 8 ms。",
+            "en": "Inspect both arrival spacing and service_ms; burst service is still 8 ms here."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "把日志顺序当成请求身份",
+            "en": "Using log position as request identity"
+          },
+          "fix": {
+            "zh": "用 request_id 对齐记录；真实异步系统的输出顺序可能与输入不同。",
+            "en": "Join records by request_id. Real asynchronous systems can return results in a different order."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "突发组等待增加，但 service_ms 仍为 8，最直接的证据支持什么？",
+            "en": "Burst waiting rises but service_ms remains 8. What is directly supported?"
+          },
+          "options": [
+            {
+              "zh": "本次改变了到达方式",
+              "en": "The arrival pattern changed"
+            },
+            {
+              "zh": "执行时间已经翻倍",
+              "en": "Execution time doubled"
+            },
+            {
+              "zh": "GPU 必须更换",
+              "en": "The GPU must be replaced"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "实验中唯一改变的是到达方式；不能从排队推断硬件损坏。",
+            "en": "The changed experimental variable is arrival timing, not hardware health."
+          }
+        },
+        {
+          "question": {
+            "zh": "start=20、arrival=5、end=28，服务时长是多少？",
+            "en": "start=20, arrival=5, end=28. What is service duration?"
+          },
+          "options": [
+            {
+              "zh": "23 ms",
+              "en": "23 ms"
+            },
+            {
+              "zh": "15 ms",
+              "en": "15 ms"
+            },
+            {
+              "zh": "8 ms",
+              "en": "8 ms"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "服务=end−start=8；15 是等待，23 是总时长。",
+            "en": "Service=end−start=8; 15 is waiting and 23 is total latency."
+          }
+        }
       ]
     },
     {
@@ -495,32 +1932,32 @@
         "en": "Ship your first AI Infra portfolio"
       },
       "lesson": {
-        "zh": "工程作品的价值在于别人能理解问题、复现实验并知道结论适用的范围。一个诚实的小系统，比包含很多流行名词却无法运行的仓库更有说明力。把测量、模拟、推断和计划分开，写明自己完成了什么。完成本路线代表建立了基础方法与作品，不代表掌握所有推理框架，也不是任何就业或能力认证。",
-        "en": "A useful engineering portfolio lets someone understand the problem, reproduce the work and see where its conclusions apply. A small, honest system communicates more than a repository of fashionable terms that cannot run. Separate measurements, simulations, inferences and future plans, and identify your own contributions. Finishing this path builds foundations and a portfolio; it does not establish mastery of every framework or provide a hiring certification."
+        "zh": "结课作品应该让别人看懂你解决了什么问题、具体做了什么、哪些结论有证据。运行示例是起点，独立贡献可以是自己实现指标函数、改一项到达策略并分析反例，或改进错误检测。今天从干净输出目录重跑，生成报告骨架，再用自己的文字填写贡献、失败与局限。所有模拟结果必须保留教学标签。",
+        "en": "A final project should show the problem, your contribution and the evidence behind each conclusion. Running an example is a starting point. Independent contributions can include metric functions, an arrival-policy experiment with counterexamples or better error checks. Today reruns into a clean output directory, generates a report scaffold and fills it with your contributions, failures and limitations. Synthetic results must retain their teaching labels."
       },
       "task": {
-        "zh": "把系统图、预算器、调度模拟器、指标分析和故障复盘整理成一个仓库。从干净目录按 README 重跑一次，完成三分钟技术演示；根据兴趣选择 vLLM、Triton、PyTorch 或 Ray 下一条路线。",
-        "en": "Package the system map, budget calculator, simulator, analyzer and incident notes in one repository. Rerun from a clean directory using the README and prepare a three-minute walkthrough. Choose vLLM, Triton, PyTorch or Ray as your next path."
+        "zh": "从新输出目录复现全部实验，完成独立指标函数与报告；录制或向同伴讲解三分钟项目，区分示例与本人贡献。",
+        "en": "Reproduce all experiments into a fresh output folder, finish your metric functions and report, and give a three-minute walkthrough distinguishing reference work from your contribution."
       },
       "evidence": {
-        "zh": "完整作品仓库、复现日志、三分钟讲解提纲与下一步计划。",
-        "en": "A complete portfolio repository, reproduction log, three-minute walkthrough outline and next-step plan."
+        "zh": "完整作品目录、final-artifacts/REPORT.md、独立代码差异与验收结果；实际发生后再加入同伴复现记录。",
+        "en": "A complete project, final-artifacts/REPORT.md, independent code diff and check results; add peer reproduction evidence only when it occurs."
       },
       "checklist": {
         "zh": [
-          "README 说明问题、运行方法、结果、局限和本人贡献",
-          "全部性能图清楚区分模拟数据与真实测量",
-          "列出至少两个尚未掌握的内容和验证计划"
+          "独立实现 student.py，通过自己的边界验收",
+          "从新目录复现，报告中没有待填写的贡献 TODO",
+          "结论能追溯到原始日志，模拟/CPU实测及本人贡献区分清楚"
         ],
         "en": [
-          "README states the problem, instructions, results, limits and your contribution",
-          "All performance plots distinguish synthetic data from measurements",
-          "List at least two remaining learning gaps and how to investigate them"
+          "Independently implement student.py and pass your own boundary checks",
+          "Reproduce into a new folder and replace contribution TODOs",
+          "Link conclusions to raw traces and distinguish simulation, CPU timing and your own work"
         ]
       },
       "noGpu": {
-        "zh": "整个结课项目可使用 CPU；可选择只公开你愿意分享的内容，不必公开求职意向。",
-        "en": "The entire capstone can run on CPU. Publish only what you choose to share; a public job-seeking status is not required."
+        "zh": "本课全程支持普通 CPU 电脑，无需 GPU。使用实验包即可；输出中的模拟时间不可当作真实模型性能。",
+        "en": "This entire course runs on an ordinary CPU computer without a GPU. Use the lab pack; synthetic times are not real model measurements."
       },
       "reading": [
         {
@@ -531,7 +1968,178 @@
           "title": "vLLM · Benchmark suites",
           "url": "https://docs.vllm.ai/en/latest/benchmarking/"
         }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "作品由证据与解释共同组成",
+            "en": "Combine evidence and explanation"
+          },
+          "body": {
+            "zh": "实验包自动导出原始 JSON/JSONL、CSV、环境与哈希、REPORT.md。报告预填教学示例结论，但“我的独立贡献”故意留空。你需要填写 student.py 的实现、验收结果、自己改变的变量以及一个未获收益的条件。复制课程代码不能写成从零开发完整推理系统。",
+            "en": "The lab exports raw JSON/JSONL, CSV, environment/hash records and REPORT.md. The scaffold includes teaching observations but deliberately leaves your contribution blank. Fill in student.py changes, checks, your changed variable and one no-benefit condition. Copying examples is not building a complete inference system from scratch."
+          }
+        },
+        {
+          "title": {
+            "zh": "用三分钟展示理解",
+            "en": "Explain the project in three minutes"
+          },
+          "body": {
+            "zh": "第一分钟介绍一个具体问题，例如批处理何时有用；第二分钟展示原始记录和对照表；第三分钟解释稀疏请求的反例，以及为什么不能外推成 GPU 性能。准备回答：如果换成真实 vLLM，需要重新测量哪些量？这比只展示“我完成 10 天”更能表达能力。",
+            "en": "In minute one, state a question such as when batching helps. In minute two, show raw records and the comparison. In minute three, explain the sparse-arrival counterexample and why results do not establish GPU performance. Be ready to name what must be measured again with real vLLM. This demonstrates more than a completion checkmark."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "从练习到可审阅作品",
+          "en": "From exercises to reviewable work"
+        },
+        "nodes": [
+          {
+            "zh": "独立实现与修改",
+            "en": "Independent implementation"
+          },
+          {
+            "zh": "干净目录复现",
+            "en": "Rerun in a clean output folder"
+          },
+          {
+            "zh": "原始数据与对照",
+            "en": "Raw data and comparison"
+          },
+          {
+            "zh": "填写贡献与局限",
+            "en": "Explain contribution and limits"
+          },
+          {
+            "zh": "展示并接受复核",
+            "en": "Present for review"
+          }
+        ],
+        "caption": {
+          "zh": "参考代码与自己的修改分开描述；没有同伴复核时如实标为未复核。",
+          "en": "Describe reference code separately from your edits. Mark peer reproduction unverified until it happens."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "重新生成全部证据",
+            "en": "Regenerate all evidence"
+          },
+          "body": {
+            "zh": "命令会重新运行前 9 天并写入一个新输出目录 final-artifacts。只覆盖同名输出文件，不会修改 student.py。先完成 student.py，再运行独立验收。",
+            "en": "This reruns days 1–9 into final-artifacts. It overwrites only same-named output files and does not modify student.py. Finish student.py and run its independent checks."
+          },
+          "command": "python3 lab.py day10 --out final-artifacts\npython3 check.py",
+          "expected": {
+            "zh": "生成 final-artifacts/REPORT.md、原始日志与 CSV；自己的挑战实现应显示 PASS。",
+            "en": "Produces final-artifacts/REPORT.md, raw traces and CSV. Your challenge implementation should print PASS."
+          }
+        },
+        {
+          "title": {
+            "zh": "补齐报告并准备分享",
+            "en": "Complete the report before sharing"
+          },
+          "body": {
+            "zh": "用编辑器打开 REPORT.md，替换“我的独立贡献”里的 TODO，加入源码/数据相对路径、修改说明和一次反例。保留模拟边界；确认没有个人敏感信息，再整理为作品档案。",
+            "en": "Open REPORT.md and replace the contribution TODO with source/data paths, your changes and a counterexample. Keep simulation limits, check for private data, then assemble a portfolio."
+          },
+          "command": "python3 -m json.tool final-artifacts/day08-manifest.json",
+          "expected": {
+            "zh": "报告能对应到环境、代码哈希、输入与原始结果；同伴可按 README 重跑。",
+            "en": "The report links to environment, source hash, input and raw results; a peer can rerun using README."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "check.py 显示 NOT YET",
+            "en": "check.py prints NOT YET"
+          },
+          "fix": {
+            "zh": "先实现 student.py 两个函数。--reference 只验证课程参考，不代表你的独立实现已经通过。",
+            "en": "Implement both student.py functions. --reference checks the supplied reference, not your independent implementation."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "报告仍有 TODO，或说自己测了 GPU",
+            "en": "Report retains TODO or claims a GPU measurement"
+          },
+          "fix": {
+            "zh": "填写自己的实际修改，明确第 4 天是本机 CPU，其余主要是教学模拟。没有真实引擎记录就不写 GPU/模型加速结论。",
+            "en": "Describe your actual changes. Day 4 times local CPU work; other main results are teaching simulations. Without engine records, do not claim GPU/model speedups."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "哪种作品表述准确？",
+            "en": "Which portfolio statement is accurate?"
+          },
+          "options": [
+            {
+              "zh": "已证明所有推理系统都能加速 3 倍",
+              "en": "Proved every inference system can be 3× faster"
+            },
+            {
+              "zh": "在声明的队列模型里比较两种策略，并解释反例",
+              "en": "Compared two policies under a declared queue model and explained a counterexample"
+            },
+            {
+              "zh": "运行示例就成为生产专家",
+              "en": "Running examples establishes production expertise"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "结论应限定于实际完成的实验和假设。",
+            "en": "Limit claims to the completed experiment and its assumptions."
+          }
+        },
+        {
+          "question": {
+            "zh": "参考解法通过验收，能否说明你的 student.py 已通过？",
+            "en": "If the reference passes, has your student.py passed?"
+          },
+          "options": [
+            {
+              "zh": "不能，必须单独运行自己的实现",
+              "en": "No, check your own implementation separately"
+            },
+            {
+              "zh": "能，因为函数名相同",
+              "en": "Yes, because function names match"
+            },
+            {
+              "zh": "能，因为下载完成",
+              "en": "Yes, because the download completed"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "不带 --reference 的 check.py 才检查 student.py。",
+            "en": "check.py without --reference checks student.py."
+          }
+        }
       ]
     }
-  ]
+  ],
+  "lab": {
+    "path": "foundations",
+    "title": {
+      "zh": "下载系统基础实验包",
+      "en": "Download the foundations lab"
+    },
+    "description": {
+      "zh": "Python 3.9+ · 无需第三方依赖 · 普通电脑可运行。解压后先读 README.md；命令从 foundations 文件夹执行。",
+      "en": "Python 3.9+ · no third-party dependencies · runs on a laptop. Unzip, read README.md and run commands inside the foundations folder."
+    }
+  }
 }

@@ -26,6 +26,8 @@ free to participate. It is not affiliated with vLLM, SGLang or LMCache.
 - Responsive Chinese/English website with learning, opportunities, builders and community sections.
 - Eleven ten-day guides: foundations, vLLM, SGLang, LMCache, Mooncake, NVIDIA Dynamo, Triton, PyTorch Distributed, Ray, Kubernetes and NCCL.
 - 110 bilingual days with concept explanations, practice, deliverables, acceptance checks, official reading and alternatives for learners without the required hardware.
+- Two guided courses (foundations and vLLM): 20 illustrated lessons, step-by-step lab commands, expected results, troubleshooting and 40 explained quiz questions. Three browser teaching models illustrate request timing, KV memory and prefix caching.
+- Downloadable Python lab kits with CPU exercises, boundary checks and evidence/report exports. The vLLM GPU path pins its engine and model revision; GPU commands are documented, not claimed as hardware-tested here.
 - Three career-oriented paths, searchable/filterable catalog, shareable course URLs and downloadable Chinese/English handbooks.
 - Self-reported progress, daily notes and evidence links saved in the current browser, with learning-record export and a bilingual portfolio template.
 - Eight bilingual practice projects with pinned-environment expectations, deliverables, acceptance criteria, source links and explicit evidence boundaries.
@@ -37,6 +39,7 @@ free to participate. It is not affiliated with vLLM, SGLang or LMCache.
 - Dependency-free static build, publication-rule tests and GitHub Pages Actions workflow.
 
 已实现 11 门 × 10 天的双语学习手册、三条职业路径、课程筛选、独立阅读器、本地进度与笔记、文档与记录导出，以及公开机会和作品名片。
+系统基础与 vLLM 已升级为带图解、逐步实验、常见报错和测验解析的课程。先下载实验 ZIP，按第 1 天说明操作；基础课只需 Python 3.9+，vLLM 的 CPU 模拟练习与 GPU 实测路径分别说明。生成的报告需要补充自己的改动、解释与局限，下载示例不等于独立作品。
 没有私密简历库、站内私聊、后台登录、AI 自动招聘决策或在线 GPU；学习进度不同步到云端。
 Issue 收录采用人工审核后编辑 JSON、合入 PR 的流程，不会自动从 Issue 同步。
 
@@ -80,6 +83,8 @@ Do not open `index.html` directly as a `file://` URL: the page fetches `data.jso
 | `content/paths.json` | Three career-oriented course sequences |
 | `web/projects/` | Bilingual practice-project data and searchable project library |
 | `web/portfolio/` | Browser-local project portfolio editor and Markdown export |
+| `web/labs/` | Downloadable CPU lab source, learner exercises and reference checks; ZIPs are built automatically |
+| `web/learning-widgets.js` | Browser quizzes, copy controls and explicit teaching simulations |
 | `content/jobs.json` | Reviewed opportunity records; starts empty |
 | `content/people.json` | Voluntary public portfolios; starts empty |
 | `scripts/build.py`, `scripts/learning.py` | Validation; course HTML, Markdown and sitemap generation to ignored `dist/` |

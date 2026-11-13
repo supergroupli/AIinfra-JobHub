@@ -4,6 +4,7 @@ import json
 import os
 import re
 import shutil
+import zipfile
 from datetime import date, datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
@@ -103,6 +104,9 @@ def validate_tracks(tracks):
         require(isinstance(item.get("resources"), list) and item["resources"], f"{ident}: no resources")
         for resource in item["resources"]:
             require(nonempty(resource.get("title")) and https_url(resource.get("url")), f"{ident}: invalid resource")
+        if "lab" in item:
+            lab = item["lab"]
+            require(isinstance(lab, dict) and lab.get("path") == ident and bilingual(lab.get("title")) and bilingual(lab.get("description")), f"{ident}: invalid lab package")
         require(isinstance(item.get("steps"), list) and len(item["steps"]) == 10, f"{ident}: courses must contain exactly 10 days")
         for number, step in enumerate(item["steps"], 1):
             require(step.get("day") == number, f"{ident}: day numbers must run from 1 to 10")
@@ -113,6 +117,59 @@ def validate_tracks(tracks):
             if "code" in step:
                 code = step["code"]
                 require(isinstance(code, dict) and code.get("language") in ("python", "bash", "text", "yaml", "json", "cpp") and nonempty(code.get("content")) and bilingual(code.get("caption")), f"{ident} day {number}: invalid code sample")
+            validate_teaching_step(step, f"{ident} day {number}", required="lab" in item)
+
+
+def validate_teaching_step(step, context, required=False):
+    """Reject incomplete guided lessons before publishing either language."""
+    fields = {
+        "explanation": (2, ("title", "body")),
+        "walkthrough": (2, ("title", "body")),
+        "troubleshooting": (2, ("symptom", "fix")),
+        "quiz": (2, ("question", "explanation")),
+    }
+    for key, (minimum, names) in fields.items():
+        if key not in step and not required:
+            continue
+        entries = step.get(key)
+        require(isinstance(entries, list) and len(entries) >= minimum, f"{context}: incomplete {key}")
+        for entry in entries:
+            require(isinstance(entry, dict) and all(bilingual(entry.get(name)) for name in names), f"{context}: invalid bilingual {key}")
+            if key == "walkthrough":
+                require("command" not in entry or nonempty(entry["command"]), f"{context}: empty lab command")
+                require("expected" not in entry or bilingual(entry["expected"]), f"{context}: invalid expected output")
+            if key == "quiz":
+                options = entry.get("options")
+                require(isinstance(options, list) and len(options) >= 2 and all(bilingual(option) for option in options), f"{context}: invalid quiz options")
+                answer = entry.get("answer")
+                require(type(answer) is int and 0 <= answer < len(options), f"{context}: invalid quiz answer")
+    if required or "diagram" in step:
+        diagram = step.get("diagram")
+        require(isinstance(diagram, dict) and bilingual(diagram.get("title")) and bilingual(diagram.get("caption")), f"{context}: invalid diagram")
+        nodes = diagram.get("nodes")
+        require(isinstance(nodes, list) and 3 <= len(nodes) <= 6 and all(bilingual(node) for node in nodes), f"{context}: invalid diagram nodes")
+    if "interactive" in step:
+        require(step["interactive"] in ("timeline", "kv-cache", "prefix-cache"), f"{context}: unknown interactive diagram")
+
+
+def package_labs(courses, out):
+    """Ship only source material, with a stable extraction root for commands."""
+    for course in courses:
+        if "lab" not in course:
+            continue
+        ident = course["lab"]["path"]
+        folder = out / "labs" / ident
+        require(folder.is_dir() and not folder.is_symlink(), f"{ident}: missing lab source directory")
+        require((folder / "README.md").is_file(), f"{ident}: missing lab README")
+        with zipfile.ZipFile(out / "labs" / f"{ident}.zip", "w", zipfile.ZIP_DEFLATED) as archive:
+            for source in sorted(folder.rglob("*")):
+                require(not source.is_symlink(), f"{ident}: lab packages cannot contain symlinks")
+                if not source.is_file():
+                    continue
+                parts = source.relative_to(folder).parts
+                if any(part.startswith(".") or part in ("__pycache__", "out", "outputs", "results", "output", "artifacts") for part in parts) or source.suffix == ".pyc":
+                    continue
+                archive.write(source, str(source.relative_to(out / "labs")))
 
 
 def validate_paths(paths, courses):
@@ -185,7 +242,7 @@ def write_course_pages(courses, out, repository, projects):
             page = page.replace(key, value)
         (folder / "index.html").write_text(page, encoding="utf-8")
         for lang in ("zh", "en"):
-            (folder / f"{course['id']}.{lang}.md").write_text(course_markdown(course, lang), encoding="utf-8")
+            (folder / f"{course['id']}.{lang}.md").write_text(course_markdown(course, lang, base), encoding="utf-8")
     if base:
         locations = [base, f"{base}projects/", f"{base}portfolio/"] + [f"{base}learn/{course['id']}/" for course in courses]
         (out / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + "".join(f"<url><loc>{esc(location)}</loc></url>" for location in locations) + "</urlset>\n", encoding="utf-8")
@@ -217,7 +274,8 @@ def build():
         raise ValueError("dist cannot be a symlink")
     if out.exists():
         shutil.rmtree(out)
-    shutil.copytree(ROOT / "web", out, ignore=shutil.ignore_patterns("course.html"))
+    shutil.copytree(ROOT / "web", out, ignore=shutil.ignore_patterns("course.html", "__pycache__", "*.pyc", ".DS_Store", "out", "outputs", "results", "output", "artifacts"))
+    package_labs(tracks, out)
     write_course_pages(tracks, out, repository, projects)
     (out / "data.json").write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (out / ".nojekyll").touch()
