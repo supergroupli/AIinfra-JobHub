@@ -1,0 +1,84 @@
+name: Verify real CPU framework labs
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ray:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    env:
+      RAY_USAGE_STATS_ENABLED: '0'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Prepare evidence directory
+        run: mkdir -p artifacts/ray
+      - name: Install pinned Ray
+        run: python -m pip install 'ray[serve]==2.60.0'
+      - name: Record environment
+        run: |
+          python -m pip check
+          python -m pip freeze > artifacts/ray/environment.txt
+          git rev-parse HEAD > artifacts/ray/commit.txt
+          uname -a > artifacts/ray/platform.txt
+      - name: Verify Ray Core task results and task failure
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 180s python web/labs/ray/real_ray.py --out artifacts/ray/core.json 2>&1 | tee artifacts/ray/core.log
+      - name: Verify actual Serve HTTP responses
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 240s python web/labs/ray/verify_serve.py --out artifacts/ray/serve.json 2>&1 | tee artifacts/ray/serve.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ray-framework-evidence
+          path: artifacts/ray/
+          retention-days: 30
+  gloo:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    env:
+      OMP_NUM_THREADS: '1'
+      GLOO_SOCKET_IFNAME: lo
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Prepare evidence directory
+        run: mkdir -p artifacts/gloo
+      - name: Install pinned CPU PyTorch
+        run: python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+      - name: Record environment
+        run: |
+          python -m pip check
+          python -m pip freeze > artifacts/gloo/environment.txt
+          git rev-parse HEAD > artifacts/gloo/commit.txt
+          uname -a > artifacts/gloo/platform.txt
+      - name: Verify DDP against global baseline and checkpoint recovery
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 180s torchrun --standalone --nproc-per-node=2 web/labs/pytorch-distributed/ddp_example.py --backend gloo --out artifacts/gloo 2>&1 | tee artifacts/gloo/run.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gloo-framework-evidence
+          path: |
+            artifacts/gloo/*.json
+            artifacts/gloo/*.txt
+            artifacts/gloo/*.log
+          retention-days: 30
