@@ -255,7 +255,7 @@ window.addEventListener("storage", event => {
   }
 });
 translatePage();
-fetch("./data.json").then(response => { if (!response.ok) throw new Error("Content unavailable"); return response.json(); }).then(data => {
+fetch("./data.json?v=curriculum-v1", {cache: "no-cache"}).then(response => { if (!response.ok) throw new Error("Content unavailable"); return response.json(); }).then(data => {
   if (!Array.isArray(data.tracks) || !Array.isArray(data.paths) || !data.categories || !Array.isArray(data.jobs) || !Array.isArray(data.people)) throw new Error("Invalid content");
   state.data = data; translatePage();
 }).catch(() => { $("#load-error").hidden = false; $("#load-error").textContent = t("loadError"); $("#tracks").textContent = t("loadError"); });
