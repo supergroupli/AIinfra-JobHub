@@ -1,0 +1,525 @@
+{
+  "id": "triton",
+  "number": "07",
+  "category": "kernels",
+  "title": {
+    "zh": "Triton GPU 内核",
+    "en": "Triton GPU kernels"
+  },
+  "subtitle": {
+    "zh": "10 天写出可验证、可测量的首个融合算子",
+    "en": "Write, validate and measure your first fused operator in 10 days"
+  },
+  "description": {
+    "zh": "从块级编程、边界 mask 和数值正确性开始，进入 softmax、归约与矩阵乘法。以一个前向算子的测试与基准作为结课成果；这里的 Triton 是 GPU 编程语言，不是同名推理服务器。",
+    "en": "Start with block programming, masks and numerical correctness, then explore softmax, reductions and matrix multiplication. Finish by testing and benchmarking a forward operator. This is the Triton GPU language, not the similarly named inference server."
+  },
+  "level": "intermediate",
+  "hoursPerDay": {
+    "zh": "每天 120–180 分钟，共约 20–30 小时",
+    "en": "120–180 minutes a day; about 20–30 hours total"
+  },
+  "prerequisites": {
+    "zh": "熟悉 NumPy/PyTorch 张量、广播、矩阵乘法与浮点数；能阅读 Python。建议先完成系统基础的内存与性能分析。",
+    "en": "Know NumPy/PyTorch tensors, broadcasting, matrix multiplication and floating-point basics. Be comfortable reading Python and the foundations path's memory/performance material."
+  },
+  "hardware": {
+    "zh": "性能实验需要当前 Triton release 支持的 GPU、驱动与系统。无 GPU 可用 CPU 参考实现；部分语义可在可用的 interpreter 中研究，但它有类型/访存限制且不能用于 GPU 性能测量。",
+    "en": "Performance work needs a GPU, driver and OS supported by your Triton release. CPU reference implementations cover the alternative path. A working interpreter can explore supported semantics, but has type/access limitations and cannot measure GPU performance."
+  },
+  "hardwareTier": "gpu-required",
+  "tags": [
+    "Triton",
+    "CUDA",
+    "GPU Kernels"
+  ],
+  "roles": {
+    "zh": [
+      "GPU 内核工程师",
+      "AI 编译器工程师",
+      "模型性能优化工程师"
+    ],
+    "en": [
+      "GPU kernel engineer",
+      "AI compiler engineer",
+      "Model performance engineer"
+    ]
+  },
+  "outcome": {
+    "zh": "一个有输入契约、边界测试、数值误差分析、性能基准和回退路径的前向融合算子仓库。",
+    "en": "A forward fused-operator repository with an input contract, edge tests, numerical analysis, benchmarks and a fallback path."
+  },
+  "lastVerified": "2026-11-13",
+  "resources": [
+    {
+      "title": "Triton · Installation",
+      "url": "https://triton-lang.org/main/getting-started/installation.html"
+    },
+    {
+      "title": "Triton · Vector addition",
+      "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
+    },
+    {
+      "title": "Triton · Fused softmax",
+      "url": "https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html"
+    },
+    {
+      "title": "Triton · Matrix multiplication",
+      "url": "https://triton-lang.org/main/getting-started/tutorials/03-matrix-multiplication.html"
+    },
+    {
+      "title": "Triton · Layer normalization",
+      "url": "https://triton-lang.org/main/getting-started/tutorials/05-layer-norm.html"
+    },
+    {
+      "title": "Triton · Debugging and interpreter limits",
+      "url": "https://triton-lang.org/main/programming-guide/chapter-3/debugging.html"
+    },
+    {
+      "title": "Triton · autotune",
+      "url": "https://triton-lang.org/main/python-api/generated/triton.autotune.html"
+    },
+    {
+      "title": "Triton · do_bench",
+      "url": "https://triton-lang.org/main/python-api/generated/triton.testing.do_bench.html"
+    },
+    {
+      "title": "PyTorch · User-defined Triton kernels",
+      "url": "https://docs.pytorch.org/tutorials/recipes/torch_compile_user_defined_triton_kernel_tutorial.html"
+    },
+    {
+      "title": "Triton · Fused attention",
+      "url": "https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html"
+    }
+  ],
+  "steps": [
+    {
+      "day": 1,
+      "title": {
+        "zh": "建立 GPU 内核的编程模型",
+        "en": "Build a mental model of a GPU kernel"
+      },
+      "lesson": {
+        "zh": "Triton 让你用块级张量运算描述 GPU 工作，编译器再把它映射到目标硬件。一个 program instance 处理一块数据，并不等于一个 Python 线程；主机代码负责分配张量、选择启动网格和传入参数。先区分主机执行、编译与设备执行，才不会把第一次 JIT 编译耗时误认为稳定的内核运行时间。",
+        "en": "Triton expresses GPU work through block-level tensor operations that the compiler maps to a target device. A program instance handles a block of data; it is not a Python thread. Host code allocates tensors, chooses the launch grid and supplies arguments. Distinguishing host work, compilation and device execution prevents first-use JIT compilation from being mistaken for steady-state kernel latency."
+      },
+      "task": {
+        "zh": "按选定 release 核对系统和硬件兼容性，阅读向量加法示例。画出 host wrapper、grid、program id 和数据块的关系；记录 Triton、PyTorch、设备与驱动版本。",
+        "en": "Check platform and hardware support for a pinned release, then study vector addition. Diagram the host wrapper, grid, program ID and data blocks. Record Triton, PyTorch, device and driver versions."
+      },
+      "evidence": {
+        "zh": "kernel-map.md、环境记录与一个完整示例的逐段注释。",
+        "en": "kernel-map.md, an environment record and an annotated example."
+      },
+      "checklist": {
+        "zh": [
+          "能区分 program instance、张量元素和主机线程",
+          "明确哪些数据在 CPU，哪些在目标 GPU"
+        ],
+        "en": [
+          "Distinguish program instances, tensor elements and host threads",
+          "Identify which data lives on the CPU or target GPU"
+        ]
+      },
+      "noGpu": {
+        "zh": "用纸笔与 Python 列表模拟分块。安装不适配时不要强行运行 GPU 示例，保留环境兼容报告。",
+        "en": "Simulate blocks with diagrams and Python lists. If installation is unsupported, keep a compatibility report instead of forcing GPU examples to run."
+      },
+      "reading": [
+        {
+          "title": "Triton · Installation",
+          "url": "https://triton-lang.org/main/getting-started/installation.html"
+        },
+        {
+          "title": "Triton · Vector addition",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": {
+        "zh": "用 mask 处理向量边界",
+        "en": "Use masks to handle vector boundaries"
+      },
+      "lesson": {
+        "zh": "向量长度通常不是 block size 的整数倍。内核根据 program id 计算全局 offsets，再对超出范围的加载和存储加 mask；只保护写入而不保护读取仍可能越界。启动网格要覆盖所有元素，同时避免重复写同一位置。这个简单问题训练的是并行索引与内存安全，而不是让加法本身更复杂。",
+        "en": "Vector lengths are often not multiples of block size. A kernel converts program IDs into global offsets and masks out-of-range loads and stores. Protecting only stores still permits invalid reads. The launch grid must cover every element without conflicting writes. Vector addition is useful because it isolates indexing and memory correctness; the challenge is mapping work safely, not making addition more complicated."
+      },
+      "task": {
+        "zh": "独立写一个前向向量加法，测试长度 1、127、128、129 和一个较大非整块长度。用 CPU/PyTorch 参考输出比较；为空输入设计主机端明确行为。",
+        "en": "Write a forward vector-add kernel and test lengths 1, 127, 128, 129 and one larger nonmultiple. Compare with a CPU/PyTorch reference and define host-side behavior for empty input."
+      },
+      "evidence": {
+        "zh": "vector_add.py、边界用例与 offsets 示意图。",
+        "en": "vector_add.py, boundary tests and an offsets diagram."
+      },
+      "checklist": {
+        "zh": [
+          "加载和写入都处理尾部边界",
+          "每个有效输出只由预期的工作实例写入"
+        ],
+        "en": [
+          "Mask both loads and stores at boundaries",
+          "Each valid output is written by the intended work instance"
+        ]
+      },
+      "noGpu": {
+        "zh": "在 CPU 上生成同样的 offsets 与 mask，检查覆盖和越界；若 interpreter 可用，再验证受支持的程序语义，不运行计时比较。",
+        "en": "Generate offsets and masks on CPU and inspect coverage and bounds. If the interpreter works, validate supported semantics without timing comparisons."
+      },
+      "reading": [
+        {
+          "title": "Triton · Vector addition",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
+        },
+        {
+          "title": "Triton · Debugging and interpreter limits",
+          "url": "https://triton-lang.org/main/programming-guide/chapter-3/debugging.html"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": {
+        "zh": "先定义正确性，再讨论速度",
+        "en": "Define correctness before speed"
+      },
+      "lesson": {
+        "zh": "浮点计算的运算顺序、累加精度和输入范围都可能改变误差。一个随机输入通过比较并不充分；边界形状、极值、非连续输入和不支持的 dtype 都需要契约。相对误差在参考值接近零时也会失真，应同时设置绝对与相对容差。输入不受支持时应明确拒绝或回退，不能默默产生看似合理的结果。",
+        "en": "Operation order, accumulation precision and input range affect floating-point error. Passing one random test is insufficient: boundary shapes, extremes, noncontiguous inputs and unsupported dtypes need explicit contracts. Relative error can be misleading near zero, so define absolute and relative tolerances. Unsupported inputs should fail clearly or take a fallback path rather than silently returning plausible-looking results."
+      },
+      "task": {
+        "zh": "为第 2 天内核设计测试矩阵，覆盖边界形状、不同 dtype、重复运行、全零和大幅值。写清支持的 layout；如果只支持连续输入，加入显式检查或转换，并计入转换成本。",
+        "en": "Build a test matrix for boundary shapes, dtypes, repeated calls, zero inputs and large values. State supported layouts. If only contiguous input is supported, check or convert it explicitly and account for conversion cost."
+      },
+      "evidence": {
+        "zh": "test_vector_add.py 与输入契约、容差选择说明。",
+        "en": "test_vector_add.py, an input contract and tolerance rationale."
+      },
+      "checklist": {
+        "zh": [
+          "容差具有理由而非为了让测试通过随意放宽",
+          "未支持的 shape、layout 或 dtype 有明确行为"
+        ],
+        "en": [
+          "Justify tolerances rather than relaxing them until tests pass",
+          "Define behavior for unsupported shapes, layouts and dtypes"
+        ]
+      },
+      "noGpu": {
+        "zh": "在 CPU 参考实现上先运行完整测试矩阵。interpreter 不能代表目标 GPU 数值行为，尤其应核对其类型限制。",
+        "en": "Run the complete matrix on a CPU reference first. Interpreter results do not establish GPU numerical behavior; check its datatype limitations."
+      },
+      "reading": [
+        {
+          "title": "Triton · Debugging and interpreter limits",
+          "url": "https://triton-lang.org/main/programming-guide/chapter-3/debugging.html"
+        },
+        {
+          "title": "Triton · Vector addition",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": {
+        "zh": "实现数值稳定的融合 softmax",
+        "en": "Implement a numerically stable fused softmax"
+      },
+      "lesson": {
+        "zh": "softmax 需要指数、归约与归一化。先减去每行最大值可以降低指数溢出的风险；把中间结果保留在片上能够减少多次全局内存往返，但会消耗更多片上资源。行宽、布局和目标硬件决定一行能否高效地放入一个程序块。融合不是普遍加速保证：过大的块或不适配的输入可能降低效率。",
+        "en": "Softmax combines exponentiation, reduction and normalization. Subtracting the row maximum reduces overflow risk. Keeping intermediate values on chip can avoid global-memory round trips, but consumes on-chip resources. Row width, layout and target hardware determine whether one program can handle a row efficiently. Fusion is not a universal speedup: oversized blocks or unsuitable inputs can reduce performance."
+      },
+      "task": {
+        "zh": "先写稳定的 CPU softmax 参考，再按官方示例实现受限行宽的 Triton 前向版本。测试极大输入、重复值和非二次幂行宽；比较行和与参考误差。",
+        "en": "Write a stable CPU softmax reference, then implement a Triton forward version for a declared range of row widths. Test large inputs, repeated values and non-power-of-two widths. Compare row sums and reference error."
+      },
+      "evidence": {
+        "zh": "softmax.py、输入范围声明、误差表与一次小型基准。",
+        "en": "softmax.py, supported input ranges, an error table and a small benchmark."
+      },
+      "checklist": {
+        "zh": [
+          "减最大值与尾部 mask 正确，输出无意外 NaN/Inf",
+          "注明未支持的超宽行处理方式"
+        ],
+        "en": [
+          "Handle max subtraction and tail masks without unexpected NaN/Inf",
+          "Specify behavior for unsupported wide rows"
+        ]
+      },
+      "noGpu": {
+        "zh": "完成稳定参考、误差分析和块内归约模拟。可验证数值思路，不将 CPU 运行速度解释成融合 GPU 收益。",
+        "en": "Complete the stable reference, error analysis and block-reduction simulation. Validate the numerical method without claiming GPU fusion benefits from CPU timings."
+      },
+      "reading": [
+        {
+          "title": "Triton · Fused softmax",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html"
+        },
+        {
+          "title": "Triton · Debugging and interpreter limits",
+          "url": "https://triton-lang.org/main/programming-guide/chapter-3/debugging.html"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": {
+        "zh": "从归约走向前向归一化",
+        "en": "Move from reductions to forward normalization"
+      },
+      "lesson": {
+        "zh": "归约把多个元素合并成一个统计量，计算顺序可能改变舍入误差。归一化还引入均值、方差与 epsilon：常数输入、很小方差和低精度输入都值得单独测试。今天只实现前向路径；训练所需的反向传播与梯度正确性是额外任务。明确算子边界，能让作品比含糊宣称支持整个训练栈更可信。",
+        "en": "A reduction combines elements into a statistic, and its order can change rounding error. Normalization adds mean, variance and epsilon, making constant inputs, tiny variance and low precision important tests. Today implements only the forward path; backward propagation and gradient correctness are separate engineering tasks. Declaring that boundary makes the operator more trustworthy than vaguely claiming support for a complete training stack."
+      },
+      "task": {
+        "zh": "实现一个小范围前向 layer normalization 或 RMS normalization，声明准确公式。分别测试常数行、接近常数行与随机行，比较不同累加精度的误差。",
+        "en": "Implement a limited forward layer-normalization or RMS-normalization operator and state its exact formula. Test constant, nearly constant and random rows, comparing error under different accumulation precision."
+      },
+      "evidence": {
+        "zh": "normalization.py、公式与输入契约、数值边界测试。",
+        "en": "normalization.py, formula and input contract, plus numerical edge tests."
+      },
+      "checklist": {
+        "zh": [
+          "方差/均方和 epsilon 的定义与参考一致",
+          "明确前向限定，不声称已实现或验证梯度"
+        ],
+        "en": [
+          "Match variance/mean-square and epsilon definitions to the reference",
+          "State the forward-only boundary; do not claim verified gradients"
+        ]
+      },
+      "noGpu": {
+        "zh": "使用 NumPy 或 PyTorch CPU 比较公式和累加精度；将真实 GPU 内核验证留为待执行步骤。",
+        "en": "Use NumPy or PyTorch CPU to compare formulas and accumulation precision. Mark GPU-kernel validation as unexecuted."
+      },
+      "reading": [
+        {
+          "title": "Triton · Layer normalization",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/05-layer-norm.html"
+        },
+        {
+          "title": "Triton · Debugging and interpreter limits",
+          "url": "https://triton-lang.org/main/programming-guide/chapter-3/debugging.html"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": {
+        "zh": "用 tiling 理解矩阵乘法",
+        "en": "Understand matrix multiplication through tiling"
+      },
+      "lesson": {
+        "zh": "矩阵乘法的关键不只是公式，而是复用。把 M、N、K 分块后，一个加载到片上的子块可以参与多次乘加；同时需要处理 stride、尾块和累加精度。更大的 tile 可能提高复用，也可能消耗过多寄存器或共享资源。今天先追踪一个小矩阵的索引与部分和，再考虑任何硬件特定优化。",
+        "en": "Matrix multiplication is as much about reuse as its formula. Tiling M, N and K lets loaded subblocks participate in multiple multiply-add operations, while strides, edge tiles and accumulation precision still need handling. Larger tiles may improve reuse or consume too many registers and shared resources. Begin by tracing indices and partial sums for a small matrix before attempting hardware-specific optimization."
+      },
+      "task": {
+        "zh": "手工跟踪一个带尾块的小型矩阵乘法，说明每个 load 的坐标。改写官方教学实现的受支持形状集合，测试非整块 M/N/K，并与 PyTorch 参考结果比较。",
+        "en": "Trace a small matrix multiplication with edge tiles by hand and explain each loaded coordinate. Adapt the official teaching implementation for a declared shape set. Test nonmultiple M/N/K dimensions against a PyTorch reference."
+      },
+      "evidence": {
+        "zh": "matmul.py、分块索引图、形状测试与数值报告。",
+        "en": "matmul.py, tile-index diagrams, shape tests and a numerical report."
+      },
+      "checklist": {
+        "zh": [
+          "尾块覆盖 M/N/K 边界，stride 假设清楚",
+          "解释输入精度与累加精度，避免用一次结果概括全部形状"
+        ],
+        "en": [
+          "Cover edge tiles in M/N/K and document stride assumptions",
+          "Explain input and accumulation precision without generalizing from one shape"
+        ]
+      },
+      "noGpu": {
+        "zh": "在 CPU 上写分块矩阵乘法，并记录每个 tile 的读取与复用次数；这能检验索引，不代表 GPU tiling 性能。",
+        "en": "Implement tiled matrix multiplication on CPU and count tile loads/reuse. This validates indexing, not GPU tiling performance."
+      },
+      "reading": [
+        {
+          "title": "Triton · Matrix multiplication",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/03-matrix-multiplication.html"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": {
+        "zh": "有边界地自动调参",
+        "en": "Autotune within a clear boundary"
+      },
+      "lesson": {
+        "zh": "不同 shape 和设备可能需要不同 tile 与 warp 配置。自动调参会多次执行候选内核，因此原地累加或修改输入的内核必须妥善重置状态。调参搜索本身也有时间成本，不能藏进或混入稳定运行时间。先选一个小而有解释的搜索空间，并在每个候选通过正确性后比较性能，能避免把错误快路径选成最优。",
+        "en": "Different shapes and devices may prefer different tile and warp settings. Autotuning runs candidates multiple times, so kernels that accumulate or mutate input need careful state reset. Search time is also a cost and should be separated from steady-state latency. Use a small, explainable search space and check correctness before comparing performance, otherwise an incorrect fast path can be selected as the apparent winner."
+      },
+      "task": {
+        "zh": "为一个已通过测试的算子定义 3–6 个配置和明确的调参 key。保存各 shape 的选中配置、调参耗时与稳定运行时间，并测试重复调用是否改变结果。",
+        "en": "Define 3–6 configurations and explicit tuning keys for a tested operator. Preserve selected settings, search time and steady-state latency for each shape. Check that repeated calls do not corrupt results."
+      },
+      "evidence": {
+        "zh": "autotune-configs.py、配置选择表与状态重置测试。",
+        "en": "autotune-configs.py, a configuration-selection table and state-reset tests."
+      },
+      "checklist": {
+        "zh": [
+          "每个候选先通过正确性检查",
+          "编译/调参开销和稳定运行时间分别报告"
+        ],
+        "en": [
+          "Validate each candidate before comparing speed",
+          "Report compilation/search costs separately from steady-state latency"
+        ]
+      },
+      "noGpu": {
+        "zh": "设计搜索空间并用 CPU 参考测试状态重置；不在 interpreter 上选 GPU 最优参数。",
+        "en": "Design the search space and test state reset with a CPU reference. Do not select GPU-optimal settings using interpreter timings."
+      },
+      "reading": [
+        {
+          "title": "Triton · autotune",
+          "url": "https://triton-lang.org/main/python-api/generated/triton.autotune.html"
+        },
+        {
+          "title": "Triton · Matrix multiplication",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/03-matrix-multiplication.html"
+        }
+      ]
+    },
+    {
+      "day": 8,
+      "title": {
+        "zh": "测量内核，而不是启动误差",
+        "en": "Measure the kernel instead of timing artifacts"
+      },
+      "lesson": {
+        "zh": "GPU 工作通常异步执行，普通 CPU 计时可能只测到提交任务的时间。正确基准需要合适的设备计时或同步、预热和重复，并说明是否包含分配、数据传输与编译。有效带宽也必须从你声明的字节模型计算，不能直接当作硬件总带宽。保留原始样本和分位数，才能判断微小差异是否有意义。",
+        "en": "GPU work is usually asynchronous, so a naive CPU timer may measure task submission rather than completion. Benchmarks need suitable device timing or synchronization, warm-up and repetitions. State whether allocation, transfers and compilation are included. Effective bandwidth depends on a declared byte-traffic model and is not simply the device's total bandwidth. Preserve samples and quantiles to assess whether small differences are meaningful."
+      },
+      "task": {
+        "zh": "用当前版本 triton.testing.do_bench 测量一个算子，明确毫秒单位与分位数设置。比较算子本身和包含 wrapper 的端到端调用，记录多个 shape；解释一个没有加速的案例。",
+        "en": "Use your release's triton.testing.do_bench for one operator, stating milliseconds and quantile settings. Compare the kernel-focused measurement with an end-to-end wrapper call across several shapes. Explain one case that does not improve."
+      },
+      "evidence": {
+        "zh": "bench.py、环境清单、原始样本与两种计时口径的图表。",
+        "en": "bench.py, environment manifest, raw samples and plots for both timing scopes."
+      },
+      "checklist": {
+        "zh": [
+          "未将异步提交时间误写成设备执行时间",
+          "字节模型、计时范围与冷/热状态都明确"
+        ],
+        "en": [
+          "Do not mistake asynchronous submission time for device execution",
+          "Document byte model, timing scope and cold/warm state"
+        ]
+      },
+      "noGpu": {
+        "zh": "审查基准代码并用合成样本验证汇总。没有目标 GPU 就不填设备延迟、带宽或加速比。",
+        "en": "Review the harness and validate summaries with synthetic samples. Without the target GPU, leave device latency, bandwidth and speedup unmeasured."
+      },
+      "reading": [
+        {
+          "title": "Triton · do_bench",
+          "url": "https://triton-lang.org/main/python-api/generated/triton.testing.do_bench.html"
+        },
+        {
+          "title": "Triton · Vector addition",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
+        }
+      ]
+    },
+    {
+      "day": 9,
+      "title": {
+        "zh": "给内核一个可用的调用契约",
+        "en": "Give the kernel a usable integration contract"
+      },
+      "lesson": {
+        "zh": "一个内核要进入真实应用，还需要主机端约束、错误处理和回退。设备、dtype、shape、layout 和训练/推理模式都属于接口的一部分；为了满足约束而复制张量的开销也属于应用成本。与 torch.compile 等系统集成时，需要遵循对应版本的接口。先做好单个前向算子的 eager 调用，再把编译集成作为可选扩展。",
+        "en": "A kernel becomes useful through host-side validation, error handling and fallbacks. Device, dtype, shape, layout and training/inference mode are part of its API. Copies needed to satisfy constraints also count as application cost. Integration with systems such as torch.compile must follow the selected version's contract. Establish a reliable eager forward call first, then treat compiled integration as an optional extension."
+      },
+      "task": {
+        "zh": "包装一个已验证内核：支持条件走 Triton，不支持条件走明确的参考路径或报错。测试调用方不会得到错误设备或形状的输出；选做当前 PyTorch 版本的编译集成。",
+        "en": "Wrap one validated kernel: supported inputs use Triton; unsupported inputs use a documented reference path or fail clearly. Test output shape/device behavior. Optionally integrate with compilation using the current PyTorch guide."
+      },
+      "evidence": {
+        "zh": "operator.py、集成测试、回退规则与端到端成本说明。",
+        "en": "operator.py, integration tests, fallback rules and end-to-end cost notes."
+      },
+      "checklist": {
+        "zh": [
+          "支持条件可以通过测试复核，不默默改变数值契约",
+          "声明 autograd、compile 与跨设备支持的实际边界"
+        ],
+        "en": [
+          "Test supported conditions and preserve the numerical contract",
+          "State actual autograd, compilation and cross-device support boundaries"
+        ]
+      },
+      "noGpu": {
+        "zh": "在 CPU 上实现并测试 wrapper 与参考回退路径；GPU 分支用显式未执行标记，不用假的成功返回值。",
+        "en": "Implement and test the CPU wrapper/reference path. Mark the GPU branch unexecuted rather than returning a fake success."
+      },
+      "reading": [
+        {
+          "title": "PyTorch · User-defined Triton kernels",
+          "url": "https://docs.pytorch.org/tutorials/recipes/torch_compile_user_defined_triton_kernel_tutorial.html"
+        },
+        {
+          "title": "Triton · Debugging and interpreter limits",
+          "url": "https://triton-lang.org/main/programming-guide/chapter-3/debugging.html"
+        }
+      ]
+    },
+    {
+      "day": 10,
+      "title": {
+        "zh": "交付一个有证据的融合算子",
+        "en": "Ship a fused operator with evidence"
+      },
+      "lesson": {
+        "zh": "结课项目应小到能够认真验证，例如前向归一化、逐元素链的融合或受限形状 softmax。作品要同时说明数学定义、支持范围、正确性和性能适用范围。某些 shape 比参考慢是有价值的发现，应该保留。复杂 attention 内核可以作为下一阶段阅读目标；完成十天不等于已具备所有训练算子或跨架构调优能力。",
+        "en": "Choose a capstone small enough to validate carefully: forward normalization, a fused elementwise chain or softmax for a defined shape range. Explain its mathematics, supported inputs, correctness and performance boundary. Shapes that are slower than the reference are valuable findings and should remain visible. Complex attention kernels can be a next reading goal; ten days does not establish expertise in every training operator or hardware architecture."
+      },
+      "task": {
+        "zh": "选一个融合算子，从干净环境复跑测试和基准，整理支持矩阵、误差边界、完整计时协议与失败案例。写一页工程复盘，说明最有价值的优化和一个没有奏效的尝试。",
+        "en": "Choose a fused operator and rerun tests/benchmarks from a clean environment. Package the support matrix, error bounds, timing protocol and failure cases. Write a one-page review of a useful optimization and one unsuccessful attempt."
+      },
+      "evidence": {
+        "zh": "可审查的算子仓库、测试报告、基准报告与后续学习计划。",
+        "en": "A reviewable operator repository, test and benchmark reports, and a next-learning plan."
+      },
+      "checklist": {
+        "zh": [
+          "每项速度结论指向具体设备、shape、dtype 与原始结果",
+          "接口限制和前向/反向边界完整披露",
+          "无 GPU 路径明确标出所有尚未测量项"
+        ],
+        "en": [
+          "Tie each speed claim to a device, shape, dtype and raw data",
+          "Disclose interface limits and forward/backward scope",
+          "The no-GPU path identifies every unmeasured claim"
+        ]
+      },
+      "noGpu": {
+        "zh": "交付 CPU 参考、索引推导、测试矩阵、wrapper 与待运行基准；获得真实设备验证后再增加 GPU 速度结论。",
+        "en": "Deliver CPU references, index derivations, tests, wrapper and an unexecuted benchmark plan. Add GPU speed claims only after real-device validation."
+      },
+      "reading": [
+        {
+          "title": "Triton · do_bench",
+          "url": "https://triton-lang.org/main/python-api/generated/triton.testing.do_bench.html"
+        },
+        {
+          "title": "Triton · Fused attention",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html"
+        }
+      ]
+    }
+  ]
+}

@@ -6,14 +6,14 @@
   <meta name="description" content="AI Infra JobHub (聘枢) — an open community to learn AI infrastructure, share your work and find your people. 学习、展示作品、发现全球 AI Infra 机会。">
   <meta name="theme-color" content="#183c35">
   <title>聘枢 · AI Infra JobHub</title>
-  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="./assets/logo-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css">
   <script src="./app.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main" data-i18n="skip">跳到内容</a>
   <header class="site-header">
-    <a class="brand" href="#" aria-label="聘枢 · AI Infra JobHub home"><span class="brand-mark" aria-hidden="true">枢</span><span class="brand-wordmark"><strong data-i18n="brandName">聘枢</strong><small data-i18n="brandTagline">AI Infra JobHub</small></span></a>
+    <a class="brand" href="#" aria-label="聘枢 · AI Infra JobHub home"><img class="brand-mark" src="./assets/logo-mark.svg" width="40" height="40" alt=""><span class="brand-wordmark"><strong data-i18n="brandName">聘枢</strong><small data-i18n="brandTagline">AI Infra JobHub</small></span></a>
     <nav aria-label="Main navigation">
       <a href="#learn" data-i18n="navLearn">学习路线</a>
       <a href="#opportunities" data-i18n="navJobs">机会广场</a>
@@ -29,8 +29,9 @@
         <div class="eyebrow"><span class="live-dot" aria-hidden="true"></span><span data-i18n="eyebrow">开放共建 · 面向全球 AI INFRA 开发者</span></div>
         <h1 id="hero-title"><span data-i18n="heroLine1">一起构建 AI 的底座，</span><br><em data-i18n="heroLine2">也找到同行的人。</em></h1>
         <p class="hero-description" data-i18n="heroDescription">从第一份学习笔记，到可复现的工程作品，再到下一次合作。让技术、机会和做技术的人，在这里连接。</p>
-        <div class="hero-actions"><a class="button primary" href="#learn"><span data-i18n="startLearning">开始学习</span> <span aria-hidden="true">↗</span></a><a class="button outline" href="#opportunities" data-i18n="exploreJobs">发现工作与合作</a></div>
+        <div class="hero-actions"><a class="button primary" href="#learn"><span data-i18n="startLearning">探索 10 天学习库</span> <span aria-hidden="true">↗</span></a><a class="button outline" href="#opportunities" data-i18n="exploreJobs">发现工作与合作</a></div>
         <p class="hero-note" data-i18n="heroNote">社区驱动 · 免费参与 · 用作品表达能力</p>
+        <div class="hero-metrics"><div><strong id="metric-courses">—</strong><span data-i18n="metricCourses">门 10 天课程</span></div><div><strong id="metric-days">—</strong><span data-i18n="metricDays">个每日学习任务</span></div><div><strong>中 / EN</strong><span data-i18n="metricLanguages">双语学习手册</span></div></div>
       </div>
       <div class="journey" aria-label="Learn, build, connect">
         <div class="journey-top"><span class="mono">YOUR NEXT CHAPTER</span><span class="orbit" aria-hidden="true">✳</span></div>
@@ -40,14 +41,22 @@
         <div class="journey-bottom"><span class="tiny-dot" aria-hidden="true"></span><span data-i18n="journeyBottom">每一次贡献，都可以是一个新的开始。</span></div>
       </div>
     </section>
-    <div class="ecosystem section-shell"><span data-i18n="ecosystem">从推理生态出发</span><span>vLLM</span><span>SGLang</span><span>LMCache</span><span class="ecosystem-next" data-i18n="ecosystemNext">更多方向，由社区一起补全 ↗</span></div>
+    <div class="ecosystem section-shell"><span data-i18n="ecosystem">从推理生态出发</span><span>vLLM</span><span>SGLang</span><span>LMCache</span><span>Mooncake</span><span>Triton</span><span class="ecosystem-next" data-i18n="ecosystemNext">更多方向，由社区一起补全 ↗</span></div>
     <div id="load-error" class="notice section-shell" role="alert" hidden></div>
     <noscript><p class="notice section-shell">此网站需要 JavaScript 展示学习路线和筛选功能。This site needs JavaScript for learning paths and filters.</p></noscript>
     <section id="learn" class="section-shell content-section" aria-labelledby="learn-title">
-      <div class="section-top"><div><div class="eyebrow muted">01 / LEARN IN PUBLIC</div><h2 id="learn-title" data-i18n="learnTitle">学技术，也积累作品。</h2></div><a class="text-link" href="./resources/portfolio-template.md" download data-i18n="downloadTemplate">下载作品记录模板 ↓</a></div>
-      <p class="section-description" data-i18n="learnDescription">四条起步路线：官方资料 + 动手任务 + 可展示的交付物。按自己的节奏学习，再把成果带到社区。</p>
-      <div id="tracks" class="track-grid" aria-live="polite"><p data-i18n="loading">正在加载学习路线…</p></div>
-      <div class="learning-foot"><span><span class="small-dot" aria-hidden="true"></span> <span data-i18n="learningNote">进度仅保存在本浏览器；任务勾选是自我记录，不代表认证。</span></span><span data-i18n="hardwareNote">平台不提供在线 GPU</span></div>
+      <div class="section-top"><div><div class="eyebrow muted">01 / LEARN IN PUBLIC</div><h2 id="learn-title" data-i18n="learnTitle">用 10 天，读懂一个系统。</h2></div><a class="text-link" href="./resources/portfolio-template.md" download data-i18n="downloadTemplate">下载作品记录模板 ↓</a></div>
+      <p class="section-description" data-i18n="learnDescription">每门 10 天，从概念到动手实践，再到一份可展示的作品。按目标岗位选择路径，也可以直接探索一门技术。</p>
+      <div id="career-paths" class="path-grid"></div>
+      <div id="course-catalog" class="catalog-toolbar">
+        <div class="search-field"><label for="course-search" data-i18n="courseSearchLabel">探索技术与岗位</label><input id="course-search" type="search" autocomplete="off" data-placeholder="courseSearchPlaceholder" placeholder="搜索 vLLM、Mooncake、分布式训练…"></div>
+        <div><label for="course-level" data-i18n="courseLevelLabel">学习深度</label><select id="course-level"><option value="" data-i18n="allLevels">所有深度</option><option value="beginner" data-i18n="beginner">入门</option><option value="intermediate" data-i18n="intermediate">进阶</option><option value="advanced" data-i18n="advanced">深入</option></select></div>
+        <div><label for="course-hardware" data-i18n="courseHardwareLabel">实践条件</label><select id="course-hardware"><option value="" data-i18n="allHardware">所有环境</option><option value="cpu" data-i18n="cpuFriendly">可从 CPU 起步</option><option value="gpu-required" data-i18n="gpuRequired">需兼容 GPU</option><option value="multi-gpu" data-i18n="multiGpu">多卡 / 多节点实测</option></select></div>
+      </div>
+      <div id="course-categories" class="catalog-filters" role="group" aria-label="Learning categories"></div>
+      <div class="list-heading"><span id="catalog-count" role="status"></span><button class="text-button" id="clear-catalog" type="button" data-i18n="clearCatalog">重置学习库筛选</button></div>
+      <div id="tracks" class="course-grid" aria-live="polite"><p data-i18n="loading">正在加载学习路线…</p></div>
+      <div class="learning-foot"><span><span class="small-dot" aria-hidden="true"></span> <span data-i18n="learningNote">进度与笔记保存在本浏览器，可导出学习记录；完成任务不代表生产级精通。</span></span><span data-i18n="hardwareNote">平台不提供在线 GPU</span></div>
     </section>
     <section id="opportunities" class="opportunity-section" aria-labelledby="jobs-title"><div class="section-shell content-section">
       <div class="section-top"><div><div class="eyebrow muted">02 / FIND YOUR NEXT</div><h2 id="jobs-title" data-i18n="jobsTitle">找到值得投入的问题。</h2></div><button class="button primary" type="button" data-submit="job"><span data-i18n="postJob">发布机会</span> <span aria-hidden="true">＋</span></button></div>
@@ -76,7 +85,7 @@
       <div class="community-principles"><div><span>01</span><h3 data-i18n="principle1">开放的知识</h3><p data-i18n="principle1Note">链接官方资料，补充实践路径，让经验可以被复现。</p></div><div><span>02</span><h3 data-i18n="principle2">具体的机会</h3><p data-i18n="principle2Note">说清职责、报酬、地区和技术要求，减少双方的信息差。</p></div><div><span>03</span><h3 data-i18n="principle3">相互尊重的人</h3><p data-i18n="principle3Note">尊重不同背景与贡献形式，也欢迎刚进入这个领域的人。</p></div></div>
     </section>
   </main>
-  <footer class="site-footer section-shell"><div><a class="brand" href="#"><span class="brand-mark" aria-hidden="true">枢</span><span class="brand-wordmark"><strong data-i18n="brandName">聘枢</strong><small data-i18n="brandTagline">AI Infra JobHub</small></span></a><p data-i18n="footerNote">独立社区项目，与所列开源项目无官方隶属关系。</p></div><div class="footer-links"><button class="text-button" type="button" data-submit="repository" data-i18n="sourceCode">项目仓库 ↗</button><button class="text-button" id="privacy-button" type="button" data-i18n="privacy">公开资料与隐私</button><span class="mono">LEARN. BUILD. CONNECT.</span></div></footer>
+  <footer class="site-footer section-shell"><div><a class="brand" href="#"><img class="brand-mark" src="./assets/logo-mark.svg" width="40" height="40" alt=""><span class="brand-wordmark"><strong data-i18n="brandName">聘枢</strong><small data-i18n="brandTagline">AI Infra JobHub</small></span></a><p data-i18n="footerNote">独立社区项目，与所列开源项目无官方隶属关系。</p></div><div class="footer-links"><button class="text-button" type="button" data-submit="repository" data-i18n="sourceCode">项目仓库 ↗</button><button class="text-button" id="privacy-button" type="button" data-i18n="privacy">公开资料与隐私</button><span class="mono">LEARN. BUILD. CONNECT.</span></div></footer>
   <dialog id="detail-dialog" aria-labelledby="dialog-title"><div class="dialog-header"><span class="mono">AI INFRA JOBHUB</span><button class="close-button" id="close-dialog" type="button" aria-label="关闭 / Close">×</button></div><div id="dialog-content"></div></dialog>
 </body>
 </html>

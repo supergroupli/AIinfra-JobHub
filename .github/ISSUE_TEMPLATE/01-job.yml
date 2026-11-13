@@ -45,6 +45,12 @@ body:
         - vLLM
         - SGLang
         - LMCache
+        - Mooncake
+        - Dynamo
+        - PyTorch
+        - Ray
+        - NCCL
+        - Observability
         - CUDA
         - Triton
         - Kubernetes

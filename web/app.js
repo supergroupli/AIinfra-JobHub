@@ -10,11 +10,12 @@ const storage = {
   get(key, fallback) { try { return JSON.parse(localStorage.getItem(`infra-commons:${key}`)) ?? fallback; } catch { return fallback; } },
   set(key, value) { try { localStorage.setItem(`infra-commons:${key}`, JSON.stringify(value)); } catch { /* Progress remains available for this visit. */ } }
 };
-const savedProgress = storage.get("progress", []);
-const state = {lang: storage.get("language", "zh") === "en" ? "en" : "zh", data: null, skills: new Set(), query: "", workMode: "", progress: new Set(Array.isArray(savedProgress) ? savedProgress.filter(x => typeof x === "string") : [])};
-const technologies = ["vLLM", "SGLang", "LMCache", "KV Cache", "Serving", "CUDA", "Triton", "Kubernetes", "Distributed Systems"];
+const savedProgress = storage.get("course-progress-v2", []);
+const state = {lang: storage.get("language", "zh") === "en" ? "en" : "zh", data: null, skills: new Set(), query: "", workMode: "", courseQuery: "", category: "", level: "", hardware: "", path: "", progress: new Set(Array.isArray(savedProgress) ? savedProgress.filter(x => typeof x === "string") : [])};
+const technologies = ["vLLM", "SGLang", "LMCache", "Mooncake", "Dynamo", "KV Cache", "Serving", "CUDA", "Triton", "PyTorch", "Ray", "NCCL", "Kubernetes", "Distributed Systems", "Observability"];
 const messages = {
   zh: {
+    courseSearchLabel: "探索技术与岗位", courseSearchPlaceholder: "搜索 vLLM、Mooncake、分布式训练…", courseLevelLabel: "学习深度", allLevels: "所有深度", beginner: "入门", intermediate: "进阶", advanced: "深入", courseHardwareLabel: "实践条件", allHardware: "所有环境", cpuFriendly: "可从 CPU 起步", gpuRequired: "需兼容 GPU", multiGpu: "多卡 / 多节点实测", allCourses: "全部课程", clearCatalog: "重置学习库筛选", catalogCount: "{count} 门课程 · 每门 10 天", pathDuration: "{count} 门课程 · 按顺序共 {days} 天", choosePath: "查看这条路径", openCourse: "打开 10 天学习手册", continueCourse: "继续学习", tenDays: "10 天实战", noCourses: "没有符合这些条件的课程", noCoursesBody: "换一个技术关键词，或重置筛选查看完整学习库。", relatedRoles: "关联岗位", metricCourses: "门 10 天课程", metricDays: "个每日学习任务", metricLanguages: "双语学习手册",
     brandName: "聘枢", brandTagline: "AI Infra JobHub", navResume: "投简历 ↗", resumeTitle: "让你的下一次机会，从一封邮件开始。", resumeDescription: "欢迎发送简历与公开作品链接，并注明目标方向、工作地区和远程偏好。", resumeNote: "邮件投递不会自动公开到 GitHub；公开作品名片由你另行选择提交。", sendResume: "发送简历",
     searchPlaceholder: "技术、公司、地区或关键词", communityTitle: "一个人的经验，\n可以成为很多人的起点。",
     beginTrack: "查看学习任务", outcome: "完成后，你将得到", evidence: "交付物", localProgress: "勾选表示你已完成自我记录。进度仅保存在本浏览器，不是课程认证；清除浏览器数据后会丢失。",
@@ -36,11 +37,12 @@ const messages = {
     privacy3: "学习进度和语言偏好保存在本浏览器。本站代码不加载分析跟踪脚本，也不把这些进度上传。你可以通过邮件客户端将简历发送至 career@yzinfra.com，邮件由该邮箱运营方接收和处理，不会由网站自动发布到 GitHub。针对具体职位，也可使用企业官方申请入口。网站不提供私聊或简历上传存储；邮件和网页访问仍适用各服务提供方的数据处理政策。"
   },
   en: {
+    courseSearchLabel: "Explore technologies and roles", courseSearchPlaceholder: "Search vLLM, Mooncake, distributed training…", courseLevelLabel: "Depth", allLevels: "All levels", beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced", courseHardwareLabel: "Practice environment", allHardware: "All environments", cpuFriendly: "Start on a CPU", gpuRequired: "Compatible GPU needed", multiGpu: "Multi-GPU / multi-node", allCourses: "All courses", clearCatalog: "Reset library filters", catalogCount: "{count} courses · 10 days each", pathDuration: "{count} courses · {days} days in sequence", choosePath: "Explore this path", openCourse: "Open the 10-day guide", continueCourse: "Continue learning", tenDays: "10-DAY GUIDE", noCourses: "No courses match these filters", noCoursesBody: "Try another technology or reset the filters to see the full library.", relatedRoles: "Related roles", metricCourses: "ten-day courses", metricDays: "daily learning tasks", metricLanguages: "bilingual guides",
     brandName: "AI Infra JobHub", brandTagline: "聘枢 · Learn. Build. Connect.", navResume: "Send CV ↗", resumeTitle: "Your next opportunity can start with an email.", resumeDescription: "Send your resume and public portfolio links, with your target roles, preferred locations and remote-work preferences.", resumeNote: "Email submissions are not automatically published to GitHub. Sharing a public portfolio is a separate choice.", sendResume: "Send my resume",
     skip: "Skip to content", navLearn: "Learning", navJobs: "Opportunities", navPeople: "Builders", navCommunity: "Community", eyebrow: "OPEN COMMUNITY · FOR AI INFRA BUILDERS EVERYWHERE",
-    heroLine1: "Build the systems.", heroLine2: "Find your people.", heroDescription: "From your first learning note to a reproducible project and your next collaboration. A shared home for the people building AI infrastructure.", startLearning: "Start learning", exploreJobs: "Explore opportunities", heroNote: "Community-led · Free to join · Let your work speak",
+    heroLine1: "Build the systems.", heroLine2: "Find your people.", heroDescription: "From your first learning note to a reproducible project and your next collaboration. A shared home for the people building AI infrastructure.", startLearning: "Explore the 10-day library", exploreJobs: "Explore opportunities", heroNote: "Community-led · Free to join · Let your work speak",
     journeyLearn: "Understand a system", journeyBuild: "Make something real", journeyBuildNote: "Code / Experiments / Engineering notes", journeyConnect: "Meet your next collaborator", journeyConnectNote: "Careers / Open source / Global collaboration", journeyBottom: "Every contribution can be a new beginning.", ecosystem: "Starting with the inference ecosystem", ecosystemNext: "More paths, built together ↗",
-    learnTitle: "Learn something. Build something.", downloadTemplate: "Get the portfolio template ↓", learnDescription: "Four starter paths: official resources, practical tasks and work you can share. Learn at your own pace, then bring your results to the community.", loading: "Loading learning paths…", learningNote: "Progress stays in this browser. Checkmarks are self-reported, not a certification.", hardwareNote: "Bring your own compute",
+    learnTitle: "Ten days. One system understood.", downloadTemplate: "Get the portfolio template ↓", learnDescription: "Each ten-day guide moves from concepts to practice and a project you can share. Choose a career path, or explore a technology on its own.", loading: "Loading learning paths…", learningNote: "Progress and notes stay in this browser and can be exported. Finishing a guide does not imply production expertise.", hardwareNote: "Bring your own compute",
     jobsTitle: "Find a problem worth solving.", postJob: "Post an opportunity", jobsDescription: "Full-time roles, internships, research and open-source collaboration. Start with the technology, then check location, language and remote eligibility.", searchLabel: "Search opportunities and builders", searchPlaceholder: "Technology, company, location or keyword", workModeLabel: "Working arrangement", anyMode: "All arrangements", remoteGlobal: "Remote worldwide", remoteRegional: "Remote in specified regions", hybrid: "Hybrid", onsite: "On-site", matchingNote: "Selected technologies match by any overlap and also filter builders below. No personal ability scores.", resetFilters: "Clear filters", publicJobs: "Public opportunities",
     peopleTitle: "Meet the people behind the work.", addProfile: "Share my public portfolio", peopleDescription: "A benchmark, a source walkthrough or an independent project can start a conversation. Profiles are shared voluntarily, never scraped.", peopleFilterNote: "Uses the search and filters above",
     communityTitle: "One person's experience.\nEveryone's starting point.", communityDescription: "Ask a question, share an experiment, discuss an engineering challenge or help someone finish their first project. Let's build this community together.", joinDiscussion: "Join GitHub Discussions", principle1: "Open knowledge", principle1Note: "Link official sources and share practical paths so others can reproduce your work.", principle2: "Specific opportunities", principle2Note: "Make responsibilities, compensation, location and technical needs clear.", principle3: "Mutual respect", principle3Note: "Welcome different backgrounds, different contributions and people just getting started.", footerNote: "An independent community, not officially affiliated with the projects listed.", sourceCode: "Project repository ↗", privacy: "Public data & privacy",
@@ -70,16 +72,53 @@ function translatePage() {
   $("#language-toggle").innerHTML = `${state.lang === "zh" ? "EN" : "中文"} <span aria-hidden="true">↗</span>`;
   $("#language-toggle").setAttribute("aria-label", state.lang === "zh" ? "Switch to English" : "切换为中文");
   if (!$("#load-error").hidden) $("#load-error").textContent = t("loadError");
-  renderTracks(); renderFilters(); renderListings();
+  renderPaths(); renderCategories(); renderTracks(); renderFilters(); renderListings();
+}
+
+function renderPaths() {
+  if (!state.data) return;
+  $("#career-paths").innerHTML = state.data.paths.map(path => `<article class="path-card"><span class="path-number">PATH ${h(path.number)}</span><h3>${h(pick(path.title))}</h3><p>${h(pick(path.description))}</p><div class="path-chain">${path.courses.map(id => `<a href="./learn/${encodeURIComponent(id)}/">${h(state.data.tracks.find(x => x.id === id)?.title[state.lang] ?? id)}</a>`).join(' <span aria-hidden="true">→</span> ')}</div><small>${h(t("pathDuration", {count: path.courses.length, days: path.courses.length * 10}))}</small><button class="text-button" type="button" data-path="${h(path.id)}" aria-pressed="${state.path === path.id}">${h(t("choosePath"))} ↗</button></article>`).join("");
+}
+
+function renderCategories() {
+  if (!state.data) return;
+  const categories = [["", t("allCourses")], ...Object.entries(state.data.categories).map(([key, label]) => [key, pick(label)])];
+  $("#course-categories").innerHTML = categories.map(([key, label]) => `<button class="filter-tag" type="button" data-category="${h(key)}" aria-pressed="${state.category === key}">${h(label)}</button>`).join("");
+}
+
+function filteredCourses() {
+  const query = state.courseQuery.trim().toLocaleLowerCase();
+  const path = state.data.paths.find(x => x.id === state.path);
+  let courses = state.data.tracks.filter(course => {
+    const haystack = [course.title.zh, course.title.en, course.description.zh, course.description.en, ...course.tags, ...course.roles.zh, ...course.roles.en].join(" ").toLocaleLowerCase();
+    const hardwareMatch = !state.hardware || (state.hardware === "cpu" ? ["cpu", "gpu-optional"].includes(course.hardwareTier) : course.hardwareTier === state.hardware);
+    return (!query || haystack.includes(query)) && (!state.category || course.category === state.category) && (!state.level || course.level === state.level) && hardwareMatch && (!path || path.courses.includes(course.id));
+  });
+  if (path) courses = courses.sort((a, b) => path.courses.indexOf(a.id) - path.courses.indexOf(b.id));
+  return courses;
 }
 
 function renderTracks() {
   if (!state.data) return;
-  const symbols = {foundations: "[ ]", vllm: "v_", sglang: "s/", lmcache: "kv"};
-  $("#tracks").innerHTML = state.data.tracks.map(track => {
-    const done = track.steps.filter((_, i) => state.progress.has(`${track.id}:${i}`)).length;
-    return `<article class="track-card"><div class="track-top"><span class="track-symbol" aria-hidden="true">${h(symbols[track.id] ?? "↗")}</span><span class="track-number">${h(track.number)}</span></div><h3>${h(pick(track.title))}</h3><p>${h(pick(track.description))}</p>${tagsHtml(track.tags)}<div class="hardware-label">${h(pick(track.hardware))}</div><button class="track-button" data-track="${h(track.id)}" type="button" aria-label="${h(pick(track.title))}: ${h(t("beginTrack"))}"><span>${h(t("beginTrack"))} ↗</span><span class="track-progress">${done}/${track.steps.length}</span></button></article>`;
-  }).join("");
+  const symbols = {foundations: "[ ]", vllm: "vL", sglang: "SG", lmcache: "KV", mooncake: "MC", dynamo: "DY", triton: "TL", "pytorch-distributed": "PT", ray: "RY", kubernetes: "K8", nccl: "NC"};
+  const hardwareLabels = {cpu: "cpuFriendly", "gpu-optional": "cpuFriendly", "gpu-required": "gpuRequired", "multi-gpu": "multiGpu"};
+  const courses = filteredCourses();
+  $("#metric-courses").textContent = state.data.tracks.length;
+  $("#metric-days").textContent = state.data.tracks.reduce((total, x) => total + x.steps.length, 0);
+  const selectedPath = state.data.paths.find(x => x.id === state.path);
+  $("#catalog-count").textContent = t("catalogCount", {count: courses.length}) + (selectedPath ? ` · ${pick(selectedPath.title)}` : "");
+  $("#tracks").innerHTML = courses.map(track => {
+    const done = track.steps.filter(step => state.progress.has(`${track.id}:${step.day}`)).length;
+    const nextDay = track.steps.find(step => !state.progress.has(`${track.id}:${step.day}`))?.day ?? 10;
+    const href = `./learn/${encodeURIComponent(track.id)}/#day-${nextDay}`;
+    return `<article class="course-card"><div class="course-top"><span class="course-code" aria-hidden="true">${h(symbols[track.id] ?? "↗")}</span><span class="course-category">${h(pick(state.data.categories[track.category]))}</span><span class="track-number">${h(track.number)}</span></div><h3><a href="${href}">${h(pick(track.title))}</a></h3><p>${h(pick(track.description))}</p>${tagsHtml(track.tags)}<div class="course-meta"><span>${h(t("tenDays"))}</span><span>${h(t(track.level))}</span><span>${h(pick(track.hoursPerDay))}</span></div><div class="hardware-label">${h(t(hardwareLabels[track.hardwareTier]))}</div><div class="course-footer"><a class="text-link" href="${href}">${h(t(done ? "continueCourse" : "openCourse"))} ↗</a><span class="course-progress" aria-label="${done} / 10">${done}/10</span></div></article>`;
+  }).join("") || `<div class="empty-state"><div><h3>${h(t("noCourses"))}</h3><p>${h(t("noCoursesBody"))}</p></div><button class="text-button" data-clear-catalog type="button">${h(t("clearCatalog"))}</button></div>`;
+}
+
+function clearCatalog(render = true) {
+  state.courseQuery = ""; state.category = ""; state.level = ""; state.hardware = ""; state.path = "";
+  $("#course-search").value = ""; $("#course-level").value = ""; $("#course-hardware").value = "";
+  if (render) { renderPaths(); renderCategories(); renderTracks(); }
 }
 
 function renderFilters() {
@@ -125,11 +164,6 @@ function showDialog(content) {
   $("#detail-dialog").scrollTop = 0;
 }
 
-function openTrack(id) {
-  const track = state.data?.tracks.find(x => x.id === id);
-  if (!track) return;
-  showDialog(`<div class="eyebrow muted">${h(track.number)} / LEARNING PATH</div><h2 id="dialog-title">${h(pick(track.title))}</h2><p class="dialog-intro">${h(pick(track.subtitle))} · ${h(pick(track.hardware))}</p><div class="outcome"><strong>${h(t("outcome"))}</strong><br>${h(pick(track.outcome))}</div><div class="resource-links">${track.resources.map(resource => link(resource.title, resource.url, "resource-link")).join("")}</div>${track.steps.map((step, index) => `<div class="milestone"><label class="milestone-title"><input type="checkbox" data-progress="${h(track.id)}:${index}" ${state.progress.has(`${track.id}:${index}`) ? "checked" : ""}><span>${String(index + 1).padStart(2, "0")} · ${h(pick(step.title))}</span></label><p>${h(pick(step.task))}</p><p class="evidence">${h(t("evidence"))}: ${h(pick(step.evidence))}</p></div>`).join("")}<p class="dialog-foot">${h(t("localProgress"))}</p><a class="text-link" href="./resources/portfolio-template.md" download>${h(t("downloadTemplate"))}</a>`);
-}
 
 function openSubmission(kind) {
   const titles = {job: "submitJobTitle", profile: "submitProfileTitle", discussion: "discussionTitle", repository: "repositoryTitle"};
@@ -150,13 +184,27 @@ $("#language-toggle").addEventListener("click", () => { state.lang = state.lang 
 $("#search").addEventListener("input", event => { state.query = event.target.value; renderListings(); });
 $("#work-mode").addEventListener("change", event => { state.workMode = event.target.value; renderListings(); });
 $("#reset-filters").addEventListener("click", clearFilters);
+$("#course-search").addEventListener("input", event => { state.courseQuery = event.target.value; renderTracks(); });
+$("#course-level").addEventListener("change", event => { state.level = event.target.value; renderTracks(); });
+$("#course-hardware").addEventListener("change", event => { state.hardware = event.target.value; renderTracks(); });
+$("#clear-catalog").addEventListener("click", () => clearCatalog());
 $("#close-dialog").addEventListener("click", () => $("#detail-dialog").close());
 $("#privacy-button").addEventListener("click", () => showDialog(`<h2 id="dialog-title">${h(t("privacyTitle"))}</h2><div class="privacy-copy">${["privacy1", "privacy2", "privacy3"].map(key => `<p>${h(t(key))}</p>`).join("")}</div>`));
 document.addEventListener("click", event => {
   const button = event.target.closest("button");
   if (!button) return;
-  if (button.dataset.track) openTrack(button.dataset.track);
   if (button.dataset.submit) openSubmission(button.dataset.submit);
+  if (button.dataset.path) {
+    clearCatalog(false); state.path = button.dataset.path;
+    renderPaths(); renderCategories(); renderTracks();
+    $("#course-catalog").scrollIntoView({block: "start"});
+  }
+  if (button.hasAttribute("data-category")) {
+    state.category = button.dataset.category;
+    document.querySelectorAll("[data-category]").forEach(item => item.setAttribute("aria-pressed", String(item.dataset.category === state.category)));
+    renderTracks();
+  }
+  if (button.hasAttribute("data-clear-catalog")) clearCatalog();
   if (button.hasAttribute("data-clear")) clearFilters();
   if (button.dataset.skill) {
     const tag = button.dataset.skill;
@@ -165,17 +213,23 @@ document.addEventListener("click", event => {
     renderListings();
   }
 });
-$("#detail-dialog").addEventListener("change", event => {
-  const key = event.target.dataset.progress;
-  if (!key) return;
-  event.target.checked ? state.progress.add(key) : state.progress.delete(key);
-  storage.set("progress", [...state.progress]); renderTracks();
-});
 // Remove expired listings even in a tab left open overnight, using a UTC date boundary.
 setInterval(renderListings, 60000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) renderListings(); });
+window.addEventListener("pageshow", () => {
+  const latest = storage.get("course-progress-v2", []);
+  state.progress = new Set(Array.isArray(latest) ? latest.filter(x => typeof x === "string") : []);
+  renderTracks();
+});
+window.addEventListener("storage", event => {
+  if (event.key === "infra-commons:course-progress-v2") {
+    const latest = storage.get("course-progress-v2", []);
+    state.progress = new Set(Array.isArray(latest) ? latest.filter(x => typeof x === "string") : []);
+    renderTracks();
+  }
+});
 translatePage();
 fetch("./data.json").then(response => { if (!response.ok) throw new Error("Content unavailable"); return response.json(); }).then(data => {
-  if (!Array.isArray(data.tracks) || !Array.isArray(data.jobs) || !Array.isArray(data.people)) throw new Error("Invalid content");
+  if (!Array.isArray(data.tracks) || !Array.isArray(data.paths) || !data.categories || !Array.isArray(data.jobs) || !Array.isArray(data.people)) throw new Error("Invalid content");
   state.data = data; translatePage();
 }).catch(() => { $("#load-error").hidden = false; $("#load-error").textContent = t("loadError"); $("#tracks").textContent = t("loadError"); });

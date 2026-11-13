@@ -1,0 +1,537 @@
+{
+  "id": "foundations",
+  "number": "01",
+  "category": "foundations",
+  "title": {
+    "zh": "AI Infra 系统基础",
+    "en": "AI Infra foundations"
+  },
+  "subtitle": {
+    "zh": "10 天建立系统地图，完成第一份工程作品",
+    "en": "Map the stack and build your first engineering portfolio in 10 days"
+  },
+  "description": {
+    "zh": "从请求、张量和资源预算入手，逐步理解调度、缓存、测量与可观测性。课程使用 CPU 可完成的小实验，把「知道名词」变成能解释取舍、复现实验和识别证据边界。",
+    "en": "Start with requests, tensors and resource budgets, then explore scheduling, caching, measurement and observability. CPU-friendly exercises turn vocabulary into the ability to explain trade-offs, reproduce experiments and recognize evidence limits."
+  },
+  "level": "beginner",
+  "hoursPerDay": {
+    "zh": "每天 90–120 分钟，共约 15–20 小时",
+    "en": "90–120 minutes a day; about 15–20 hours total"
+  },
+  "prerequisites": {
+    "zh": "能运行 Python 脚本，理解列表、函数和基本代数；会用终端与 Git 保存文件。无需已有大模型部署经验。",
+    "en": "Run Python scripts, understand lists, functions and basic algebra, and use a terminal and Git. No prior LLM deployment experience is required."
+  },
+  "hardware": {
+    "zh": "普通 CPU 电脑即可；Python 3 与少量本地文件。所有模拟都明确标注，不能当作真实 GPU 性能。",
+    "en": "An ordinary CPU computer, Python 3 and small local files. All simulations must be labeled and are not evidence of GPU performance."
+  },
+  "hardwareTier": "cpu",
+  "tags": [
+    "Serving",
+    "KV Cache",
+    "Observability"
+  ],
+  "roles": {
+    "zh": [
+      "AI Infra 初级工程师",
+      "推理平台工程师",
+      "技术支持与开发者工程师"
+    ],
+    "en": [
+      "Junior AI infrastructure engineer",
+      "Inference platform engineer",
+      "Developer support engineer"
+    ]
+  },
+  "outcome": {
+    "zh": "一份包含系统图、内存计算器、请求调度模拟器、指标分析和复现说明的基础作品仓库。",
+    "en": "A portfolio repository with a system map, memory calculator, scheduling simulator, metric analysis and reproduction guide."
+  },
+  "lastVerified": "2026-11-13",
+  "resources": [
+    {
+      "title": "vLLM · Architecture overview",
+      "url": "https://docs.vllm.ai/en/latest/design/arch_overview/"
+    },
+    {
+      "title": "Hugging Face · Tokenization algorithms",
+      "url": "https://huggingface.co/docs/transformers/main/en/tokenizer_summary"
+    },
+    {
+      "title": "Hugging Face · How caching works",
+      "url": "https://huggingface.co/docs/transformers/main/en/cache_explanation"
+    },
+    {
+      "title": "vLLM · Production metrics",
+      "url": "https://docs.vllm.ai/en/latest/usage/metrics/"
+    },
+    {
+      "title": "NVIDIA · CUDA best practices",
+      "url": "https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/"
+    },
+    {
+      "title": "vLLM · Engine arguments",
+      "url": "https://docs.vllm.ai/en/latest/configuration/engine_args/"
+    },
+    {
+      "title": "vLLM · Automatic prefix caching",
+      "url": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/"
+    },
+    {
+      "title": "vLLM · Conserving memory",
+      "url": "https://docs.vllm.ai/en/latest/configuration/conserving_memory/"
+    },
+    {
+      "title": "vLLM · Benchmark suites",
+      "url": "https://docs.vllm.ai/en/latest/benchmarking/"
+    },
+    {
+      "title": "vLLM · Reproducibility",
+      "url": "https://docs.vllm.ai/en/latest/usage/reproducibility/"
+    },
+    {
+      "title": "Prometheus · Metric types",
+      "url": "https://prometheus.io/docs/concepts/metric_types/"
+    },
+    {
+      "title": "OpenTelemetry · Traces",
+      "url": "https://opentelemetry.io/docs/concepts/signals/traces/"
+    }
+  ],
+  "steps": [
+    {
+      "day": 1,
+      "title": {
+        "zh": "画出一条 AI 请求的旅程",
+        "en": "Map the journey of an AI request"
+      },
+      "lesson": {
+        "zh": "AI Infra 不只是启动模型。一次请求通常经过接口校验、分词、排队、调度、模型计算和输出流；每一层都有独立的资源、错误与延迟。训练会更新参数，推理在既定权重上生成结果，两者的瓶颈不同。先把控制流和数据流分开，才能判断问题该由客户端、服务框架还是硬件层解决。",
+        "en": "AI infrastructure includes more than starting a model. A request passes through validation, tokenization, queuing, scheduling, model execution and response delivery. Each stage owns resources and can introduce latency or failure. Training updates parameters; inference uses existing weights, so their bottlenecks differ. Separating control flow from data flow helps you identify whether a problem belongs in the client, serving framework or hardware layer."
+      },
+      "task": {
+        "zh": "选择一个聊天请求，画出上述七个阶段。给每一段标上输入、输出、可能失败的原因与负责组件；再补一条训练数据到检查点的路径，对比两条链。",
+        "en": "Choose a chat request and draw these seven stages. Label each stage's input, output, possible failure and owning component. Add a training-data-to-checkpoint path and compare the two."
+      },
+      "evidence": {
+        "zh": "system-map.md：两张流程图、一个术语表和三个待验证问题。",
+        "en": "system-map.md: two flow diagrams, a glossary and three open questions."
+      },
+      "checklist": {
+        "zh": [
+          "图中区分训练与推理，包含排队和输出传输",
+          "至少列出三个不属于模型精度的问题"
+        ],
+        "en": [
+          "Separate training from inference and include queuing and response transport",
+          "Identify at least three problems that are not model-accuracy problems"
+        ]
+      },
+      "noGpu": {
+        "zh": "全部任务可在 CPU 电脑上完成。用图和文档解释数据流即可，不需要下载模型权重。",
+        "en": "Complete everything on a CPU computer. Explain the data flow with diagrams; no model weights are needed."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Architecture overview",
+          "url": "https://docs.vllm.ai/en/latest/design/arch_overview/"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": {
+        "zh": "理解 token、张量与 KV cache",
+        "en": "Understand tokens, tensors and KV cache"
+      },
+      "lesson": {
+        "zh": "字符数不是 token 数；同一句话在不同分词器、模板或语言下会得到不同长度。自回归模型先处理提示词，再逐步生成新 token；KV cache 保存历史注意力状态，以减少重复工作。标准注意力模型的缓存容量与层数、KV heads、head dimension、精度、上下文和并发共同相关，不能只看模型参数量。",
+        "en": "Characters are not tokens: tokenizers, chat templates and languages change sequence lengths. An autoregressive model processes its prompt and then generates tokens incrementally. Its KV cache stores attention state to avoid repeating historical work. For a standard attention model, cache memory depends on layers, KV heads, head dimension, precision, sequence length and concurrency. Parameter count alone does not describe the memory required by a serving workload."
+      },
+      "task": {
+        "zh": "选一个公开模型配置，记录层数、KV heads、head dimension 和缓存精度。写容量计算器，比较 2K/8K 上下文与 1/8 并发。列出模型结构、缓存压缩或分片会使公式失效或需要修正的条件。",
+        "en": "Read a public model configuration and record layers, KV heads, head dimension and cache precision. Build a calculator comparing 2K/8K contexts and concurrency 1/8. List architecture, compression or sharding conditions that require changing the formula."
+      },
+      "evidence": {
+        "zh": "kv_budget.py 与计算表，包含输入参数、单位、公式假设和两组手算核对。",
+        "en": "kv_budget.py and a table containing inputs, units, assumptions and two hand-checked examples."
+      },
+      "checklist": {
+        "zh": [
+          "区分 KV heads 与 query heads，使用 bytes 而非把 bit 当 byte",
+          "说明结果仅为 KV cache 估算，不包含权重和运行时开销"
+        ],
+        "en": [
+          "Distinguish KV heads from query heads and bits from bytes",
+          "State that the estimate excludes weights and runtime overhead"
+        ]
+      },
+      "noGpu": {
+        "zh": "读取模型配置与运行计算器都不需要 GPU；不必下载整个模型。",
+        "en": "Reading model configuration and running the calculator need no GPU or full weight download."
+      },
+      "reading": [
+        {
+          "title": "Hugging Face · Tokenization algorithms",
+          "url": "https://huggingface.co/docs/transformers/main/en/tokenizer_summary"
+        },
+        {
+          "title": "Hugging Face · How caching works",
+          "url": "https://huggingface.co/docs/transformers/main/en/cache_explanation"
+        }
+      ],
+      "code": {
+        "language": "python",
+        "caption": {
+          "zh": "标准、未分片 KV cache 的教学估算；实际架构需核对",
+          "en": "A teaching estimate for standard unsharded KV cache; check your architecture"
+        },
+        "content": "def kv_bytes(layers, kv_heads, head_dim, tokens, sequences, bytes_per_element):\n    return 2 * layers * kv_heads * head_dim * tokens * sequences * bytes_per_element\n\nsize = kv_bytes(32, 8, 128, 2048, 8, 2)\nprint(f\"Estimated KV cache: {size / 2**30:.2f} GiB\")\n# Excludes model weights, activations, allocator overhead and architecture-specific state."
+      }
+    },
+    {
+      "day": 3,
+      "title": {
+        "zh": "把用户体验翻译成指标",
+        "en": "Translate user experience into metrics"
+      },
+      "lesson": {
+        "zh": "TTFT 衡量从发起请求到收到第一个 token 的等待；端到端延迟衡量完整响应；输出吞吐衡量一段时间内完成的工作量。TPOT 的统计口径也要写清，例如用首尾 token 间隔除以其间 token 数。平均值会掩盖长尾，p95 也依赖样本量与失败处理。公平报告应同时记录请求数、失败数、输入输出长度与测量位置。",
+        "en": "TTFT measures the wait for the first token, end-to-end latency covers the complete response, and throughput describes completed work over time. Define TPOT explicitly, such as the interval between first and last token divided by the intervening token count. Averages hide tails, while p95 depends on sample size and failure handling. A useful report also records request counts, failures, lengths and where timestamps were collected."
+      },
+      "task": {
+        "zh": "制作至少 20 条带开始、首 token、结束时间与输出长度的合成记录。计算 TTFT、端到端延迟、TPOT、p50/p95 和失败率；加入超时以及只生成一个 token 的边界样本。",
+        "en": "Create at least 20 synthetic records with start, first-token and end timestamps plus output lengths. Calculate TTFT, end-to-end latency, TPOT, p50/p95 and failure rate. Include timeouts and one-token outputs."
+      },
+      "evidence": {
+        "zh": "metrics.csv、analysis.py 和一页口径说明；醒目标注数据为合成样例。",
+        "en": "metrics.csv, analysis.py and a one-page definitions note, clearly labeled as synthetic examples."
+      },
+      "checklist": {
+        "zh": [
+          "时间单位一致，单 token 情况不会除以零",
+          "失败请求没有被静默删除，分位数算法与样本量明确"
+        ],
+        "en": [
+          "Use consistent time units and avoid division by zero for one-token outputs",
+          "Do not silently discard failures; document percentile method and sample size"
+        ]
+      },
+      "noGpu": {
+        "zh": "使用手工或脚本生成的合成时间戳即可；这些结果只验证分析程序，不代表任何引擎性能。",
+        "en": "Use manually created or generated timestamps. Results validate the analyzer, not an inference engine's performance."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Production metrics",
+          "url": "https://docs.vllm.ai/en/latest/usage/metrics/"
+        },
+        {
+          "title": "Prometheus · Metric types",
+          "url": "https://prometheus.io/docs/concepts/metric_types/"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": {
+        "zh": "区分计算瓶颈与数据搬运瓶颈",
+        "en": "Separate compute from data movement"
+      },
+      "lesson": {
+        "zh": "加速器性能不由一个 FLOPS 数字决定。算术强度是完成一份工作所需的计算量与搬运字节数之比；数据复用差的算子可能受内存带宽限制，复杂算子也可能受计算或同步限制。读取一次参数服务多个元素，往往能提高复用。这里建立的是分析框架，真实瓶颈仍需目标设备上的测量，不能把 CPU 小实验直接外推到 GPU。",
+        "en": "Peak FLOPS is not a complete performance model. Arithmetic intensity compares computation with bytes moved. Operators with little data reuse may be bandwidth-bound; others may be limited by computation or synchronization. Reusing a loaded value across more work can change that balance. This is an analytical model, not a measured diagnosis: the actual bottleneck must be tested on the target device, and CPU experiments do not predict GPU speed."
+      },
+      "task": {
+        "zh": "分别估算向量加法和矩阵乘法的理想读写量与计算量，写出忽略的缓存和复用假设。用 CPU 上的小数组观察不同规模的运行时间，仅用于理解固定开销与规模效应。",
+        "en": "Estimate ideal byte traffic and operation counts for vector addition and matrix multiplication. State assumptions about caching and reuse. Time small CPU arrays at several sizes to explore fixed overhead and scale."
+      },
+      "evidence": {
+        "zh": "roofline-notes.md：两个算子的计算表、CPU 时间记录与不可外推说明。",
+        "en": "roofline-notes.md: two operator estimates, CPU timings and explicit limits on generalization."
+      },
+      "checklist": {
+        "zh": [
+          "写清 FLOPs、bytes 与秒的单位",
+          "至少提出一个需要硬件 profiler 才能检验的假设"
+        ],
+        "en": [
+          "Label FLOPs, bytes and seconds",
+          "Identify at least one hypothesis requiring a hardware profiler"
+        ]
+      },
+      "noGpu": {
+        "zh": "用 CPU 与纸笔完成；理论带宽或峰值仅可引用设备规格，不作为实测值。",
+        "en": "Use CPU experiments and hand calculations. Hardware specification values must remain labeled as theoretical, not measured."
+      },
+      "reading": [
+        {
+          "title": "NVIDIA · CUDA best practices",
+          "url": "https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": {
+        "zh": "用模拟器理解排队与批处理",
+        "en": "Learn queuing and batching with a simulator"
+      },
+      "lesson": {
+        "zh": "低请求量时，批处理等待可能比节省的计算时间更明显；高请求量时，排队又可能成为尾延迟的主要来源。固定批处理等待整批完成，连续批处理允许完成的请求退出、其他请求加入，但具体调度依赖引擎实现。不要把并发数、到达速率和 batch size 当成一个参数：它们分别描述系统在途工作、外部流量与一次处理的工作集合。",
+        "en": "At low traffic, waiting to form a batch can dominate the time saved by batching. Under heavy traffic, queueing can dominate tail latency. Static batching waits for a batch, while continuous batching can replace finished requests with new work, subject to the engine's implementation. Concurrency, arrival rate and batch size are different quantities: in-flight work, incoming demand and the set processed together. Changing one does not automatically fix the others."
+      },
+      "task": {
+        "zh": "写一个离散事件模拟器，输入到达时间和服务时长，比较 FIFO 单请求与固定大小批处理。对均匀流量和突发流量各跑一组，记录等待时间分布，并列出模拟省略的调度细节。",
+        "en": "Write a discrete-event simulator using arrival times and service durations. Compare single-request FIFO with fixed-size batching under steady and bursty traffic. Record waiting-time distributions and list omitted scheduling details."
+      },
+      "evidence": {
+        "zh": "queue_sim.py、输入样例、等待时间图和模型假设。",
+        "en": "queue_sim.py, input fixtures, waiting-time plots and model assumptions."
+      },
+      "checklist": {
+        "zh": [
+          "所有请求都有明确状态，不丢失或重复完成",
+          "能解释吞吐改善与等待增加同时出现的案例"
+        ],
+        "en": [
+          "Every request has a state and is neither lost nor completed twice",
+          "Explain a case where throughput improves while waiting increases"
+        ]
+      },
+      "noGpu": {
+        "zh": "整个调度实验在 CPU 上运行；不要将模拟结果命名为 vLLM 或 SGLang 基准测试。",
+        "en": "Run the entire simulation on CPU. Do not label its output as a vLLM or SGLang benchmark."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Engine arguments",
+          "url": "https://docs.vllm.ai/en/latest/configuration/engine_args/"
+        },
+        {
+          "title": "vLLM · Architecture overview",
+          "url": "https://docs.vllm.ai/en/latest/design/arch_overview/"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": {
+        "zh": "缓存命中之前，先保证正确性",
+        "en": "Establish correctness before cache hits"
+      },
+      "lesson": {
+        "zh": "缓存复用要求缓存键与实际计算语义一致。文本相似不代表 token 前缀相同；模型版本、位置、适配器、模板或多模态输入变化也可能影响可复用性。命中率高不自动代表端到端延迟低，因为查找、传输和恢复状态也有成本。跨用户缓存还要遵守隔离要求；本课只用自建数据研究键设计，不接触其他用户内容。",
+        "en": "Cache reuse requires a key that matches the semantics of the computation. Similar text is not necessarily an identical token prefix, and model versions, positions, adapters, templates or multimodal inputs may affect reuse. A high hit rate does not guarantee low end-to-end latency because lookup and transfer also cost time. Cross-user caches require appropriate isolation. Use only self-created examples to study key design, never other users' content."
+      },
+      "task": {
+        "zh": "用 Python 字典实现教学缓存，缓存键包含你定义的模型版本、前缀 token 与命名空间。构造命中、单 token 改动、模型版本变化三类用例，记录命中与实际保存的工作。",
+        "en": "Build a teaching cache with a Python dictionary. Include model version, prefix tokens and a namespace in your key. Test exact reuse, a one-token change and a changed model version, recording hits and avoided work."
+      },
+      "evidence": {
+        "zh": "cache_model.py 与正确性测试；另写一段说明真实引擎为什么比该模型复杂。",
+        "en": "cache_model.py, correctness tests and a note explaining how real engine caches are more complex."
+      },
+      "checklist": {
+        "zh": [
+          "语义变化不会错误命中旧值",
+          "区分命中率、节省计算量与端到端收益"
+        ],
+        "en": [
+          "Semantic changes cannot incorrectly reuse old values",
+          "Distinguish hit rate, avoided computation and end-to-end benefit"
+        ]
+      },
+      "noGpu": {
+        "zh": "可在 CPU 上完成全部键设计与正确性测试；不声称实现了真实 KV tensor 缓存。",
+        "en": "Complete key design and tests on CPU. This is not a real KV tensor cache implementation."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Automatic prefix caching",
+          "url": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/"
+        },
+        {
+          "title": "Hugging Face · How caching works",
+          "url": "https://huggingface.co/docs/transformers/main/en/cache_explanation"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": {
+        "zh": "做一份能解释的资源预算",
+        "en": "Build an explainable resource budget"
+      },
+      "lesson": {
+        "zh": "模型权重能装入显存，不代表服务可以处理目标并发。运行时还需要 KV cache、临时张量、图捕获、通信缓冲与分配器余量。资源预算应分清固定占用和随请求增长的占用，并给出安全余量的理由。延长上下文、提高并发或改变精度都会影响预算；实际框架的内存参数不能直接当作应用可用显存。",
+        "en": "Fitting model weights into memory does not guarantee that a service can support the required concurrency. KV cache, temporary tensors, graph capture, communication buffers and allocator overhead also consume capacity. Separate fixed memory from request-dependent memory and explain your headroom. Longer contexts, greater concurrency and different precision change the budget. A framework memory setting is not the same as the memory available to your application."
+      },
+      "task": {
+        "zh": "为一个自选模型和三档上下文编写资源预算表，列出权重估算、KV 估算、未知开销与余量。给出两种内存不足时的降级选择，并说明延迟、质量或容量代价。",
+        "en": "Build a budget for one model and three context lengths, including weights, KV cache, unknown overhead and headroom. Propose two responses to insufficient memory and explain their latency, quality or capacity trade-offs."
+      },
+      "evidence": {
+        "zh": "capacity-plan.md 与可修改参数的预算脚本。",
+        "en": "capacity-plan.md and a parameterized budget script."
+      },
+      "checklist": {
+        "zh": [
+          "固定项、请求相关项与未知项分别列出",
+          "没有把估算容量写成经过实测的最大并发"
+        ],
+        "en": [
+          "Separate fixed, request-dependent and unknown costs",
+          "Do not present estimated capacity as a measured concurrency limit"
+        ]
+      },
+      "noGpu": {
+        "zh": "只做模型配置与资源计算即可；没有真实机器时将建议列为待验证，不要求购买 GPU。",
+        "en": "Use model configuration and calculations. Label recommendations as untested when no target machine is available; buying a GPU is not required."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Conserving memory",
+          "url": "https://docs.vllm.ai/en/latest/configuration/conserving_memory/"
+        },
+        {
+          "title": "Hugging Face · How caching works",
+          "url": "https://huggingface.co/docs/transformers/main/en/cache_explanation"
+        }
+      ]
+    },
+    {
+      "day": 8,
+      "title": {
+        "zh": "建立可复现的基准协议",
+        "en": "Create a reproducible benchmark protocol"
+      },
+      "lesson": {
+        "zh": "基准测试不是保存一个最快数字。模型 revision、框架版本、输入输出长度、采样配置、到达模式、预热方式和缓存初始状态都会影响结果。每次只改变少量变量，保存原始记录，并把失败和波动写进报告。重复运行能显示不确定性，但重复次数少时仍不能声称统计稳健；使用同一随机种子也不保证所有平台得到完全相同的结果。",
+        "en": "A benchmark is more than its fastest number. Model revision, framework version, input/output lengths, sampling settings, arrival pattern, warm-up and initial cache state can all change the result. Change few variables at a time and preserve raw data, failures and variation. Repeated runs expose uncertainty but a few repeats do not establish statistical robustness. A shared seed also does not guarantee identical output across platforms."
+      },
+      "task": {
+        "zh": "为后续 vLLM 或 SGLang 学习编写实验清单与结果目录约定。对第 5 天模拟器完成三次重复，记录环境、参数、原始数据与汇总，练习一键生成报告。",
+        "en": "Write an experiment manifest and results layout for later vLLM or SGLang work. Run three repetitions of your day-5 simulator and preserve environment, parameters, raw data and summaries. Automate report generation."
+      },
+      "evidence": {
+        "zh": "experiment.json、results/ 与 reproduce.md；目录中注明模拟实验。",
+        "en": "experiment.json, results/ and reproduce.md, explicitly labeled as simulation."
+      },
+      "checklist": {
+        "zh": [
+          "第三人能从固定输入重跑并理解结果差异",
+          "报告包含所有试验，而不只保留最快的一次"
+        ],
+        "en": [
+          "Another person can rerun fixed inputs and understand differences",
+          "Include all trials, not only the fastest one"
+        ]
+      },
+      "noGpu": {
+        "zh": "复现协议先在 CPU 模拟器上验证，之后原样迁移到真实引擎实验。",
+        "en": "Validate the protocol on the CPU simulator, then reuse it for a real engine experiment."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Benchmark suites",
+          "url": "https://docs.vllm.ai/en/latest/benchmarking/"
+        },
+        {
+          "title": "vLLM · Reproducibility",
+          "url": "https://docs.vllm.ai/en/latest/usage/reproducibility/"
+        }
+      ]
+    },
+    {
+      "day": 9,
+      "title": {
+        "zh": "从指标走到可解释的故障",
+        "en": "Turn telemetry into a diagnosis"
+      },
+      "lesson": {
+        "zh": "指标适合回答趋势和比例，日志说明具体事件，trace 把跨组件的一次请求连接起来。计数器、瞬时值和直方图不能混用；高维标签还会增加存储成本。排障时先建立可观察的因果链，例如到达量上升、队列增长、TTFT 变差，再寻找反例。相关性是线索，不能只凭两条同时上升的曲线认定根因。",
+        "en": "Metrics describe trends and ratios, logs capture events, and traces connect the stages of a request. Counters, gauges and histograms serve different purposes; excessive label cardinality has a cost. Build a testable causal chain, such as rising arrivals followed by a larger queue and worse TTFT, then look for counterexamples. Correlated curves suggest a hypothesis but do not prove a root cause."
+      },
+      "task": {
+        "zh": "给模拟器增加请求 ID、排队时间和服务时间日志。注入一段突发流量与一段变慢的服务时长，分别写诊断。为真实服务画出三个指标和一个 trace 的观测方案。",
+        "en": "Add request IDs, queue time and service time to your simulator logs. Inject a traffic burst and a slower-service interval, then diagnose each. Design three metrics and one trace for a real service."
+      },
+      "evidence": {
+        "zh": "observability.md、带注释的日志与两份故障分析。",
+        "en": "observability.md, annotated logs and two incident analyses."
+      },
+      "checklist": {
+        "zh": [
+          "两类故障能用证据区分，而不是都归因为 GPU 慢",
+          "不把用户原始提示词写入指标标签"
+        ],
+        "en": [
+          "Use evidence to distinguish the two faults instead of blaming a slow GPU",
+          "Never put raw user prompts in metric labels"
+        ]
+      },
+      "noGpu": {
+        "zh": "CPU 日志模拟足以完成诊断练习；真实 GPU 利用率与内核 trace 留待后续实测。",
+        "en": "CPU-generated logs are sufficient for this exercise. Real GPU utilization and kernel traces remain future measurements."
+      },
+      "reading": [
+        {
+          "title": "Prometheus · Metric types",
+          "url": "https://prometheus.io/docs/concepts/metric_types/"
+        },
+        {
+          "title": "OpenTelemetry · Traces",
+          "url": "https://opentelemetry.io/docs/concepts/signals/traces/"
+        }
+      ]
+    },
+    {
+      "day": 10,
+      "title": {
+        "zh": "交付第一份 AI Infra 工程作品",
+        "en": "Ship your first AI Infra portfolio"
+      },
+      "lesson": {
+        "zh": "工程作品的价值在于别人能理解问题、复现实验并知道结论适用的范围。一个诚实的小系统，比包含很多流行名词却无法运行的仓库更有说明力。把测量、模拟、推断和计划分开，写明自己完成了什么。完成本路线代表建立了基础方法与作品，不代表掌握所有推理框架，也不是任何就业或能力认证。",
+        "en": "A useful engineering portfolio lets someone understand the problem, reproduce the work and see where its conclusions apply. A small, honest system communicates more than a repository of fashionable terms that cannot run. Separate measurements, simulations, inferences and future plans, and identify your own contributions. Finishing this path builds foundations and a portfolio; it does not establish mastery of every framework or provide a hiring certification."
+      },
+      "task": {
+        "zh": "把系统图、预算器、调度模拟器、指标分析和故障复盘整理成一个仓库。从干净目录按 README 重跑一次，完成三分钟技术演示；根据兴趣选择 vLLM、Triton、PyTorch 或 Ray 下一条路线。",
+        "en": "Package the system map, budget calculator, simulator, analyzer and incident notes in one repository. Rerun from a clean directory using the README and prepare a three-minute walkthrough. Choose vLLM, Triton, PyTorch or Ray as your next path."
+      },
+      "evidence": {
+        "zh": "完整作品仓库、复现日志、三分钟讲解提纲与下一步计划。",
+        "en": "A complete portfolio repository, reproduction log, three-minute walkthrough outline and next-step plan."
+      },
+      "checklist": {
+        "zh": [
+          "README 说明问题、运行方法、结果、局限和本人贡献",
+          "全部性能图清楚区分模拟数据与真实测量",
+          "列出至少两个尚未掌握的内容和验证计划"
+        ],
+        "en": [
+          "README states the problem, instructions, results, limits and your contribution",
+          "All performance plots distinguish synthetic data from measurements",
+          "List at least two remaining learning gaps and how to investigate them"
+        ]
+      },
+      "noGpu": {
+        "zh": "整个结课项目可使用 CPU；可选择只公开你愿意分享的内容，不必公开求职意向。",
+        "en": "The entire capstone can run on CPU. Publish only what you choose to share; a public job-seeking status is not required."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Reproducibility",
+          "url": "https://docs.vllm.ai/en/latest/usage/reproducibility/"
+        },
+        {
+          "title": "vLLM · Benchmark suites",
+          "url": "https://docs.vllm.ai/en/latest/benchmarking/"
+        }
+      ]
+    }
+  ]
+}

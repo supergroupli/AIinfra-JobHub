@@ -12,24 +12,26 @@ The resume link opens your email client. Emails are received by the mailbox oper
 and are not automatically published to GitHub. Public portfolio submissions are a separate opt-in.
 简历通过邮件客户端发送，由该邮箱运营方接收处理，不会自动发布到 GitHub；公开作品名片由本人另行选择提交。
 
-A community starter for people building AI infrastructure: guided learning paths,
+A community learning library for people building AI infrastructure: ten-day study guides,
 voluntary public portfolios and curated work opportunities. Independent, open and
 free to participate. It is not affiliated with vLLM, SGLang or LMCache.
 
-面向全球 AI Infra 开发者的公益社区启动版本：学习路线、作品名片、公开机会与社区讨论。
+面向全球 AI Infra 开发者的公益社区：10 天学习手册、作品名片、公开机会与社区讨论。
 不是完整的招聘系统或完整课程平台；当前没有真实职位、成员或招聘合作方。
 
 ## What is included / 已实现
 
 - Responsive Chinese/English website with learning, opportunities, builders and community sections.
-- Four starter learning paths: inference foundations, vLLM, SGLang and LMCache; 12 tasks with concrete deliverables and official source links.
-- Self-reported learning progress saved in the current browser, plus a bilingual portfolio template.
+- Eleven ten-day guides: foundations, vLLM, SGLang, LMCache, Mooncake, NVIDIA Dynamo, Triton, PyTorch Distributed, Ray, Kubernetes and NCCL.
+- 110 bilingual days with concept explanations, practice, deliverables, acceptance checks, official reading and alternatives for learners without the required hardware.
+- Three career-oriented paths, searchable/filterable catalog, shareable course URLs and downloadable Chinese/English handbooks.
+- Self-reported progress, daily notes and evidence links saved in the current browser, with learning-record export and a bilingual portfolio template.
 - Keyword, technology and work-arrangement filters over reviewed public records; skill overlap is not an ability or hiring score.
 - Public GitHub issue forms for opportunities and voluntary portfolios.
 - Resume submission links to `career@yzinfra.com` in the navigation and opportunities section.
 - Dependency-free static build, publication-rule tests and GitHub Pages Actions workflow.
 
-已实现中英切换、响应式页面、12 个学习任务、本地进度、作品模板、公开目录筛选、提交表单与部署工作流。
+已实现 11 门 × 10 天的双语学习手册、三条职业路径、课程筛选、独立阅读器、本地进度与笔记、文档与记录导出，以及公开机会和作品名片。
 没有私密简历库、站内私聊、后台登录、AI 自动招聘决策或在线 GPU；学习进度不同步到云端。
 Issue 收录采用人工审核后编辑 JSON、合入 PR 的流程，不会自动从 Issue 同步。
 
@@ -51,7 +53,8 @@ API key, database or extra domain is required. Check the repository's Actions ta
 
 ## Local preview / 本地预览
 
-Python 3.9 or newer is enough; no dependencies to install.
+Python 3.9 or newer is enough to build and preview; no Python dependencies to install.
+For the browser-state regression tests, run `node --test tests/frontend.test.cjs` with Node.js. CI runs both suites.
 
 ```sh
 python3 -m unittest discover -s tests -v
@@ -68,14 +71,17 @@ Do not open `index.html` directly as a `file://` URL: the page fetches `data.jso
 | Path | Purpose |
 | --- | --- |
 | `web/` | Static HTML, CSS, JavaScript and portfolio template |
-| `content/tracks.json` | Bilingual paths, tasks and primary-source links |
+| `content/courses/*.json` | Ten-day bilingual courses with primary-source reading |
+| `content/paths.json` | Three career-oriented course sequences |
 | `content/jobs.json` | Reviewed opportunity records; starts empty |
 | `content/people.json` | Voluntary public portfolios; starts empty |
-| `scripts/build.py` | Validation and static build to ignored `dist/` |
+| `scripts/build.py`, `scripts/learning.py` | Validation; course HTML, Markdown and sitemap generation to ignored `dist/` |
 | `.github/ISSUE_TEMPLATE/` | Public submission forms |
 | `.github/workflows/pages.yml` | PR checks and deployment from `main` |
 
-Read [PRODUCT.md](docs/PRODUCT.md) for product scope and [MAINTAINING.md](docs/MAINTAINING.md)
+Read [DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md) for the development roadmap,
+[RESEARCH.md](docs/RESEARCH.md) for technology selection, [BRAND.md](docs/BRAND.md) for the original SVG logo,
+[PRODUCT.md](docs/PRODUCT.md) for product scope and [MAINTAINING.md](docs/MAINTAINING.md)
 for schemas, review, expiry and removal. Contributions follow [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Hosting boundary / 托管边界

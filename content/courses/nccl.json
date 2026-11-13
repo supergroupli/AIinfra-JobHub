@@ -1,0 +1,505 @@
+{
+  "id": "nccl",
+  "number": "11",
+  "category": "communication",
+  "title": {
+    "zh": "NCCL 集合通信",
+    "en": "NCCL Collectives"
+  },
+  "subtitle": {
+    "zh": "把“多卡很慢”拆成可测量的问题",
+    "en": "Turn slow multi-GPU work into measurable questions"
+  },
+  "description": {
+    "zh": "理解集合通信语义、GPU 拓扑、带宽测量与故障定位，把一次通信基准转化为可信的性能分析。",
+    "en": "Understand collectives, GPU topology, bandwidth measurements and diagnostics. Turn a communication benchmark into credible performance analysis."
+  },
+  "level": "advanced",
+  "hoursPerDay": {
+    "zh": "每天 90–180 分钟",
+    "en": "90–180 minutes per day"
+  },
+  "prerequisites": {
+    "zh": "Python/C++ 基础、张量计算与多进程；建议已完成 PyTorch 分布式路线。",
+    "en": "Python/C++, tensor operations and multiprocessing; complete PyTorch distributed first if possible."
+  },
+  "hardware": {
+    "zh": "真实 NCCL 测量需兼容 NVIDIA GPU；多卡与多节点结论分别需要对应硬件。CPU 可完成语义模拟与分析练习。",
+    "en": "Actual NCCL measurements need compatible NVIDIA GPUs. Multi-GPU and multi-node claims require matching hardware; CPU-only semantic simulations remain useful."
+  },
+  "hardwareTier": "multi-gpu",
+  "tags": [
+    "NCCL",
+    "Distributed Systems",
+    "CUDA"
+  ],
+  "roles": {
+    "zh": [
+      "分布式训练工程师",
+      "GPU 性能工程师",
+      "AI 集群工程师"
+    ],
+    "en": [
+      "Distributed training engineer",
+      "GPU performance engineer",
+      "AI cluster engineer"
+    ]
+  },
+  "outcome": {
+    "zh": "一份包含拓扑、消息大小扫描、指标解释与故障诊断的集合通信实验报告。",
+    "en": "A collective-communication report with topology, message-size sweeps, metric interpretation and diagnostics."
+  },
+  "lastVerified": "2026-11-13",
+  "resources": [
+    {
+      "title": "NVIDIA · NCCL User Guide",
+      "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/index.html"
+    },
+    {
+      "title": "NVIDIA · nccl-tests",
+      "url": "https://github.com/NVIDIA/nccl-tests"
+    },
+    {
+      "title": "nccl-tests · Performance metrics",
+      "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
+    },
+    {
+      "title": "NCCL · Troubleshooting",
+      "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html"
+    }
+  ],
+  "steps": [
+    {
+      "day": 1,
+      "title": {
+        "zh": "先学会集合通信的语义",
+        "en": "Understand collective semantics first"
+      },
+      "lesson": {
+        "zh": "AllReduce、AllGather 与 ReduceScatter 解决的是不同的数据分布问题。正确性取决于每个 rank 的输入、参与顺序、数据类型与期望输出，而不是只看最后有没有返回。NCCL 是 GPU 通信库，不能把 CPU 上的列表操作称为 NCCL 性能测试；但用小数据模拟能在接触硬件前暴露语义误解。",
+        "en": "AllReduce, AllGather and ReduceScatter solve different data-distribution problems. Correctness depends on each rank’s input, call order, data type and expected output, not merely a successful return. NCCL is a GPU communication library. CPU list operations are not an NCCL performance test, but small semantic simulations reveal misunderstandings before hardware enters the picture."
+      },
+      "task": {
+        "zh": "用四个 rank 的小整数数组，手工推演 sum AllReduce、AllGather、ReduceScatter 的输出。再写 CPU 参考函数，与手工结果对照。",
+        "en": "Work through sum AllReduce, AllGather and ReduceScatter for four small integer arrays. Write CPU reference functions and compare their outputs with your manual results."
+      },
+      "evidence": {
+        "zh": "通信语义表与可运行的 CPU 参考实现。",
+        "en": "A collective-semantics table and runnable CPU reference implementation."
+      },
+      "checklist": {
+        "zh": [
+          "每个操作都写清各 rank 的最终数据",
+          "明确参考函数只验证语义，不测 GPU 性能"
+        ],
+        "en": [
+          "Specify final data on every rank for every operation",
+          "Label the reference as semantic validation, not a GPU benchmark"
+        ]
+      },
+      "noGpu": {
+        "zh": "本日完整在 CPU 完成；至少构造一个不等长输入反例并解释接口约束。",
+        "en": "Complete this day on CPU, including an unequal-input counterexample and an explanation of interface constraints."
+      },
+      "reading": [
+        {
+          "title": "NCCL · Collective Operations",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": {
+        "zh": "rank、设备与通信域",
+        "en": "Map ranks, devices and communicators"
+      },
+      "lesson": {
+        "zh": "rank 是通信域中的逻辑编号，不自动等同于节点编号或物理 GPU 编号。应用必须明确每个进程使用哪张设备、哪些进程属于同一通信域，以及如何建立连接。错误的映射可能造成重复使用设备或等待不存在的参与者。环境记录应把进程、节点、设备和软件版本同时呈现。",
+        "en": "A rank is a logical index within a communicator, not automatically a node number or physical GPU number. Applications must map processes to devices, define communicator membership and establish connections. Incorrect mapping can reuse a device unintentionally or wait for an absent participant. Document processes, nodes, devices and software versions together."
+      },
+      "task": {
+        "zh": "为单机四卡与双机四卡两种环境各画一张 rank 映射图。检查自己的真实环境，记录驱动、CUDA、NCCL、设备和启动器版本。",
+        "en": "Draw rank maps for a four-GPU single node and four GPUs across two nodes. Inventory your real driver, CUDA, NCCL, devices and launcher versions."
+      },
+      "evidence": {
+        "zh": "rank 映射图、兼容关系记录和可用硬件清单。",
+        "en": "Rank maps, compatibility notes and a hardware inventory."
+      },
+      "checklist": {
+        "zh": [
+          "区分 global rank、local rank 与设备索引",
+          "记录缺少的硬件，不补造拓扑"
+        ],
+        "en": [
+          "Distinguish global rank, local rank and device index",
+          "Document missing hardware without inventing topology"
+        ]
+      },
+      "noGpu": {
+        "zh": "用标为假设的环境完成映射设计，并填写真实 CPU 环境记录。",
+        "en": "Design maps for clearly labeled hypothetical setups and record your actual CPU environment."
+      },
+      "reading": [
+        {
+          "title": "NVIDIA · NCCL User Guide",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/index.html"
+        },
+        {
+          "title": "NCCL · Installation Guide",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/install-guide/index.html"
+        },
+        {
+          "title": "PyTorch · Distributed communication",
+          "url": "https://docs.pytorch.org/docs/stable/distributed.html"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": {
+        "zh": "读懂 GPU 拓扑与传输路径",
+        "en": "Read GPU topology and transport paths"
+      },
+      "lesson": {
+        "zh": "同样的 GPU 数量可以对应不同的连接结构。PCIe、NVLink 和跨节点网络影响数据经过的路径，但单张拓扑图不能直接预测所有负载的吞吐。NUMA 位置、GPU 与网卡亲和性也可能影响观察。先把可达性和路径结构画清楚，再提出需要测量的假设。",
+        "en": "The same GPU count can hide very different connectivity. PCIe, NVLink and inter-node networking shape transport paths, but one topology diagram cannot predict every workload’s throughput. NUMA placement and GPU–NIC affinity may matter as well. Establish reachability and structure first, then formulate hypotheses that measurement can test."
+      },
+      "task": {
+        "zh": "有 GPU 时保存 nvidia-smi topo -m 输出，标注两对 GPU 的路径；画一张可能的跨节点路径。区分观测事实与带宽推测。",
+        "en": "With GPUs, save nvidia-smi topo -m and annotate two GPU-pair paths. Draw a possible inter-node route and separate observed facts from bandwidth hypotheses."
+      },
+      "evidence": {
+        "zh": "拓扑图、原始命令输出与两项可检验假设。",
+        "en": "A topology diagram, raw command output and two testable hypotheses."
+      },
+      "checklist": {
+        "zh": [
+          "每个带宽数字都有来源或明确是待测量值",
+          "不通过关闭主机隔离来完成本课程"
+        ],
+        "en": [
+          "Source every bandwidth number or mark it as unmeasured",
+          "Do not disable host isolation to complete this course"
+        ]
+      },
+      "noGpu": {
+        "zh": "使用官方拓扑示意做标注练习，标题明确“文档示例分析”。",
+        "en": "Annotate an official example topology and label it as documentation analysis."
+      },
+      "reading": [
+        {
+          "title": "NCCL · Troubleshooting",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": {
+        "zh": "运行一次可信的基线",
+        "en": "Run a credible baseline"
+      },
+      "lesson": {
+        "zh": "nccl-tests 同时帮助观察通信性能与结果正确性。基线需要固定软件版本、参与 GPU、消息范围和运行方式，保留原始输出。一次成功运行只是起点；预热、重复次数、后台负载和异常返回都影响解释。先建立可复现命令，再寻找更快的参数。",
+        "en": "nccl-tests helps evaluate performance and result correctness. A baseline fixes software versions, participating GPUs, message ranges and launch mode, retaining raw output. One successful run is only a starting point: warm-up, repetitions, background load and errors affect interpretation. Establish a reproducible invocation before looking for faster settings."
+      },
+      "task": {
+        "zh": "按官方 README 编译匹配环境的 nccl-tests。有两张适配 GPU 时运行小规模 AllReduce 基线，重复三次，保存完整日志与命令；硬件不足时提交执行计划。",
+        "en": "Build nccl-tests using its README for your environment. With two compatible GPUs, run a small AllReduce baseline three times and retain commands and full logs. Otherwise submit an execution plan."
+      },
+      "evidence": {
+        "zh": "基线配置、三次原始日志或明确标注的待执行计划。",
+        "en": "Baseline configuration and three raw logs, or a clearly labeled unexecuted plan."
+      },
+      "checklist": {
+        "zh": [
+          "检查正确性字段和进程退出状态",
+          "环境、设备数、消息范围和重复次数可复现"
+        ],
+        "en": [
+          "Check correctness fields and process exit status",
+          "Record reproducible environment, device count, message range and repetitions"
+        ]
+      },
+      "noGpu": {
+        "zh": "阅读测试参数并制作日志记录模板，不生成伪测试输出。",
+        "en": "Study the test arguments and prepare a log template without fabricating output."
+      },
+      "reading": [
+        {
+          "title": "NVIDIA · nccl-tests",
+          "url": "https://github.com/NVIDIA/nccl-tests"
+        }
+      ],
+      "code": {
+        "language": "bash",
+        "content": "# After building nccl-tests for a compatible two-GPU environment:\n./build/all_reduce_perf -b 8 -e 128M -f 2 -g 2",
+        "caption": {
+          "zh": "两张 GPU 的示例命令；编译方式与环境变量按所用版本的 README 配置。",
+          "en": "Example for two GPUs; configure compilation and environment for your chosen release."
+        }
+      }
+    },
+    {
+      "day": 5,
+      "title": {
+        "zh": "区分算法带宽与总线带宽",
+        "en": "Interpret algorithm and bus bandwidth"
+      },
+      "lesson": {
+        "zh": "带宽指标只有在公式和单位明确时才有意义。alg bandwidth 由操作大小与耗时得到，而 bus bandwidth 使用操作相关的换算来估计链路工作量；它不等于某一根线缆的直接测速。比较不同 rank 数量时，必须同时说明操作类型和换算方式，否则看似相同的数字可能代表不同的传输量。",
+        "en": "Bandwidth is meaningful only with explicit formulas and units. Algorithm bandwidth relates operation size to elapsed time; bus bandwidth applies a collective-specific conversion to estimate communication work. It is not a direct measurement of one physical cable. Comparisons across rank counts must include the operation and conversion, since equal-looking numbers can represent different transfer work."
+      },
+      "task": {
+        "zh": "依据 nccl-tests 性能说明，选一行实际日志复算 algbw 与 busbw，解释参与数量的影响。无日志时用明确标注的教学数值演算，禁止称为实测。",
+        "en": "Use the nccl-tests performance guide to recompute algbw and busbw from one real log row and explain the participant-count effect. Without a log, label every illustrative number as a worked example."
+      },
+      "evidence": {
+        "zh": "带单位的复算笔记与一张指标含义对照表。",
+        "en": "A calculation note with units and a metric interpretation table."
+      },
+      "checklist": {
+        "zh": [
+          "公式与对应 collective 一致",
+          "示例值和实测值明确区分"
+        ],
+        "en": [
+          "Use the conversion for the correct collective",
+          "Distinguish illustrative values from measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "完成手算与单位检查即可；教学数值不得进入性能宣传。",
+        "en": "Complete a worked example and unit checks; do not present illustrative values as performance claims."
+      },
+      "reading": [
+        {
+          "title": "nccl-tests · Performance metrics",
+          "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": {
+        "zh": "扫描消息大小，识别不同区间",
+        "en": "Sweep message sizes and identify regimes"
+      },
+      "lesson": {
+        "zh": "小消息可能更受固定启动开销影响，大消息则更容易暴露带宽与资源竞争；这只是待验证的工作假设。对数间隔扫描能显示曲线的区间变化，但必须同时保留耗时、正确性与运行波动。不要只摘取最高带宽点作为整套系统能力的代表。",
+        "en": "Small messages may be dominated by fixed launch overhead, while larger ones can expose bandwidth and contention; treat that as a hypothesis to verify. Log-spaced sweeps reveal changes across regimes, but retain latency, correctness and variability alongside throughput. The highest bandwidth point is not a representative summary of the entire system."
+      },
+      "task": {
+        "zh": "固定 GPU 数与测试程序，用倍增消息大小进行扫描；绘制消息大小—延迟和消息大小—带宽两张图，并标注三次运行的范围。",
+        "en": "Hold GPU count and test program fixed and sweep doubling message sizes. Plot size versus latency and size versus bandwidth, with the range across three runs."
+      },
+      "evidence": {
+        "zh": "两张图、原始数据与小/大消息区间解释。",
+        "en": "Two plots, raw data and an explanation of small- and large-message regimes."
+      },
+      "checklist": {
+        "zh": [
+          "坐标轴、单位与重复次数齐全",
+          "失败样本没有被静默删除"
+        ],
+        "en": [
+          "Include axes, units and repetition counts",
+          "Do not silently remove failures"
+        ]
+      },
+      "noGpu": {
+        "zh": "为公开示例日志写解析与绘图脚本，注明数据出处与非本人实测。",
+        "en": "Write a parser and plotting script for cited public sample logs; state that you did not measure them."
+      },
+      "reading": [
+        {
+          "title": "NVIDIA · nccl-tests",
+          "url": "https://github.com/NVIDIA/nccl-tests"
+        },
+        {
+          "title": "nccl-tests · Performance metrics",
+          "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": {
+        "zh": "通信与计算的时间关系",
+        "en": "Understand communication–compute ordering"
+      },
+      "lesson": {
+        "zh": "把操作提交到 CUDA stream 并不意味着它已经完成。通信与计算能否重叠，取决于依赖、提交顺序以及资源竞争；更多 stream 不保证更快。group calls 可以组织多个通信调用，也需要理解当前版本的语义。先画出依赖图，再用时间线验证“重叠”是否真的减少端到端耗时。",
+        "en": "Submitting work to a CUDA stream does not mean it has completed. Communication–compute overlap depends on dependencies, submission order and resource contention; more streams do not guarantee better performance. Group calls organize communication operations but have semantics that must match your version. Draw dependencies first, then use a timeline to test whether overlap reduces end-to-end time."
+      },
+      "task": {
+        "zh": "阅读 stream 与 group 调用说明，画出一段训练迭代的计算/同步依赖图。若有工具与硬件，比较串行与允许重叠的最小实验；保留正确性对照。",
+        "en": "Read stream and group-call guidance and draw compute/synchronization dependencies for a training iteration. With appropriate hardware and tools, compare a serialized and overlap-enabled minimal experiment, preserving correctness checks."
+      },
+      "evidence": {
+        "zh": "依赖图、实验假设和可选的时间线记录。",
+        "en": "A dependency graph, experimental hypothesis and optional timeline evidence."
+      },
+      "checklist": {
+        "zh": [
+          "解释数据何时可被后续计算安全读取",
+          "端到端时间与局部事件时间分开报告"
+        ],
+        "en": [
+          "Explain when dependent computation may safely read results",
+          "Report end-to-end timing separately from local event timing"
+        ]
+      },
+      "noGpu": {
+        "zh": "用时间线纸面推演依赖与可重叠区间，不把示意时间当实测。",
+        "en": "Analyze dependencies and overlap windows on paper without presenting illustrative timing as measured."
+      },
+      "reading": [
+        {
+          "title": "NCCL · CUDA Stream Semantics",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/streams.html"
+        },
+        {
+          "title": "NCCL · Group Calls",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/groups.html"
+        }
+      ]
+    },
+    {
+      "day": 8,
+      "title": {
+        "zh": "把通信问题放回训练与推理",
+        "en": "Connect collectives to model workloads"
+      },
+      "lesson": {
+        "zh": "数据并行的梯度同步、张量并行的层内通信和缓存数据传输不一定使用相同模式。微基准能帮助定位通信上限，却不能代替真实模型的端到端评估。框架可能选择不同后端或把多个张量分桶；因此应从调用语义与数据量建立解释，而不是只给系统贴“网络慢”的标签。",
+        "en": "Gradient synchronization in data parallelism, layer communication in tensor parallelism and cache transfers need not use the same pattern. Microbenchmarks help characterize communication limits but do not replace model-level evaluation. Frameworks may choose backends or bucket tensors differently. Explain semantics and data volume rather than labeling every slowdown as a network problem."
+      },
+      "task": {
+        "zh": "从自己的 PyTorch 分布式或推理阅读记录中选一个场景，画出 collective/point-to-point 调用与张量大小，解释怎样把微基准结果用于提出下一次实验。",
+        "en": "Choose a PyTorch distributed or inference scenario and map collectives or point-to-point operations to tensor sizes. Explain how a microbenchmark informs the next experiment."
+      },
+      "evidence": {
+        "zh": "工作负载—通信模式映射与端到端验证计划。",
+        "en": "A workload-to-communication map and end-to-end validation plan."
+      },
+      "checklist": {
+        "zh": [
+          "指出一个微基准无法回答的问题",
+          "不把 NCCL 与 KV cache 存储系统混为一谈"
+        ],
+        "en": [
+          "Name a question the microbenchmark cannot answer",
+          "Distinguish NCCL from a KV-cache storage system"
+        ]
+      },
+      "noGpu": {
+        "zh": "用小张量 CPU 模拟验证数据流，明确与实际 NCCL 路径的区别。",
+        "en": "Validate data flow with small CPU tensor simulations and explain how they differ from NCCL."
+      },
+      "reading": [
+        {
+          "title": "PyTorch · Distributed communication",
+          "url": "https://docs.pytorch.org/docs/stable/distributed.html"
+        },
+        {
+          "title": "NCCL · Point-to-point Communication",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/p2p.html"
+        }
+      ]
+    },
+    {
+      "day": 9,
+      "title": {
+        "zh": "用最少变量排查一次问题",
+        "en": "Diagnose a problem with controlled changes"
+      },
+      "lesson": {
+        "zh": "排障应先确认参与进程、版本、设备与连通性，再考虑调优参数。NCCL 的日志与诊断机制可以帮助缩小范围，但大量同时设置环境变量会掩盖根因，且变量语义可能随版本变化。每次只改变一个已解释的设置，保存前后证据，并把测试限制在获准使用的实验环境。",
+        "en": "Start diagnosis with participants, versions, devices and connectivity before tuning. NCCL logs and diagnostics can narrow the problem, but many simultaneous environment-variable changes obscure causes, and semantics may change by release. Change one understood setting at a time, preserve before/after evidence and keep experiments within your authorized lab environment."
+      },
+      "task": {
+        "zh": "从官方排障入口选一个与实际环境有关的故障类别，写排查决策树。有实验条件时复现一种可恢复错误；没有时分析公开错误示例。",
+        "en": "Choose a relevant category from the official troubleshooting guide and write a diagnostic decision tree. Reproduce one recoverable lab error if possible, or analyze a public error example."
+      },
+      "evidence": {
+        "zh": "排查树与包含环境、现象、证据、结论的诊断报告。",
+        "en": "A decision tree and diagnostic report covering environment, symptoms, evidence and conclusion."
+      },
+      "checklist": {
+        "zh": [
+          "每项环境变量变更说明目的与适用版本",
+          "恢复设置后能回到原始基线"
+        ],
+        "en": [
+          "Explain the purpose and release applicability of each variable change",
+          "Restore the original baseline after the experiment"
+        ]
+      },
+      "noGpu": {
+        "zh": "写文档案例分析并注明未在真实集群复现，不索取或编造内部日志。",
+        "en": "Analyze a documented case and mark it as not reproduced on a real cluster."
+      },
+      "reading": [
+        {
+          "title": "NCCL · Troubleshooting",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html"
+        },
+        {
+          "title": "NCCL · Environment Variables",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html"
+        }
+      ]
+    },
+    {
+      "day": 10,
+      "title": {
+        "zh": "完成一份可信的通信性能报告",
+        "en": "Publish a credible communication report"
+      },
+      "lesson": {
+        "zh": "性能报告的价值来自可复算与可质疑。结论应限定在已记录的拓扑、设备数量、软件版本、消息区间和负载条件下。给出原始数据、计算公式和重复运行范围，让别人能够验证你的解释。没有多卡设备也可以提交完整的语义实现与实验设计，但它和硬件性能报告是不同的成果类型。",
+        "en": "A performance report is valuable when its calculations and conclusions can be questioned and reproduced. Limit claims to the recorded topology, device count, software versions, message range and workload. Include raw data, formulas and repeated-run ranges. Without multiple GPUs, a semantic implementation and experiment design are valid deliverables, but they are different from hardware measurements."
+      },
+      "task": {
+        "zh": "整理十天成果，写一页摘要：场景、方法、观察、局限与下一步。附可运行的分析脚本，邀请同伴复算一行结果或检查一项语义测试。",
+        "en": "Assemble the ten-day work into a one-page summary of scenario, methods, observations, limits and next steps. Include analysis scripts and invite a peer to recompute one result or check one semantic test."
+      },
+      "evidence": {
+        "zh": "可复现通信实验报告，或明确标注的无 GPU 分析与设计作品。",
+        "en": "A reproducible communication report, or a clearly labeled CPU-only analysis and design portfolio."
+      },
+      "checklist": {
+        "zh": [
+          "结论没有超出实际测量条件",
+          "原始数据、公式与图表可以互相对应",
+          "至少有一项失败或未解决问题被记录"
+        ],
+        "en": [
+          "Keep conclusions within measured conditions",
+          "Link raw data, formulas and plots consistently",
+          "Record at least one failure or unresolved question"
+        ]
+      },
+      "noGpu": {
+        "zh": "交付 CPU 语义测试、指标复算工具、拓扑分析与待执行硬件计划。",
+        "en": "Deliver CPU semantic tests, metric-calculation tools, topology analysis and an unexecuted hardware plan."
+      },
+      "reading": [
+        {
+          "title": "NVIDIA · nccl-tests",
+          "url": "https://github.com/NVIDIA/nccl-tests"
+        },
+        {
+          "title": "nccl-tests · Performance metrics",
+          "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
+        },
+        {
+          "title": "NCCL · Troubleshooting",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "id": "inference-engineer",
+    "number": "01",
+    "title": {"zh": "推理与服务工程师", "en": "Inference & serving engineer"},
+    "description": {"zh": "从服务基线到缓存复用，再到多节点推理。先理解工作负载，再解释优化收益。", "en": "Start with a serving baseline, explore cache reuse, then coordinate multi-node inference. Understand workloads before optimizing."},
+    "courses": ["foundations", "vllm", "sglang", "lmcache", "mooncake", "dynamo"]
+  },
+  {
+    "id": "performance-engineer",
+    "number": "02",
+    "title": {"zh": "GPU 与分布式性能工程师", "en": "GPU & distributed performance engineer"},
+    "description": {"zh": "从张量与内存到 GPU 内核、训练分片和集合通信，用可复现测量解释瓶颈。", "en": "Connect tensors and memory to GPU kernels, sharded training and collectives. Explain bottlenecks through reproducible measurements."},
+    "courses": ["foundations", "triton", "pytorch-distributed", "nccl"]
+  },
+  {
+    "id": "platform-engineer",
+    "number": "03",
+    "title": {"zh": "AI 平台工程师", "en": "AI platform engineer"},
+    "description": {"zh": "从任务与服务编排，到 GPU 工作负载和推理控制面，交付一套可评审的运维方案。", "en": "Move from task orchestration to GPU workloads and inference control planes. Deliver an operable, reviewable platform design."},
+    "courses": ["foundations", "ray", "kubernetes", "dynamo"]
+  }
+]

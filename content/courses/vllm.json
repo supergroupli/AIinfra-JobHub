@@ -1,0 +1,545 @@
+{
+  "id": "vllm",
+  "number": "02",
+  "category": "inference",
+  "title": {
+    "zh": "vLLM 推理工程",
+    "en": "vLLM inference engineering"
+  },
+  "subtitle": {
+    "zh": "10 天从首个请求走到可复现的性能优化",
+    "en": "From a first request to a reproducible optimization in 10 days"
+  },
+  "description": {
+    "zh": "搭建一个版本固定的小型 vLLM 服务，理解调度、KV cache、基准测试、量化与扩展方式。用一份受控实验完成结课；目标是具备入门工程能力，不承诺 10 天掌握所有生产运维细节。",
+    "en": "Build a small, version-pinned vLLM service and study scheduling, KV cache, benchmarking, quantization and scaling. Finish with a controlled experiment. The goal is practical foundations, not mastery of every production concern in ten days."
+  },
+  "level": "intermediate",
+  "hoursPerDay": {
+    "zh": "每天 120–150 分钟，共约 20–25 小时",
+    "en": "120–150 minutes a day; about 20–25 hours total"
+  },
+  "prerequisites": {
+    "zh": "完成系统基础路线或理解 TTFT、吞吐量、KV cache；能使用 Python、HTTP、终端与独立环境。",
+    "en": "Complete the foundations path or understand TTFT, throughput and KV cache. Be comfortable with Python, HTTP, a terminal and isolated environments."
+  },
+  "hardware": {
+    "zh": "实测建议一块所选 vLLM 版本支持、能容纳小模型与缓存的 GPU。第 8 天多卡为选做；无 GPU 可完成配置评审、源码阅读和数据分析，但要标注未运行的实验。",
+    "en": "Measurements need a supported GPU with room for a small model and cache. Multi-GPU work on day 8 is optional. Without a GPU, complete configuration reviews, source reading and analysis while labeling experiments that were not run."
+  },
+  "hardwareTier": "gpu-required",
+  "tags": [
+    "vLLM",
+    "Serving",
+    "KV Cache"
+  ],
+  "roles": {
+    "zh": [
+      "推理引擎工程师",
+      "LLM Serving 工程师",
+      "AI 性能工程师"
+    ],
+    "en": [
+      "Inference engine engineer",
+      "LLM serving engineer",
+      "AI performance engineer"
+    ]
+  },
+  "outcome": {
+    "zh": "一个可启动的推理服务、受控基准脚本、优化前后证据和运行手册；无 GPU 路径交付明确标注的设计与分析作品。",
+    "en": "A reproducible inference service, controlled benchmark, before/after evidence and runbook; the no-GPU path produces an explicitly labeled design and analysis portfolio."
+  },
+  "lastVerified": "2026-11-13",
+  "resources": [
+    {
+      "title": "vLLM · Quickstart",
+      "url": "https://docs.vllm.ai/en/latest/getting_started/quickstart/"
+    },
+    {
+      "title": "vLLM · Architecture overview",
+      "url": "https://docs.vllm.ai/en/latest/design/arch_overview/"
+    },
+    {
+      "title": "vLLM · OpenAI-compatible server",
+      "url": "https://docs.vllm.ai/en/latest/serving/online_serving/openai_compatible_server/"
+    },
+    {
+      "title": "vLLM · Engine arguments",
+      "url": "https://docs.vllm.ai/en/latest/configuration/engine_args/"
+    },
+    {
+      "title": "vLLM · Benchmark CLI",
+      "url": "https://docs.vllm.ai/en/latest/benchmarking/cli/"
+    },
+    {
+      "title": "vLLM · Automatic prefix caching",
+      "url": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/"
+    },
+    {
+      "title": "vLLM · Conserving memory",
+      "url": "https://docs.vllm.ai/en/latest/configuration/conserving_memory/"
+    },
+    {
+      "title": "vLLM · Quantization",
+      "url": "https://docs.vllm.ai/en/latest/features/quantization/"
+    },
+    {
+      "title": "vLLM · Parallelism and scaling",
+      "url": "https://docs.vllm.ai/en/latest/serving/parallelism_scaling/"
+    },
+    {
+      "title": "vLLM · Production metrics",
+      "url": "https://docs.vllm.ai/en/latest/usage/metrics/"
+    },
+    {
+      "title": "vLLM · Reproducibility",
+      "url": "https://docs.vllm.ai/en/latest/usage/reproducibility/"
+    },
+    {
+      "title": "vLLM · Troubleshooting",
+      "url": "https://docs.vllm.ai/en/latest/usage/troubleshooting/"
+    }
+  ],
+  "steps": [
+    {
+      "day": 1,
+      "title": {
+        "zh": "锁定环境与最小可运行模型",
+        "en": "Pin the environment and a minimal model"
+      },
+      "lesson": {
+        "zh": "vLLM 是推理引擎与服务系统，模型权重只是其中一个输入。驱动、加速器、PyTorch、框架版本和模型结构共同决定能否运行；官方 latest 文档不必然匹配你安装的 release。先选择一个适合设备的小模型并固定 revision，再记录环境。把安装问题与模型容量问题分开排查，比不断尝试未记录的命令更容易复现。",
+        "en": "vLLM is an inference engine and serving system; model weights are only one input. Drivers, accelerators, PyTorch, framework versions and model architecture jointly determine compatibility. The latest documentation may not match an installed release. Select a small model that fits your device, pin its revision and record the environment. Separating installation failures from capacity problems makes debugging more reproducible than trying undocumented commands repeatedly."
+      },
+      "task": {
+        "zh": "核对对应 release 的安装与支持矩阵，建立独立环境并启动官方最小示例。记录框架版本、模型 revision、驱动、设备和实际启动命令；保存一次请求的脱敏输出。",
+        "en": "Check installation and support guidance for your chosen release. Create an isolated environment and run the official minimal example. Record framework version, model revision, drivers, device and launch command, then save a sanitized request result."
+      },
+      "evidence": {
+        "zh": "environment.json、固定版本的依赖说明、启动日志和 smoke-test 记录。",
+        "en": "environment.json, pinned dependency notes, startup logs and a smoke-test record."
+      },
+      "checklist": {
+        "zh": [
+          "环境与模型版本可以追溯，说明选择该模型的容量依据",
+          "区分已运行、失败与尚未运行的步骤"
+        ],
+        "en": [
+          "Make environment and model versions traceable and explain the memory choice",
+          "Distinguish completed, failed and unexecuted steps"
+        ]
+      },
+      "noGpu": {
+        "zh": "完成环境兼容表与容量估算；若 CPU 后端适配你的系统，可按该版本官方 CPU 指南选做，不把配置评审记成 GPU 实测。",
+        "en": "Create a compatibility matrix and memory estimate. If the release's CPU backend supports your system, try its official CPU guide; configuration review is not a GPU measurement."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Quickstart",
+          "url": "https://docs.vllm.ai/en/latest/getting_started/quickstart/"
+        },
+        {
+          "title": "vLLM · Conserving memory",
+          "url": "https://docs.vllm.ai/en/latest/configuration/conserving_memory/"
+        }
+      ],
+      "code": {
+        "language": "python",
+        "caption": {
+          "zh": "记录当前环境，不代替版本兼容性检查",
+          "en": "Record the environment; this does not replace compatibility checks"
+        },
+        "content": "import importlib.metadata as metadata\nimport json\nimport platform\n\nversions = {\"python\": platform.python_version(), \"platform\": platform.platform()}\nfor name in (\"vllm\", \"torch\", \"transformers\"):\n    try:\n        versions[name] = metadata.version(name)\n    except metadata.PackageNotFoundError:\n        versions[name] = \"not installed\"\nprint(json.dumps(versions, indent=2))"
+      }
+    },
+    {
+      "day": 2,
+      "title": {
+        "zh": "把服务变成可测试的 API",
+        "en": "Make the service a testable API"
+      },
+      "lesson": {
+        "zh": "服务可用不仅是收到一段文本。客户端要知道模型名、聊天模板、采样参数、超时和错误格式；流式输出还需要区分连接建立、首 token 和结束事件。接口兼容也不表示所有扩展参数的行为完全相同。先固定请求内容与模板，建立成功与失败的测试集，再把 API 接到应用中，能避免把格式错误误判成推理性能问题。",
+        "en": "A usable service is more than a text response. Clients need the model name, chat template, sampling parameters, timeouts and error handling. Streaming requires separate connection, first-token and completion events. API compatibility does not imply identical behavior for every extension. Fix request content and templates, then build success and failure cases before integrating an application. This prevents request-format errors from being mistaken for performance problems."
+      },
+      "task": {
+        "zh": "仅在自己的本地服务测试非流式、流式、错误模型名、缺失字段和超时五种情况。确认聊天模板的来源，保存请求 JSON 与响应状态，写一个带超时的最小客户端。",
+        "en": "Test non-streaming, streaming, an invalid model name, missing fields and a timeout against your own local service. Verify the chat-template source, preserve request JSON and response status, and write a minimal client with a timeout."
+      },
+      "evidence": {
+        "zh": "client.py、五个 API 用例和接口行为说明。",
+        "en": "client.py, five API cases and an interface-behavior note."
+      },
+      "checklist": {
+        "zh": [
+          "正常请求可复现，错误用例有明确处理",
+          "记录实际服务模型名、模板和采样设置"
+        ],
+        "en": [
+          "Successful requests reproduce and failures have explicit handling",
+          "Record the served model name, template and sampling settings"
+        ]
+      },
+      "noGpu": {
+        "zh": "可用一个本地 mock HTTP 服务返回自建响应，验证客户端解析和错误处理；必须标明它没有执行模型推理。",
+        "en": "Use a local mock HTTP service with self-created responses to test client parsing and failures. Clearly state that it performs no model inference."
+      },
+      "reading": [
+        {
+          "title": "vLLM · OpenAI-compatible server",
+          "url": "https://docs.vllm.ai/en/latest/serving/online_serving/openai_compatible_server/"
+        },
+        {
+          "title": "vLLM · Quickstart",
+          "url": "https://docs.vllm.ai/en/latest/getting_started/quickstart/"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": {
+        "zh": "读懂调度器与 KV cache 的关系",
+        "en": "Connect scheduling to KV cache"
+      },
+      "lesson": {
+        "zh": "请求进入系统后，调度器决定何时处理哪些 token，执行层负责完成模型计算。KV cache 为在途序列保存状态，它的容量会限制能够同时推进的工作；块式管理减少了对连续大块空间的依赖，但并不会消除所有内存约束。阅读源码时应固定 commit，跟踪请求对象、调度输出和缓存分配之间的关系，避免背诵过期的类名。",
+        "en": "After admission, the scheduler decides which tokens to process and the execution layer performs model computation. KV cache holds state for in-flight sequences, limiting the work that can advance concurrently. Block-based management reduces dependence on large contiguous allocations but does not remove every memory constraint. Pin a commit and trace request objects, scheduler outputs and cache allocation rather than memorizing class names that may change between versions."
+      },
+      "task": {
+        "zh": "从所用版本定位调度和 KV cache 管理入口，画出一次短请求与长请求的路径。结合启动日志或指标，解释上下文长度和并发为何影响可用缓存。",
+        "en": "Locate scheduling and KV-management entry points in your pinned version. Diagram short and long request paths. Use startup logs or metrics to explain how context length and concurrency affect cache availability."
+      },
+      "evidence": {
+        "zh": "source-walkthrough.md，包含固定 commit 链接、对象流图与内存估算。",
+        "en": "source-walkthrough.md with fixed-commit links, object-flow diagrams and memory estimates."
+      },
+      "checklist": {
+        "zh": [
+          "图中区分调度决策与模型执行",
+          "源码链接固定到 commit，至少一个判断有日志或配置证据"
+        ],
+        "en": [
+          "Separate scheduling decisions from model execution",
+          "Use commit-pinned links and support at least one claim with a log or configuration"
+        ]
+      },
+      "noGpu": {
+        "zh": "源码阅读与容量计算在 CPU 上完成；可以分析公开官方示例，但引用的数据必须保留来源与环境。",
+        "en": "Read source and calculate budgets on CPU. If analyzing official published examples, preserve their source and environment."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Architecture overview",
+          "url": "https://docs.vllm.ai/en/latest/design/arch_overview/"
+        },
+        {
+          "title": "vLLM · Engine arguments",
+          "url": "https://docs.vllm.ai/en/latest/configuration/engine_args/"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": {
+        "zh": "建立基准线而非追逐最快数字",
+        "en": "Establish a baseline instead of chasing a peak"
+      },
+      "lesson": {
+        "zh": "在线推理的性能依赖工作负载。短输入长输出、长输入短输出和突发请求会给系统带来不同压力。比较配置前必须固定输入输出长度分布、请求到达方式、模型和采样设置；同时报告延迟、吞吐、成功率与实际完成数量。先做小规模基准线并重复运行，才有依据判断下一次改动是否真的有效。",
+        "en": "Online inference performance depends on the workload. Short-input long-output, long-input short-output and bursty requests stress different parts of the system. Before comparing settings, fix lengths, arrivals, model and sampling parameters. Report latency, throughput, success rate and completed request count together. A small repeated baseline provides evidence for later changes; a single peak number cannot tell you whether an optimization improves the intended workload."
+      },
+      "task": {
+        "zh": "根据当前版本 Benchmark CLI 设计三档并发，每档重复至少三次。保存完整参数、原始结果与失败数，汇总 TTFT、端到端延迟和输出 token 吞吐，并解释客户端与服务端指标边界。",
+        "en": "Use the current release's Benchmark CLI to test three concurrency levels with at least three repeats each. Save parameters, raw results and failures. Summarize TTFT, end-to-end latency and output-token throughput, explaining client/server measurement boundaries."
+      },
+      "evidence": {
+        "zh": "baseline/ 原始结果、运行脚本与 benchmark-method.md。",
+        "en": "Raw baseline/ results, a run script and benchmark-method.md."
+      },
+      "checklist": {
+        "zh": [
+          "各配置使用相同工作负载与预热策略",
+          "报告包含样本数、失败率和运行间波动"
+        ],
+        "en": [
+          "Use the same workload and warm-up policy across configurations",
+          "Report sample count, failures and run-to-run variation"
+        ]
+      },
+      "noGpu": {
+        "zh": "先在自建合成记录上验证统计脚本与图表，不填写虚构的 vLLM 性能值；保留以后实测的运行清单。",
+        "en": "Validate statistics and plots with labeled synthetic records. Do not invent vLLM performance values; preserve a run manifest for later measurement."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Benchmark CLI",
+          "url": "https://docs.vllm.ai/en/latest/benchmarking/cli/"
+        },
+        {
+          "title": "vLLM · Reproducibility",
+          "url": "https://docs.vllm.ai/en/latest/usage/reproducibility/"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": {
+        "zh": "验证前缀缓存什么时候有用",
+        "en": "Test when prefix caching helps"
+      },
+      "lesson": {
+        "zh": "前缀缓存通过复用相同前缀的历史状态来减少重复 prefill，不会自动减少生成所有新 token 的工作量。命中条件受 token 序列和模型语义约束，冷缓存与热缓存必须分开。即使前缀重合较多，短提示、传输成本或工作负载变化也可能削弱收益。实验需要证明所见差异来自缓存，而不是输入长度或预热程度发生变化。",
+        "en": "Prefix caching reuses historical state for matching prefixes, reducing repeated prefill work rather than eliminating generation of new tokens. Reuse depends on token sequences and model semantics, and cold and warm states must be separated. Short prompts, overhead or changing workloads can reduce the benefit. An experiment should establish that differences come from caching, not changed prompt lengths or inconsistent warm-up conditions."
+      },
+      "task": {
+        "zh": "生成两组长度可比的请求：共享长前缀与无共享前缀。按所用版本控制缓存开关和初始状态，比较冷/热请求的 TTFT 与吞吐，同时记录实际 token 数和命中指标。",
+        "en": "Generate similarly sized requests with a shared long prefix and without reuse. Control cache settings and initial state for your release. Compare cold/warm TTFT and throughput while recording token counts and available hit metrics."
+      },
+      "evidence": {
+        "zh": "prefix-workload.py、缓存条件矩阵、原始结果与因果解释。",
+        "en": "prefix-workload.py, a cache-condition matrix, raw results and a causal explanation."
+      },
+      "checklist": {
+        "zh": [
+          "冷、热与关闭缓存条件定义清楚",
+          "至少给出一个缓存收益有限的条件并说明依据"
+        ],
+        "en": [
+          "Define cold, warm and disabled conditions precisely",
+          "Explain at least one condition with limited caching benefit"
+        ]
+      },
+      "noGpu": {
+        "zh": "用基础路线的缓存模型验证请求分组和 token 前缀一致性，提交实验设计与待测指标，不宣称已经验证引擎加速。",
+        "en": "Use the foundations cache model to validate workload grouping and prefix identity. Submit the design and metrics to measure, without claiming an engine speedup."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Automatic prefix caching",
+          "url": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/"
+        },
+        {
+          "title": "vLLM · Production metrics",
+          "url": "https://docs.vllm.ai/en/latest/usage/metrics/"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": {
+        "zh": "用受控扫描调整内存和批处理",
+        "en": "Tune memory and batching with controlled sweeps"
+      },
+      "lesson": {
+        "zh": "并发、上下文上限和每次调度的 token 预算会共同影响内存占用、排队和延迟。参数更大不等于性能更好：过多在途工作可能推高尾延迟，内存压力也可能带来额外调度代价。先画出需要比较的参数矩阵，每次只改一个变量，从可运行的小配置开始，保留失败条件，而不是只展示成功组合。",
+        "en": "Concurrency, context limits and scheduled-token budgets interact with memory, queuing and latency. Larger settings are not automatically better: more in-flight work can raise tail latency, and memory pressure can add scheduling costs. Define the comparison matrix first, change one variable at a time and start from a small working configuration. Preserve failed conditions as evidence instead of displaying only successful combinations."
+      },
+      "task": {
+        "zh": "选择两项当前 release 支持的调度或内存参数，按单变量方式各比较至少三档。保持第 4 天负载不变，记录吞吐、p95 延迟、失败和内存，选出符合你自定义延迟目标的配置。",
+        "en": "Choose two scheduling or memory parameters supported by your release and sweep at least three values for each, one variable at a time. Reuse day-4 workloads and record throughput, p95 latency, failures and memory. Select a configuration meeting a stated latency target."
+      },
+      "evidence": {
+        "zh": "tuning-matrix.csv、一张吞吐与尾延迟关系图和选择理由。",
+        "en": "tuning-matrix.csv, a throughput/tail-latency plot and a justified configuration choice."
+      },
+      "checklist": {
+        "zh": [
+          "比较只改变声明的变量，失败组合保留",
+          "最优配置针对明确目标而不是所有场景通用"
+        ],
+        "en": [
+          "Change only declared variables and retain failed combinations",
+          "Define the workload and objective for which the configuration is preferred"
+        ]
+      },
+      "noGpu": {
+        "zh": "完成容量计算、扫描脚本与结果 schema；用合成数据验证绘图，但将所有优化结论留作假设。",
+        "en": "Complete capacity calculations, sweep scripts and a result schema. Test plots with synthetic data and leave optimization conclusions as hypotheses."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Engine arguments",
+          "url": "https://docs.vllm.ai/en/latest/configuration/engine_args/"
+        },
+        {
+          "title": "vLLM · Conserving memory",
+          "url": "https://docs.vllm.ai/en/latest/configuration/conserving_memory/"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": {
+        "zh": "评估量化的收益与代价",
+        "en": "Evaluate quantization trade-offs"
+      },
+      "lesson": {
+        "zh": "量化可能减少权重或缓存的存储量，但权重量化和 KV cache 量化解决的是不同成本。支持的格式、算子和硬件会随版本变化，较少的位数也不保证更快，因为数据转换与内核实现同样重要。评估时要固定任务与模型来源，分别检查内存、延迟和任务质量；只比较生成文本是否一模一样不是充分的质量判断。",
+        "en": "Quantization can reduce weight or cache storage, but weight quantization and KV-cache quantization address different costs. Supported formats, kernels and hardware vary by release. Fewer bits do not guarantee lower latency because conversion overhead and kernel implementation matter. Keep task and model provenance fixed while assessing memory, latency and task quality separately. Exact equality between generated texts is not a sufficient quality evaluation."
+      },
+      "task": {
+        "zh": "选择一种官方支持且适配设备的量化方案，与可运行基线比较。使用至少 20 个自建、有明确判定规则的小任务，记录质量变化、内存和延迟；无法公平对比时解释不兼容条件。",
+        "en": "Choose one officially supported scheme compatible with your device and compare it with a working baseline. Use at least 20 self-created tasks with explicit evaluation rules. Record quality, memory and latency changes, or explain why a fair comparison is unavailable."
+      },
+      "evidence": {
+        "zh": "quantization-review.md、评估题集、判定标准与测量/未测项清单。",
+        "en": "quantization-review.md, evaluation cases, scoring rules and a measured/unmeasured checklist."
+      },
+      "checklist": {
+        "zh": [
+          "区分权重精度与 KV cache 精度",
+          "结论同时覆盖质量与性能，说明小样本的局限"
+        ],
+        "en": [
+          "Distinguish weight precision from KV-cache precision",
+          "Discuss both quality and performance and the limits of a small evaluation set"
+        ]
+      },
+      "noGpu": {
+        "zh": "完成硬件支持表和评估题集；可用 CPU 数值量化小数组理解误差，但不把它等同于模型质量评测。",
+        "en": "Create a compatibility matrix and evaluation set. Quantize small CPU arrays to explore numerical error without presenting that as model-quality evaluation."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Quantization",
+          "url": "https://docs.vllm.ai/en/latest/features/quantization/"
+        },
+        {
+          "title": "vLLM · Conserving memory",
+          "url": "https://docs.vllm.ai/en/latest/configuration/conserving_memory/"
+        }
+      ]
+    },
+    {
+      "day": 8,
+      "title": {
+        "zh": "选择合适的并行扩展方式",
+        "en": "Choose an appropriate scaling strategy"
+      },
+      "lesson": {
+        "zh": "张量并行把一次模型计算分给多设备，数据并行用多个副本处理不同请求；两者需要不同的内存和通信预算。能在单卡装下的模型未必适合增加张量并行，跨设备通信可能抵消计算收益。多机部署还引入网络拓扑、路由和故障边界。先明确是容量不足、吞吐不足还是延迟目标未达成，再选择扩展方式。",
+        "en": "Tensor parallelism splits model computation across devices, while data parallelism uses replicas for different requests. They have different memory and communication costs. A model that fits on one device may gain little from extra tensor parallelism if communication offsets the compute benefit. Multi-node setups add networking, routing and failure boundaries. Identify whether the problem is capacity, throughput or latency before selecting a scaling strategy."
+      },
+      "task": {
+        "zh": "为一个单卡基线设计两种扩展方案，画出进程、GPU、副本与请求路由。具备兼容多卡时选做一项受控对比；否则计算容量与通信需求，并列出需要实测的假设。",
+        "en": "Design two scaling options from your single-device baseline and diagram processes, GPUs, replicas and request routing. If compatible multiple devices are available, run one controlled comparison. Otherwise estimate costs and identify hypotheses requiring measurement."
+      },
+      "evidence": {
+        "zh": "scaling-design.md、资源/通信预算与可选的实测记录。",
+        "en": "scaling-design.md, resource and communication budgets, plus optional measurements."
+      },
+      "checklist": {
+        "zh": [
+          "解释为什么选择 TP、DP 或保持单卡",
+          "明确单机结果不能直接外推到多机"
+        ],
+        "en": [
+          "Explain the choice of TP, DP or staying on one device",
+          "State why single-node results do not establish multi-node performance"
+        ]
+      },
+      "noGpu": {
+        "zh": "用逻辑设备画图与计算即可；不要伪造 GPU 资源，也不要求购买多卡硬件。",
+        "en": "Use logical-device diagrams and calculations. Do not fake GPU resources or buy multi-device hardware to complete the design."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Parallelism and scaling",
+          "url": "https://docs.vllm.ai/en/latest/serving/parallelism_scaling/"
+        },
+        {
+          "title": "vLLM · Architecture overview",
+          "url": "https://docs.vllm.ai/en/latest/design/arch_overview/"
+        }
+      ]
+    },
+    {
+      "day": 9,
+      "title": {
+        "zh": "为服务建立观测和故障手册",
+        "en": "Build observability and a runbook"
+      },
+      "lesson": {
+        "zh": "用户看到请求失败时，原因可能在输入校验、排队、模型执行、输出传输或客户端超时。可观测性要能把症状映射到可能的组件，而不是只画 GPU 利用率。指标名称与标签会随 release 调整，应从实际端点核对。故障手册需要包含先检查什么、怎样回到已知可用配置，以及哪些证据足以支持或否定假设。",
+        "en": "A failed request may originate in validation, queuing, model execution, response transport or client timeout. Observability should map symptoms to likely components rather than showing only GPU utilization. Metric names and labels can change, so verify them against the running release. A runbook should explain what to inspect first, how to return to a known working configuration and what evidence supports or refutes each hypothesis."
+      },
+      "task": {
+        "zh": "保存本地服务的一份指标快照并解释请求量、队列、缓存与延迟指标。用无效请求和客户端超时进行小规模演练，写出检查顺序；记录一次正常重启后的 smoke-test。",
+        "en": "Capture metrics from your local service and explain request, queue, cache and latency signals. Rehearse small invalid-request and client-timeout cases, write an inspection order and record a smoke test after a normal restart."
+      },
+      "evidence": {
+        "zh": "runbook.md、脱敏指标样例、错误分类表与重启验证记录。",
+        "en": "runbook.md, sanitized metric samples, an error taxonomy and restart verification."
+      },
+      "checklist": {
+        "zh": [
+          "指标来自实际版本或明确标注的官方示例",
+          "每种故障都有检查步骤、恢复动作与成功条件"
+        ],
+        "en": [
+          "Metrics come from the running version or a labeled official example",
+          "Each failure includes inspection steps, recovery action and a success condition"
+        ]
+      },
+      "noGpu": {
+        "zh": "基于官方指标说明与自建 mock 日志写排障手册；标记真实服务上的待验证步骤。",
+        "en": "Use official metric definitions and mock logs to write the runbook, marking steps still needing verification on a real service."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Production metrics",
+          "url": "https://docs.vllm.ai/en/latest/usage/metrics/"
+        },
+        {
+          "title": "vLLM · Troubleshooting",
+          "url": "https://docs.vllm.ai/en/latest/usage/troubleshooting/"
+        }
+      ]
+    },
+    {
+      "day": 10,
+      "title": {
+        "zh": "完成一个可审查的 vLLM 优化项目",
+        "en": "Deliver a reviewable vLLM optimization"
+      },
+      "lesson": {
+        "zh": "最终作品应围绕一个具体问题：例如在固定工作负载下减少首 token 等待，或在指定延迟范围内提高完成请求数。用同一基准协议比较基线和一个改动，解释代价和失效条件。保留负面结果也有价值。工程能力体现在可复现的证据与判断，而不是宣传一个脱离硬件、版本和负载的通用加速倍数。",
+        "en": "Center the capstone on one concrete problem, such as reducing first-token wait for a fixed workload or increasing completed requests within a latency target. Compare a baseline and one change using the same protocol, and explain costs and failure conditions. Negative results are useful too. Engineering judgment is demonstrated by reproducible evidence, not a universal speedup number detached from hardware, version and workload."
+      },
+      "task": {
+        "zh": "选取第 5–7 天的一项实验，补齐代码、配置、原始记录、环境、质量检查与运行手册。请自己从干净目录重跑，写出 300 字中文或 200 词英文的技术摘要，并链接到全部证据。",
+        "en": "Choose one experiment from days 5–7 and package code, configuration, raw results, environment, quality checks and the runbook. Rerun from a clean directory and write a concise technical summary linking every claim to evidence."
+      },
+      "evidence": {
+        "zh": "vLLM 作品仓库、基线与改动报告、复现日志和下一步改进清单。",
+        "en": "A vLLM portfolio repository, baseline/change report, reproduction log and improvement backlog."
+      },
+      "checklist": {
+        "zh": [
+          "结论可追溯到原始结果，包含失败与局限",
+          "README 可让另一名开发者复现或准确理解未执行项",
+          "不将课程完成表述为官方认证或生产专家资格"
+        ],
+        "en": [
+          "Trace conclusions to raw results and include failures and limitations",
+          "README supports reproduction or clearly identifies unexecuted work",
+          "Do not present course completion as official certification or production expertise"
+        ]
+      },
+      "noGpu": {
+        "zh": "交付配置审查、源码分析、基准脚本和明确标注的未实测计划。待有设备或授权同伴复现后，再补上性能结论。",
+        "en": "Deliver configuration review, source analysis, benchmark scripts and a clearly unmeasured plan. Add performance conclusions only after a real run on available or authorized hardware."
+      },
+      "reading": [
+        {
+          "title": "vLLM · Reproducibility",
+          "url": "https://docs.vllm.ai/en/latest/usage/reproducibility/"
+        },
+        {
+          "title": "vLLM · Benchmark CLI",
+          "url": "https://docs.vllm.ai/en/latest/benchmarking/cli/"
+        }
+      ]
+    }
+  ]
+}

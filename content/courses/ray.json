@@ -1,0 +1,545 @@
+{
+  "id": "ray",
+  "number": "09",
+  "category": "platform",
+  "title": {
+    "zh": "Ray 分布式 AI 应用",
+    "en": "Distributed AI applications with Ray"
+  },
+  "subtitle": {
+    "zh": "10 天连接任务调度、批处理与在线服务",
+    "en": "Connect scheduling, batch processing and serving in 10 days"
+  },
+  "description": {
+    "zh": "用一台 CPU 电脑理解 Ray Core 的任务、Actor 和对象，再构建小型 Ray Data 流水线与 Ray Serve 服务。学习有界并发、资源声明和故障语义，为后续 GPU 集群与 KubeRay 打下基础。",
+    "en": "Use one CPU computer to learn Ray tasks, actors and objects, then build a small Ray Data pipeline and Ray Serve application. Study bounded concurrency, resource declarations and failure semantics before moving to GPU clusters or KubeRay."
+  },
+  "level": "intermediate",
+  "hoursPerDay": {
+    "zh": "每天 90–150 分钟，共约 15–25 小时",
+    "en": "90–150 minutes a day; about 15–25 hours total"
+  },
+  "prerequisites": {
+    "zh": "能写 Python 函数和类，理解列表、字典、异常与 HTTP；建议完成系统基础。Ray 运行环境按当前官方支持范围选择。",
+    "en": "Write Python functions/classes and understand collections, exceptions and HTTP. The foundations path is recommended. Choose an environment supported by the selected Ray release."
+  },
+  "hardware": {
+    "zh": "一台可运行 Ray 的 CPU 电脑，建议预留数 GB 内存并从小数据开始。课程默认使用本地集群和 CPU 模型；GPU 与多机扩展均为后续选做。",
+    "en": "One CPU computer supported by Ray, with several GB of memory available for small experiments. The course uses a local cluster and CPU models; GPUs and multi-node scaling are later extensions."
+  },
+  "hardwareTier": "cpu",
+  "tags": [
+    "Ray",
+    "Distributed Systems",
+    "Serving"
+  ],
+  "roles": {
+    "zh": [
+      "AI 平台工程师",
+      "分布式应用工程师",
+      "批推理与数据工程师"
+    ],
+    "en": [
+      "AI platform engineer",
+      "Distributed application engineer",
+      "Batch inference/data engineer"
+    ]
+  },
+  "outcome": {
+    "zh": "一个带有界并发、任务重试与记录的批处理流水线，以及共享业务逻辑的本地在线服务和运行手册。",
+    "en": "A batch pipeline with bounded concurrency, retries and records, plus a local online service sharing its business logic and an operational guide."
+  },
+  "lastVerified": "2026-11-13",
+  "resources": [
+    {
+      "title": "Ray · Core concepts",
+      "url": "https://docs.ray.io/en/latest/ray-core/key-concepts.html"
+    },
+    {
+      "title": "Ray · Tasks",
+      "url": "https://docs.ray.io/en/latest/ray-core/tasks.html"
+    },
+    {
+      "title": "Ray · Objects",
+      "url": "https://docs.ray.io/en/latest/ray-core/objects.html"
+    },
+    {
+      "title": "Ray · Actors",
+      "url": "https://docs.ray.io/en/latest/ray-core/actors.html"
+    },
+    {
+      "title": "Ray · Resources",
+      "url": "https://docs.ray.io/en/latest/ray-core/scheduling/resources.html"
+    },
+    {
+      "title": "Ray · Limit pending tasks with ray.wait",
+      "url": "https://docs.ray.io/en/latest/ray-core/patterns/limit-pending-tasks.html"
+    },
+    {
+      "title": "Ray · Memory management",
+      "url": "https://docs.ray.io/en/latest/ray-core/scheduling/memory-management.html"
+    },
+    {
+      "title": "Ray Data · Quickstart",
+      "url": "https://docs.ray.io/en/latest/data/quickstart.html"
+    },
+    {
+      "title": "Ray Data · Transforming data",
+      "url": "https://docs.ray.io/en/latest/data/transforming-data.html"
+    },
+    {
+      "title": "Ray Serve · Getting started",
+      "url": "https://docs.ray.io/en/latest/serve/getting_started.html"
+    },
+    {
+      "title": "Ray · Task fault tolerance",
+      "url": "https://docs.ray.io/en/latest/ray-core/fault_tolerance/tasks.html"
+    },
+    {
+      "title": "Ray · Actor fault tolerance",
+      "url": "https://docs.ray.io/en/latest/ray-core/fault_tolerance/actors.html"
+    },
+    {
+      "title": "Ray Data · Monitoring your workload",
+      "url": "https://docs.ray.io/en/latest/data/monitoring-your-workload.html"
+    }
+  ],
+  "steps": [
+    {
+      "day": 1,
+      "title": {
+        "zh": "认识 Core、Data、Train 与 Serve 的边界",
+        "en": "Understand the boundaries of Core, Data, Train and Serve"
+      },
+      "lesson": {
+        "zh": "Ray Core 提供远程任务、Actor 和对象等分布式原语；Data 面向数据处理，Train 封装训练流程，Serve 面向在线应用。它们建立在共同运行时之上，但解决的问题不同。先用本地集群观察 driver、worker 与对象的关系，能把分布式编程和云集群运维分开。今天不需要多台机器，也不需要宣称已经验证集群级扩展能力。",
+        "en": "Ray Core provides distributed primitives such as tasks, actors and objects. Data handles data processing, Train organizes training, and Serve supports online applications. They share a runtime but solve different problems. A local cluster lets you inspect drivers, workers and object flow separately from cloud operations. Multiple machines are unnecessary today, and a local exercise does not establish cluster-scale performance."
+      },
+      "task": {
+        "zh": "固定一个 Ray release，在独立环境运行本地最小任务。画出 driver 提交、worker 执行与结果返回过程；为批数据处理、训练、API 服务各选一个合适的 Ray 组件并说明原因。",
+        "en": "Pin a Ray release and run a minimal task in an isolated local environment. Diagram driver submission, worker execution and result retrieval. Choose appropriate components for batch data, training and API serving."
+      },
+      "evidence": {
+        "zh": "ray-map.md、环境记录与本地启动/退出说明。",
+        "en": "ray-map.md, an environment record and local startup/shutdown instructions."
+      },
+      "checklist": {
+        "zh": [
+          "能解释远程任务结果与普通函数返回值的差别",
+          "应用组件选择有具体问题依据，不把所有任务都塞进 Serve"
+        ],
+        "en": [
+          "Explain how a remote task result differs from an ordinary return value",
+          "Choose components based on the workload rather than using Serve for everything"
+        ]
+      },
+      "noGpu": {
+        "zh": "本课默认 CPU；在自己的电脑创建本地 Ray 实例，不连接或修改他人集群。",
+        "en": "This path uses CPU by default. Start your own local Ray instance without accessing or changing another person's cluster."
+      },
+      "reading": [
+        {
+          "title": "Ray · Core concepts",
+          "url": "https://docs.ray.io/en/latest/ray-core/key-concepts.html"
+        },
+        {
+          "title": "Ray · Tasks",
+          "url": "https://docs.ray.io/en/latest/ray-core/tasks.html"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": {
+        "zh": "正确地提交和等待远程任务",
+        "en": "Submit and await remote tasks correctly"
+      },
+      "lesson": {
+        "zh": "远程调用返回 ObjectRef，计算可能仍在进行。把 ray.get 放在每次提交之后，会让原本可并行的工作变成逐个等待；先提交一批再收集结果才允许并行，但任务过小也可能被调度开销淹没。应先明确任务粒度与依赖关系，再用测量决定是否值得并行，而不是仅因为用了 remote 就假设程序更快。",
+        "en": "A remote call returns an ObjectRef while computation may still be running. Calling ray.get immediately after every submission can serialize otherwise independent work. Submitting a batch before retrieving results permits concurrency, but scheduling overhead can dominate tiny tasks. Define task granularity and dependencies first, then measure whether parallel execution is worthwhile rather than assuming that remote execution is automatically faster."
+      },
+      "task": {
+        "zh": "为同一批确定性 CPU 工作实现普通串行、提交后立即 get、先提交再 get 三种版本。核对结果一致，测量两种任务规模，并解释调度开销与可并行部分。",
+        "en": "Implement ordinary serial execution, submit-then-immediately-get, and submit-all-then-get for deterministic CPU work. Verify equal results, measure two task sizes and explain scheduling overhead and available parallelism."
+      },
+      "evidence": {
+        "zh": "task_patterns.py、结果校验与不同粒度的计时表。",
+        "en": "task_patterns.py, correctness checks and timings for different task sizes."
+      },
+      "checklist": {
+        "zh": [
+          "结果一致，计时包括清楚声明的范围",
+          "至少解释一个并行未带来收益的情形"
+        ],
+        "en": [
+          "Verify equal results and define the timing scope",
+          "Explain at least one case where parallelism does not help"
+        ]
+      },
+      "noGpu": {
+        "zh": "小型 CPU 工作足以完成。不要为了漂亮的加速比伪造物理核数或把 sleep 延时当计算性能。",
+        "en": "Small CPU tasks are enough. Do not misrepresent physical cores or treat artificial sleep delays as compute-performance evidence."
+      },
+      "reading": [
+        {
+          "title": "Ray · Tasks",
+          "url": "https://docs.ray.io/en/latest/ray-core/tasks.html"
+        }
+      ],
+      "code": {
+        "language": "python",
+        "caption": {
+          "zh": "任务语义的最小示例，不能用这些微小任务证明加速",
+          "en": "A minimal task-semantics example, not a speedup benchmark"
+        },
+        "content": "import ray\n\n@ray.remote\ndef square(value):\n    return value * value\n\nray.init(include_dashboard=False)\ntry:\n    refs = [square.remote(i) for i in range(6)]\n    print(ray.get(refs))\nfinally:\n    ray.shutdown()"
+      }
+    },
+    {
+      "day": 3,
+      "title": {
+        "zh": "管理对象引用与数据复制",
+        "en": "Manage object references and data copies"
+      },
+      "lesson": {
+        "zh": "远程任务需要传递数据，序列化和复制可能比计算更贵。Ray 的对象引用让任务依赖已生成的结果，ray.put 可用于把共享输入放入对象存储；但引用仍然会影响对象生命周期，长期保存无用引用可能延长内存占用。对象存储与 worker 的 Python 堆也不是同一个预算，分析内存时需要分别考虑它们。",
+        "en": "Moving data between tasks can cost more than the computation. Object references let tasks depend on existing results, and ray.put can place a shared input in the object store. References also affect lifetime: retaining unused references can prolong memory use. Object-store memory and a worker's Python heap are different budgets, so memory analysis must account for both rather than treating every byte as one pool."
+      },
+      "task": {
+        "zh": "让多个任务使用同一个小数组，比较反复按值传入与共享 ObjectRef 的代码路径。画出引用何时创建和释放，记录对象存储与进程内存的观察方法，不刻意耗尽内存。",
+        "en": "Have several tasks consume the same small array. Compare repeated by-value arguments with a shared ObjectRef. Diagram reference lifetimes and how to observe object-store versus process memory without exhausting memory."
+      },
+      "evidence": {
+        "zh": "objects_demo.py、引用生命周期图与内存解释。",
+        "en": "objects_demo.py, a reference-lifetime diagram and memory analysis."
+      },
+      "checklist": {
+        "zh": [
+          "能说明共享引用减少哪类重复传输或序列化",
+          "不把 worker 堆内存误称为对象存储"
+        ],
+        "en": [
+          "Explain which repeated transfers or serialization a shared reference can avoid",
+          "Distinguish worker heap memory from the object store"
+        ]
+      },
+      "noGpu": {
+        "zh": "普通 CPU 数组即可完成；从 KB/MB 级数据开始，保持在本机可用内存范围内。",
+        "en": "Use ordinary CPU arrays, starting at KB/MB scale and staying within local available memory."
+      },
+      "reading": [
+        {
+          "title": "Ray · Objects",
+          "url": "https://docs.ray.io/en/latest/ray-core/objects.html"
+        },
+        {
+          "title": "Ray · Memory management",
+          "url": "https://docs.ray.io/en/latest/ray-core/scheduling/memory-management.html"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": {
+        "zh": "用 Actor 保存可控状态",
+        "en": "Keep controlled state in an actor"
+      },
+      "lesson": {
+        "zh": "Actor 把一个对象与状态放在远程进程中，适合复用模型或维护计数器，避免每次任务重新初始化。状态也带来调用顺序、并发与重启恢复问题。默认同步 Actor 与异步/线程化 Actor 的行为不同，不能把一种配置下的执行顺序当成所有场景的保证。先定义状态归属和更新契约，再引入并发。",
+        "en": "An actor keeps an object and its state in a remote process, useful for reusing a model or maintaining a counter instead of initializing it for every task. State introduces ordering, concurrency and restart concerns. Default synchronous actors differ from asynchronous or threaded actors, so one configuration's ordering is not a universal guarantee. Define ownership and update semantics before introducing concurrency."
+      },
+      "task": {
+        "zh": "创建一个 CPU 预测 Actor，在初始化阶段加载一个小型确定性模型或规则表，方法返回 request ID 与结果。比较每次任务初始化与 Actor 复用，并写出 Actor 重启后哪些状态需要恢复。",
+        "en": "Create a CPU prediction actor that loads a small deterministic model or rule table once. Return request IDs and results. Compare per-task initialization with actor reuse and identify state that would need recovery after a restart."
+      },
+      "evidence": {
+        "zh": "predictor_actor.py、状态契约与初始化成本记录。",
+        "en": "predictor_actor.py, a state contract and initialization-cost observations."
+      },
+      "checklist": {
+        "zh": [
+          "模型或规则状态不是每次调用都重复加载",
+          "清楚声明方法执行模型与状态恢复边界"
+        ],
+        "en": [
+          "Avoid loading model/rule state on every call",
+          "State the execution model and recovery boundary"
+        ]
+      },
+      "noGpu": {
+        "zh": "使用 CPU 线性模型或明确标注的规则预测即可；无需 LLM 或 GPU。",
+        "en": "Use a CPU linear model or a clearly labeled rule-based predictor; no LLM or GPU is needed."
+      },
+      "reading": [
+        {
+          "title": "Ray · Actors",
+          "url": "https://docs.ray.io/en/latest/ray-core/actors.html"
+        },
+        {
+          "title": "Ray · Actor fault tolerance",
+          "url": "https://docs.ray.io/en/latest/ray-core/fault_tolerance/actors.html"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": {
+        "zh": "把资源需求写成调度约束",
+        "en": "Express resource requirements as scheduling constraints"
+      },
+      "lesson": {
+        "zh": "Ray 资源声明影响任务能在哪里、同时运行多少，但逻辑 CPU 资源不是自动的线程硬限制。GPU 资源声明也不能凭空提供设备；分数 GPU 资源不等于显存隔离。任务请求超过可用资源可能保持等待，看似没有报错却没有进展。用小实例理解资源与并发关系，再考虑 placement 与多机调度。",
+        "en": "Ray resource declarations guide placement and concurrency, but logical CPU resources are not automatically strict thread limits. GPU declarations cannot create hardware, and fractional GPU scheduling is not memory isolation. Requests exceeding available resources may remain pending without an immediate application error. Learn how resources and concurrency interact locally before adding placement groups or multi-node scheduling."
+      },
+      "task": {
+        "zh": "记录本地可用逻辑资源，为任务和 Actor 明确声明 CPU 需求，比较两种并发限制。设计一个超过可用资源的任务并观察等待状态，随后取消或清理实验，解释其原因。",
+        "en": "Record local available resources and declare CPU requirements for tasks/actors. Compare two concurrency limits. Inspect a deliberately unschedulable toy task, then cancel or clean up the experiment and explain its pending state."
+      },
+      "evidence": {
+        "zh": "resources.md、配置与并发观察表、无进展诊断说明。",
+        "en": "resources.md, configurations, concurrency observations and a pending-task diagnosis."
+      },
+      "checklist": {
+        "zh": [
+          "区分逻辑资源、物理硬件与应用线程数",
+          "没有把未调度任务当成成功完成的工作"
+        ],
+        "en": [
+          "Distinguish logical resources, hardware and application thread counts",
+          "Do not count pending work as completed"
+        ]
+      },
+      "noGpu": {
+        "zh": "全程使用 CPU 资源；GPU 调度只画设计图，不伪造 num_gpus 声明来完成任务。",
+        "en": "Use CPU resources throughout. Diagram GPU scheduling without faking GPU declarations to claim execution."
+      },
+      "reading": [
+        {
+          "title": "Ray · Resources",
+          "url": "https://docs.ray.io/en/latest/ray-core/scheduling/resources.html"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": {
+        "zh": "用有界并发控制内存和尾部等待",
+        "en": "Bound concurrency to control memory and tail waits"
+      },
+      "lesson": {
+        "zh": "一次提交所有任务可能积累大量待执行工作和结果引用。ray.wait 可以先取回一部分已完成结果，再补充新的任务，把在途数量限制在预算内。完成顺序与输入顺序不相同，应保留业务 ID 来重建需要的排序。资源限制主要约束执行，有界提交还能约束排队与引用积累，两者解决的不是完全相同的问题。",
+        "en": "Submitting everything at once can accumulate pending work and result references. ray.wait lets you consume some completed results before adding new tasks, keeping in-flight work within a budget. Completion order differs from input order, so preserve IDs when order matters. Resource limits primarily constrain execution; bounded submission also limits queued work and retained references. These controls address related but distinct problems."
+      },
+      "task": {
+        "zh": "把第 2 天任务改成最多 K 个在途请求，逐步取回完成项。对两档 K 和不均匀任务时长运行小测试，验证无丢失、无重复，并观察延迟与内存趋势。",
+        "en": "Refactor day-2 tasks to allow at most K in-flight requests and consume completed work incrementally. Test two K values with uneven task durations, verifying no loss/duplication and observing latency and memory trends."
+      },
+      "evidence": {
+        "zh": "bounded_pipeline.py、顺序恢复测试与并发选择理由。",
+        "en": "bounded_pipeline.py, order-reconstruction tests and a concurrency rationale."
+      },
+      "checklist": {
+        "zh": [
+          "在途数量确实不超过预算，所有输入有唯一结果",
+          "报告区分合成延时实验与真实计算负载"
+        ],
+        "en": [
+          "Enforce the in-flight bound and map every input to one result",
+          "Distinguish artificial-delay experiments from real compute workloads"
+        ]
+      },
+      "noGpu": {
+        "zh": "CPU 小任务即可验证 backpressure 与结果管理；长时任务可用标注的模拟延迟研究队列行为。",
+        "en": "CPU tasks validate backpressure and result handling. Labeled artificial delays may be used to study queue behavior."
+      },
+      "reading": [
+        {
+          "title": "Ray · Limit pending tasks with ray.wait",
+          "url": "https://docs.ray.io/en/latest/ray-core/patterns/limit-pending-tasks.html"
+        },
+        {
+          "title": "Ray · Memory management",
+          "url": "https://docs.ray.io/en/latest/ray-core/scheduling/memory-management.html"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": {
+        "zh": "构建小型 Ray Data 批处理流水线",
+        "en": "Build a small Ray Data batch pipeline"
+      },
+      "lesson": {
+        "zh": "Ray Data 让你以数据集变换描述读取、预处理、批推理与写出，而不是手工管理每条记录的任务。批大小影响向量化收益、内存和等待；执行计划与实际物化也要区分。重复使用模型的批处理应考虑状态复用，避免每个小批都加载模型。先验证 schema、记录 ID 和输出覆盖，再增加规模。",
+        "en": "Ray Data describes reading, preprocessing, batch inference and output as dataset transformations rather than manually managing a task for each record. Batch size affects vectorization, memory and waiting, and a logical plan differs from materialized results. Stateful batch processing should reuse models rather than reload them for every tiny batch. Validate schema, record IDs and coverage before scaling the workload."
+      },
+      "task": {
+        "zh": "准备 100 条自建文本或数值记录，构建读取、清洗、CPU 预测和写出流水线。使用 map_batches 或当前版本对应接口，测试两档 batch size，保留输入 ID 并核对输出覆盖。",
+        "en": "Create 100 self-generated text or numeric records and a read/clean/CPU-predict/write pipeline. Use map_batches or the equivalent supported API, compare two batch sizes and retain input IDs to verify coverage."
+      },
+      "evidence": {
+        "zh": "batch_pipeline.py、输入输出 schema、覆盖检查和批大小比较。",
+        "en": "batch_pipeline.py, input/output schemas, coverage checks and a batch-size comparison."
+      },
+      "checklist": {
+        "zh": [
+          "输入输出记录可追踪，异常记录有处理策略",
+          "计时触发了实际执行，而不是只测计划构建"
+        ],
+        "en": [
+          "Trace input/output records and define malformed-record handling",
+          "Measure actual execution rather than only constructing a plan"
+        ]
+      },
+      "noGpu": {
+        "zh": "使用小型 CPU 模型或清楚标注的确定性规则，完成真实数据流水线；无需 GPU。",
+        "en": "Use a small CPU model or a clearly labeled deterministic rule to execute a real pipeline without GPUs."
+      },
+      "reading": [
+        {
+          "title": "Ray Data · Quickstart",
+          "url": "https://docs.ray.io/en/latest/data/quickstart.html"
+        },
+        {
+          "title": "Ray Data · Transforming data",
+          "url": "https://docs.ray.io/en/latest/data/transforming-data.html"
+        }
+      ]
+    },
+    {
+      "day": 8,
+      "title": {
+        "zh": "把同一业务逻辑提供为在线服务",
+        "en": "Expose the same logic as an online service"
+      },
+      "lesson": {
+        "zh": "批处理偏重总吞吐，在线服务还需要处理请求边界、超时、错误与尾延迟。Ray Serve 把应用组织成可部署组件，可以复用预测逻辑，但不会自动让错误输入、状态管理和背压都变得正确。先在本地用一个小模型验证接口与并发行为，再决定是否需要副本或自动扩缩容；本机演示不能代表生产高可用。",
+        "en": "Batch processing emphasizes total throughput; online serving adds request boundaries, timeouts, errors and tail latency. Ray Serve organizes applications into deployable components and can reuse prediction logic, but does not automatically solve validation, state management or backpressure. Validate a small model's API and concurrency locally before considering replicas or autoscaling. A local demonstration is not evidence of production high availability."
+      },
+      "task": {
+        "zh": "用 Ray Serve 将第 7 天预测逻辑封装为仅本地访问的 API。测试有效输入、缺失字段、批量请求与客户端超时，比较同一记录在批处理和在线服务中的结果。",
+        "en": "Wrap day-7 prediction logic in a local-only Ray Serve API. Test valid input, missing fields, batched requests and client timeouts. Compare batch and online results for the same record."
+      },
+      "evidence": {
+        "zh": "serve_app.py、API 契约、四类请求测试与结果一致性报告。",
+        "en": "serve_app.py, an API contract, four request tests and a result-consistency report."
+      },
+      "checklist": {
+        "zh": [
+          "批处理和在线路径复用可核对的逻辑",
+          "错误和超时有明确行为，服务未暴露为公共集群入口"
+        ],
+        "en": [
+          "Reuse inspectable logic between batch and online paths",
+          "Handle failures/timeouts explicitly and keep the experiment local"
+        ]
+      },
+      "noGpu": {
+        "zh": "小模型或规则预测完全可用 CPU 运行；无需任何付费在线推理 API。",
+        "en": "The small model or rule predictor runs entirely on CPU; no paid inference API is required."
+      },
+      "reading": [
+        {
+          "title": "Ray Serve · Getting started",
+          "url": "https://docs.ray.io/en/latest/serve/getting_started.html"
+        },
+        {
+          "title": "Ray · Actors",
+          "url": "https://docs.ray.io/en/latest/ray-core/actors.html"
+        }
+      ]
+    },
+    {
+      "day": 9,
+      "title": {
+        "zh": "理解重试、幂等与可观察失败",
+        "en": "Understand retries, idempotency and observable failure"
+      },
+      "lesson": {
+        "zh": "分布式任务可能因为 worker 异常、节点丢失或应用错误而失败，不同失败类型和配置的重试行为可能不同。重试并不自动保证外部副作用只发生一次；如果任务写文件或更新状态，需要用业务 ID 与幂等设计避免重复结果。Actor 重启也不自动恢复所有内存状态。用短小的受控故障验证这些边界，比假设平台包办一切更可靠。",
+        "en": "Tasks can fail through worker crashes, node loss or application errors, with retry behavior depending on failure type and configuration. Retries do not guarantee that external side effects occur only once. File writes or state updates need business IDs and idempotent design to avoid duplication. Actor restart also does not restore every in-memory value automatically. Small controlled failures reveal these boundaries more reliably than assuming the runtime handles everything."
+      },
+      "task": {
+        "zh": "在自己的本地任务中注入一个明确的应用异常，配置并观察是否重试。让输出按唯一记录 ID 写到实验目录，验证重复执行不会产生重复最终结果；记录 Actor 状态重建策略。",
+        "en": "Inject an explicit application exception into your own local task and configure/observe retries. Write outputs keyed by unique record ID in a test directory, verifying repeated execution does not duplicate final results. Document actor-state reconstruction."
+      },
+      "evidence": {
+        "zh": "fault_tests.py、重试日志、幂等验证与状态恢复说明。",
+        "en": "fault_tests.py, retry logs, idempotency checks and state-recovery notes."
+      },
+      "checklist": {
+        "zh": [
+          "区分任务重试与副作用 exactly-once 的保证",
+          "失败、重试次数与最终结果均可观测"
+        ],
+        "en": [
+          "Distinguish task retries from exactly-once side-effect guarantees",
+          "Observe failures, retry counts and final results"
+        ]
+      },
+      "noGpu": {
+        "zh": "本地 CPU 任务和实验文件目录足以完成；不要对真实生产任务或他人服务注入故障。",
+        "en": "Use local CPU tasks and a test directory. Do not inject faults into production jobs or other people's services."
+      },
+      "reading": [
+        {
+          "title": "Ray · Task fault tolerance",
+          "url": "https://docs.ray.io/en/latest/ray-core/fault_tolerance/tasks.html"
+        },
+        {
+          "title": "Ray · Actor fault tolerance",
+          "url": "https://docs.ray.io/en/latest/ray-core/fault_tolerance/actors.html"
+        }
+      ]
+    },
+    {
+      "day": 10,
+      "title": {
+        "zh": "交付批处理与在线服务的共同底座",
+        "en": "Ship a shared foundation for batch and online work"
+      },
+      "lesson": {
+        "zh": "结课作品应把任务、数据与服务连成一个可理解的小系统，而不只是展示许多 Ray API。说明输入契约、资源预算、在途上限、重试策略和观测方式，并给出同一数据在批处理与在线路径下的一致性证据。之后才考虑 KubeRay、GPU 池、自动扩缩容和多机故障。它们是有明确前提的下一阶段，不是本地运行成功就自然具备的能力。",
+        "en": "A capstone should connect tasks, data and serving into an understandable small system rather than a collection of APIs. Explain input contracts, resource budgets, in-flight limits, retry policy and observability. Show consistency between batch and online results. KubeRay, GPU pools, autoscaling and multi-node resilience are later stages with additional prerequisites, not capabilities automatically established by a successful local run."
+      },
+      "task": {
+        "zh": "整合一个自建数据集的离线预测流水线与在线查询 API，保存性能与失败记录。提供干净启动、一次端到端演示、状态清理和恢复说明，再写出扩展到多机之前必须验证的三件事。",
+        "en": "Integrate offline prediction over self-created data with an online query API. Preserve performance and failure records. Provide clean startup, an end-to-end demonstration, cleanup and recovery instructions, plus three checks required before multi-node expansion."
+      },
+      "evidence": {
+        "zh": "Ray 作品仓库、批/在线一致性测试、运行手册与扩展路线图。",
+        "en": "A Ray portfolio repository, batch/online consistency tests, runbook and scaling roadmap."
+      },
+      "checklist": {
+        "zh": [
+          "普通 CPU 环境能按 README 完成核心演示",
+          "吞吐、延迟和失败数据都说明负载与资源",
+          "未声称已经实现多机高可用或完成 GPU 压测"
+        ],
+        "en": [
+          "The core demo runs on CPU using the README",
+          "Describe workloads/resources for throughput, latency and failures",
+          "Do not claim verified multi-node availability or GPU load testing"
+        ]
+      },
+      "noGpu": {
+        "zh": "本路线的完整核心作品可在 CPU 完成；GPU 和集群功能作为单独的后续项目，逐项验证后再加入。",
+        "en": "Complete the core capstone entirely on CPU. Treat GPU and cluster features as separately verified follow-up projects."
+      },
+      "reading": [
+        {
+          "title": "Ray Data · Monitoring your workload",
+          "url": "https://docs.ray.io/en/latest/data/monitoring-your-workload.html"
+        },
+        {
+          "title": "Ray Serve · Getting started",
+          "url": "https://docs.ray.io/en/latest/serve/getting_started.html"
+        },
+        {
+          "title": "Ray · Resources",
+          "url": "https://docs.ray.io/en/latest/ray-core/scheduling/resources.html"
+        }
+      ]
+    }
+  ]
+}

@@ -80,3 +80,9 @@ Git 历史、Actions 旧产物、旧部署、clone、fork 和搜索缓存可能�
 
 保留官方来源；修改实验路径时说明核对日期和测试版本。所有性能结论附环境、工作负载、原始记录与限制。
 不要复制整套上游文档，不编造就业结果，也不以自动勾选给开发者颁发能力认证。
+
+课程源文件在 `content/courses/{id}.json`。每门必须恰好 10 天，day 从 1 连续到 10；每一天包含中英对齐的 title、lesson、task、evidence、checklist（2–5 项）、noGpu 与 reading。元数据记录 category、level、hoursPerDay、prerequisites、hardware、hardwareTier、roles、outcome 和 lastVerified。代码样例可选，但必须说明环境与用途。
+
+`content/paths.json` 定义职业路径的课程顺序；引用必须指向真实课程。构建自动生成独立课程 HTML、两种语言的 Markdown 下载、站点地图和轻量首页目录。不要直接编辑 `dist/`。`lastVerified` 仅表示资料核对日期；硬件实验的真实运行证据需要另外记录，不能由字段自动推断。
+
+学习进度使用独立的 `course-progress-v2` 浏览器存储版本，避免旧三任务路线的勾选被误当作十天课程成绩。每日笔记按课程和日期独立保存；导出的是学员自我记录，没有云端同步或认证效力。

@@ -1,0 +1,556 @@
+{
+  "id": "dynamo",
+  "number": "06",
+  "category": "platform",
+  "title": {
+    "zh": "10 天实战 NVIDIA Dynamo",
+    "en": "NVIDIA Dynamo in 10 Days"
+  },
+  "subtitle": {
+    "zh": "从推理 worker 到可测量的服务系统",
+    "en": "From inference workers to a measurable serving system"
+  },
+  "description": {
+    "zh": "学习请求路由、P/D 分离、控制面、容量规划与 Kubernetes 部署，用真实服务或官方模拟器建立 SLO 驱动的工程作品。十天目标是理解、实验和可复现交付。",
+    "en": "Study routing, P/D disaggregation, control planes, capacity planning, and Kubernetes deployment. Use real serving or official simulation to build an SLO-driven portfolio focused on understanding, experimentation, and reproducibility."
+  },
+  "level": "advanced",
+  "hoursPerDay": {
+    "zh": "每天 2–3 小时；GPU、容器与 Kubernetes 环境准备另计",
+    "en": "2–3 hours a day; GPU, container, and Kubernetes setup are extra"
+  },
+  "prerequisites": {
+    "zh": "熟悉一个推理引擎、Python/HTTP、容器和性能指标；第 8 天需了解 Kubernetes Pod、Service 和资源请求。先完成 vLLM 或 SGLang 更容易。",
+    "en": "Know one inference engine, Python/HTTP, containers, and performance metrics. Day 8 uses Kubernetes Pods, Services, and resource requests. Complete vLLM or SGLang first."
+  },
+  "hardware": {
+    "zh": "真实 worker 需要兼容矩阵中所选后端支持的硬件；双 worker 路由与 P/D 实验通常需要多个设备。无 GPU 可使用官方 Mocker/DynoSim 路径研究控制行为。Kubernetes 练习可在本地测试集群或以配置审查完成。",
+    "en": "Real workers need hardware supported by the selected backend's compatibility matrix; two-worker routing and P/D experiments usually need multiple devices. Without GPUs, use official Mocker/DynoSim paths to study control behavior. Kubernetes labs can use a local test cluster or a configuration review."
+  },
+  "hardwareTier": "gpu-optional",
+  "tags": [
+    "NVIDIA Dynamo",
+    "Serving",
+    "Kubernetes",
+    "SLO"
+  ],
+  "roles": {
+    "zh": [
+      "推理平台工程师",
+      "AI Infra SRE",
+      "分布式系统工程师"
+    ],
+    "en": [
+      "Inference platform engineer",
+      "AI infrastructure SRE",
+      "Distributed systems engineer"
+    ]
+  },
+  "outcome": {
+    "zh": "完成固定版本的服务拓扑、SLO 工作负载、路由与 P/D 对照、扩缩容推演、部署清单及恢复手册；明确区分模拟结果与真实模型性能。",
+    "en": "Deliver a pinned serving topology, SLO workload, routing and P/D comparisons, scaling analysis, deployment manifests, and a recovery runbook, clearly separating simulation from real model performance."
+  },
+  "lastVerified": "2026-11-13",
+  "resources": [
+    {
+      "title": "NVIDIA Dynamo documentation",
+      "url": "https://docs.nvidia.com/dynamo/latest/"
+    },
+    {
+      "title": "Dynamo architecture overview",
+      "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/overview"
+    },
+    {
+      "title": "Dynamo compatibility",
+      "url": "https://docs.nvidia.com/dynamo/reference/compatibility"
+    },
+    {
+      "title": "Dynamo simulation overview",
+      "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/concepts/simulation/overview"
+    },
+    {
+      "title": "Dynamo local quickstart",
+      "url": "https://docs.nvidia.com/dynamo/cli/getting-started/quickstart"
+    }
+  ],
+  "steps": [
+    {
+      "day": 1,
+      "title": {
+        "zh": "建立服务系统的三张图",
+        "en": "Map the serving system"
+      },
+      "lesson": {
+        "zh": "Dynamo 位于推理引擎之上，组织前端、worker、路由与相关状态，而引擎仍负责模型计算。理解请求路径、控制路径与 KV 状态路径，可以避免把所有延迟都归因于 GPU。后端、设备和版本支持存在差异，单个例子不能推导出全部组合都可用。先确定一个后端和实验拓扑，后续再研究组件增多是否带来可衡量的收益。",
+        "en": "Dynamo organizes frontends, workers, routing, and related state above inference engines; the engine still performs model computation. Separating request, control, and KV-state paths prevents every latency problem from being blamed on the GPU. Backend, device, and release support differ, so one working example does not establish that all combinations are supported. Select one backend and experimental topology first. Later experiments can then test whether additional components provide a measurable benefit rather than assuming architectural complexity is itself an improvement."
+      },
+      "task": {
+        "zh": "绘制请求、控制和状态三张简图，列出每个组件的输入、输出与失败影响。固定 Dynamo、引擎、模型 revision 和设备条件；标记采用真实 worker 还是官方模拟路径。",
+        "en": "Draw request, control, and state diagrams, listing each component's inputs, outputs, and failure impact. Pin Dynamo, engine, model revision, and device requirements; mark whether the project uses real workers or official simulation."
+      },
+      "evidence": {
+        "zh": "architecture.md 与 environment.json，含拓扑、版本和未验证的兼容性项。",
+        "en": "architecture.md and environment.json with topology, versions, and unverified compatibility items."
+      },
+      "checklist": {
+        "zh": [
+          "计算引擎与服务编排职责分开",
+          "标注三条路径及其共享依赖",
+          "每个后端选择都有官方兼容性依据"
+        ],
+        "en": [
+          "Separate engine computation from serving orchestration",
+          "Label all three paths and their shared dependencies",
+          "Support each backend choice with official compatibility evidence"
+        ]
+      },
+      "noGpu": {
+        "zh": "选择官方模拟路径并注明模拟的组件与简化假设；架构图仍需保留真实部署时的数据路径。",
+        "en": "Choose an official simulation path and state which components it models and what it simplifies. Keep the real deployment's data path in the architecture diagram."
+      },
+      "reading": [
+        {
+          "title": "Dynamo architecture overview",
+          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/overview"
+        },
+        {
+          "title": "Dynamo compatibility",
+          "url": "https://docs.nvidia.com/dynamo/reference/compatibility"
+        },
+        {
+          "title": "Dynamo simulation overview",
+          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/concepts/simulation/overview"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": {
+        "zh": "构建最小可观察服务",
+        "en": "Build a minimal observable service"
+      },
+      "lesson": {
+        "zh": "最小服务的价值是减少变量：一个前端、一个 worker、一个模型和一条可重复请求。健康端点成功与模型能够正确返回是两项不同检查，流式输出又增加了首 token 和结束状态。Dynamo 的发现与运行方式随路径不同，不应把某个示例的依赖当成所有部署都必须安装。启动后先保留请求时间线和日志，为后续对照提供基线。",
+        "en": "A minimal service reduces variables to one frontend, one worker, one model, and one repeatable request. Health success and a correct model response are separate checks; streaming also adds first-token and termination behavior. Discovery and runtime choices depend on the selected Dynamo path, so dependencies from one example should not be assumed mandatory for every deployment. Preserve request timelines and logs after startup. This establishes a baseline before introducing routing, distributed transfer, or autoscaling, and exposes basic configuration problems early."
+      },
+      "task": {
+        "zh": "按固定版本 quickstart 启动单 worker 路径，验证健康、普通请求、流式请求、错误输入与客户端取消。记录启动命令来源和脱敏日志；模拟路线使用官方 Mocker 示例进行同类协议检查。",
+        "en": "Use the pinned quickstart to start a single-worker path. Check health, ordinary and streaming requests, invalid input, and client cancellation. Save command sources and redacted logs; on the simulation route, apply equivalent protocol checks to the official Mocker example."
+      },
+      "evidence": {
+        "zh": "smoke-results.csv、服务启动说明和一条请求时间线。",
+        "en": "smoke-results.csv, service startup instructions, and one request timeline."
+      },
+      "checklist": {
+        "zh": [
+          "健康与生成结果分别记录",
+          "包括流式结束和错误输入结果",
+          "明确记录真实模型或模拟 worker"
+        ],
+        "en": [
+          "Record health separately from generation results",
+          "Include stream termination and invalid-input outcomes",
+          "Identify real-model or simulated workers explicitly"
+        ]
+      },
+      "noGpu": {
+        "zh": "使用官方 Mocker 示例。其响应和时延用于控制流程实验，不是模型质量或 GPU 推理速度的证据。",
+        "en": "Use the official Mocker example. Its responses and timings support control-flow experiments, not claims about model quality or GPU inference speed."
+      },
+      "reading": [
+        {
+          "title": "Dynamo local quickstart",
+          "url": "https://docs.nvidia.com/dynamo/cli/getting-started/quickstart"
+        },
+        {
+          "title": "Dynamo simulation overview",
+          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/concepts/simulation/overview"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": {
+        "zh": "用 SLO 定义实验目标",
+        "en": "Define experiments with an SLO"
+      },
+      "lesson": {
+        "zh": "吞吐高并不代表用户体验好，排队可能使首 token 与完成时间超过要求。先为固定工作负载设定 TTFT、端到端延迟和错误率目标，再计算满足目标的有效请求量。输入/输出长度、到达模式和并发都会影响结果；闭环客户端等待回复再发请求，可能掩盖开放到达流下的过载。保存逐请求记录，才能复算分位数和达标比例。",
+        "en": "High throughput does not guarantee a good experience if queueing pushes first-token or completion time beyond the target. Define TTFT, end-to-end latency, and error-rate objectives for a fixed workload, then count completed requests that meet them. Input/output lengths, arrival patterns, and concurrency all influence results. Closed-loop clients wait for responses before issuing more work and can hide overload seen under open arrivals. Keep per-request records so reviewers can recompute quantiles, error rates, and the fraction meeting the stated objective."
+      },
+      "task": {
+        "zh": "定义一个短请求和一个长上下文工作负载，事先写下实验用 SLO。用 AIPerf 或等价记录方式保存逐请求指标，比较至少两个负载水平，计算 goodput 并解释未达标请求。",
+        "en": "Define short-request and long-context workloads with explicit experimental SLOs. Use AIPerf or an equivalent recording method to save per-request metrics. Compare at least two load levels, calculate goodput, and explain requests that miss the objective."
+      },
+      "evidence": {
+        "zh": "workload.json、requests.csv 与指标计算说明；SLO 是练习假设，不冒充行业统一标准。",
+        "en": "workload.json, requests.csv, and metric definitions; label SLOs as exercise assumptions rather than industry-wide standards."
+      },
+      "checklist": {
+        "zh": [
+          "SLO 在看结果前定义",
+          "错误和超时没有算成达标请求",
+          "可以从逐请求记录复算 goodput"
+        ],
+        "en": [
+          "Define the SLO before inspecting results",
+          "Exclude errors and timeouts from successful SLO completions",
+          "Make goodput recomputable from per-request records"
+        ]
+      },
+      "noGpu": {
+        "zh": "用官方模拟器生成负载轨迹，或使用下方合成记录练习统计；所有图表标注 simulated，不能换算成真实集群容量承诺。",
+        "en": "Generate traces with official simulation or use the synthetic records below to practice statistics. Label every chart simulated and do not convert it into a real-cluster capacity promise."
+      },
+      "reading": [
+        {
+          "title": "Benchmarking Dynamo with AIPerf",
+          "url": "https://docs.nvidia.com/dynamo/cli/operations/benchmarking-with-ai-perf"
+        },
+        {
+          "title": "Dynamo simulation overview",
+          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/concepts/simulation/overview"
+        }
+      ],
+      "code": {
+        "language": "python",
+        "caption": {
+          "zh": "合成请求的 goodput 计算示例；阈值只是课程假设，数据不是 Dynamo 测量结果。",
+          "en": "Goodput calculation on synthetic requests; thresholds are exercise assumptions and the data is not a Dynamo measurement."
+        },
+        "content": "# Synthetic data; thresholds are exercise assumptions.\nrequests = [\n    {'ok': True,  'ttft_ms': 100, 'e2e_ms': 900},\n    {'ok': True,  'ttft_ms': 700, 'e2e_ms': 1400},\n    {'ok': False, 'ttft_ms': None, 'e2e_ms': 2000},\n    {'ok': True,  'ttft_ms': 200, 'e2e_ms': 1100},\n]\nwindow_s = 10.0\nttft_limit_ms, e2e_limit_ms = 500, 1500\nwithin_slo = sum(\n    r['ok'] and r['ttft_ms'] is not None\n    and r['ttft_ms'] <= ttft_limit_ms\n    and r['e2e_ms'] <= e2e_limit_ms\n    for r in requests\n)\nprint('SLO-compliant requests:', within_slo)\nprint('Goodput (requests/s):', within_slo / window_s)\n"
+      }
+    },
+    {
+      "day": 4,
+      "title": {
+        "zh": "比较缓存亲和与负载均衡",
+        "en": "Compare cache affinity and load"
+      },
+      "lesson": {
+        "zh": "KV 感知路由希望把请求送到已有可复用状态的位置，但最可能命中的 worker 也可能排队最久。因此路由的目标不是单独最大化命中率，而是在复用收益和负载之间取舍。路由观察到的状态与真实缓存还可能存在更新延迟。必须有至少两个可选 worker 才能验证选择行为，并用相同请求序列比较策略，而不是只展示一个温热样例。",
+        "en": "KV-aware routing tries to send requests toward reusable state, but the worker with the best cache affinity may also have the longest queue. The objective is therefore a tradeoff between reuse and load, not maximizing hit rate alone. Observed routing state may also lag actual cache contents. You need at least two eligible workers to test selection behavior. Compare policies with the same request sequence instead of presenting one warm example, and record both cache-related evidence and user-visible latency."
+      },
+      "task": {
+        "zh": "准备共享前缀、完全不同前缀和偏斜热点三组序列。在两个 worker 上比较文档支持的路由配置，记录分配、命中证据、队列与 SLO；真实资源不足时使用官方模拟路径。",
+        "en": "Prepare shared-prefix, distinct-prefix, and skewed-hotspot traces. Across two workers, compare documented routing configurations and record assignments, hit evidence, queues, and SLO outcomes. Use official simulation when real resources are unavailable."
+      },
+      "evidence": {
+        "zh": "routing-runs.csv 与策略对照图；至少解释一个命中更高但体验未改善的可能原因。",
+        "en": "routing-runs.csv and policy comparison charts, explaining at least one reason higher cache affinity may not improve experience."
+      },
+      "checklist": {
+        "zh": [
+          "两个策略使用同一请求序列与资源预算",
+          "至少两个可选 worker，或明确标注未验证路由",
+          "同时报告分配偏斜、命中与请求延迟"
+        ],
+        "en": [
+          "Use identical traces and resource budgets across policies",
+          "Use two eligible workers or mark routing as unverified",
+          "Report assignment skew, cache evidence, and request latency"
+        ]
+      },
+      "noGpu": {
+        "zh": "使用 Mocker/DynoSim 支持的路由实验；若该版本不支持所需事件，写离散事件模型并把它标为自建模拟而非 Dynamo 实测。",
+        "en": "Use routing experiments supported by Mocker/DynoSim. If the selected version lacks needed events, write a discrete-event model and label it as your simulation rather than a Dynamo measurement."
+      },
+      "reading": [
+        {
+          "title": "Dynamo KV-aware routing",
+          "url": "https://docs.nvidia.com/dynamo/cli/kv-aware-routing/overview"
+        },
+        {
+          "title": "Dynamo simulation overview",
+          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/concepts/simulation/overview"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": {
+        "zh": "判断 P/D 分离是否值得",
+        "en": "Decide whether P/D disaggregation helps"
+      },
+      "lesson": {
+        "zh": "prefill 偏向处理输入计算，decode 偏向持续生成；分离可以让两阶段分别分配资源，也引入 KV 交接、网络和协调成本。长输入、高输出或不同批量下，收益可能变化。比较时必须保持总资源预算和工作负载一致，不能让分离方案多用一倍 GPU 后就宣称架构更高效。传输后端的支持取决于当前引擎路径，不能把实验选项泛化为所有后端能力。",
+        "en": "Prefill processes input computation while decode repeatedly generates tokens. Separating them enables independent resource allocation but adds KV handoff, networking, and coordination costs. Benefits vary with prompt length, output length, and batching. Keep total resources and workloads comparable; giving the disaggregated setup twice as many GPUs does not establish greater architectural efficiency. Transfer-backend support depends on the selected engine path. An experimental option in one backend's documentation should not be generalized into a capability of every supported engine."
+      },
+      "task": {
+        "zh": "选两个不同输入/输出比例的工作负载，画出聚合与 P/D 时间线。按相同总设备预算比较，或建立带转移时间的成本模型；记录 prefill、传输、排队与 decode 的贡献。",
+        "en": "Choose two workloads with different input/output ratios and draw aggregated and P/D timelines. Compare at equal total device budgets, or build a model including transfer time. Record contributions from prefill, transfer, queueing, and decode."
+      },
+      "evidence": {
+        "zh": "pd-decision.md 与对照表，包含版本支持、资源预算、转移成本和适用条件。",
+        "en": "pd-decision.md and a comparison table covering version support, resource budgets, transfer cost, and applicability."
+      },
+      "checklist": {
+        "zh": [
+          "两方案比较总设备数与资源配置",
+          "转移与协调成本没有被省略",
+          "结论限制在已测试或建模的工作负载"
+        ],
+        "en": [
+          "Compare total devices and resource configuration",
+          "Include transfer and coordination costs",
+          "Limit conclusions to tested or modeled workloads"
+        ]
+      },
+      "noGpu": {
+        "zh": "用阶段服务时间和网络转移假设建立事件表，扫描转移延迟与输入长度；结果写成敏感性分析，不声称真实 GPU 加速倍数。",
+        "en": "Build an event table from assumed stage service times and network transfer costs. Sweep transfer latency and input length, reporting sensitivity rather than a real GPU speedup."
+      },
+      "reading": [
+        {
+          "title": "Dynamo disaggregated serving",
+          "url": "https://docs.nvidia.com/dynamo/cli/disaggregated-serving/overview"
+        },
+        {
+          "title": "Dynamo compatibility",
+          "url": "https://docs.nvidia.com/dynamo/reference/compatibility"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": {
+        "zh": "追踪状态事件与数据移动",
+        "en": "Trace state events and data movement"
+      },
+      "lesson": {
+        "zh": "控制面知道某个 worker 有缓存块，与另一个 worker 已经拿到这些字节，是两件不同的事。路由事件、发现信息、缓存元数据和实际 KV 传输可能有不同更新时机及失败方式。理解这一区别，有助于排查陈旧路由、重启后状态不匹配和传输等待。NIXL 等数据移动组件只是路径的一部分，仍需结合引擎状态生命周期解释请求为何完成或失败。",
+        "en": "Knowing that a worker has cache blocks is different from another worker possessing those bytes. Routing events, discovery records, cache metadata, and actual KV transfers can update at different times and fail differently. This distinction helps explain stale routing, state mismatches after restart, and transfer waits. Data-movement components such as NIXL are only part of the path; request outcomes still depend on engine-state lifetimes. Trace one request across events and bytes instead of assuming that a metadata announcement proves usable data has arrived."
+      },
+      "task": {
+        "zh": "跟踪一条可复用请求，列出缓存产生、事件发布、路由选择、必要传输与状态释放的时间点。为 worker 重启和事件延迟各画一条异常时间线，标出应查的日志与未能确认的顺序。",
+        "en": "Trace a reusable request through cache creation, event publication, routing, required transfer, and release. Draw exception timelines for worker restart and delayed events, identifying relevant logs and ordering that remains unverified."
+      },
+      "evidence": {
+        "zh": "state-timeline.md：正常与两种异常流程，标出控制事件和真实字节移动。",
+        "en": "state-timeline.md with normal and two exceptional flows, separating control events from byte movement."
+      },
+      "checklist": {
+        "zh": [
+          "事件可见不等同于数据就绪",
+          "至少分析重启与事件延迟两个场景",
+          "未观测到的时序没有当成实现保证"
+        ],
+        "en": [
+          "Do not equate event visibility with data readiness",
+          "Analyze both restart and delayed-event scenarios",
+          "Do not present unobserved ordering as an implementation guarantee"
+        ]
+      },
+      "noGpu": {
+        "zh": "制作事件驱动模拟，延迟或移除一条状态通知，观察路由决策改变；标签写明模型假设，不声称复现了所有真实竞态。",
+        "en": "Build an event-driven simulation that delays or removes one state notification and observe routing changes. State model assumptions rather than claiming every real race is reproduced."
+      },
+      "reading": [
+        {
+          "title": "Dynamo architecture overview",
+          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/overview"
+        },
+        {
+          "title": "Dynamo KV-aware routing",
+          "url": "https://docs.nvidia.com/dynamo/cli/kv-aware-routing/overview"
+        },
+        {
+          "title": "Dynamo disaggregated serving",
+          "url": "https://docs.nvidia.com/dynamo/cli/disaggregated-serving/overview"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": {
+        "zh": "让扩缩容跟得上变化",
+        "en": "Reason about scaling under change"
+      },
+      "lesson": {
+        "zh": "扩容决策到新 worker 可接流量之间存在调度、加载模型和预热时间。控制器如果只追着瞬时指标变化，可能反复扩缩或在流量下降后才扩容。Dynamo Planner 的具体输入与机制要按当前版本核对；学习重点是把负载轨迹、目标、容量估计与动作延迟连接起来。模拟可验证控制策略趋势，但依赖校准，不能直接替代生产容量评估。",
+        "en": "Scaling decisions precede usable capacity by scheduling, model-loading, and warmup delays. A controller that follows instantaneous measurements can oscillate or add workers after demand has already fallen. Check the current Dynamo Planner documentation for its actual inputs and mechanisms. The learning goal is to connect load traces, objectives, capacity estimates, and action delays. Simulation can test control-policy trends, but its assumptions require calibration and cannot replace a production capacity study. Include resource cost and delayed reactions alongside SLO outcomes."
+      },
+      "task": {
+        "zh": "制作平稳、突发和阶梯增长三种负载轨迹，按文档梳理 Planner 的输入与动作。使用官方支持的模拟路径或纸面事件表比较两组控制参数，加入启动延迟，统计 SLO 违约与 worker 时间。",
+        "en": "Create steady, burst, and step-growth load traces and map the Planner's documented inputs and actions. Use an official simulation path or an event table to compare two parameter settings, including startup delay; count SLO violations and worker time."
+      },
+      "evidence": {
+        "zh": "scaling.csv 与控制参数决策记录，含启动延迟和资源成本假设。",
+        "en": "scaling.csv and a control-parameter decision record with startup-delay and resource-cost assumptions."
+      },
+      "checklist": {
+        "zh": [
+          "负载轨迹固定且可重复",
+          "扩容动作与生效时刻分别记录",
+          "同时报告 SLO 与资源使用，避免只看 worker 数"
+        ],
+        "en": [
+          "Keep load traces fixed and reproducible",
+          "Record action time separately from usable-capacity time",
+          "Report SLO outcomes and resources, not just worker counts"
+        ]
+      },
+      "noGpu": {
+        "zh": "用 Mocker/DynoSim 的受支持实验或自建事件表完成；若使用自建控制规则，明确它不是 Dynamo Planner 的真实实现。",
+        "en": "Use supported Mocker/DynoSim experiments or your own event table. If the control rules are yours, say they are not the actual Dynamo Planner implementation."
+      },
+      "reading": [
+        {
+          "title": "Dynamo Planner",
+          "url": "https://docs.nvidia.com/dynamo/kubernetes/auto-deployment/dynamo-planner"
+        },
+        {
+          "title": "Dynamo simulation overview",
+          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/concepts/simulation/overview"
+        },
+        {
+          "title": "Dynamo Mocker on Kubernetes",
+          "url": "https://docs.nvidia.com/dynamo/knowledge-base/concepts/simulation/kubernetes-mocker"
+        }
+      ]
+    },
+    {
+      "day": 8,
+      "title": {
+        "zh": "阅读并验证部署声明",
+        "en": "Read and validate deployment manifests"
+      },
+      "lesson": {
+        "zh": "Kubernetes 部署把期望拓扑交给控制器持续维护。DynamoGraphDeployment 描述图中的组件，而 Pod、Service、资源请求、设备插件与网络条件决定它能否真正运行。YAML 语法正确不代表 CRD 已安装，资源可调度也不代表模型就绪。将配置解析、服务端校验、调度和应用健康分层检查，比看到 apply 成功就宣布部署完成更可靠。",
+        "en": "A Kubernetes deployment asks controllers to maintain a desired topology. DynamoGraphDeployment describes graph components, while Pods, Services, resource requests, device plugins, and network conditions determine whether they can run. Valid YAML does not prove the CRD is installed, and schedulable resources do not prove model readiness. Check parsing, server-side validation, scheduling, and application health separately. This gives a more useful deployment assessment than treating a successful apply operation as proof that inference is available and configured correctly."
+      },
+      "task": {
+        "zh": "从固定版本官方 DGD 示例选择最小拓扑，注释每个组件、镜像、资源和健康检查。在自己的测试命名空间做可用的校验；无集群则完成配置审查，并列出服务端校验所需 CRD 与依赖。",
+        "en": "Choose a minimal topology from the pinned DGD examples and annotate components, images, resources, and health checks. Perform available validation in your own test namespace; without a cluster, review the configuration and list CRDs and dependencies required for server-side validation."
+      },
+      "evidence": {
+        "zh": "deployment-review.md 与注释后的清单，分别标注解析、校验、调度和服务就绪状态。",
+        "en": "deployment-review.md and annotated manifests, separately marking parsing, validation, scheduling, and readiness status."
+      },
+      "checklist": {
+        "zh": [
+          "镜像与组件版本明确，不使用无解释的 latest",
+          "说明资源、设备和网络依赖",
+          "未运行集群时不声称部署成功"
+        ],
+        "en": [
+          "Pin images and components rather than using unexplained latest tags",
+          "Explain resource, device, and networking dependencies",
+          "Do not claim deployment success without a running cluster"
+        ]
+      },
+      "noGpu": {
+        "zh": "可在本地测试集群部署官方 Kubernetes Mocker；没有集群时只提交静态审查，保留服务端验证与就绪检查为待办。",
+        "en": "Optionally deploy the official Kubernetes Mocker in a local test cluster. Without a cluster, submit a static review and leave server-side validation and readiness checks pending."
+      },
+      "reading": [
+        {
+          "title": "Deploy with DynamoGraphDeployment",
+          "url": "https://docs.nvidia.com/dynamo/kubernetes/model-deployment/deploy-with-dgd"
+        },
+        {
+          "title": "Dynamo on Kubernetes",
+          "url": "https://docs.nvidia.com/dynamo/kubernetes/getting-started/introduction"
+        },
+        {
+          "title": "Dynamo Mocker on Kubernetes",
+          "url": "https://docs.nvidia.com/dynamo/knowledge-base/concepts/simulation/kubernetes-mocker"
+        }
+      ]
+    },
+    {
+      "day": 9,
+      "title": {
+        "zh": "验证故障、取消与恢复",
+        "en": "Verify failure, cancellation, and recovery"
+      },
+      "lesson": {
+        "zh": "推理请求可能在还没有输出时失败，也可能在流式输出一半时中断，两者的重试语义不同。盲目重发可能重复计算，拼接两次生成又可能产生错误结果。worker 退出、流量排空与状态清理也需要时间。先理解当前版本提供的容错机制，再用有界故障验证请求结果、资源释放和恢复条件；不要假设平台会自动实现所有业务级重试。",
+        "en": "Inference may fail before any output or halfway through a stream, and those cases have different retry semantics. Blindly resubmitting can duplicate computation; concatenating two generations can produce an incorrect response. Worker exit, traffic draining, and state cleanup also take time. Read the current release's fault-tolerance behavior, then inject a bounded fault and verify request outcomes, resource release, and recovery conditions. Do not assume platform mechanisms automatically implement every application-level retry policy or guarantee transparent continuation of an interrupted stream."
+      },
+      "task": {
+        "zh": "在自己的测试服务中分别取消一个请求、停止一个测试 worker，限制流量和实验时间。记录已输出 token、客户端错误、重试行为、队列清理与恢复后的首个成功请求；写出逐步恢复手册。",
+        "en": "In your test service, cancel one request and stop one test worker with bounded traffic and duration. Record emitted tokens, client errors, retry behavior, queue cleanup, and the first successful request after recovery; write a step-by-step runbook."
+      },
+      "evidence": {
+        "zh": "failure-report.md 与请求时间线，包含流式中断的用户侧处理策略。",
+        "en": "failure-report.md and request timelines, including a client-side policy for interrupted streams."
+      },
+      "checklist": {
+        "zh": [
+          "区分未输出失败与输出中断",
+          "验证恢复后的新请求与资源状态",
+          "不将自动重试当作未经验证的默认保证"
+        ],
+        "en": [
+          "Distinguish pre-output failures from interrupted streams",
+          "Verify new requests and resource state after recovery",
+          "Do not assume automatic retries without validation"
+        ]
+      },
+      "noGpu": {
+        "zh": "使用 Mocker 或本地协议模拟器触发停止与取消；记录其支持范围，不把模拟的清理速度用作真实 GPU 恢复指标。",
+        "en": "Use Mocker or a local protocol simulator to trigger stops and cancellations. Record its supported behavior, and do not treat simulated cleanup speed as real GPU recovery performance."
+      },
+      "reading": [
+        {
+          "title": "Dynamo fault tolerance",
+          "url": "https://docs.nvidia.com/dynamo/kubernetes/fault-tolerance/overview"
+        },
+        {
+          "title": "Dynamo simulation overview",
+          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/concepts/simulation/overview"
+        }
+      ]
+    },
+    {
+      "day": 10,
+      "title": {
+        "zh": "完成 SLO 驱动的服务方案",
+        "en": "Deliver an SLO-driven serving design"
+      },
+      "lesson": {
+        "zh": "最终作品应回答一个明确问题：给定工作负载和资源约束，为什么选择这套拓扑？把基线、路由、P/D、扩缩容与故障实验关联起来，才能说明优化是否帮助用户达标，而不只是增加组件。十天足以形成可复现的入门工程证据；尚未完成的模型质量、长期稳定性、多租户或大规模验证，应作为后续工作清楚列出。",
+        "en": "The final portfolio should answer a concrete question: why choose this topology for the stated workload and resource constraints? Connect the baseline, routing, P/D, scaling, and failure experiments to show whether changes help users meet objectives rather than merely add components. Ten days can produce reproducible introductory engineering evidence. Model quality, long-term stability, tenant controls, and large-scale validation that have not been performed belong in a clear future-work section, not in an implied claim that the service is production-ready."
+      },
+      "task": {
+        "zh": "制作公开作品仓库：架构与版本、请求样本、SLO 计算、路由和 P/D 决策、扩缩容分析、清单与运行手册。写一页面试讲解：最有价值的结果、一个失败实验、一个未知项与下一步验证。",
+        "en": "Create a public portfolio with architecture and versions, request samples, SLO calculations, routing/P/D decisions, scaling analysis, manifests, and a runbook. Write a one-page interview narrative covering the strongest result, a failed experiment, an unknown, and the next validation step."
+      },
+      "evidence": {
+        "zh": "作品 README、可复算数据和服务设计记录，可用于推理平台与 SRE 岗位展示。",
+        "en": "A portfolio README, recomputable data, and a serving-design record suitable for inference-platform and SRE applications."
+      },
+      "checklist": {
+        "zh": [
+          "所有关键结论可指向实验数据或明确假设",
+          "真实运行与官方/自建模拟分别标注",
+          "至少说明一个拓扑取舍与一个尚未验证的风险"
+        ],
+        "en": [
+          "Trace key conclusions to data or explicit assumptions",
+          "Distinguish real runs, official simulation, and custom simulation",
+          "Explain one topology tradeoff and one unverified concern"
+        ]
+      },
+      "noGpu": {
+        "zh": "以模拟与部署设计项目交付，明确真实硬件校准计划；作品仍能展示路由、指标、控制与故障分析能力。",
+        "en": "Deliver a simulation and deployment-design project with a clear hardware-calibration plan. It can still demonstrate routing, metrics, control, and failure-analysis skills."
+      },
+      "reading": [
+        {
+          "title": "Dynamo architecture overview",
+          "url": "https://docs.nvidia.com/dynamo/latest/knowledge-base/overview"
+        },
+        {
+          "title": "Benchmarking Dynamo with AIPerf",
+          "url": "https://docs.nvidia.com/dynamo/cli/operations/benchmarking-with-ai-perf"
+        },
+        {
+          "title": "Dynamo compatibility",
+          "url": "https://docs.nvidia.com/dynamo/reference/compatibility"
+        }
+      ]
+    }
+  ]
+}
