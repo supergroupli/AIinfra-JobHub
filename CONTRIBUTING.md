@@ -6,6 +6,8 @@ is not a prerequisite for participating.
 
 欢迎学习笔记、可复现实验、中英翻译、文档修正和网站改进。参与不以已有上游 PR 为门槛。
 
+开发环境、目录结构和发布方式见 [开发文档](docs/development/README.md)。主 README 用于介绍聘枢产品；开发日志、验证结果和迭代复盘请放在 `docs/development/`。
+
 For opportunities or your own public portfolio, use the repository's Issue forms.
 For conversation, use Discussions. For source changes, open a pull request with
 the problem, change and validation. Do not publish someone else's profile without consent.
