@@ -10,10 +10,9 @@
   <link rel="stylesheet" href="./styles.css?v=20261113-growth">
   <script src="./curriculum.js?v=20261114-rsi" defer></script>
   <link rel="stylesheet" href="./learning-tools.css?v=20261114-rsi">
-  <script src="./app.js?v=20261114-rsi" defer></script>
+  <script src="./app.js?v=20261114-map" defer></script>
 <link rel="stylesheet" href="./github-star.css">
-  <link rel="stylesheet" href="./visitor-globe.css">
-  <script src="./visitor-globe.js" defer></script>
+  <link rel="stylesheet" href="./visitor-map.css?v=20261114-map">
 </head>
 <body>
   <a class="skip-link" href="#main" data-i18n="skip">跳到内容</a>
@@ -111,29 +110,30 @@
       <div class="list-heading"><span data-i18n="peopleFilterNote">沿用机会广场的搜索与筛选</span><span id="people-count" class="mono" role="status"></span></div>
       <div id="people-list" class="listing-grid" aria-live="polite"></div>
     </section>
-    <section id="visitor-globe" class="visitor-globe-section section-shell" aria-labelledby="visitor-globe-title">
-      <div class="visitor-globe-card">
-        <div class="visitor-globe-copy">
-          <div class="eyebrow" data-globe-key="eyebrow">LEARNING WITHOUT BORDERS</div>
-          <h2 id="visitor-globe-title" data-globe-key="title">让学习，连接世界。</h2>
-          <p data-globe-key="intro">来自哪里并不重要。让一份可复现的作品，成为彼此认识的起点。</p>
-          <div id="visitor-globe-metrics" class="visitor-globe-metrics"><div><strong id="visitor-globe-total">—</strong><span data-globe-key="total">公开页面访问量</span></div><div><strong id="visitor-globe-countries">—</strong><span data-globe-key="countries">访问国家 / 地区</span></div></div>
-          <p id="visitor-globe-status" class="visitor-globe-status" role="status" aria-live="polite">访问数据将在统计组件加载后显示。地球示意不代表实际访客分布。</p>
-          <p id="visitor-globe-note" class="visitor-globe-note">“—”表示数据尚不可用，并非零访问。访问来源以统计服务的近似定位为准。</p>
-          <div class="visitor-globe-actions">
-            <button id="visitor-globe-pause" type="button" class="button outline">暂停示意动画</button>
-            <button id="visitor-globe-retry" type="button" class="button outline" data-globe-key="retry" hidden>重试加载统计</button>
-            <button id="visitor-globe-load" type="button" class="button outline" data-globe-key="load" hidden>载入访问统计组件</button>
-            <a id="visitor-globe-stats" class="text-link" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" data-globe-key="stats" hidden>查看访问量与国家统计 ↗</a>
+    <span id="visitor-globe" class="visitor-map-legacy-anchor" aria-hidden="true"></span>
+    <section id="visitor-map" class="visitor-map-section section-shell" aria-labelledby="visitor-map-title">
+      <div class="visitor-map-card">
+        <div class="visitor-map-copy">
+          <div class="eyebrow" data-map-key="eyebrow">OUR GLOBAL COMMUNITY</div>
+          <h2 id="visitor-map-title" data-map-key="title">看看，大家从哪里来。</h2>
+          <p data-map-key="intro">每一次访问，都是一次与 AI Infra 社区的连接。地图由 MapMyVisitors 提供，点击可查看访问量与国家 / 地区分布。</p>
+          <div class="visitor-map-actions">
+            <a id="visitor-map-stats" class="button primary" href="https://mapmyvisitors.com/web/1c9hd" target="_blank" rel="noopener noreferrer" data-map-key="stats">查看国家 / 地区统计 ↗</a>
+            <button id="visitor-map-retry" type="button" class="button outline" data-map-key="retry" hidden>重新加载地图</button>
           </div>
-          <p class="visitor-globe-note"><a href="https://mapmyvisitors.com/b/policy" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">MapMyVisitors · 隐私说明 / Privacy</a></p>
+          <p class="visitor-map-scope" data-map-key="scope">统计已接入的公开页面访问，不等于在线人数或独立学员数。国家 / 地区为 IP 近似定位；地图更新可能有延迟。</p>
+          <p class="visitor-map-policy"><a href="https://mapmyvisitors.com/b/policy" target="_blank" rel="noopener noreferrer">MapMyVisitors · 隐私说明 / Privacy</a></p>
         </div>
-        <div class="visitor-globe-stage">
-          <div id="visitor-globe-placeholder" class="visitor-globe-placeholder"><canvas id="visitor-globe-canvas" width="360" height="360" aria-hidden="true"></canvas><p class="visitor-globe-caption" data-globe-key="illustration">地球示意 · 不代表访客分布</p></div>
-          <div id="visitor-globe-provider" class="visitor-globe-provider"></div>
-        </div>
+        <figure class="visitor-map-figure">
+          <a id="visitor-map-image-link" class="visitor-map-image-link" href="https://mapmyvisitors.com/web/1c9hd" target="_blank" rel="noopener noreferrer" title="Visit tracker">
+            <img id="visitor-map-image" src="https://mapmyvisitors.com/map.png?d=ntLJGOeKJKC9srHXo9NO33yzZqYIH9yzYRgX1K1u8JU&amp;cl=ffffff" width="180" height="112" decoding="async" referrerpolicy="strict-origin-when-cross-origin" alt="聘枢公开页面访客分布地图，由 MapMyVisitors 提供">
+          </a>
+          <p id="visitor-map-error" class="visitor-map-error" data-map-key="error" hidden>地图暂时无法加载。你仍可打开统计页，或稍后重试。</p>
+          <figcaption data-map-key="caption">官方访客分布地图 · 点击查看详细统计</figcaption>
+          <p id="visitor-map-status" class="visitor-map-status" role="status" aria-live="polite"></p>
+        </figure>
       </div>
-      <noscript>地球动画需要 JavaScript；访问统计状态请以启用 JavaScript 后的提示为准。Enable JavaScript to view the globe and statistics connection status.</noscript>
+      <noscript>访客地图无需 JavaScript；点击地图即可查看完整统计。This map works without JavaScript; open it for full statistics.</noscript>
     </section>
     <section id="community" class="section-shell community-section" aria-labelledby="community-title">
       <div class="community-heading"><div class="eyebrow">BUILT TOGETHER. OPEN TO EVERYONE.</div><h2 id="community-title" data-i18n="communityTitle">一个人的经验，<br>可以成为很多人的起点。</h2><p data-i18n="communityDescription">提问、分享实验、讨论工程难题，或者帮助别人完成第一份作品。一起把社区慢慢搭起来。</p><button class="button cream" type="button" data-submit="discussion"><span data-i18n="joinDiscussion">进入 GitHub 讨论区</span> <span aria-hidden="true">↗</span></button></div>
@@ -142,5 +142,6 @@
   </main>
   <footer class="site-footer section-shell" id="site-footer"><div><a class="brand" href="#"><img class="brand-mark" src="./assets/logo-mark.svg" width="40" height="40" alt=""><span class="brand-wordmark"><strong data-i18n="brandName">聘枢</strong><small data-i18n="brandTagline">AI Infra JobHub</small></span></a><p class="founder-credit"><strong data-i18n="founderName">项目发起人：李超群</strong><span data-i18n="founderCompany">所属公司：元智引擎公司</span></p><p data-i18n="footerNote">独立社区项目，与所列开源项目无官方隶属关系。</p></div><div class="footer-links"><a class="text-link" href="./career/" data-i18n="navCareer">求职准备</a><a class="text-link" href="./talent/" data-i18n="navTalent">人才速览</a><button class="text-button" type="button" data-submit="repository" data-i18n="sourceCode">项目仓库 ↗</button><button class="text-button" id="privacy-button" type="button" data-i18n="privacy">公开资料与隐私</button><span class="mono">LEARN. BUILD. CONNECT.</span></div></footer>
   <dialog id="detail-dialog" aria-labelledby="dialog-title"><div class="dialog-header"><span class="mono">AI INFRA JOBHUB</span><button class="close-button" id="close-dialog" type="button" aria-label="关闭 / Close">×</button></div><div id="dialog-content"></div></dialog>
+  <script src="./visitor-map.js?v=20261114-map" defer></script>
 </body>
 </html>

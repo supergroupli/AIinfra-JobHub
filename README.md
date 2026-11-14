@@ -1,6 +1,6 @@
 # 聘枢 · AI Infra JobHub
 
-首页提供全球访问地球，右上角可打开 GitHub 为项目点 Star。访问统计的配置、范围与隐私说明见 [访问统计维护文档](docs/VISITOR_STATS.md)。
+首页提供官方访客分布地图，点击可查看国家 / 地区统计，右上角可打开 GitHub 为项目点 Star。访问统计的配置、范围与隐私说明见 [访问统计维护文档](docs/VISITOR_STATS.md)。
 
 **Learn. Build. Connect. / 学习、做作品、找到同行。**
 
