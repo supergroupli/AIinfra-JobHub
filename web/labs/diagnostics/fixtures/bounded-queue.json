@@ -1,0 +1,12 @@
+{
+  "arrivals_per_tick": [
+    8,
+    8,
+    8,
+    8,
+    8
+  ],
+  "service_per_tick": 5,
+  "queue_limit": 10,
+  "bytes_per_task": 10485760
+}

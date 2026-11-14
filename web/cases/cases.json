@@ -1,0 +1,1259 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "kv-capacity",
+      "category": "inference",
+      "title": {
+        "zh": "权重装得下，为什么请求仍会耗尽 KV 空间？",
+        "en": "Weights fit, but the KV budget does not"
+      },
+      "summary": {
+        "zh": "从 token 和块分配算容量，区分 KV 预算、整体显存和实际 OOM。",
+        "en": "Calculate token and block capacity; distinguish KV pressure from total device memory and observed OOM."
+      },
+      "context": {
+        "zh": "某教学服务能加载模型，但并发从 2 增到 8 后出现容量告警。给定一个全注意力模型：32 层、8 个 KV head、head dimension 128，K/V 元素各 2 字节。权重和运行时已经扣除，留给 KV 的预算仅 1 GiB。每条序列当前需要 4,096 token，块长 16；没有共享、分片、滑动窗口或卸载。先预测哪些量随并发增长，不要把“模型能启动”当成容量证明。",
+        "en": "A teaching service loads its weights, but capacity alarms appear when concurrency grows from two to eight. Assume full attention: 32 layers, 8 KV heads, head dimension 128, and 2 bytes per K/V element. The KV allowance after weights and runtime is just 1 GiB. Each sequence needs 4,096 tokens in blocks of 16, with no sharing, sharding, sliding windows or offload. Predict what grows with concurrency before equating successful startup with sufficient capacity."
+      },
+      "diagram": [
+        {
+          "zh": "KV 预算",
+          "en": "KV budget"
+        },
+        {
+          "zh": "每 token 字节",
+          "en": "Bytes per token"
+        },
+        {
+          "zh": "按块向上取整",
+          "en": "Round to blocks"
+        },
+        {
+          "zh": "总需求 / 预算",
+          "en": "Demand / budget"
+        }
+      ],
+      "evidence": [
+        {
+          "title": {
+            "zh": "线索 1：先确认预算口径",
+            "en": "Clue 1: identify the budget"
+          },
+          "body": {
+            "zh": "这不是整张卡的显存，而是供本算例使用的 KV 配额。",
+            "en": "This is the exercise’s KV allowance, not total GPU memory."
+          },
+          "log": "kv_budget_bytes=1073741824\nsequence_tokens=[4096,4096,4096,4096,4096,4096,4096,4096]"
+        },
+        {
+          "title": {
+            "zh": "线索 2：拆开 K 与 V",
+            "en": "Clue 2: count both K and V"
+          },
+          "body": {
+            "zh": "一个 token 需要 2 × 32 × 8 × 128 × 2 = 131,072 字节。这里使用 KV heads，不能误用 query heads。",
+            "en": "One token needs 2 × 32 × 8 × 128 × 2 = 131,072 bytes. Use KV heads, not query heads."
+          },
+          "log": "bytes_per_token=131072\nallocated_tokens=32768"
+        },
+        {
+          "title": {
+            "zh": "线索 3：对照而非猜测",
+            "en": "Clue 3: compare explicitly"
+          },
+          "body": {
+            "zh": "总需求 4 GiB，是预算的 4 倍；预算可容纳 512 个完整块，即 8,192 token。",
+            "en": "Demand is 4 GiB, four times the budget. The allowance fits 512 full blocks, or 8,192 tokens."
+          },
+          "log": "required_bytes=4294967296\nmax_full_blocks=512\nfits=false"
+        }
+      ],
+      "hypotheses": [
+        {
+          "zh": "是否把整卡显存误当作 KV 预算？核对权重、激活、图捕获和运行时占用。",
+          "en": "Was total device memory mistaken for the KV allowance? Check weights, activations, graph capture and runtime."
+        },
+        {
+          "zh": "是否存在缓存共享或滑动窗口？若有，不能直接使用本算例的密集公式。",
+          "en": "Is there sharing or sliding-window attention? If so, this dense formula needs adjustment."
+        },
+        {
+          "zh": "告警是否真是 KV 容量？需要实际日志和分配统计；算式本身不证明 allocator OOM。",
+          "en": "Is the observed alarm truly KV capacity? Obtain logs and allocation metrics; arithmetic does not prove allocator OOM."
+        }
+      ],
+      "investigation": [
+        {
+          "zh": "运行命令并核对 input_sha256，确认分析的是原始 fixture。",
+          "en": "Run the command and check input_sha256 to identify the exact fixture."
+        },
+        {
+          "zh": "复制 fixture，把序列数改成 2，再用 --input 指向副本；预测 fits 会怎样变化。",
+          "en": "Copy the fixture, reduce it to two sequences and rerun with --input; predict the new fits value."
+        },
+        {
+          "zh": "把某条长度改为 4,097，手算它会占 4,112 个 token 槽位。说明尾块浪费。",
+          "en": "Change one length to 4,097; calculate its allocation of 4,112 token slots and explain tail-block waste."
+        }
+      ],
+      "resolution": {
+        "zh": "在本模型中，2 条 4,096-token 序列恰好用满预算，3 条就超出。现实修复应以引擎实际可用块数为准，控制在途 token/并发，保留运行时余量，并检查排队和拒绝行为。不要直接把预算参数调到整卡容量。",
+        "en": "In this model two 4,096-token sequences exactly fill the budget; three exceed it. In deployment use the engine’s actual available blocks, bound in-flight tokens/concurrency, preserve runtime headroom, and test queueing and rejection behavior. Do not set the budget to total device capacity."
+      },
+      "regression": [
+        {
+          "zh": "2 条序列 fits=true；8 条 fits=false；容量变化应能由公式解释。",
+          "en": "Two sequences fit and eight do not; explain the change arithmetically."
+        },
+        {
+          "zh": "真实环境补测长短混合、取消请求和峰值显存，同时记录失败与尾延迟。",
+          "en": "On real hardware test mixed lengths, cancellations and peak memory, retaining failures and tail latency."
+        }
+      ],
+      "limits": {
+        "zh": "本实验只做静态容量分析，没有加载模型，也不测显存碎片或执行峰值。",
+        "en": "This is static capacity analysis: no model load, fragmentation measurement or execution peak."
+      },
+      "challenge": {
+        "zh": "设计一组长度，token 总数相同但块浪费不同；解释为什么只看平均长度不够。",
+        "en": "Construct equal-total-token workloads with different block waste, and explain why mean length is insufficient."
+      },
+      "command": "python3 lab.py kv-capacity --out out/kv-capacity",
+      "expected": "required_bytes=4294967296; budget_bytes=1073741824; fits=false",
+      "lessons": [
+        {
+          "course": "foundations",
+          "day": 2
+        },
+        {
+          "course": "vllm",
+          "day": 6
+        }
+      ],
+      "sources": [
+        {
+          "title": "vLLM · Optimization and tuning",
+          "url": "https://docs.vllm.ai/en/stable/configuration/optimization/"
+        }
+      ],
+      "lastChecked": "2026-11-14"
+    },
+    {
+      "id": "tail-queue",
+      "category": "inference",
+      "title": {
+        "zh": "短请求为什么也出现 100 ms 尾延迟？",
+        "en": "Why do short requests also take 100 ms?"
+      },
+      "summary": {
+        "zh": "用到达、开始、完成三个时间点定位队头阻塞。",
+        "en": "Use arrival, start and completion timestamps to identify head-of-line blocking."
+      },
+      "context": {
+        "zh": "教学单服务台按先来先服务处理任务，长请求 t=0 到达，占用 100 ms；9 个短请求在 t=1…9 ms 到达，每个只需 1 ms。没有抢占，也没有连续批处理。有人看到短请求慢，准备更换算子；你要先判断慢在计算还是等待。",
+        "en": "A teaching single-server FCFS queue receives a 100 ms job at t=0, followed by nine 1 ms jobs at t=1…9 ms. There is no preemption or continuous batching. A teammate proposes replacing the kernel because short requests are slow. First establish whether their time is spent computing or waiting."
+      },
+      "diagram": [
+        {
+          "zh": "到达时间",
+          "en": "Arrival"
+        },
+        {
+          "zh": "排队等待",
+          "en": "Queue wait"
+        },
+        {
+          "zh": "服务时间",
+          "en": "Service"
+        },
+        {
+          "zh": "分组分位数",
+          "en": "Grouped percentiles"
+        }
+      ],
+      "evidence": [
+        {
+          "title": {
+            "zh": "线索 1：服务时间没有变",
+            "en": "Clue 1: service cost is unchanged"
+          },
+          "body": {
+            "zh": "短请求的 service_ms 都是 1，不能把总时延全部归因于计算。",
+            "en": "Every short job has service_ms=1; end-to-end latency is not all compute."
+          },
+          "log": "long arrival=0 service=100\nshort arrivals=1..9 service=1"
+        },
+        {
+          "title": {
+            "zh": "线索 2：重建开始时刻",
+            "en": "Clue 2: reconstruct starts"
+          },
+          "body": {
+            "zh": "第一条短请求在 t=100 才开始，等待 99 ms；后续短请求仍各等待 99 ms。",
+            "en": "The first short job starts at t=100 after waiting 99 ms; every subsequent short job also waits 99 ms."
+          },
+          "log": "start=max(previous_finish,arrival)\nlatency=finish-arrival"
+        },
+        {
+          "title": {
+            "zh": "线索 3：分组后看尾部",
+            "en": "Clue 3: inspect per-class tails"
+          },
+          "body": {
+            "zh": "短请求最近秩 p95 总时延 100 ms，等待 p95 99 ms，服务 p95 1 ms。",
+            "en": "Short-job nearest-rank p95 is 100 ms end-to-end, 99 ms waiting and 1 ms service."
+          },
+          "log": "short_p95_latency_ms=100\nshort_p95_wait_ms=99\nshort_service_p95_ms=1"
+        }
+      ],
+      "hypotheses": [
+        {
+          "zh": "如果 service 没变化而 wait 增长，队列是假设之一。比较相同输入的独立运行。",
+          "en": "If service stays stable while wait grows, queueing is a candidate; compare isolated identical inputs."
+        },
+        {
+          "zh": "也可能是限速或网络等待；真实系统必须明确每个时间戳边界。",
+          "en": "Rate limiting or networking may also cause waits; define timestamp boundaries in a real system."
+        },
+        {
+          "zh": "直接优先短任务可能饿死长任务，不能只优化短请求平均值。",
+          "en": "Prioritizing short jobs can starve long jobs; do not optimize only their mean."
+        }
+      ],
+      "investigation": [
+        {
+          "zh": "先运行 fixture，手算第一个和最后一个短请求的开始与完成时刻。",
+          "en": "Run the fixture and hand-calculate the first and last short jobs."
+        },
+        {
+          "zh": "将长请求移至所有短请求之后，保持服务时间不变，再对比分组 p95。",
+          "en": "Move the long job after all short jobs without changing service cost, then compare per-class p95."
+        },
+        {
+          "zh": "设计分块 prefill 或隔离队列的对照实验，同时固定到达过程、token 数与超时。",
+          "en": "Design a chunked-prefill or isolated-queue comparison while fixing arrivals, token counts and timeouts."
+        }
+      ],
+      "resolution": {
+        "zh": "本数据指向队头阻塞。改善调度或隔离资源前，要同时规定公平性、最长等待、总吞吐和内存约束。真实 vLLM/SGLang 有更复杂的批处理与调度，不能用此单服务台模拟的数值预测生产性能。",
+        "en": "The fixture indicates head-of-line blocking. Before changing scheduling or resource isolation, define fairness, maximum wait, total throughput and memory constraints. Real vLLM/SGLang scheduling and batching are richer than this single-server model; its numbers do not predict deployment performance."
+      },
+      "regression": [
+        {
+          "zh": "移除长请求后短请求 p95=1 ms；原始输入保持 100 ms。",
+          "en": "Without the long job short-job p95 becomes 1 ms; the original remains 100 ms."
+        },
+        {
+          "zh": "记录长短两类的成功数、等待、尾延迟和最长等待，失败不从分母消失。",
+          "en": "Track successes, waits, tails and maximum waits for both classes; retain failures in counts."
+        }
+      ],
+      "limits": {
+        "zh": "只模拟 FCFS 队列；没有 GPU、网络、prefill/decode 重叠或缓存。",
+        "en": "FCFS simulation only: no GPU, network, prefill/decode overlap or cache."
+      },
+      "challenge": {
+        "zh": "新增一个短请求洪峰，提出不会饿死长任务的策略，并写出需测的反例。",
+        "en": "Add a burst of short jobs and propose a non-starving policy with a counterexample to test."
+      },
+      "command": "python3 lab.py tail-queue --out out/tail-queue",
+      "expected": "short_p95_latency_ms=100; short_p95_wait_ms=99",
+      "lessons": [
+        {
+          "course": "foundations",
+          "day": 5
+        },
+        {
+          "course": "sglang",
+          "day": 5
+        }
+      ],
+      "sources": [
+        {
+          "title": "vLLM · Metrics",
+          "url": "https://docs.vllm.ai/en/latest/design/metrics/"
+        },
+        {
+          "title": "vLLM · Anatomy of an inference engine",
+          "url": "https://vllm-project.github.io/2025/09/05/anatomy-of-vllm.html"
+        }
+      ],
+      "lastChecked": "2026-11-14"
+    },
+    {
+      "id": "prefix-miss",
+      "category": "inference",
+      "title": {
+        "zh": "提示词很相似，前缀缓存却总是未命中",
+        "en": "Similar prompts, zero reusable prefix"
+      },
+      "summary": {
+        "zh": "用 token 序列对照区分语义相似与精确前缀相同。",
+        "en": "Contrast semantic similarity with exact token-prefix identity."
+      },
+      "context": {
+        "zh": "教学应用给每个提示词最前面加 request ID。四条请求大部分文字一样，但首 token 不同。使用块长 4 的前缀模型，缓存不淘汰，模型、租户与分词器固定。比较动态字段在前、稳定字段在前两种布局，并先预测第一条请求是否可能命中。",
+        "en": "A teaching application prepends a unique request ID. Four prompts share most text but differ at the first token. Use a block size of four, no eviction, and fixed model, tenant and tokenizer. Compare dynamic-first and stable-first layouts; predict whether the first request can hit."
+      },
+      "diagram": [
+        {
+          "zh": "相同作用域",
+          "en": "Same scope"
+        },
+        {
+          "zh": "分词后的序列",
+          "en": "Token sequence"
+        },
+        {
+          "zh": "完整前缀块",
+          "en": "Full prefix blocks"
+        },
+        {
+          "zh": "复用 / 重算",
+          "en": "Reuse / recompute"
+        }
+      ],
+      "evidence": [
+        {
+          "title": {
+            "zh": "线索 1：读 token，不猜文本",
+            "en": "Clue 1: inspect tokens"
+          },
+          "body": {
+            "zh": "动态 ID 放在第一个 token 时，后面的相同内容不是相同前缀。",
+            "en": "With the dynamic ID first, matching later content is not a matching prefix."
+          },
+          "log": "[\"0\",\"SYS\",\"tenant-A\",\"guide\",\"v1\",\"doc\",\"A\",\"B\"]\n[\"1\",\"SYS\",\"tenant-A\",\"guide\",\"v1\",\"doc\",\"A\",\"B\"]"
+        },
+        {
+          "title": {
+            "zh": "线索 2：稳定部分在前",
+            "en": "Clue 2: stable content first"
+          },
+          "body": {
+            "zh": "重排后前四个 token 一致，但必须确认重排不改变任务语义与安全边界。",
+            "en": "The reordered prompts share four initial tokens; verify that reordering preserves task semantics and isolation."
+          },
+          "log": "[\"SYS\",\"tenant-A\",\"guide\",\"v1\",\"0\",\"doc\",\"A\",\"B\"]"
+        },
+        {
+          "title": {
+            "zh": "线索 3：暖缓存计数",
+            "en": "Clue 3: warm-cache accounting"
+          },
+          "body": {
+            "zh": "第一条为冷启动，后面三条各复用一个四-token 块：12/32=37.5%。",
+            "en": "The first request is cold; the next three reuse four tokens each: 12/32=37.5%."
+          },
+          "log": "dynamic_first.cached_tokens=0\nstable_first.cached_tokens=12\nstable_first.token_hit_fraction=0.375"
+        }
+      ],
+      "hypotheses": [
+        {
+          "zh": "模板或 token ID 是否真的相同？相同语义不足以保证复用。",
+          "en": "Are templates and token IDs truly identical? Semantic equivalence is insufficient."
+        },
+        {
+          "zh": "是否重启、淘汰或路由到另一实例？布局正确也可能失去缓存驻留。",
+          "en": "Did restart, eviction or routing to another instance remove residency?"
+        },
+        {
+          "zh": "命中降低的是部分 prefill 工作，decode 占比高时整体收益可能很小。",
+          "en": "A hit avoids some prefill work; decode-heavy requests may see little total benefit."
+        }
+      ],
+      "investigation": [
+        {
+          "zh": "比较两组 fixture 的首块，并手算冷请求与暖请求的分母。",
+          "en": "Compare first blocks and manually count cold and warm request denominators."
+        },
+        {
+          "zh": "把 block 改成 8，再分析为什么四-token 共享不再成为完整块命中。",
+          "en": "Set block to eight and explain why the four-token shared prefix no longer forms a reusable full block."
+        },
+        {
+          "zh": "真实验证需固定模型、tokenizer、租户隔离和实例路由，再记录 TTFT 与命中 token。",
+          "en": "For real validation fix model, tokenizer, tenant isolation and routing, then record TTFT and cached tokens."
+        }
+      ],
+      "resolution": {
+        "zh": "把适合复用的稳定上下文放在语义允许的位置，保留租户与模型隔离。不要删除必要的安全上下文，也不要靠“语义相似”复用另一用户的 KV。用冷暖对照确认命中和延迟收益分别成立。",
+        "en": "Place reusable stable context where semantics permit and preserve tenant/model isolation. Never remove required safety context or reuse another user’s KV based on semantic similarity. Separately verify cache hits and latency benefit with cold/warm comparisons."
+      },
+      "regression": [
+        {
+          "zh": "冷启动首条命中为零；重复稳定块才增加 cached_tokens。",
+          "en": "The first cold request has zero hits; repeated stable blocks increase cached_tokens."
+        },
+        {
+          "zh": "改变租户或模型时必须在真实实现中验证隔离；本模型不模拟权限。",
+          "en": "Verify isolation when tenant or model changes in a real implementation; this model does not implement access control."
+        }
+      ],
+      "limits": {
+        "zh": "只是完整 token 块集合模型，没有引擎 hash、驱逐、并发或实际 TTFT。",
+        "en": "A full-token-block set model only: no engine hash, eviction, concurrency or measured TTFT."
+      },
+      "challenge": {
+        "zh": "构造“后半段完全相同但前缀不同”的反例，并解释为何不能复用后半段 KV。",
+        "en": "Construct identical suffixes with different prefixes and explain why suffix KV is not reusable."
+      },
+      "command": "python3 lab.py prefix-miss --out out/prefix-miss",
+      "expected": "dynamic_first.cached_tokens=0; stable_first.cached_tokens=12",
+      "lessons": [
+        {
+          "course": "vllm",
+          "day": 5
+        },
+        {
+          "course": "sglang",
+          "day": 4
+        }
+      ],
+      "sources": [
+        {
+          "title": "vLLM · Prefix cache design",
+          "url": "https://docs.vllm.ai/en/latest/design/prefix_caching/"
+        },
+        {
+          "title": "vLLM · Automatic Prefix Caching",
+          "url": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/"
+        }
+      ],
+      "lastChecked": "2026-11-14"
+    },
+    {
+      "id": "async-timing",
+      "category": "performance",
+      "title": {
+        "zh": "“快了 200 倍”的 kernel，其实只计了提交时间",
+        "en": "A “200× faster” kernel timed only submission"
+      },
+      "summary": {
+        "zh": "分开 CPU 提交和设备执行，建立同一计时边界。",
+        "en": "Separate CPU submission from device execution and align timing boundaries."
+      },
+      "context": {
+        "zh": "教学记录有两个数值已校验的 kernel：A 的 CPU 提交时间 0.02 ms、设备区间 4 ms；B 的提交时间 0.03 ms、设备区间 2 ms。有人按主机计时选 A。脚本只分析给定的合成时间戳，不会运行 CUDA。",
+        "en": "Two teaching kernels have already-passed numerical checks: A takes 0.02 ms to enqueue and 4 ms on the device; B takes 0.03 ms to enqueue and 2 ms on the device. A teammate chooses A from host timing. The script analyzes synthetic timing records; it does not run CUDA."
+      },
+      "diagram": [
+        {
+          "zh": "正确性校验",
+          "en": "Correctness"
+        },
+        {
+          "zh": "预热与事件",
+          "en": "Warmup / events"
+        },
+        {
+          "zh": "完成后读计时",
+          "en": "Read after completion"
+        },
+        {
+          "zh": "同口径比较",
+          "en": "Equal boundaries"
+        }
+      ],
+      "evidence": [
+        {
+          "title": {
+            "zh": "线索 1：主机先返回",
+            "en": "Clue 1: the host returns early"
+          },
+          "body": {
+            "zh": "异步提交返回不代表 GPU 工作完成。",
+            "en": "Returning from an asynchronous enqueue does not mean device work is complete."
+          },
+          "log": "A: host_enqueue_ms=0.02, device_elapsed_ms=4\nB: host_enqueue_ms=0.03, device_elapsed_ms=2"
+        },
+        {
+          "title": {
+            "zh": "线索 2：排名反转",
+            "en": "Clue 2: the ranking flips"
+          },
+          "body": {
+            "zh": "按提交时间 A 更小，按设备区间 B 更小；比较的是不同工作。",
+            "en": "A has lower submission time; B has lower device time. These are different quantities."
+          },
+          "log": "host_fastest=A\ndevice_fastest=B"
+        },
+        {
+          "title": {
+            "zh": "线索 3：倍率没有算法含义",
+            "en": "Clue 3: the ratio is not speedup"
+          },
+          "body": {
+            "zh": "4/0.02=200 只是两种计时口径的比，不是优化加速比。",
+            "en": "4/0.02=200 compares two timing boundaries, not before/after performance."
+          },
+          "log": "A.understatement_factor=200"
+        }
+      ],
+      "hypotheses": [
+        {
+          "zh": "是否缺少完成同步，导致只测到 launch？",
+          "en": "Was completion synchronization omitted, leaving only launch timing?"
+        },
+        {
+          "zh": "是否第一次运行含编译、分配或缓存预热？必须拆开冷启动与稳态。",
+          "en": "Did the first run include compilation, allocation or warmup? Separate cold start and steady state."
+        },
+        {
+          "zh": "结果是否有数据依赖或不同 stream？事件必须围绕实际待测工作。",
+          "en": "Are there data dependencies or different streams? Events must surround the actual work."
+        }
+      ],
+      "investigation": [
+        {
+          "zh": "运行合成数据，解释为什么 host_fastest 与 device_fastest 不同。",
+          "en": "Run the records and explain the different host/device winners."
+        },
+        {
+          "zh": "在有 GPU 时，用同 stream 的 CUDA events 记录执行区间，并在读取前等待完成；另测端到端路径。",
+          "en": "With a GPU, use same-stream CUDA events and wait before reading; measure end-to-end separately."
+        },
+        {
+          "zh": "固定输入、精度、重复次数和预热，先检查输出，再比较分布而非单次最小值。",
+          "en": "Fix input, precision, repetitions and warmup; check outputs first and compare distributions rather than a single minimum."
+        }
+      ],
+      "resolution": {
+        "zh": "按你真正优化的边界报告指标：设备执行与端到端可以并列，但不能混为一个加速比。本数据按设备区间 B 比 A 快 2 倍；这是给定合成数据的算术结论。",
+        "en": "Report the boundary being optimized. Device and end-to-end timings may coexist but cannot form one speedup ratio. In these synthetic records B is twice as fast as A on-device; this is arithmetic over supplied data."
+      },
+      "regression": [
+        {
+          "zh": "修改 host 时间不应改变 device_fastest。",
+          "en": "Changing host timing must not change device_fastest."
+        },
+        {
+          "zh": "真实实验保留正确性误差、预热规则、每轮时延和硬件配置。",
+          "en": "Keep numerical error, warmup rules, per-run latency and hardware configuration in a real experiment."
+        }
+      ],
+      "limits": {
+        "zh": "不验证硬件计时、CUDA stream 实现或真实 kernel 性能。",
+        "en": "Does not validate hardware timers, stream behavior or actual kernels."
+      },
+      "challenge": {
+        "zh": "设计一个 host 更慢但 device 更快的第三个 kernel，并说明何时端到端结果仍可能更差。",
+        "en": "Add a third kernel with slower submission and faster device work; explain when end-to-end may still worsen."
+      },
+      "command": "python3 lab.py async-timing --out out/async-timing",
+      "expected": "host_fastest=A; device_fastest=B; A.understatement_factor=200",
+      "lessons": [
+        {
+          "course": "triton",
+          "day": 8
+        },
+        {
+          "course": "foundations",
+          "day": 8
+        }
+      ],
+      "sources": [
+        {
+          "title": "PyTorch · CUDA semantics and asynchronous execution",
+          "url": "https://docs.pytorch.org/docs/stable/notes/cuda.html"
+        }
+      ],
+      "lastChecked": "2026-11-14"
+    },
+    {
+      "id": "ddp-scaling",
+      "category": "performance",
+      "title": {
+        "zh": "DDP 能运行，为什么更新幅度翻倍？",
+        "en": "DDP runs, but the update is twice as large"
+      },
+      "summary": {
+        "zh": "用四个样本的梯度对照全局目标，找出 sum/mean 混用。",
+        "en": "Compare four sample gradients against the global objective to detect sum/mean mismatch."
+      },
+      "context": {
+        "zh": "教学目标是全局四样本的平均损失。rank 0 的样本梯度为 2、4，rank 1 为 6、8。假设两 rank、相同本地 batch、默认梯度平均、无自定义 hook。局部把损失相加再调用同步，会得到什么？脚本只做标量数学，不启动 DDP。",
+        "en": "The teaching objective is the mean loss over four global samples. Rank 0 has sample gradients 2 and 4; rank 1 has 6 and 8. Assume two ranks, equal local batch sizes, default gradient averaging and no custom hook. What happens if each local loss is summed before synchronization? This script performs scalar arithmetic, not DDP execution."
+      },
+      "diagram": [
+        {
+          "zh": "每样本梯度",
+          "en": "Per-sample gradients"
+        },
+        {
+          "zh": "本地归约",
+          "en": "Local reduction"
+        },
+        {
+          "zh": "rank 间平均",
+          "en": "Rank average"
+        },
+        {
+          "zh": "全局基线",
+          "en": "Global baseline"
+        }
+      ],
+      "evidence": [
+        {
+          "title": {
+            "zh": "线索 1：目标的分母",
+            "en": "Clue 1: the target denominator"
+          },
+          "body": {
+            "zh": "全局 mean=(2+4+6+8)/4=5。",
+            "en": "The global mean is (2+4+6+8)/4=5."
+          },
+          "log": "sample_gradients=[[2,4],[6,8]]"
+        },
+        {
+          "title": {
+            "zh": "线索 2：错误路径",
+            "en": "Clue 2: the incorrect path"
+          },
+          "body": {
+            "zh": "局部 sum 得到 6、14；两 rank 平均是 10，不是 5。",
+            "en": "Local sums are 6 and 14; averaging ranks gives 10, not 5."
+          },
+          "log": "ddp_of_local_sums=10\nabsolute_error_before=5"
+        },
+        {
+          "title": {
+            "zh": "线索 3：正确路径",
+            "en": "Clue 3: the consistent path"
+          },
+          "body": {
+            "zh": "局部 mean 是 3、7；平均得到 5，与全局参考相同。",
+            "en": "Local means are 3 and 7; their average is 5, matching the reference."
+          },
+          "log": "ddp_of_local_means=5\nabsolute_error_after=0"
+        }
+      ],
+      "hypotheses": [
+        {
+          "zh": "先明确目标是全局 mean 还是 sum；没有脱离目标的唯一缩放规则。",
+          "en": "Specify global mean versus sum first; scaling is defined by the objective."
+        },
+        {
+          "zh": "batch 是否等大？不等大时直接平均各 rank 的 mean 通常不等于样本均值。",
+          "en": "Are batches equally sized? Equal averaging of unequal local means generally differs from the sample mean."
+        },
+        {
+          "zh": "累积步数、混合精度和梯度裁剪位置也会改变更新，需要逐层排除。",
+          "en": "Accumulation, mixed precision and clipping order can alter updates and need separate checks."
+        }
+      ],
+      "investigation": [
+        {
+          "zh": "运行 fixture，手算三个路径并解释额外系数来自哪里。",
+          "en": "Run the fixture, calculate all three paths and locate the extra factor."
+        },
+        {
+          "zh": "把一个 rank 的 batch 改为不等长，观察程序明确拒绝此模型，而非默默给出错结论。",
+          "en": "Make batches unequal and observe explicit rejection rather than a misleading conclusion."
+        },
+        {
+          "zh": "真实训练先比较一步梯度和参数，再比较多步 loss；固定同一全局数据顺序。",
+          "en": "In real training compare one-step gradients and parameters before multi-step loss, fixing global sample order."
+        }
+      ],
+      "resolution": {
+        "zh": "对等大本地 batch 的全局 mean，使用局部 mean 再做默认 rank 平均；不要再额外除 world_size。若改为不等大 batch 或自定义归约，重新推导权重并做单进程对照。",
+        "en": "For equal local batches and a global mean, local means followed by default rank averaging are consistent; do not divide by world_size again. For unequal batches or custom reduction, derive weights again and compare to a single-process reference."
+      },
+      "regression": [
+        {
+          "zh": "修复后绝对误差为 0；原始错误路径仍为 5，作为反例保留。",
+          "en": "The fixed path has zero absolute error; retain the original error of five as a counterexample."
+        },
+        {
+          "zh": "改变样本梯度后，正确路径仍等于全局样本均值。",
+          "en": "After changing sample gradients, the correct path must still match the global sample mean."
+        }
+      ],
+      "limits": {
+        "zh": "不运行 torch、通信或自动求导；只验证本算例的归约语义。",
+        "en": "No torch, communication or autograd execution; only this reduction example is verified."
+      },
+      "challenge": {
+        "zh": "给两个 rank 分别 1 与 3 个样本，推导加权平均公式；不要直接复用等权平均。",
+        "en": "Give ranks one and three samples, derive a weighted formula, and explain why equal weighting fails."
+      },
+      "command": "python3 lab.py ddp-scaling --out out/ddp-scaling",
+      "expected": "global_sample_mean=5; ddp_of_local_sums=10; ddp_of_local_means=5",
+      "lessons": [
+        {
+          "course": "pytorch-distributed",
+          "day": 3
+        },
+        {
+          "course": "pytorch-distributed",
+          "day": 6
+        }
+      ],
+      "sources": [
+        {
+          "title": "PyTorch · DistributedDataParallel gradient reduction note",
+          "url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html"
+        }
+      ],
+      "lastChecked": "2026-11-14"
+    },
+    {
+      "id": "small-collectives",
+      "category": "performance",
+      "title": {
+        "zh": "小消息带宽低，就是网卡坏了吗？",
+        "en": "Do small-message rates prove a slow network?"
+      },
+      "summary": {
+        "zh": "用延迟加传输时间的模型，解释消息粒度和合并的代价。",
+        "en": "Use latency plus transfer time to reason about granularity and coalescing."
+      },
+      "context": {
+        "zh": "教学模型 T=α+S/B，固定延迟 α=10 μs，有效 payload 速率 B=10,000 bytes/μs。扫描 1 KiB、1 MiB、16 MiB；再比较 100 条 1 KiB 消息与合并成一条。这里不是 NCCL 输出，不含拓扑和算法校正。",
+        "en": "Use the teaching model T=α+S/B with α=10 μs and payload rate B=10,000 bytes/μs. Scan 1 KiB, 1 MiB and 16 MiB, then compare 100 one-KiB messages with one combined payload. This is not NCCL output and includes no topology or algorithm correction."
+      },
+      "diagram": [
+        {
+          "zh": "消息字节数",
+          "en": "Message bytes"
+        },
+        {
+          "zh": "固定延迟",
+          "en": "Fixed latency"
+        },
+        {
+          "zh": "payload 时间",
+          "en": "Payload time"
+        },
+        {
+          "zh": "时间 / 吞吐",
+          "en": "Time / throughput"
+        }
+      ],
+      "evidence": [
+        {
+          "title": {
+            "zh": "线索 1：先看单位",
+            "en": "Clue 1: check units"
+          },
+          "body": {
+            "zh": "bytes/μs 除以 1,000 才是十进制 GB/s；GiB 与 GB 不可混用。",
+            "en": "Divide bytes/μs by 1,000 for decimal GB/s; do not mix GB and GiB."
+          },
+          "log": "latency_us=10\npayload_bytes_per_us=10000"
+        },
+        {
+          "title": {
+            "zh": "线索 2：小消息固定项占主导",
+            "en": "Clue 2: fixed cost dominates small messages"
+          },
+          "body": {
+            "zh": "1 KiB 传输项只需 0.1024 μs，总时间 10.1024 μs；低 payload 吞吐不等于链路上限低。",
+            "en": "One KiB needs only 0.1024 μs of payload time but 10.1024 μs total; low payload throughput does not establish a low link limit."
+          },
+          "log": "T(1024)=10.1024 us\nfixed_fraction≈0.9899"
+        },
+        {
+          "title": {
+            "zh": "线索 3：合并减少固定开销",
+            "en": "Clue 3: coalescing reduces repeated overhead"
+          },
+          "body": {
+            "zh": "100 次各 10.1024 μs，总计 1,010.24 μs；合并模型仅 20.24 μs，但未计等待凑批。",
+            "en": "A hundred separate calls total 1,010.24 μs; the combined model takes 20.24 μs, excluding the wait to fill the batch."
+          },
+          "log": "separate_us=1010.24\ncoalesced_us=20.24"
+        }
+      ],
+      "hypotheses": [
+        {
+          "zh": "消息是否足够大以进入带宽主导区域？先扫描尺寸，不只看单点。",
+          "en": "Are messages large enough to be bandwidth dominated? Sweep sizes rather than using one point."
+        },
+        {
+          "zh": "真实变慢也可能是 rank 不一致、拓扑或竞争；需要同配置基线。",
+          "en": "Real slowdowns may involve rank skew, topology or contention; compare the same configuration."
+        },
+        {
+          "zh": "合并是否延迟就绪梯度的通信、减少计算通信重叠？需要端到端检验。",
+          "en": "Does coalescing delay ready gradients and reduce overlap? Validate end-to-end."
+        }
+      ],
+      "investigation": [
+        {
+          "zh": "运行尺寸扫描，解释 fixed_fraction 随消息增大为何下降。",
+          "en": "Run the size sweep and explain the falling fixed_fraction."
+        },
+        {
+          "zh": "将 α 减半，再将 B 加倍，比较两种修改对 1 KiB 与 16 MiB 的不同影响。",
+          "en": "Halve α, then double B, and compare effects at one KiB and 16 MiB."
+        },
+        {
+          "zh": "真实使用 nccl-tests 时同时记录时间、algbw、busbw、rank 数、拓扑与版本。",
+          "en": "With real nccl-tests retain time, algbw, busbw, rank count, topology and version."
+        }
+      ],
+      "resolution": {
+        "zh": "先判定延迟主导还是带宽主导，再决定消息合并、bucket 调整或链路调查。不能把本模型的 payload GB/s 冒充 NCCL busbw；也不能把理想合并收益直接作为训练提速。",
+        "en": "Determine latency versus bandwidth dominance before coalescing, bucket tuning or link investigation. This model’s payload GB/s is not NCCL busbw, and ideal coalescing savings are not training speedup."
+      },
+      "regression": [
+        {
+          "zh": "固定 α 时，尺寸增大后 payload 速率逐渐接近设定 B。",
+          "en": "At fixed α, increasing message size approaches the configured payload rate."
+        },
+        {
+          "zh": "合并后端到端收益还需覆盖等待、重叠和显存峰值。",
+          "en": "End-to-end coalescing validation must include waiting, overlap and peak memory."
+        }
+      ],
+      "limits": {
+        "zh": "这是 α–β 教学估算；不模拟 NCCL 环/树、拓扑、拥塞或协议切换。",
+        "en": "An α–β teaching estimate; no NCCL ring/tree, topology, contention or protocol transitions."
+      },
+      "challenge": {
+        "zh": "给合并增加 1,200 μs 等待时间，计算何时总延迟反而更差。",
+        "en": "Add a 1,200 μs coalescing wait and show when total latency becomes worse."
+      },
+      "command": "python3 lab.py small-collectives --out out/small-collectives",
+      "expected": "separate_us=1010.24; coalesced_us=20.24",
+      "lessons": [
+        {
+          "course": "nccl",
+          "day": 5
+        },
+        {
+          "course": "nccl",
+          "day": 6
+        }
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA nccl-tests · Performance metrics",
+          "url": "https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md"
+        }
+      ],
+      "lastChecked": "2026-11-14"
+    },
+    {
+      "id": "retry-storm",
+      "category": "platform",
+      "title": {
+        "zh": "请求超时后重试，为什么产生重复写入？",
+        "en": "Retries after timeouts create duplicate writes"
+      },
+      "summary": {
+        "zh": "分开执行成功、响应丢失和业务幂等，计算重试放大。",
+        "en": "Separate committed work, lost responses and business idempotency; count retry amplification."
+      },
+      "context": {
+        "zh": "100 个教学请求中，30 个已经提交写入，但前三次响应都丢失；客户端最多尝试 4 次，第 4 次收到确认。其他 70 个一次成功。每次重试携带相同业务键。比较不去重与“原子去重+副作用提交”的结果。",
+        "en": "Of 100 teaching requests, 30 commit a write but lose acknowledgements for their first three attempts; the fourth is acknowledged. The other 70 succeed once. Each retry carries the same business key. Compare no deduplication against atomic deduplication with side-effect commit."
+      },
+      "diagram": [
+        {
+          "zh": "业务提交",
+          "en": "Business commit"
+        },
+        {
+          "zh": "确认丢失",
+          "en": "Lost acknowledgement"
+        },
+        {
+          "zh": "带同一键重试",
+          "en": "Retry same key"
+        },
+        {
+          "zh": "原子去重",
+          "en": "Atomic deduplication"
+        }
+      ],
+      "evidence": [
+        {
+          "title": {
+            "zh": "线索 1：超时不等于未执行",
+            "en": "Clue 1: timeout does not mean unexecuted"
+          },
+          "body": {
+            "zh": "请求已提交后丢确认，客户端无法仅凭超时判断是否需要再次写入。",
+            "en": "After a committed write loses its acknowledgement, timeout alone cannot determine whether another write is needed."
+          },
+          "log": "requests=100\nlost_ack_requests=30\nattempts=4"
+        },
+        {
+          "title": {
+            "zh": "线索 2：放大与重复是两件事",
+            "en": "Clue 2: amplification and duplication differ"
+          },
+          "body": {
+            "zh": "总尝试数 70+30×4=190。不去重写 190 次；原子幂等只写 100 次，但仍要处理 190 次请求。",
+            "en": "Total attempts are 70+30×4=190. Without deduplication there are 190 writes; atomic idempotency limits writes to 100 but still processes 190 attempts."
+          },
+          "log": "amplification=1.9\nduplicate_side_effects=90"
+        },
+        {
+          "title": {
+            "zh": "线索 3：减少尝试仍有代价",
+            "en": "Clue 3: a retry budget has tradeoffs"
+          },
+          "body": {
+            "zh": "最多尝试两次时请求数降到 130，但本场景 30 个请求尚未收到成功确认。",
+            "en": "At most two attempts reduces request count to 130, but those 30 requests have not received an acknowledgement in this scenario."
+          },
+          "log": "budgeted_attempts_if_at_most_two=130"
+        }
+      ],
+      "hypotheses": [
+        {
+          "zh": "相同业务键的写入是否重复？对比请求日志与提交记录，不只看响应码。",
+          "en": "Do identical business keys have duplicate commits? Compare request and commit logs, not just status codes."
+        },
+        {
+          "zh": "框架重试是否与客户端重试叠加？总尝试可能跨层放大。",
+          "en": "Are framework and client retries stacked? Attempts can multiply across layers."
+        },
+        {
+          "zh": "去重检查和提交是否原子？先检查再写存在并发竞态。",
+          "en": "Are the dedupe check and commit atomic? Check-then-write has a race."
+        }
+      ],
+      "investigation": [
+        {
+          "zh": "运行算例，分别记录尝试数、唯一业务键数与实际副作用数。",
+          "en": "Run the example and distinguish attempts, unique business keys and side effects."
+        },
+        {
+          "zh": "将 lost_ack_requests 改为 0，确认重复副作用消失但正常处理仍为 100。",
+          "en": "Set lost_ack_requests to zero; duplicates disappear while normal work remains 100."
+        },
+        {
+          "zh": "设计重试上限、退避与总时限，并单独说明幂等键寿命和冲突处理。",
+          "en": "Design retry limits, backoff and a deadline; separately define idempotency-key lifetime and conflicts."
+        }
+      ],
+      "resolution": {
+        "zh": "在支持原子提交的存储中把去重记录与业务副作用关联；重试复用同一业务键。用有限重试和退避减轻负载，但不要把退避当成去重机制，也不要把执行幂等当成响应一定成功。",
+        "en": "Associate deduplication records and side effects in an atomic commit and reuse the business key on retries. Bound retries and use backoff to reduce load; backoff is not deduplication, and idempotent execution does not guarantee an acknowledged response."
+      },
+      "regression": [
+        {
+          "zh": "相同业务键重放不会增加写入；不同键仍执行。",
+          "en": "Replaying the same business key does not add writes; different keys still execute."
+        },
+        {
+          "zh": "注入提交后丢确认、并发重复和过期键，检查实际存储的原子性。",
+          "en": "Inject lost acknowledgements after commit, concurrent duplicates and expired keys; check atomicity in actual storage."
+        }
+      ],
+      "limits": {
+        "zh": "确定性计数模型，不连接 Ray 或数据库，不实现持久化幂等事务。",
+        "en": "Deterministic counting model; no Ray/database connection or durable idempotent transaction implementation."
+      },
+      "challenge": {
+        "zh": "如果先重试两次后向用户报失败，怎样处理后台已成功提交的结果？写出查询与对账流程。",
+        "en": "If the client reports failure after two attempts, how should it reconcile work already committed? Design status lookup and reconciliation."
+      },
+      "command": "python3 lab.py retry-storm --out out/retry-storm",
+      "expected": "attempts=190; writes_without_deduplication=190; writes_with_atomic_idempotency=100",
+      "lessons": [
+        {
+          "course": "ray",
+          "day": 9
+        },
+        {
+          "course": "foundations",
+          "day": 9
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ray · Task fault tolerance",
+          "url": "https://docs.ray.io/en/latest/ray-core/fault_tolerance/tasks.html"
+        }
+      ],
+      "lastChecked": "2026-11-14"
+    },
+    {
+      "id": "bounded-queue",
+      "category": "platform",
+      "title": {
+        "zh": "任务都很小，待处理队列却吃满内存",
+        "en": "Small tasks, an unbounded pending queue"
+      },
+      "summary": {
+        "zh": "用守恒计数分析提交、处理、拒绝与内存峰值。",
+        "en": "Use conservation accounting for submission, service, rejection and peak memory."
+      },
+      "context": {
+        "zh": "每个 tick 到达 8 个任务，服务能力 5 个，持续 5 个 tick；每个在途任务占 10 MiB。对照无界与最多 10 个待处理任务的策略。每 tick 先到达并执行容量检查，再服务；满时拒绝，不自动重试。上限限制待处理总量，不表示执行并发。",
+        "en": "Eight tasks arrive per tick and five can be served, for five ticks. Each pending task consumes 10 MiB. Compare unbounded submission with a cap of ten total pending tasks. Within a tick arrivals and admission occur before service; excess is rejected without automatic retries. The cap limits pending work, not execution concurrency."
+      },
+      "diagram": [
+        {
+          "zh": "到达 8",
+          "en": "Eight arrive"
+        },
+        {
+          "zh": "接纳或拒绝",
+          "en": "Admit or reject"
+        },
+        {
+          "zh": "服务 5",
+          "en": "Serve five"
+        },
+        {
+          "zh": "保存剩余队列",
+          "en": "Carry queue forward"
+        }
+      ],
+      "evidence": [
+        {
+          "title": {
+            "zh": "线索 1：长期速率不平衡",
+            "en": "Clue 1: arrival exceeds service"
+          },
+          "body": {
+            "zh": "每 tick 净增 3 个任务；无界队列不会因为单任务小而稳定。",
+            "en": "The queue grows by three per tick; small tasks do not make an unbounded queue stable."
+          },
+          "log": "arrivals_per_tick=[8,8,8,8,8]\nservice_per_tick=5"
+        },
+        {
+          "title": {
+            "zh": "线索 2：看服务前的峰值",
+            "en": "Clue 2: inspect pre-service peak"
+          },
+          "body": {
+            "zh": "无界峰值依次 8、11、14、17、20 个；内存峰值 200 MiB。",
+            "en": "Unbounded pre-service peaks are 8,11,14,17,20 tasks, reaching 200 MiB."
+          },
+          "log": "unbounded_peak_bytes=209715200"
+        },
+        {
+          "title": {
+            "zh": "线索 3：有界并非免费",
+            "en": "Clue 3: bounding has a cost"
+          },
+          "body": {
+            "zh": "上限 10 把峰值压到 100 MiB，但拒绝 10 个任务。两者服务完成均 25；最终分别积压 15 与 5。",
+            "en": "A cap of ten limits the peak to 100 MiB but rejects ten tasks. Both serve 25; final queues are fifteen and five."
+          },
+          "log": "bounded_peak_bytes=104857600\nrejected=10\nserved_bounded=25"
+        }
+      ],
+      "hypotheses": [
+        {
+          "zh": "增长的是未完成引用、结果缓存还是执行中的对象？先按生命周期分组。",
+          "en": "Are pending references, retained results or running objects growing? Separate lifecycles."
+        },
+        {
+          "zh": "限制执行并发是否同时限制提交？提交无限增长仍可能耗尽内存。",
+          "en": "Does limiting execution also bound submission? Unlimited pending work can still exhaust memory."
+        },
+        {
+          "zh": "拒绝后立即重试会否把压力转移给上游？需要接纳协议和退避。",
+          "en": "Do immediate retries push pressure upstream? Define admission and backoff behavior."
+        }
+      ],
+      "investigation": [
+        {
+          "zh": "运行数据并验证：总到达=已服务+剩余+拒绝。",
+          "en": "Run the data and verify arrivals = served + remaining + rejected."
+        },
+        {
+          "zh": "将 queue_limit 改为 20，比较峰值、拒绝和结束时积压，不能只比较吞吐。",
+          "en": "Set queue_limit to twenty; compare peak, rejection and final backlog, not throughput alone."
+        },
+        {
+          "zh": "在 Ray 场景用有限 pending 集合与 ray.wait 回收；实验中显式检查引用释放。",
+          "en": "For Ray use a bounded pending set with ray.wait and explicitly check reference release."
+        }
+      ],
+      "resolution": {
+        "zh": "建立有界接纳、消费完成后释放引用，以及上游可理解的拒绝/等待协议。临时缓冲只能吸收突发，不能解决平均到达率长期高于服务率；容量规划还要看端到端延迟和丢弃。",
+        "en": "Use bounded admission, release references on completion, and define rejection/waiting for upstream callers. A buffer absorbs bursts but cannot fix a long-run arrival rate above service capacity; planning must also include latency and dropped work."
+      },
+      "regression": [
+        {
+          "zh": "每 tick 守恒成立，有界峰值不超过 cap × bytes_per_task。",
+          "en": "Conservation holds each tick and bounded peak does not exceed cap × bytes_per_task."
+        },
+        {
+          "zh": "停止到达后可排空；检查超时任务、取消和结果引用的清理。",
+          "en": "The queue drains after arrivals stop; inspect timeout, cancellation and result-reference cleanup."
+        }
+      ],
+      "limits": {
+        "zh": "离散教学队列，不模拟任务执行时间分布、Ray 调度或对象存储。",
+        "en": "Discrete teaching queue; no execution-time distribution, Ray scheduling or object-store simulation."
+      },
+      "challenge": {
+        "zh": "加入 3 个零到达 tick 并验证队列排空；解释拒绝数为什么不会自动变成成功数。",
+        "en": "Add three zero-arrival ticks and verify draining; explain why rejections do not automatically become successes."
+      },
+      "command": "python3 lab.py bounded-queue --out out/bounded-queue",
+      "expected": "unbounded_peak_bytes=209715200; bounded_peak_bytes=104857600; rejected=10",
+      "lessons": [
+        {
+          "course": "ray",
+          "day": 6
+        },
+        {
+          "course": "foundations",
+          "day": 5
+        }
+      ],
+      "sources": [
+        {
+          "title": "Ray · Limit pending tasks with ray.wait",
+          "url": "https://docs.ray.io/en/latest/ray-core/patterns/limit-pending-tasks.html"
+        }
+      ],
+      "lastChecked": "2026-11-14"
+    },
+    {
+      "id": "probe-confusion",
+      "category": "platform",
+      "title": {
+        "zh": "Ready=False 就会重启吗？先分清三种探针",
+        "en": "Does Ready=False restart a container?"
+      },
+      "summary": {
+        "zh": "沿启动、存活、就绪与扩容四条证据链排查。",
+        "en": "Separate startup, liveness, readiness and autoscaling evidence."
+      },
+      "context": {
+        "zh": "教学模型服务需要 45 秒加载。假设探针首次在 10 秒执行，之后每 10 秒一次，阈值 3；加载完成前端点失败。没有 startup probe 时，误把“尚未加载好”作为 liveness 失败，会在 30 秒触发重启。readiness 失败本身只影响就绪状态，不触发重启。",
+        "en": "A teaching model service loads in 45 seconds. Assume the first probe at ten seconds, then every ten seconds, with a threshold of three; the endpoint fails before loading completes. Without startup protection, using “not loaded yet” as liveness failure triggers a restart at thirty seconds. Readiness failure itself changes readiness rather than restarting the container."
+      },
+      "diagram": [
+        {
+          "zh": "启动预算",
+          "en": "Startup budget"
+        },
+        {
+          "zh": "存活状态",
+          "en": "Liveness"
+        },
+        {
+          "zh": "接流量条件",
+          "en": "Readiness"
+        },
+        {
+          "zh": "HPA 指标与决策",
+          "en": "HPA metrics / decisions"
+        }
+      ],
+      "evidence": [
+        {
+          "title": {
+            "zh": "线索 1：Ready 不是 Restart",
+            "en": "Clue 1: readiness is not restart"
+          },
+          "body": {
+            "zh": "先分开 Pod Ready 条件、容器 restartCount 和 Events。以下是合成观察，不是 kubectl 输出。",
+            "en": "Separate Pod Ready, container restartCount and Events. These are synthetic observations, not kubectl output."
+          },
+          "log": "10s Ready=false\n20s Ready=false\n30s liveness failure threshold reached"
+        },
+        {
+          "title": {
+            "zh": "线索 2：启动预算短于加载",
+            "en": "Clue 2: the startup allowance is too short"
+          },
+          "body": {
+            "zh": "3×10=30 秒，小于加载时间 45 秒。本算例在可就绪前会触发失败阈值。",
+            "en": "3×10=30 seconds is shorter than the 45-second load. This example reaches the failure threshold before readiness."
+          },
+          "log": "startup_budget_seconds=30\nstartup_budget_exceeds_load=false"
+        },
+        {
+          "title": {
+            "zh": "线索 3：扩容要看自己的信号",
+            "en": "Clue 3: autoscaling needs its own evidence"
+          },
+          "body": {
+            "zh": "Ready=false 不能单独证明 HPA 应扩容；需要目标指标、当前样本、缺失指标和控制器事件。",
+            "en": "Ready=false alone cannot prove HPA should scale; inspect target metrics, current samples, missing data and controller events."
+          },
+          "log": "readiness_failure_restarts=0\nunguarded_liveness_restarts_before_ready=true"
+        }
+      ],
+      "hypotheses": [
+        {
+          "zh": "容器被重启是 liveness、startup、进程退出还是 OOMKilled？用 Events 与退出状态区分。",
+          "en": "Was restart caused by liveness, startup, process exit or OOMKilled? Use events and termination status."
+        },
+        {
+          "zh": "加载阶段是否需要更大的 startup 预算？不应通过无限放宽 liveness 掩盖死锁。",
+          "en": "Does loading need a longer startup budget? Do not hide deadlocks by making liveness ineffective."
+        },
+        {
+          "zh": "HPA 是否使用可用且合适的指标？CPU 利用率未必反映 GPU 推理排队。",
+          "en": "Does HPA use available, relevant metrics? CPU utilization may not reflect GPU inference queueing."
+        }
+      ],
+      "investigation": [
+        {
+          "zh": "运行 fixture，明确记录首次探针时刻假设，并核对阈值与加载时间。",
+          "en": "Run the fixture, record the first-probe timing assumption and compare threshold to load time."
+        },
+        {
+          "zh": "将 failure_threshold 改为 6，观察 60 秒预算与 45 秒加载的关系；这是 startup 设计估算，不是部署清单。",
+          "en": "Set failure_threshold to six and compare its 60-second allowance to 45-second loading; this estimates startup design, not a manifest."
+        },
+        {
+          "zh": "真实集群依次检查 Pod 描述、容器日志、探针事件、Service Endpoint 状态与 HPA 条件。",
+          "en": "In a real cluster inspect Pod details, container logs, probe events, Service endpoints and HPA conditions in order."
+        }
+      ],
+      "resolution": {
+        "zh": "把慢启动交给有足够预算的 startup probe；liveness 判断进程是否需要恢复，readiness 判断是否适合接新流量。扩容另行验证指标链路、启动时延与负载变化，不从单条 Ready 条件推断扩容结果。",
+        "en": "Allow slow loading with an adequately budgeted startup probe. Liveness asks whether recovery is needed; readiness asks whether new traffic can be served. Validate autoscaling metrics, startup delay and load separately rather than inferring a scale decision from one Ready condition."
+      },
+      "regression": [
+        {
+          "zh": "单独 readiness 失败不会增加重启计数；真实集群仍需测试流量摘除。",
+          "en": "Readiness failure alone does not increase restarts; test traffic removal in a real cluster."
+        },
+        {
+          "zh": "测试慢启动、永久失败、运行中卡死三种不同条件，避免探针互相掩盖。",
+          "en": "Test slow startup, permanent failure and runtime hangs as distinct conditions."
+        }
+      ],
+      "limits": {
+        "zh": "纯时序推导，不启动 Kubernetes 或执行 HPA；实际调度有抖动与额外容器生命周期延迟。",
+        "en": "Timing reasoning only: no Kubernetes/HPA execution. Real scheduling includes jitter and lifecycle delays."
+      },
+      "challenge": {
+        "zh": "如果模型加载偶尔需 80 秒，怎样选择 startup 预算并保留永久启动失败的检测能力？",
+        "en": "If loading occasionally takes eighty seconds, choose a startup allowance while still detecting permanent startup failure."
+      },
+      "command": "python3 lab.py probe-confusion --out out/probe-confusion",
+      "expected": "readiness_failure_restarts=0; startup_budget_seconds=30; unguarded_liveness_restarts_before_ready=true",
+      "lessons": [
+        {
+          "course": "kubernetes",
+          "day": 5
+        },
+        {
+          "course": "kubernetes",
+          "day": 7
+        }
+      ],
+      "sources": [
+        {
+          "title": "Kubernetes · Liveness, readiness and startup probes",
+          "url": "https://kubernetes.io/docs/concepts/workloads/pods/probes/"
+        },
+        {
+          "title": "Kubernetes · Horizontal Pod Autoscaling",
+          "url": "https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/"
+        }
+      ],
+      "lastChecked": "2026-11-14"
+    }
+  ]
+}

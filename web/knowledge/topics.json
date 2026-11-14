@@ -1,0 +1,1970 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-11-14",
+  "topics": [
+    {
+      "id": "prefill-decode",
+      "category": "serving",
+      "title": {
+        "zh": "Prefill 与 Decode：把等待拆开",
+        "en": "Prefill and decode: separate the waits"
+      },
+      "summary": {
+        "zh": "首 token 等待和后续生成速度，为什么不能用一个吞吐数字解释？",
+        "en": "Why one throughput number cannot explain first-token waiting and generation speed."
+      },
+      "explain": [
+        {
+          "zh": "Prefill 处理已有输入 token，生成后续注意力可用的 K/V 状态；decode 随生成逐步扩展上下文。对普通自回归解码，一个序列的后一个 token 依赖前一个 token，但多个序列可以一起执行。两阶段的矩阵形状和数据搬运不同，瓶颈也可能不同。",
+          "en": "Prefill processes input tokens and creates K/V state. Decode extends the context as output is generated. In ordinary autoregressive decoding, the next token depends on the previous one, while different sequences can run together. The stages use different shapes and data movement, so their limiting resources can differ."
+        },
+        {
+          "zh": "客户端 TTFT 还包含网络、排队、分词和首输出传送。分析前先画清计时边界：服务端 prefill 变快，若排队同时变长，用户未必更快看到字。流式间隔也不等于 GPU 单步时间。",
+          "en": "Client TTFT also includes network, queueing, tokenization and delivery. Draw timing boundaries first: a faster prefill may be hidden by longer queueing. Streamed output intervals are not identical to GPU step duration."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "教学时间线：排队 40 ms、准备 10 ms、产生首 token 30 ms；随后 9 个 token 各隔 12 ms。忽略网络。",
+          "en": "Teaching timeline: 40 ms queueing, 10 ms preparation, 30 ms to produce the first token, then nine further tokens spaced 12 ms apart. Ignore network time."
+        },
+        "steps": [
+          {
+            "zh": "TTFT = 40 + 10 + 30 = 80 ms。",
+            "en": "TTFT = 40 + 10 + 30 = 80 ms."
+          },
+          {
+            "zh": "10 个输出有 9 个后续间隔：9 × 12 = 108 ms。",
+            "en": "Ten output tokens have nine subsequent intervals: 9 × 12 = 108 ms."
+          },
+          {
+            "zh": "端到端时间 = 80 + 108 = 188 ms。",
+            "en": "End-to-end duration = 80 + 108 = 188 ms."
+          }
+        ],
+        "result": {
+          "zh": "若只把首 token 计算降到 15 ms，TTFT 变 65 ms，总时间 173 ms；后续间隔仍为 12 ms。",
+          "en": "Reducing only first-token computation to 15 ms gives 65 ms TTFT and 173 ms total duration; subsequent intervals remain 12 ms."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "短输出且长输入可能更在意 TTFT；长输出交互也要限制后续停顿。按用户任务同时观察两个指标。",
+          "en": "Long prompts with short answers often emphasize TTFT; long interactive answers also need bounded subsequent stalls. Track both for the user task."
+        },
+        {
+          "zh": "输入 token 数相同不代表负载相同：缓存命中、输出长度与并发都要记录。",
+          "en": "Equal input length does not imply equal load. Record cache reuse, output length and concurrency."
+        }
+      ],
+      "mistake": {
+        "zh": "把“每秒生成多少 token”当作每位用户的响应体验，会掩盖排队与尾延迟。",
+        "en": "Aggregate tokens per second can conceal queueing and slow requests."
+      },
+      "check": {
+        "question": {
+          "zh": "在把首 token 计算降到 15 ms 后，若排队从 40 增到 70 ms，TTFT 能否低于最初的 80 ms？",
+          "en": "After reducing first-token computation to 15 ms, if queueing rises from 40 to 70 ms, will TTFT be below the original 80 ms?"
+        },
+        "answer": {
+          "zh": "不能：70 + 10 + 15 = 95 ms，高于最初的 80 ms。但若保持相同的 70 ms 排队，未优化基线是 70 + 10 + 30 = 110 ms，计算优化仍省了 15 ms。比较时要控制排队条件。",
+          "en": "No: 70 + 10 + 15 = 95 ms, above the original 80 ms. With the same 70 ms queueing, however, the unoptimized baseline is 70 + 10 + 30 = 110 ms, so computation still saves 15 ms. Control queueing conditions when comparing."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "到达/排队",
+          "en": "Arrival / queue"
+        },
+        {
+          "zh": "输入计算",
+          "en": "Prefill"
+        },
+        {
+          "zh": "首 token",
+          "en": "First token"
+        },
+        {
+          "zh": "逐步生成",
+          "en": "Decode steps"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "foundations",
+          "day": 3
+        },
+        {
+          "course": "vllm",
+          "day": 4
+        }
+      ],
+      "related": [
+        "continuous-batching",
+        "prefix-caching"
+      ],
+      "sources": [
+        {
+          "title": "vLLM optimization: prefill and decode",
+          "url": "https://docs.vllm.ai/en/stable/configuration/optimization/"
+        }
+      ]
+    },
+    {
+      "id": "kv-capacity",
+      "category": "serving",
+      "title": {
+        "zh": "KV Cache 与 GQA：先把字节算对",
+        "en": "KV cache and GQA: count bytes first"
+      },
+      "summary": {
+        "zh": "从层数、KV heads、序列长度与并发估算密集注意力缓存。",
+        "en": "Estimate dense-attention cache from layers, KV heads, context and concurrency."
+      },
+      "explain": [
+        {
+          "zh": "普通密集注意力会缓存每层已处理 token 的 K 与 V。理想元素字节数为 2 × 层数 × KV heads × head dimension × token 数 × 元素字节数。GQA 的多个 query heads 共享 KV heads，因此应使用 KV head 数，而不是 query head 数。",
+          "en": "Ordinary dense attention caches a key and value for each processed token at each layer. Ideal bytes equal 2 × layers × KV heads × head dimension × tokens × bytes per element. With GQA, query heads share fewer KV heads; use the KV count, not the query count."
+        },
+        {
+          "zh": "该式是布局假设下的容量估算。滑动窗口、混合注意力、MLA、量化元数据和跨请求共享都会改变存储形式。估算时先写模型结构，再加上权重、激活、工作区与运行时余量。",
+          "en": "This is a capacity model for a stated layout. Sliding windows, hybrid architectures, MLA, quantization metadata and shared prefixes change storage. State the architecture before adding weights, activations, workspace and runtime headroom."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "设 32 层、8 个 KV heads、维度 128、每元素 2 B、每序列 4096 token。所有层用同一密集布局，不共享。",
+          "en": "Assume 32 layers, eight KV heads, dimension 128, two bytes per element and 4096 tokens per sequence. All layers use the same dense layout, with no sharing."
+        },
+        "steps": [
+          {
+            "zh": "每 token：2 × 32 × 8 × 128 × 2 = 131072 B = 128 KiB。",
+            "en": "Per token: 2 × 32 × 8 × 128 × 2 = 131072 B = 128 KiB."
+          },
+          {
+            "zh": "每序列：128 KiB × 4096 = 512 MiB。",
+            "en": "Per sequence: 128 KiB × 4096 = 512 MiB."
+          },
+          {
+            "zh": "8 条序列：512 MiB × 8 = 4 GiB，仅为 KV 理想数据量。",
+            "en": "Eight sequences: 512 MiB × 8 = 4 GiB of ideal KV data only."
+          }
+        ],
+        "result": {
+          "zh": "若可用 KV 预算是 6 GiB，理想上容纳 12 条这种序列；真实上限还要扣除分页等开销。",
+          "en": "A 6 GiB KV budget ideally holds 12 such sequences, before paging and other overhead."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "长上下文与更高并发都消耗预算；应按实际长度分布设计 admission control。",
+          "en": "Longer contexts and higher concurrency both consume capacity; design admission control around the length distribution."
+        },
+        {
+          "zh": "缓存 dtype 可以独立于权重 dtype，不能把权重 4-bit 自动套到 KV。",
+          "en": "Cache dtype may differ from weight dtype. Four-bit weights do not imply four-bit KV."
+        }
+      ],
+      "mistake": {
+        "zh": "GB 与 GiB 混用，或漏算 K/V 的系数 2，会让预算系统性偏小。",
+        "en": "Mixing GB with GiB or omitting the K/V factor of two systematically understates capacity."
+      },
+      "check": {
+        "question": {
+          "zh": "若 KV heads 从 8 增到 32，其余不变，8 条序列需要多少？",
+          "en": "If KV heads rise from eight to 32, how much do eight sequences need?"
+        },
+        "answer": {
+          "zh": "按本密集布局为 16 GiB，是 4 GiB 的四倍。",
+          "en": "Under this dense layout: 16 GiB, four times the original 4 GiB."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "模型布局",
+          "en": "Model layout"
+        },
+        {
+          "zh": "每 token 字节",
+          "en": "Bytes / token"
+        },
+        {
+          "zh": "序列与并发",
+          "en": "Context × concurrency"
+        },
+        {
+          "zh": "显存预算",
+          "en": "Memory budget"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "foundations",
+          "day": 2
+        },
+        {
+          "course": "vllm",
+          "day": 6
+        }
+      ],
+      "related": [
+        "paged-attention",
+        "quantization"
+      ],
+      "sources": [
+        {
+          "title": "Transformers cache strategies",
+          "url": "https://huggingface.co/docs/transformers/en/kv_cache"
+        }
+      ]
+    },
+    {
+      "id": "paged-attention",
+      "category": "serving",
+      "title": {
+        "zh": "Paged Attention：逻辑连续，物理分块",
+        "en": "Paged attention: logical sequences, physical blocks"
+      },
+      "summary": {
+        "zh": "为什么分页改善空间管理，却不会让缓存免费？",
+        "en": "Why paging improves allocation without making cache free."
+      },
+      "explain": [
+        {
+          "zh": "把序列的逻辑 token 位置映射到固定大小物理块，就不必为每个请求预留一整段最大长度连续空间。注意力 kernel 根据 block table 找到对应 K/V。逻辑顺序与物理分配是两件事。",
+          "en": "Mapping logical token positions to fixed-size physical blocks avoids reserving one contiguous maximum-length region per request. The attention kernel uses a block table to locate K/V. Logical order and physical allocation are separate."
+        },
+        {
+          "zh": "块内最后一部分可能没有用满；块太大导致尾部浪费，块太小增加映射管理负担。共享块还要正确维护引用与生命周期。具体 kernel 与块尺寸受实现约束，不能把教学块尺寸当作配置建议。",
+          "en": "The last block may be partially empty. Larger blocks increase tail waste; smaller blocks increase mapping overhead. Shared blocks need correct reference lifetimes. Actual kernels constrain block sizes, so teaching values are not configuration advice."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "教学块容量为 16 token，两条序列分别使用 17 和 31 token，不共享块。",
+          "en": "Teaching blocks hold 16 tokens. Two sequences use 17 and 31 tokens, without sharing."
+        },
+        "steps": [
+          {
+            "zh": "第一条需要 ceil(17 / 16) = 2 块，预留 32 个位置，浪费 15。",
+            "en": "The first needs ceil(17 / 16) = 2 blocks: 32 slots, 15 unused."
+          },
+          {
+            "zh": "第二条也需 2 块，预留 32 个位置，浪费 1。",
+            "en": "The second also needs two blocks: 32 slots, one unused."
+          },
+          {
+            "zh": "合计分配 64 个位置，使用 48 个，内部空位比例 16 / 64 = 25%。",
+            "en": "Together, 64 allocated slots hold 48 tokens: 16 / 64 = 25% internal slack."
+          }
+        ],
+        "result": {
+          "zh": "分页消除了为每条序列预留整个最大长度的必要，但这里仍有 16 个空位。",
+          "en": "Paging removes the need to reserve the full maximum length per sequence, yet this example still has 16 unused slots."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "分块主要解决分配与共享，不直接减少每个有效 token 的 KV 元素数量。",
+          "en": "Blocking addresses allocation and sharing; it does not directly shrink valid-token KV elements."
+        },
+        {
+          "zh": "评价时报告峰值、已分配与有效使用量，并保持同样请求分布。",
+          "en": "Compare peak, allocated and useful capacity under the same request distribution."
+        }
+      ],
+      "mistake": {
+        "zh": "“分页后没有显存浪费”忽略了尾块、元数据与运行时内存。",
+        "en": "Claiming zero waste ignores tail blocks, metadata and runtime memory."
+      },
+      "check": {
+        "question": {
+          "zh": "第一条长度从 17 变到 32，块数如何变化？变到 33 呢？",
+          "en": "How does the first sequence’s block count change at lengths 32 and 33?"
+        },
+        "answer": {
+          "zh": "32 时仍为 2 块；33 时变为 3 块。分配随块边界阶梯式变化。",
+          "en": "At 32 it still uses two blocks; at 33 it needs three. Allocation changes in steps at block boundaries."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "逻辑 token",
+          "en": "Logical tokens"
+        },
+        {
+          "zh": "块编号",
+          "en": "Logical block"
+        },
+        {
+          "zh": "映射表",
+          "en": "Block table"
+        },
+        {
+          "zh": "物理 KV 块",
+          "en": "Physical KV block"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "vllm",
+          "day": 3
+        }
+      ],
+      "related": [
+        "kv-capacity",
+        "prefix-caching"
+      ],
+      "sources": [
+        {
+          "title": "vLLM Paged Attention design",
+          "url": "https://docs.vllm.ai/en/stable/design/paged_attention/"
+        }
+      ]
+    },
+    {
+      "id": "prefix-caching",
+      "category": "serving",
+      "title": {
+        "zh": "前缀缓存：复用的是同一计算上下文",
+        "en": "Prefix caching: reuse the same computational context"
+      },
+      "summary": {
+        "zh": "命中率、命中长度和用户收益不是同一个指标。",
+        "en": "Hit rate, reused length and user benefit are different metrics."
+      },
+      "explain": [
+        {
+          "zh": "前缀缓存复用已计算的上下文 KV，省去重复前缀的 prefill。它不是按文本语义相似度查答案，也不省掉随后新增输出的解码。前缀身份应包含计算相关的 token、模型与配置边界，跨租户复用还要遵守隔离策略。",
+          "en": "Prefix caching reuses computed context KV to avoid repeated prefill. It is neither semantic answer retrieval nor a way to eliminate future output decoding. Identity must respect tokens, model and computation-relevant settings; cross-tenant reuse also requires an isolation policy."
+        },
+        {
+          "zh": "相同文字经不同聊天模板可能成为不同 token 序列；相同 token 后接不同历史也不一定有同一 KV。观察命中时应同时记录复用长度、查找/加载成本与冷缓存对照。",
+          "en": "The same text can tokenize differently under different chat templates. Tokens following different histories need not have the same KV. Record reused length, lookup/load cost and a cold-cache control, not just hits."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "四条请求均有 1000 输入 token。首条冷启动；后面三条各可复用前 800 token。只估算 token 计算量。",
+          "en": "Four requests each have 1000 input tokens. The first is cold; the next three reuse 800 prefix tokens each. Count computed tokens only."
+        },
+        "steps": [
+          {
+            "zh": "无复用需要处理 4 × 1000 = 4000 token。",
+            "en": "Without reuse, process 4 × 1000 = 4000 tokens."
+          },
+          {
+            "zh": "复用后处理 1000 + 3 × 200 = 1600 token。",
+            "en": "With reuse, process 1000 + 3 × 200 = 1600 tokens."
+          },
+          {
+            "zh": "省去 2400 token，即 60%；请求命中率却是 3 / 4 = 75%。",
+            "en": "Avoid 2400 tokens, or 60%; request hit rate is instead 3 / 4 = 75%."
+          }
+        ],
+        "result": {
+          "zh": "75% 命中率不能解释成延迟降低 75%；加载、排队和 decode 仍需测量。",
+          "en": "A 75% hit rate does not imply 75% less latency; loading, queueing and decoding remain to be measured."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "长前缀短输出更可能受益；缓存占空间并可能挤出活跃请求。",
+          "en": "Long shared prompts with short outputs are promising, but cached blocks consume capacity that active requests may need."
+        },
+        {
+          "zh": "对照实验需保持到达模式、输出上限和缓存冷暖状态可解释。",
+          "en": "Keep arrival patterns, output limits and cache warmness explicit in a controlled comparison."
+        }
+      ],
+      "mistake": {
+        "zh": "用“语义相似”替代 token 和计算身份一致性，会引入错误复用。",
+        "en": "Semantic similarity cannot replace equality of token and computational context."
+      },
+      "check": {
+        "question": {
+          "zh": "如果每次请求的前 10 token 都不同，后面重复 990 token 能直接算共同前缀吗？",
+          "en": "If the first ten tokens always differ, are the following 990 repeated tokens a shared prefix?"
+        },
+        "answer": {
+          "zh": "不能。前缀必须从起点连续一致；后面的 KV 还依赖前面上下文。",
+          "en": "No. A prefix must match from the beginning; later KV depends on preceding context."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "确定计算身份",
+          "en": "Identify context"
+        },
+        {
+          "zh": "查找连续前缀",
+          "en": "Find matching prefix"
+        },
+        {
+          "zh": "复用已有 KV",
+          "en": "Reuse KV"
+        },
+        {
+          "zh": "计算新增部分",
+          "en": "Compute suffix"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "vllm",
+          "day": 5
+        },
+        {
+          "course": "lmcache",
+          "day": 3
+        },
+        {
+          "course": "sglang",
+          "day": 4
+        }
+      ],
+      "related": [
+        "paged-attention",
+        "cache-transfer"
+      ],
+      "sources": [
+        {
+          "title": "vLLM automatic prefix caching",
+          "url": "https://docs.vllm.ai/en/stable/features/automatic_prefix_caching/"
+        },
+        {
+          "title": "vLLM prefix cache keys",
+          "url": "https://docs.vllm.ai/en/stable/design/prefix_caching/"
+        }
+      ]
+    },
+    {
+      "id": "continuous-batching",
+      "category": "serving",
+      "title": {
+        "zh": "连续批处理：在迭代边界重新装车",
+        "en": "Continuous batching: refill at iteration boundaries"
+      },
+      "summary": {
+        "zh": "把完成请求腾出的名额给新请求，同时观察长请求造成的等待。",
+        "en": "Reuse slots released by completed requests while observing long-request interference."
+      },
+      "explain": [
+        {
+          "zh": "静态批次通常等一组任务全部结束再接下一组。连续批处理可以在迭代边界移除完成序列并接纳新序列，减少空闲槽位。真实调度还受 token 预算、KV 容量、prefill 策略和公平性约束。",
+          "en": "Static batches commonly wait for their entire group before starting another. Continuous batching can remove finished sequences and admit new ones at iteration boundaries. Real admission also depends on token budgets, KV capacity, prefill policy and fairness."
+        },
+        {
+          "zh": "吞吐改善不等于每条请求延迟下降。大 prefill 可能阻塞 decode，切成小块又增加调度工作。先固定到达时间与长度，再比较完成时间分布，避免以不同负载“证明”调优效果。",
+          "en": "Higher throughput does not mean lower latency for every request. Large prefill work may interfere with decode, while smaller chunks add scheduling work. Fix arrival times and lengths before comparing completion-time distributions."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "教学模型有 2 个槽位；A、B、C 同时到达，需 2、4、2 轮。每轮固定 10 ms，不计 prefill，槽位补入只在轮边界。",
+          "en": "Two teaching slots serve simultaneously arriving A, B and C, needing two, four and two rounds. Every round is 10 ms; omit prefill and admit only at boundaries."
+        },
+        "steps": [
+          {
+            "zh": "静态先跑 A+B：A 在 20 ms 完成，B 在 40 ms 完成。",
+            "en": "Static A+B: A finishes at 20 ms and B at 40 ms."
+          },
+          {
+            "zh": "C 等到 40 ms 才开始，在 60 ms 完成。平均完成延迟为 (20+40+60)/3 = 40 ms。",
+            "en": "C starts at 40 ms and finishes at 60 ms. Mean completion latency is (20+40+60)/3 = 40 ms."
+          },
+          {
+            "zh": "连续策略在 20 ms 用 C 替换 A；B、C 均在 40 ms 完成，平均为 100/3 ≈ 33.33 ms。",
+            "en": "Continuous admission replaces A with C at 20 ms. B and C finish at 40 ms; the mean is 100/3 ≈ 33.33 ms."
+          }
+        ],
+        "result": {
+          "zh": "此理想例子的 makespan 从 60 降到 40 ms；真实轮耗时通常随批次与长度变化。",
+          "en": "Makespan falls from 60 to 40 ms in this ideal model. Real iteration duration generally varies with batch composition and context length."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "槽位数量不是完整资源约束；长上下文会消耗更多 KV。",
+          "en": "Slot count alone is not a full resource constraint: longer contexts consume more KV."
+        },
+        {
+          "zh": "提高并发前先观察 p95、拒绝率与内存，不只看平均值。",
+          "en": "Check p95, rejection rate and memory before raising concurrency, not only the mean."
+        }
+      ],
+      "mistake": {
+        "zh": "把教学固定轮耗时直接外推为真实 GPU 倍率，是错误的性能推断。",
+        "en": "Extrapolating constant teaching-round durations into real GPU speedups is invalid."
+      },
+      "check": {
+        "question": {
+          "zh": "若 C 在 25 ms 到达，能在 20 ms 的边界补入吗？",
+          "en": "If C arrives at 25 ms, can it enter at the 20 ms boundary?"
+        },
+        "answer": {
+          "zh": "不能；本模型最早在 30 ms 边界加入，在 50 ms 才完成两轮。",
+          "en": "No. It can enter at 30 ms at the earliest and cannot finish its two rounds before 50 ms."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "等待请求",
+          "en": "Waiting requests"
+        },
+        {
+          "zh": "预算检查",
+          "en": "Budget check"
+        },
+        {
+          "zh": "执行一轮",
+          "en": "Run one iteration"
+        },
+        {
+          "zh": "释放/补入槽位",
+          "en": "Release / refill"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "foundations",
+          "day": 5
+        },
+        {
+          "course": "vllm",
+          "day": 6
+        },
+        {
+          "course": "sglang",
+          "day": 5
+        }
+      ],
+      "related": [
+        "prefill-decode",
+        "backpressure"
+      ],
+      "sources": [
+        {
+          "title": "vLLM scheduler optimization",
+          "url": "https://docs.vllm.ai/en/stable/configuration/optimization/"
+        }
+      ]
+    },
+    {
+      "id": "quantization",
+      "category": "serving",
+      "title": {
+        "zh": "量化：先验证误差，再讨论节省",
+        "en": "Quantization: verify error before savings"
+      },
+      "summary": {
+        "zh": "位宽、比例尺、数值误差与 kernel 支持共同决定结果。",
+        "en": "Bit width, scale, numerical error and kernel support jointly determine the result."
+      },
+      "explain": [
+        {
+          "zh": "量化把较高精度数映射到有限整数，再用 scale（有时还有 zero point）近似恢复。权重位宽降低可以减少数据量，但额外比例尺、打包布局与解量化都要计入。权重、激活与 KV 可以选择不同方案。",
+          "en": "Quantization maps values to a finite integer set and approximately restores them using a scale and sometimes a zero point. Smaller weight widths reduce payload, but scales, packed layouts and dequantization also matter. Weights, activations and KV may use different schemes."
+        },
+        {
+          "zh": "先确定任务质量容忍度，再用固定模型、输入和硬件比较。某格式可存储不等于设备有高效 kernel；较小模型也可能受启动与转换开销限制。还要记录评估样本如何选择，避免只在少数简单输入上通过。",
+          "en": "Define acceptable task quality before comparing a fixed model, input set and device. A storable format does not imply an efficient device kernel; launch and conversion overhead can dominate small workloads. Document how evaluation inputs were selected, so a few easy examples do not stand in for representative quality."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "教学对称整数映射范围 −7…7，scale=0.2。输入 [−0.9, 0.1, 1.1]；恰在半格时采用远离零的舍入规则。",
+          "en": "Use a teaching symmetric range −7…7 and scale 0.2. Input is [−0.9, 0.1, 1.1]; ties round away from zero."
+        },
+        "steps": [
+          {
+            "zh": "除以 scale 得 [−4.5, 0.5, 5.5]，舍入得 [−5, 1, 6]，无需截断。",
+            "en": "Divide by scale: [−4.5, 0.5, 5.5]. Round to [−5, 1, 6], with no clipping."
+          },
+          {
+            "zh": "恢复值 = 整数 × 0.2 = [−1.0, 0.2, 1.2]。",
+            "en": "Reconstruction = integer × 0.2 = [−1.0, 0.2, 1.2]."
+          },
+          {
+            "zh": "绝对误差均为 0.1；MSE = (0.01+0.01+0.01)/3 = 0.01。",
+            "en": "Each absolute error is 0.1; MSE = (0.01+0.01+0.01)/3 = 0.01."
+          }
+        ],
+        "result": {
+          "zh": "未截断时该舍入规则误差不超过半格 0.1；超出表示范围的值不能使用这个界。",
+          "en": "Without clipping, this rounding error is at most half a step, 0.1. Values outside the representable range do not obey that bound."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "该算例是整数映射练习，不对应某款真实 AWQ、GPTQ 或 FP8 kernel。",
+          "en": "This example practices integer mapping, not a particular AWQ, GPTQ or FP8 kernel."
+        },
+        {
+          "zh": "小张量误差只能定位问题；最终还需代表性任务质量和真实延迟测量。",
+          "en": "Small-tensor errors help diagnose issues; representative task quality and real latency still need evaluation."
+        }
+      ],
+      "mistake": {
+        "zh": "只按位宽比宣布速度提升，忽略数据布局和硬件实现。",
+        "en": "Claiming a speedup from the bit-width ratio ignores layout and hardware implementation."
+      },
+      "check": {
+        "question": {
+          "zh": "输入 2.0 会恢复成多少？误差是否仍小于等于 0.1？",
+          "en": "What happens to input 2.0? Is the error still at most 0.1?"
+        },
+        "answer": {
+          "zh": "量化前为 10，截到 7，恢复 1.4，误差 0.6；半格界不再成立。",
+          "en": "The integer 10 clips to seven, reconstructing 1.4 with error 0.6; the half-step bound no longer applies."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "选择范围与比例尺",
+          "en": "Choose range / scale"
+        },
+        {
+          "zh": "舍入与截断",
+          "en": "Round / clip"
+        },
+        {
+          "zh": "恢复近似值",
+          "en": "Reconstruct"
+        },
+        {
+          "zh": "检查质量与速度",
+          "en": "Evaluate quality / speed"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "vllm",
+          "day": 7
+        },
+        {
+          "course": "sglang",
+          "day": 6
+        }
+      ],
+      "related": [
+        "kv-capacity",
+        "roofline"
+      ],
+      "sources": [
+        {
+          "title": "vLLM quantization and hardware compatibility",
+          "url": "https://docs.vllm.ai/en/stable/features/quantization/"
+        }
+      ]
+    },
+    {
+      "id": "tensor-strides",
+      "category": "performance",
+      "title": {
+        "zh": "Tensor stride：形状之外的地址规则",
+        "en": "Tensor strides: address rules beyond shape"
+      },
+      "summary": {
+        "zh": "转置不一定复制数据，连续形状也不等于连续存储。",
+        "en": "A transpose need not copy data, and shape alone does not determine storage order."
+      },
+      "explain": [
+        {
+          "zh": "张量把 storage、offset、shape 与 stride 组合成视图。stride 表示某维索引加一时跨过多少元素。对普通 strided tensor，元素偏移等于 storage_offset 加各维 index × stride 的总和；再乘元素字节数才是字节地址偏移。",
+          "en": "A tensor view combines storage, offset, shape and strides. A stride counts elements skipped when an index increases by one. For an ordinary strided tensor, the element offset is storage_offset plus the sum of index × stride; multiply by element size for a byte offset."
+        },
+        {
+          "zh": "转置可以只交换形状和 stride。需要连续输入的算子可能要求复制或使用另一条 kernel 路径。性能报告应说明是否包含 contiguous 转换，否则比较的工作量不相同。",
+          "en": "A transpose may only exchange shape and strides. An operator requiring contiguous input may copy data or choose another kernel. Include or explicitly exclude contiguous conversion when comparing workloads."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "一个按行存储的 2×3 float32 张量，storage=[0,1,2,3,4,5]，offset=0，stride=(3,1)。",
+          "en": "A row-major 2×3 float32 tensor has storage [0,1,2,3,4,5], offset zero and strides (3,1)."
+        },
+        "steps": [
+          {
+            "zh": "原张量 [1,2] 的元素偏移为 1×3+2×1=5，字节偏移 5×4=20。",
+            "en": "Original [1,2] has element offset 1×3+2×1=5 and byte offset 5×4=20."
+          },
+          {
+            "zh": "转置后 shape=(3,2)，stride=(1,3)。转置 [2,1] 的偏移仍为 2×1+1×3=5。",
+            "en": "After transposing, shape=(3,2), strides=(1,3). Transposed [2,1] still has offset 2×1+1×3=5."
+          },
+          {
+            "zh": "若复制成连续 3×2 布局，stride 变成 (2,1)，storage 顺序变为 [0,3,1,4,2,5]。",
+            "en": "Copying to contiguous 3×2 storage gives strides (2,1) and order [0,3,1,4,2,5]."
+          }
+        ],
+        "result": {
+          "zh": "视图转置与连续复制可以得到相同逻辑值，却有不同数据搬运成本。",
+          "en": "A transposed view and a contiguous copy can have identical logical values but different movement costs."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "检查非连续输入、非零 offset 与边界尺寸，能发现只在连续示例上正确的 kernel。",
+          "en": "Test noncontiguous inputs, nonzero offsets and edge sizes to catch kernels that only work on contiguous examples."
+        },
+        {
+          "zh": "不要对任意视图假设可用 view 重塑；合法性取决于 stride 兼容性。",
+          "en": "Do not assume every view can be reshaped with view; legality depends on stride compatibility."
+        }
+      ],
+      "mistake": {
+        "zh": "把 stride 的单位误当字节，会使指针计算多乘或少乘元素大小。",
+        "en": "Treating an element stride as a byte stride mis-scales pointer arithmetic."
+      },
+      "check": {
+        "question": {
+          "zh": "原矩阵 [1,0] 对应哪个 storage 值和字节偏移？",
+          "en": "Which storage value and byte offset correspond to original [1,0]?"
+        },
+        "answer": {
+          "zh": "元素偏移 3，值为 3；float32 的字节偏移为 12。",
+          "en": "Element offset three, value three, byte offset 12 for float32."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "逻辑索引",
+          "en": "Logical index"
+        },
+        {
+          "zh": "stride 加权求和",
+          "en": "Weighted stride sum"
+        },
+        {
+          "zh": "元素偏移",
+          "en": "Element offset"
+        },
+        {
+          "zh": "字节地址",
+          "en": "Byte address"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "triton",
+          "day": 1
+        },
+        {
+          "course": "triton",
+          "day": 2
+        }
+      ],
+      "related": [
+        "kernel-fusion",
+        "roofline"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch Tensor.stride",
+          "url": "https://docs.pytorch.org/docs/2.15/generated/torch.Tensor.stride.html"
+        }
+      ]
+    },
+    {
+      "id": "roofline",
+      "category": "performance",
+      "title": {
+        "zh": "Roofline：用算术强度提出瓶颈假设",
+        "en": "Roofline: a hypothesis from arithmetic intensity"
+      },
+      "summary": {
+        "zh": "算得多还是搬得多，先统一 FLOP 与字节口径。",
+        "en": "Compare computation with data movement using explicit FLOP and byte conventions."
+      },
+      "explain": [
+        {
+          "zh": "算术强度 I=工作量 FLOP/某级存储传输字节。理想性能上界是 min(计算峰值, 带宽×I)。这给出应优先研究计算还是数据搬运的方向，不是实际运行时间预测器。选择 HBM 或缓存层后，字节口径要一致。",
+          "en": "Arithmetic intensity I is FLOPs divided by bytes transferred at a chosen memory level. An ideal performance ceiling is min(compute peak, bandwidth × I). It suggests where to investigate, rather than predicting measured runtime. Keep the memory level consistent."
+        },
+        {
+          "zh": "小问题可能因启动、低并行度或依赖链远低于两条上界。峰值还随精度、指令和硬件变化。用 profiler 与尺寸扫描来验证假设，不要只看一个模型算出来的数字。",
+          "en": "Small problems may fall below both ceilings due to launches, insufficient parallelism or dependency chains. Peaks depend on precision, instructions and hardware. Validate the hypothesis with profiling and a size sweep."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "教学设备：计算峰值 20 TFLOP/s、带宽 1 TB/s。向量加法每元素 1 FLOP，读两个 float32 并写一个。使用十进制 TB。",
+          "en": "Teaching device: 20 TFLOP/s peak and 1 TB/s bandwidth. Vector addition performs one FLOP while reading two float32 values and writing one. Use decimal TB."
+        },
+        "steps": [
+          {
+            "zh": "每元素数据量 4+4+4=12 B，所以 I=1/12 FLOP/B。",
+            "en": "Traffic per element is 4+4+4=12 B, so I=1/12 FLOP/B."
+          },
+          {
+            "zh": "带宽上界 = 10^12 / 12 ≈ 8.33×10^10 FLOP/s = 0.0833 TFLOP/s。",
+            "en": "Bandwidth ceiling = 10^12 / 12 ≈ 8.33×10^10 FLOP/s = 0.0833 TFLOP/s."
+          },
+          {
+            "zh": "转折强度 = 20 TFLOP/s ÷ 1 TB/s = 20 FLOP/B。该算法远低于转折点。",
+            "en": "Ridge intensity = 20 TFLOP/s ÷ 1 TB/s = 20 FLOP/B. This algorithm is far below it."
+          }
+        ],
+        "result": {
+          "zh": "理想模型提示带宽约束。实际吞吐可以更低，不能据此宣称设备达到了 1 TB/s。",
+          "en": "The model suggests a bandwidth limit. Actual throughput can be lower; it does not demonstrate 1 TB/s achieved bandwidth."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "融合或数据复用会改变流量；增加无用 FLOP 虽能提高 I，却不一定让任务更快。",
+          "en": "Fusion or reuse changes traffic. Adding useless FLOPs raises intensity without necessarily speeding up the task."
+        },
+        {
+          "zh": "矩阵乘的理想复用假设与实测重复读写要分开记。",
+          "en": "Distinguish ideal matrix-multiply reuse from measured repeated traffic."
+        }
+      ],
+      "mistake": {
+        "zh": "把缓存带宽与 HBM 字节量放进同一个公式，会得到没有物理意义的上界。",
+        "en": "Mixing cache bandwidth with HBM traffic produces a meaningless ceiling."
+      },
+      "check": {
+        "question": {
+          "zh": "如果带宽翻倍、其他相同，理想向量加法上界变多少？",
+          "en": "If bandwidth doubles with everything else fixed, what is the ideal vector-add ceiling?"
+        },
+        "answer": {
+          "zh": "约 0.1667 TFLOP/s，仍低于 20 TFLOP/s 计算上界；真实收益还需测量。",
+          "en": "About 0.1667 TFLOP/s, still below the 20 TFLOP/s compute ceiling; actual benefit needs measurement."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "数 FLOP",
+          "en": "Count FLOPs"
+        },
+        {
+          "zh": "数传输字节",
+          "en": "Count transferred bytes"
+        },
+        {
+          "zh": "计算强度",
+          "en": "Compute intensity"
+        },
+        {
+          "zh": "对照两条上界",
+          "en": "Compare ceilings"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "foundations",
+          "day": 4
+        },
+        {
+          "course": "triton",
+          "day": 8
+        }
+      ],
+      "related": [
+        "tensor-strides",
+        "kernel-fusion"
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA GPU performance background",
+          "url": "https://docs.nvidia.com/deeplearning/performance/dl-performance-gpu-background/index.html"
+        }
+      ]
+    },
+    {
+      "id": "kernel-fusion",
+      "category": "performance",
+      "title": {
+        "zh": "Kernel 融合：省去中间搬运",
+        "en": "Kernel fusion: remove intermediate movement"
+      },
+      "summary": {
+        "zh": "融合的收益来自数据流，不是把函数写得更短。",
+        "en": "Fusion benefits come from dataflow, not shorter function names."
+      },
+      "explain": [
+        {
+          "zh": "多个操作独立启动时，中间结果可能写到全局内存再读回。融合在同一 kernel 内保持局部数据，可以减少流量与启动次数。但更大的活跃状态可能提高寄存器压力、降低占用率或产生 spill。",
+          "en": "Separate launches may write intermediate results to global memory and read them back. A fused kernel can retain local data, reducing traffic and launches. Larger live state may raise register pressure, reduce occupancy or spill."
+        },
+        {
+          "zh": "先建立数值契约：dtype、误差容忍、溢出、特殊值与边界尺寸。融合改变计算次序后，浮点舍入可能不同。用端到端计时与 kernel 计时分别解释收益，避免把编译时间混入热运行。",
+          "en": "Define dtype, tolerance, overflow, special-value and boundary behavior first. Changing operation order can change floating-point rounding. Separate end-to-end and kernel timing, and distinguish compilation from steady execution."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "计算 y=ReLU(x+b)，x、b、y 均为 N 个 float32。两步实现先写 t=x+b，再读 t 写 y。忽略缓存复用与写分配。",
+          "en": "Compute y=ReLU(x+b) on N float32 values. The two-step implementation writes t=x+b, then reads t and writes y. Ignore cache reuse and write allocation."
+        },
+        "steps": [
+          {
+            "zh": "第一步读 x、b 并写 t，共 12N B。",
+            "en": "Step one reads x and b and writes t: 12N bytes."
+          },
+          {
+            "zh": "第二步读 t 写 y，共 8N B；总计 20N B。",
+            "en": "Step two reads t and writes y: 8N bytes; total 20N bytes."
+          },
+          {
+            "zh": "融合只读 x、b 写 y，共 12N B，理想流量少 8N B，即 40%。",
+            "en": "Fusion reads x and b and writes y: 12N bytes, saving 8N bytes or 40% of ideal traffic."
+          }
+        ],
+        "result": {
+          "zh": "若完全带宽受限且其余相同，理想流量比是 20/12≈1.67；这不是实测加速比。",
+          "en": "Under a purely bandwidth-limited model with equal conditions, the traffic ratio is 20/12≈1.67, not a measured speedup."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "融合后的资源压力可能抵消流量收益。保留未融合基线并扫描尺寸。",
+          "en": "Resource pressure can offset traffic savings. Keep an unfused baseline and sweep sizes."
+        },
+        {
+          "zh": "跨归约或复杂同步的融合需重新检查并行结构，不能任意拼接。",
+          "en": "Fusion across reductions or synchronization needs a revised parallel design, not arbitrary concatenation."
+        }
+      ],
+      "mistake": {
+        "zh": "只验证随机正数，可能漏掉 ReLU 负值、零、NaN 与 mask 边界。",
+        "en": "Testing only positive random values misses negatives, zeros, NaNs and mask boundaries."
+      },
+      "check": {
+        "question": {
+          "zh": "N=1000 时，这个模型减少多少字节？",
+          "en": "For N=1000, how many bytes does this model save?"
+        },
+        "answer": {
+          "zh": "8000 B。记录真实时间前，先确认实现确实没有写读中间 t。",
+          "en": "8000 bytes. Before timing, verify that the implementation actually removes the intermediate write and read."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "独立操作",
+          "en": "Separate operations"
+        },
+        {
+          "zh": "找中间张量",
+          "en": "Find intermediates"
+        },
+        {
+          "zh": "保持局部数据",
+          "en": "Keep local data"
+        },
+        {
+          "zh": "校验并计时",
+          "en": "Validate / time"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "triton",
+          "day": 4
+        },
+        {
+          "course": "triton",
+          "day": 5
+        }
+      ],
+      "related": [
+        "roofline",
+        "tensor-strides"
+      ],
+      "sources": [
+        {
+          "title": "Triton fused softmax tutorial",
+          "url": "https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html"
+        }
+      ]
+    },
+    {
+      "id": "gradient-accumulation",
+      "category": "performance",
+      "title": {
+        "zh": "梯度累积：等效 batch 的条件",
+        "en": "Gradient accumulation: when batches are equivalent"
+      },
+      "summary": {
+        "zh": "少量显存也能累计梯度，但损失缩放和更新次数必须对齐。",
+        "en": "Accumulate gradients with limited memory while preserving loss scaling and update counts."
+      },
+      "explain": [
+        {
+          "zh": "多次 backward 可以把梯度累加到同一参数上，再做一次 optimizer.step。要匹配大 batch 的平均损失，等大小 microbatch 的 mean loss 应除以累积次数；若有效 token 数不同，则要按实际分母加权。",
+          "en": "Several backward passes can accumulate gradients before one optimizer step. To match a large-batch mean loss, divide equal-sized microbatch mean losses by the accumulation count. If valid-token counts differ, weight by the actual denominator."
+        },
+        {
+          "zh": "只有在相同样本、损失定义和可比较随机性下才谈等效。BatchNorm、dropout 或每步 scheduler 行为可能破坏精确一致性。混合精度的 unscale、裁剪与 step 应围绕完整有效 batch 组织。",
+          "en": "Equivalence requires matched samples, loss definition and comparable randomness. BatchNorm, dropout or per-step scheduling can change results. Organize mixed-precision unscaling, clipping and stepping around the complete effective batch."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "模型只含一个参数 w，两个等大小 microbatch 在同一 w 上的 mean-loss 梯度为 2 和 6。学习率 0.1，起始 w=1。",
+          "en": "A one-parameter model has microbatch mean-loss gradients two and six at the same w. The microbatches are equal-sized; learning rate is 0.1 and initial w=1."
+        },
+        "steps": [
+          {
+            "zh": "全 batch mean 梯度 = (2+6)/2 = 4。",
+            "en": "The full-batch mean gradient is (2+6)/2 = 4."
+          },
+          {
+            "zh": "每份 loss 除以 2，再 backward，累积得到 1+3=4。",
+            "en": "Divide each loss by two before backward: accumulated gradient 1+3=4."
+          },
+          {
+            "zh": "只更新一次：w=1−0.1×4=0.6。",
+            "en": "Update once: w=1−0.1×4=0.6."
+          }
+        ],
+        "result": {
+          "zh": "漏除以 2 会累积成 8，得到 w=0.2。它改变了有效更新幅度。",
+          "en": "Without division, gradient becomes eight and w becomes 0.2, changing the update magnitude."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "DDP 的平均与本地 microbatch 缩放要一起推导；最后不足一个完整累积组也要正确归一化。",
+          "en": "Derive DDP averaging together with local microbatch scaling; normalize a partial final accumulation group correctly."
+        },
+        {
+          "zh": "累计期间不要清零梯度；但每个有效 batch 开始要清理上一轮残留。",
+          "en": "Do not clear gradients between accumulation steps, but clear previous-batch gradients before the next effective batch."
+        }
+      ],
+      "mistake": {
+        "zh": "每个 microbatch 都 optimizer.step，不是梯度累积；后面的梯度在不同参数上计算。",
+        "en": "Stepping after every microbatch is not accumulation: later gradients use different parameters."
+      },
+      "check": {
+        "question": {
+          "zh": "两份 mean 梯度仍为 2 和 6，但样本数分别 1 和 3，正确平均是多少？",
+          "en": "With mean gradients two and six but sample counts one and three, what is the correct average?"
+        },
+        "answer": {
+          "zh": "(1×2+3×6)/4=5，不能简单取 4。",
+          "en": "(1×2+3×6)/4=5, not the unweighted mean four."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "确定损失分母",
+          "en": "Define denominator"
+        },
+        {
+          "zh": "缩放 microbatch",
+          "en": "Scale microbatch"
+        },
+        {
+          "zh": "累计 backward",
+          "en": "Accumulate backward"
+        },
+        {
+          "zh": "一次更新",
+          "en": "One optimizer step"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "pytorch-distributed",
+          "day": 6
+        }
+      ],
+      "related": [
+        "all-reduce",
+        "sharding"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch AMP: gradient accumulation",
+          "url": "https://docs.pytorch.org/docs/2.15/notes/amp_examples.html"
+        }
+      ]
+    },
+    {
+      "id": "all-reduce",
+      "category": "performance",
+      "title": {
+        "zh": "All-reduce：结果语义先于带宽",
+        "en": "All-reduce: semantics before bandwidth"
+      },
+      "summary": {
+        "zh": "每个 rank 都拿到归约结果，才能谈实现是否快。",
+        "en": "Every rank must receive the intended reduction before speed matters."
+      },
+      "explain": [
+        {
+          "zh": "Sum all-reduce 对各 rank 对应位置求和，并把完整结果放到每个 rank。Reduce-scatter 先让各 rank 得到归约结果的一部分，再 all-gather 可以构造同样的最终结果。浮点顺序不同可能产生小舍入差异。",
+          "en": "Sum all-reduce adds corresponding entries across ranks and places the complete result on each rank. Reduce-scatter followed by all-gather can produce the same final semantics. Different floating-point orderings may cause small rounding differences."
+        },
+        {
+          "zh": "所有参与方必须匹配 collective 顺序、元素数、dtype 与组。一个 rank 提前退出可能让其他 rank 等待；这时先追最早出错的 rank，而不是先调通信参数。",
+          "en": "Participants must agree on collective order, element count, dtype and group. One rank exiting early can leave others waiting; find the earliest failing rank before tuning transport parameters."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "两 rank 输入分别是 [1,2,3,4] 和 [10,20,30,40]，使用整数 sum。",
+          "en": "Two ranks hold [1,2,3,4] and [10,20,30,40], using integer sum."
+        },
+        "steps": [
+          {
+            "zh": "完整逐元素和是 [11,22,33,44]。",
+            "en": "The elementwise sum is [11,22,33,44]."
+          },
+          {
+            "zh": "Reduce-scatter 可令 rank0 得 [11,22]，rank1 得 [33,44]。",
+            "en": "Reduce-scatter may leave rank0 with [11,22] and rank1 with [33,44]."
+          },
+          {
+            "zh": "再 all-gather 后，两边都拥有 [11,22,33,44]。若需要平均，还需明确定义除以 2。",
+            "en": "After all-gather, both hold [11,22,33,44]. An average additionally requires a defined division by two."
+          }
+        ],
+        "result": {
+          "zh": "一个框架的 DDP 梯度平均语义，不应误记为所有底层 sum all-reduce 都自动求平均。",
+          "en": "A framework’s DDP gradient-averaging behavior does not mean every low-level sum all-reduce averages automatically."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "算法带宽与总线带宽的归一化不同。报告指标定义、消息大小与 rank 数。",
+          "en": "Algorithm and bus bandwidth use different normalization. Report the definition, message size and rank count."
+        },
+        {
+          "zh": "小消息可能受延迟限制；大消息更可能受到链路和拓扑约束。",
+          "en": "Small messages may be latency-limited; larger ones more strongly expose link and topology constraints."
+        }
+      ],
+      "mistake": {
+        "zh": "只检查 rank0 的形状，不检查每个 rank 的值，可能错过布局或通信错误。",
+        "en": "Checking only rank0’s shape can miss value, layout and communication errors."
+      },
+      "check": {
+        "question": {
+          "zh": "如果 rank1 错误地提交 [10,20]，能靠超时重试修复语义吗？",
+          "en": "If rank1 submits [10,20] instead, can timeout retries fix the semantics?"
+        },
+        "answer": {
+          "zh": "不能。元素数不一致是 collective 契约错误；应先修复代码和输入。",
+          "en": "No. The mismatched element count violates the collective contract; fix the code and input first."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "匹配 collective",
+          "en": "Match collective"
+        },
+        {
+          "zh": "归约分块",
+          "en": "Reduce chunks"
+        },
+        {
+          "zh": "收集结果",
+          "en": "Gather results"
+        },
+        {
+          "zh": "逐 rank 校验",
+          "en": "Validate every rank"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "nccl",
+          "day": 1
+        },
+        {
+          "course": "pytorch-distributed",
+          "day": 2
+        }
+      ],
+      "related": [
+        "gradient-accumulation",
+        "sharding"
+      ],
+      "sources": [
+        {
+          "title": "NCCL collective semantics",
+          "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html"
+        }
+      ]
+    },
+    {
+      "id": "sharding",
+      "category": "performance",
+      "title": {
+        "zh": "分片训练：静态占用与运行峰值",
+        "en": "Sharded training: resident state versus peak memory"
+      },
+      "summary": {
+        "zh": "参数分片省下常驻空间，却带来临时 gather、通信和调度问题。",
+        "en": "Sharding saves resident state but adds temporary gathering, communication and scheduling."
+      },
+      "explain": [
+        {
+          "zh": "数据并行副本通常保存完整参数；全分片把参数、梯度或优化器状态分到多个 rank。计算某个模块前可以临时聚合所需参数，完成后再释放或重新分片。常驻内存变小，不代表运行峰值也按卡数等比下降。",
+          "en": "Replicated data parallelism normally retains complete parameters. Full sharding distributes parameters, gradients or optimizer state. A module may temporarily gather parameters for computation and reshard afterwards. Smaller resident memory does not imply a proportional reduction in peak memory."
+        },
+        {
+          "zh": "划分粒度影响通信次数与峰值，prefetch 可以隐藏等待但同时保留更多未使用参数。比较前应固定精度和 optimizer；保存恢复还要确认所有必要状态能重建。",
+          "en": "Wrapping granularity affects communication frequency and peak memory. Prefetching can hide waits but retains more parameters concurrently. Fix precision and optimizer when comparing, and verify that checkpoints reconstruct all necessary state."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "教学账本：参数 8 GiB、梯度 8 GiB、优化器状态 16 GiB，总计 32 GiB。4 rank 理想完全分片。",
+          "en": "Teaching ledger: 8 GiB parameters, 8 GiB gradients and 16 GiB optimizer state, totaling 32 GiB. Assume ideal full sharding across four ranks."
+        },
+        "steps": [
+          {
+            "zh": "仅常驻状态：32 / 4 = 8 GiB/rank。",
+            "en": "Resident state alone: 32 / 4 = 8 GiB per rank."
+          },
+          {
+            "zh": "若一次参数 gather 额外需要 2 GiB，当前激活 3 GiB、工作区 1 GiB，则估算峰值 8+2+3+1=14 GiB。",
+            "en": "With an additional 2 GiB gather buffer, 3 GiB activations and 1 GiB workspace, estimated peak is 8+2+3+1=14 GiB."
+          },
+          {
+            "zh": "若再预取一块并额外占 2 GiB，峰值可能升到 16 GiB。",
+            "en": "Prefetching another block with an additional 2 GiB can raise the peak to 16 GiB."
+          }
+        ],
+        "result": {
+          "zh": "“32 GiB 分到四卡只要 8 GiB”遗漏了运行期状态；上例也未计 allocator 与框架余量。",
+          "en": "“32 GiB across four cards needs only 8 GiB” omits runtime state; even this example excludes allocator and framework headroom."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "更多分片通常改变通信与同步成本，不保证每步更快。",
+          "en": "More shards change communication and synchronization cost and do not guarantee faster steps."
+        },
+        {
+          "zh": "本账本把 gather buffer 视为额外量；真实实现可能复用或释放部分 shard，须用实测时间线核对。",
+          "en": "This ledger treats the gather buffer as additional. Real implementations may reuse or release shards; validate with a measured timeline."
+        }
+      ],
+      "mistake": {
+        "zh": "只采集每步结束的内存，可能完全漏掉前向或反向的瞬时峰值。",
+        "en": "Sampling memory only after a step can miss forward or backward peaks."
+      },
+      "check": {
+        "question": {
+          "zh": "如果额外 activation 增长到 6 GiB，不预取时的新估算峰值是多少？",
+          "en": "If activations grow to 6 GiB without prefetching, what is the new estimated peak?"
+        },
+        "answer": {
+          "zh": "8+2+6+1=17 GiB，超过 16 GiB 的设备容量，尚未算余量。",
+          "en": "8+2+6+1=17 GiB, above a 16 GiB device even before headroom."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "常驻分片",
+          "en": "Resident shards"
+        },
+        {
+          "zh": "聚合参数",
+          "en": "Gather parameters"
+        },
+        {
+          "zh": "前向/反向",
+          "en": "Forward / backward"
+        },
+        {
+          "zh": "释放与再分片",
+          "en": "Release / reshard"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "pytorch-distributed",
+          "day": 8
+        },
+        {
+          "course": "pytorch-distributed",
+          "day": 9
+        }
+      ],
+      "related": [
+        "all-reduce",
+        "gradient-accumulation"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch FSDP2 tutorial",
+          "url": "https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html"
+        }
+      ]
+    },
+    {
+      "id": "backpressure",
+      "category": "platform",
+      "title": {
+        "zh": "背压：把等待放在可控制的位置",
+        "en": "Backpressure: keep waiting under control"
+      },
+      "summary": {
+        "zh": "限制已接收但未完成的工作，比无限堆积更容易恢复。",
+        "en": "Bound admitted unfinished work to make overload recoverable."
+      },
+      "explain": [
+        {
+          "zh": "当生产速率持续高于消费速率，队列不会自行稳定。背压让上游减速、等待或拒绝新工作，把内存和排队时间放进明确预算。限制 running tasks 与限制 pending tasks 不相同：后者也可能持有对象与元数据。",
+          "en": "When production persistently exceeds consumption, the queue cannot stabilize itself. Backpressure slows, waits or rejects upstream work within explicit memory and delay budgets. A running-task limit is different from a pending-task limit; pending work may retain objects and metadata."
+        },
+        {
+          "zh": "实现时在接收前检查预算，并在完成、取消和失败时归还名额。只限制内部队列却允许 HTTP 层无限等待，相当于把问题搬到另一个队列。要沿整条路径检查谁拥有输入与结果。",
+          "en": "Check budgets before admission and release slots on completion, cancellation and failure. Bounding an internal queue while allowing unlimited HTTP waits merely relocates the queue. Trace ownership of inputs and results through the entire path."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "教学流体模型：每秒到达 120 个任务，消费 100 个，初始队列为空。每个等待任务占 2 MiB，考虑 10 秒区间。",
+          "en": "Teaching fluid model: 120 arrivals and 100 completions per second, initially empty. Each queued task retains 2 MiB; consider ten seconds."
+        },
+        "steps": [
+          {
+            "zh": "净增长 = 120−100=20 个/秒。",
+            "en": "Net growth = 120−100=20 tasks per second."
+          },
+          {
+            "zh": "10 秒后积累 200 个等待任务，占 400 MiB。",
+            "en": "After ten seconds, 200 queued tasks retain 400 MiB."
+          },
+          {
+            "zh": "若等待上限设为 50，队列在 2.5 秒达到上限；之后多余输入必须等待在上游或被拒绝。",
+            "en": "A queue cap of 50 is reached after 2.5 seconds; additional excess arrivals must wait upstream or be rejected."
+          }
+        ],
+        "result": {
+          "zh": "上限约束队列内存约为 100 MiB，不会把消费能力从 100 自动变为 120。",
+          "en": "The cap bounds queue payload near 100 MiB; it does not magically raise service capacity from 100 to 120."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "超时、取消和拒绝应计入结果，不能只报告成功请求延迟。",
+          "en": "Include timeouts, cancellations and rejections in results, not just successful latency."
+        },
+        {
+          "zh": "背压阈值应随任务大小与 deadline 设定，任务数量只是一个代理。",
+          "en": "Choose limits with task size and deadlines in mind; task count is only a proxy."
+        }
+      ],
+      "mistake": {
+        "zh": "用无限重试重新塞回被拒请求，会破坏背压并放大负载。",
+        "en": "Unlimited retries of rejected requests defeat backpressure and amplify load."
+      },
+      "check": {
+        "question": {
+          "zh": "如果只把队列上限从 50 提到 100，稳态吞吐会提高吗？",
+          "en": "Does increasing the queue cap from 50 to 100 improve steady-state throughput?"
+        },
+        "answer": {
+          "zh": "在本模型中不会；消费能力仍是 100/秒，只能容纳更多等待与内存。",
+          "en": "Not in this model. Capacity remains 100 per second; the larger queue stores more waiting work and memory."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "到达",
+          "en": "Arrival"
+        },
+        {
+          "zh": "预算/截止检查",
+          "en": "Budget / deadline check"
+        },
+        {
+          "zh": "有界队列",
+          "en": "Bounded queue"
+        },
+        {
+          "zh": "完成并释放名额",
+          "en": "Finish / release"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "ray",
+          "day": 6
+        },
+        {
+          "course": "foundations",
+          "day": 5
+        }
+      ],
+      "related": [
+        "retry-idempotency",
+        "queue-autoscaling"
+      ],
+      "sources": [
+        {
+          "title": "Ray pending-task backpressure",
+          "url": "https://docs.ray.io/en/latest/ray-core/patterns/limit-pending-tasks.html"
+        }
+      ]
+    },
+    {
+      "id": "retry-idempotency",
+      "category": "platform",
+      "title": {
+        "zh": "重试与幂等：不知道结果，不等于没有发生",
+        "en": "Retries and idempotency: an unknown result may have happened"
+      },
+      "summary": {
+        "zh": "把执行成功与客户端收到成功分开，避免重复副作用。",
+        "en": "Separate successful execution from acknowledgement to prevent duplicate side effects."
+      },
+      "explain": [
+        {
+          "zh": "网络超时只能说明客户端没有及时拿到确定结果；服务端可能已经完成写入。重试需要定义哪些错误可重试、总尝试次数、退避与截止时间。幂等意味着相同逻辑操作重复执行，不产生额外业务副作用。",
+          "en": "A timeout means the client lacks a timely result; the server may already have committed a write. Define retryable errors, attempt limits, backoff and deadlines. Idempotency means repeating the same logical operation does not add business side effects."
+        },
+        {
+          "zh": "幂等键必须绑定请求语义，服务端要原子地记录键、状态与结果，并处理并发重复及过期。仅在内存里记“见过”不足以跨进程故障保证结果。读操作和计费、提交作业等写操作有不同风险。",
+          "en": "Bind an idempotency key to request semantics and atomically track the key, state and result. Handle concurrent duplicates and expiry. An in-memory “seen” set does not survive process failure. Reads differ from writes such as charging or job submission."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "教学计数服务从 10 开始，每次提交让计数 +1。第一次执行成功但响应丢失，客户端重试两次。",
+          "en": "A teaching counter starts at ten and increments for each submission. The first execution succeeds but its response is lost, and the client retries twice."
+        },
+        "steps": [
+          {
+            "zh": "没有幂等控制，三次执行后计数变 13。",
+            "en": "Without idempotency control, three executions leave the counter at 13."
+          },
+          {
+            "zh": "用同一逻辑键并原子保存结果，只允许一次增量，后两次返回已有结果 11。",
+            "en": "With one logical key and atomic result recording, only one increment occurs; later attempts return the stored result 11."
+          },
+          {
+            "zh": "若两层调用各允许总共 3 次尝试，最坏可触发 3×3=9 次下游调用。",
+            "en": "If two call layers each permit three total attempts, the worst case is 3×3=9 downstream calls."
+          }
+        ],
+        "result": {
+          "zh": "去重控制副作用，退避与总预算控制负载；两者互不替代。",
+          "en": "Deduplication controls side effects, while backoff and total budgets control load; neither replaces the other."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "随机抖动减少同时重试的同步峰值，但不保证服务恢复。",
+          "en": "Jitter spreads synchronized retries but does not guarantee recovery."
+        },
+        {
+          "zh": "幂等键过期后再重试可能成为新操作；客户端与服务端需对齐有效窗口。",
+          "en": "Retrying after key expiry may become a new operation; align client and server retention windows."
+        }
+      ],
+      "mistake": {
+        "zh": "把 max retries 与总 attempts 混淆，会多执行一次；各框架参数含义需单独确认。",
+        "en": "Confusing retries with total attempts produces off-by-one behavior; check each framework’s parameter semantics."
+      },
+      "check": {
+        "question": {
+          "zh": "用同一个键提交不同 payload，应该静默复用旧结果吗？",
+          "en": "Should a reused key with a different payload silently return the previous result?"
+        },
+        "answer": {
+          "zh": "不应该。应识别冲突并明确拒绝，避免把两个逻辑操作混为一个。",
+          "en": "No. Detect and reject the conflict rather than merging distinct logical operations."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "提交逻辑键",
+          "en": "Submit logical key"
+        },
+        {
+          "zh": "原子检查状态",
+          "en": "Atomic state check"
+        },
+        {
+          "zh": "执行/复用结果",
+          "en": "Execute / reuse"
+        },
+        {
+          "zh": "有界重试",
+          "en": "Bounded retries"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "ray",
+          "day": 9
+        },
+        {
+          "course": "dynamo",
+          "day": 9
+        }
+      ],
+      "related": [
+        "backpressure",
+        "slo-budget"
+      ],
+      "sources": [
+        {
+          "title": "Ray task failure and retries",
+          "url": "https://docs.ray.io/en/latest/ray-core/fault_tolerance/tasks.html"
+        },
+        {
+          "title": "AWS Builders Library: idempotent APIs",
+          "url": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/"
+        }
+      ]
+    },
+    {
+      "id": "queue-autoscaling",
+      "category": "platform",
+      "title": {
+        "zh": "按队列扩缩容：容量需要时间到达",
+        "en": "Queue-driven autoscaling: capacity arrives late"
+      },
+      "summary": {
+        "zh": "选择能代表等待的信号，并考虑模型加载与扩容延迟。",
+        "en": "Choose a signal that represents waiting and account for startup delay."
+      },
+      "explain": [
+        {
+          "zh": "CPU 利用率未必能反映 GPU 服务的请求等待。可以使用队列长度、每副本积压或其他工作量指标，但必须说明单位、采样窗口和目标。Kubernetes HPA 根据当前指标与目标关系估算期望副本，并受容忍区间、限速与稳定窗口约束。",
+          "en": "CPU utilization may not represent request waits in a GPU service. Queue length, backlog per replica or other workload metrics can help when units, windows and targets are explicit. Kubernetes HPA estimates desired replicas from current-to-target metrics, subject to tolerance, rate limits and stabilization."
+        },
+        {
+          "zh": "扩容决策并不立即产生可服务容量。GPU 调度、镜像、权重下载、模型加载和预热都可能延后 Ready。缩容还需处理在途请求与缓存；否则指标刚恢复就撤掉容量，造成振荡。",
+          "en": "A scaling decision does not instantly provide serving capacity. GPU scheduling, images, weights, model loading and warmup delay readiness. Scale-down must consider in-flight work and caches, or recovered metrics can trigger oscillation."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "教学近似：当前 2 副本，平均每副本积压 30，目标 10。忽略容忍区间及其他限制。",
+          "en": "Teaching approximation: two current replicas, average backlog 30 per replica and target ten. Ignore tolerance and other limits."
+        },
+        "steps": [
+          {
+            "zh": "期望副本 = ceil(2×30/10)=6。",
+            "en": "Desired replicas = ceil(2×30/10)=6."
+          },
+          {
+            "zh": "若新增副本 20 秒后才能 Ready，在此期间到达 50/秒、原两副本共处理 40/秒，额外积压 (50−40)×20=200。",
+            "en": "If new replicas take 20 seconds to become ready while arrivals are 50/s and current service is 40/s, additional backlog is (50−40)×20=200."
+          },
+          {
+            "zh": "就绪后假设每副本 20/秒，共 120/秒；在到达仍为 50/秒时净排空能力为 70/秒。",
+            "en": "If ready replicas each serve 20/s, total capacity becomes 120/s and net drain is 70/s at 50/s arrivals."
+          }
+        ],
+        "result": {
+          "zh": "副本数建议必须与启动时间和队列 deadline 一起评估；上例不是实际 HPA 仿真。",
+          "en": "Evaluate replica recommendations alongside startup delay and queue deadlines; this example is not a real HPA simulation."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "长度不同的请求不等价；只数请求可能看不见长上下文带来的负载变化。",
+          "en": "Requests of different lengths are not equal work; request counts can miss long-context load changes."
+        },
+        {
+          "zh": "多指标控制要说明各指标如何决定结果，避免同时调多个独立扩缩容器。",
+          "en": "Define how multiple metrics combine; avoid competing independent autoscalers."
+        }
+      ],
+      "mistake": {
+        "zh": "把 desired replicas 当成 Ready replicas，会过早提高入口流量。",
+        "en": "Treating desired replicas as ready capacity can raise admission too early."
+      },
+      "check": {
+        "question": {
+          "zh": "目标每副本积压改为 15，其他相同，教学公式给多少副本？",
+          "en": "With target backlog changed to 15 and everything else fixed, what does the teaching formula give?"
+        },
+        "answer": {
+          "zh": "ceil(2×30/15)=4，但服务是否稳定仍取决于真实处理能力与到达模式。",
+          "en": "ceil(2×30/15)=4; stability still depends on actual capacity and arrivals."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "测量工作量",
+          "en": "Measure workload"
+        },
+        {
+          "zh": "计算期望副本",
+          "en": "Estimate replicas"
+        },
+        {
+          "zh": "调度/加载/预热",
+          "en": "Schedule / load / warm"
+        },
+        {
+          "zh": "Ready 后服务",
+          "en": "Serve when ready"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "kubernetes",
+          "day": 7
+        },
+        {
+          "course": "dynamo",
+          "day": 7
+        }
+      ],
+      "related": [
+        "backpressure",
+        "gpu-placement"
+      ],
+      "sources": [
+        {
+          "title": "Kubernetes horizontal autoscaling",
+          "url": "https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/"
+        }
+      ]
+    },
+    {
+      "id": "gpu-placement",
+      "category": "platform",
+      "title": {
+        "zh": "GPU 调度：总量够，不等于放得下",
+        "en": "GPU placement: enough in total is not enough"
+      },
+      "summary": {
+        "zh": "资源声明、节点约束与拓扑决定任务能否真正启动。",
+        "en": "Resource declarations, node constraints and topology determine whether work can start."
+      },
+      "explain": [
+        {
+          "zh": "Kubernetes 通过设备插件等机制暴露可调度 GPU 资源。经典扩展资源按整数单位声明，GPU limits 可用作 requests；同时设置时两者需相等。一个普通 Pod 被安排到单个节点，不会自动跨节点凑 GPU。",
+          "en": "Kubernetes exposes schedulable GPUs through mechanisms such as device plugins. Classic extended resources use integer units; GPU limits can supply requests, and both must match when specified together. An ordinary Pod is placed on one node rather than automatically pooling GPUs across nodes."
+        },
+        {
+          "zh": "设备数不是显存或互连性能保证。GPU 型号、MIG 或共享策略、CPU/内存请求、节点标签与亲和性都影响可放置性。分布式任务还需明确多个 Pod/rank 的协同启动与失败语义。",
+          "en": "Device count does not guarantee memory capacity or interconnect performance. GPU model, partitioning or sharing policy, CPU/memory requests, labels and affinity affect placement. Distributed jobs also need coordinated Pod/rank startup and failure semantics."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "有两个节点，每节点剩余 2 个完整 GPU；一个普通 Pod 请求 3 个相同类型 GPU。没有其他约束。",
+          "en": "Two nodes each have two free whole GPUs. One ordinary Pod requests three GPUs of that type, with no other constraints."
+        },
+        "steps": [
+          {
+            "zh": "集群剩余总量 = 2+2=4，表面上大于需求 3。",
+            "en": "Cluster free count is 2+2=4, exceeding the request of three."
+          },
+          {
+            "zh": "但任一节点最多只有 2，均不满足单 Pod 需求。",
+            "en": "Neither node has three free devices, so neither fits the Pod."
+          },
+          {
+            "zh": "该 Pod 仍 Pending；拆成多个 Pod 需要应用和分布式启动方案支持，不能只改一个数字。",
+            "en": "The Pod remains Pending. Splitting it requires application and distributed-launch support, not merely changing a number."
+          }
+        ],
+        "result": {
+          "zh": "先核对单节点可放置性，再考虑总体容量；不要把 Pending 一律当成驱动坏了。",
+          "en": "Check per-node fit before aggregate capacity; Pending does not automatically indicate a broken driver."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "同样数量的 GPU 在不同拓扑上，通信性能可能不同；调度成功不是性能验收。",
+          "en": "The same GPU count can have different communication performance across topologies; successful placement is not a performance test."
+        },
+        {
+          "zh": "整数资源示例不代表所有新式动态资源、分片或厂商共享方案。",
+          "en": "This integer-resource example does not describe every dynamic allocation, partitioning or vendor-sharing scheme."
+        }
+      ],
+      "mistake": {
+        "zh": "仅看全局 GPU 利用率，无法解释节点碎片或约束不匹配。",
+        "en": "Aggregate GPU utilization does not explain resource fragmentation or constraint mismatches."
+      },
+      "check": {
+        "question": {
+          "zh": "若其中一个节点释放出第 3 个 GPU，这一项资源约束是否满足？",
+          "en": "If one node frees a third GPU, is this resource constraint satisfied?"
+        },
+        "answer": {
+          "zh": "满足 GPU 数量要求，但仍需检查 CPU、内存、标签、污点等其他约束。",
+          "en": "The GPU-count constraint is satisfied, but CPU, memory, labels, taints and other constraints still need checking."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "声明资源",
+          "en": "Declare resources"
+        },
+        {
+          "zh": "筛选节点",
+          "en": "Filter nodes"
+        },
+        {
+          "zh": "设备分配",
+          "en": "Allocate devices"
+        },
+        {
+          "zh": "启动与验证",
+          "en": "Start / verify"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "kubernetes",
+          "day": 2
+        },
+        {
+          "course": "kubernetes",
+          "day": 3
+        },
+        {
+          "course": "ray",
+          "day": 5
+        }
+      ],
+      "related": [
+        "queue-autoscaling",
+        "sharding"
+      ],
+      "sources": [
+        {
+          "title": "Kubernetes GPU scheduling",
+          "url": "https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/"
+        }
+      ]
+    },
+    {
+      "id": "cache-transfer",
+      "category": "platform",
+      "title": {
+        "zh": "KV 搬运：何时比重新计算划算",
+        "en": "KV transfer: when moving beats recomputing"
+      },
+      "summary": {
+        "zh": "吞吐带宽之外，还要算查找、排队、序列化和一致性。",
+        "en": "Beyond bandwidth, count lookup, queueing, serialization and correctness."
+      },
+      "explain": [
+        {
+          "zh": "外部缓存或 P/D 分离把 KV 在存储层、机器或进程之间移动。Mooncake Transfer Engine 提供数据搬运能力，存储与推理集成还需要对象位置、版本和生命周期。成功传完字节，只验证传输，不自动证明这些字节适合当前模型。",
+          "en": "External caching or prefill/decode disaggregation moves KV across tiers, machines or processes. Mooncake Transfer Engine provides movement capabilities; storage and serving integration also need object location, version and lifetime. Successful byte transfer alone does not prove model compatibility."
+        },
+        {
+          "zh": "先比较复用路径与重算路径的完整临界时间。复用需要等待数据可读、校验身份、搬运并恢复布局；异步传输结束前，源缓冲区不能随意释放或覆盖。是否重叠计算，要通过依赖与实际时间线证明。",
+          "en": "Compare complete critical paths for reuse and recomputation. Reuse includes availability, identity checks, transfer and layout restoration. Do not release or overwrite source buffers before asynchronous completion. Prove overlap with dependencies and timelines."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "教学估算：待搬 KV=256 MiB，有效带宽 8 GiB/s，固定查找与启动耗时 2 ms；不计排队且不重叠。重算为 50 ms。",
+          "en": "Teaching estimate: transfer 256 MiB at effective 8 GiB/s, with 2 ms fixed lookup/start cost, no queueing or overlap. Recomputation takes 50 ms."
+        },
+        "steps": [
+          {
+            "zh": "256 MiB=0.25 GiB，纯传输时间 0.25/8 s=31.25 ms。",
+            "en": "256 MiB=0.25 GiB, so transfer time is 0.25/8 s=31.25 ms."
+          },
+          {
+            "zh": "完整估算 = 31.25+2=33.25 ms，比 50 ms 少 16.75 ms。",
+            "en": "Estimated total is 31.25+2=33.25 ms, saving 16.75 ms versus 50 ms."
+          },
+          {
+            "zh": "若另有 20 ms 排队，总时间变 53.25 ms，反而比重算慢。",
+            "en": "Adding 20 ms queueing raises total to 53.25 ms, slower than recomputation."
+          }
+        ],
+        "result": {
+          "zh": "设备带宽高并不足以证明复用更快。命中路径要记录端到端成本和失败回退。",
+          "en": "High device bandwidth alone does not prove faster reuse. Record end-to-end hit cost and fallback behavior."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "256 MiB 是假设载荷，不是任一真实模型固定 KV 大小；应先用模型布局计算。",
+          "en": "256 MiB is an assumed payload, not a fixed cache size for any real model; derive it from the layout."
+        },
+        {
+          "zh": "远端缺失或超时时需保证回退正确，但同时重算和传输也可能浪费资源。",
+          "en": "Fallback must remain correct on remote misses/timeouts; simultaneous recomputation and transfer can waste resources."
+        }
+      ],
+      "mistake": {
+        "zh": "把标称链路 bit/s 当成应用有效 byte/s，至少会产生单位错误，还漏掉协议成本。",
+        "en": "Using nominal link bits/s as effective application bytes/s introduces a unit error and omits overhead."
+      },
+      "check": {
+        "question": {
+          "zh": "要在无排队条件下低于 50 ms，带宽至少需大于多少？",
+          "en": "Without queueing, what bandwidth is needed to beat 50 ms?"
+        },
+        "answer": {
+          "zh": "0.25 GiB / (0.050−0.002)s ≈ 5.2083 GiB/s；等于该值只打平。",
+          "en": "0.25 GiB / (0.050−0.002)s ≈ 5.2083 GiB/s; equality only breaks even."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "核对 KV 身份",
+          "en": "Validate KV identity"
+        },
+        {
+          "zh": "查找与排队",
+          "en": "Lookup / queue"
+        },
+        {
+          "zh": "传输并确认完成",
+          "en": "Transfer / completion"
+        },
+        {
+          "zh": "加载或回退",
+          "en": "Restore / fallback"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "mooncake",
+          "day": 2
+        },
+        {
+          "course": "mooncake",
+          "day": 3
+        },
+        {
+          "course": "lmcache",
+          "day": 6
+        }
+      ],
+      "related": [
+        "prefix-caching",
+        "kv-capacity"
+      ],
+      "sources": [
+        {
+          "title": "Mooncake architecture and Transfer Engine",
+          "url": "https://github.com/kvcache-ai/Mooncake"
+        }
+      ]
+    },
+    {
+      "id": "slo-budget",
+      "category": "platform",
+      "title": {
+        "zh": "SLO 与错误预算：把体验写成可计算规则",
+        "en": "SLO and error budget: make experience measurable"
+      },
+      "summary": {
+        "zh": "先定义哪些请求算好，再决定可靠性目标与行动。",
+        "en": "Define a good request before choosing reliability targets and actions."
+      },
+      "explain": [
+        {
+          "zh": "SLI 是观测比例或指标，SLO 是给定窗口内的目标。例如“有效请求中在 2 秒内正确完成的比例”。分子、分母、测量点与排除规则必须明确。返回 200 但内容错误或超时，对用户仍可能失败。",
+          "en": "An SLI is a measured indicator; an SLO is its target over a window. For example, the fraction of eligible requests correctly completed within two seconds. Specify numerator, denominator, measurement point and exclusions. HTTP 200 can still represent bad user experience."
+        },
+        {
+          "zh": "错误预算是目标允许的坏事件量。它帮助团队决定何时优先修可靠性，不是随意丢弃用户请求的额度。低流量窗口、延迟分位数与缺失遥测都会影响解释，应保存分母而不仅是一条百分比。",
+          "en": "An error budget is the bad-event allowance implied by the target. It guides reliability work rather than authorizing careless failures. Low traffic, percentile behavior and missing telemetry affect interpretation; preserve counts, not just a percentage."
+        }
+      ],
+      "example": {
+        "setup": {
+          "zh": "教学窗口内有效请求 100000 次，目标好请求比例 99.9%。实际坏请求 140 次。",
+          "en": "A teaching window contains 100000 eligible requests with a 99.9% good-request target. There are 140 bad requests."
+        },
+        "steps": [
+          {
+            "zh": "允许坏请求 = 100000 × (1−0.999)=100。",
+            "en": "Allowed bad events = 100000 × (1−0.999)=100."
+          },
+          {
+            "zh": "实际好请求比例 = (100000−140)/100000=99.86%。",
+            "en": "Actual good fraction = (100000−140)/100000=99.86%."
+          },
+          {
+            "zh": "预算消耗 = 140/100=140%，已超出 40 次，而不是“还剩 99.86%”。",
+            "en": "Budget consumption = 140/100=140%, exceeding the allowance by 40 events, rather than leaving “99.86% budget”."
+          }
+        ],
+        "result": {
+          "zh": "应按预先约定的错误预算策略处理；不能事后更改有效请求定义来粉饰结果。",
+          "en": "Apply a pre-agreed budget policy rather than redefining eligible requests after the fact."
+        }
+      },
+      "tradeoffs": [
+        {
+          "zh": "服务可同时有可用性、TTFT 与完成质量目标；复合好事件需要满足约定的全部条件。",
+          "en": "A service may track availability, TTFT and completion quality; a composite good event must satisfy its defined conditions."
+        },
+        {
+          "zh": "告警窗口比统计窗口短时，应解释消耗速率与绝对坏事件数，避免低流量噪声。",
+          "en": "For shorter alert windows, interpret burn rate alongside absolute bad-event counts to avoid low-traffic noise."
+        }
+      ],
+      "mistake": {
+        "zh": "平均延迟达标不代表每个用户达标；也不能把 p95=1 秒解释成失败率恰好 5%。",
+        "en": "A passing average does not imply all users pass, and p95=1 second does not mean exactly 5% failure."
+      },
+      "check": {
+        "question": {
+          "zh": "相同 140 次坏请求，若目标放宽到 99.5%，预算消耗是多少？",
+          "en": "With the same 140 bad requests but a 99.5% target, what is budget consumption?"
+        },
+        "answer": {
+          "zh": "允许 500 次，消耗 140/500=28%。目标变更需由真实用户需求决定。",
+          "en": "The allowance is 500 and consumption is 140/500=28%; real user needs should determine target changes."
+        }
+      },
+      "diagram": [
+        {
+          "zh": "定义好事件",
+          "en": "Define good events"
+        },
+        {
+          "zh": "统计有效请求",
+          "en": "Count eligible events"
+        },
+        {
+          "zh": "计算预算",
+          "en": "Calculate budget"
+        },
+        {
+          "zh": "按策略行动",
+          "en": "Act on policy"
+        }
+      ],
+      "lessons": [
+        {
+          "course": "dynamo",
+          "day": 3
+        },
+        {
+          "course": "foundations",
+          "day": 3
+        },
+        {
+          "course": "kubernetes",
+          "day": 9
+        }
+      ],
+      "related": [
+        "retry-idempotency",
+        "queue-autoscaling"
+      ],
+      "sources": [
+        {
+          "title": "Google SRE workbook: implementing SLOs",
+          "url": "https://sre.google/workbook/implementing-slos/"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "latency_us": 10,
+  "payload_bytes_per_us": 10000,
+  "message_bytes": [
+    1024,
+    1048576,
+    16777216
+  ],
+  "small_message_count": 100,
+  "small_message_bytes": 1024
+}

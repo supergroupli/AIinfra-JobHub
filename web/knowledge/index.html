@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#183c35">
+<meta name="description" content="18 个 AI Infra 原理专题：从 KV 容量和调度到算子、分布式训练与平台可靠性。逐步算例、流程图解、误区、自查与官方来源。">
+<title>原理知识库 · 聘枢 · AI Infra JobHub</title>
+<link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"><link rel="stylesheet" href="../styles.css?v=20261113-growth"><link rel="stylesheet" href="./knowledge.css">
+<script src="./knowledge-model.js" defer></script><script src="./knowledge.js" defer></script>
+</head>
+<body class="knowledge-page">
+<a class="skip-link" href="#knowledge-reader" data-i18n="skip">跳到专题正文</a>
+<header class="site-header"><a class="brand" href="../" data-local="../"><img class="brand-mark" src="../assets/logo-mark.svg" width="40" height="40" alt=""><span class="brand-wordmark"><strong data-i18n="brand">聘枢</strong><small>AI Infra JobHub</small></span></a><nav aria-label="Main navigation"><a href="../#learn" data-local="../#learn" data-i18n="learn">学习库</a><a href="./" aria-current="page" data-i18n="knowledge">原理知识库</a><a href="../search/" data-local="../search/" data-i18n="searchAll">全文搜索</a><a href="../projects/" data-local="../projects/" data-i18n="projects">实战项目</a></nav><button id="knowledge-language" class="language-button" type="button" aria-label="Switch to English">EN ↗</button></header>
+<main id="main" class="section-shell knowledge-main">
+<section class="knowledge-hero"><div><div class="eyebrow">THE IDEAS BEHIND THE SYSTEMS</div><h1 data-i18n="title">把术语连成原理，<br>把原理算明白。</h1><p data-i18n="intro">18 个专题横跨推理、性能与平台。读一张流程图，跟着算一遍，再解释一次取舍。遇到具体工程问题，也能直接返回对应课程动手验证。</p><a id="knowledge-handbook" class="button outline" href="./handbook.zh.md" download data-i18n="download">下载完整知识手册 .md ↓</a></div><aside class="knowledge-map"><span class="mono">READ → REASON → VERIFY</span><ol><li><span>01</span><strong data-i18n="map1">建立原理模型</strong></li><li><span>02</span><strong data-i18n="map2">手算一个具体例子</strong></li><li><span>03</span><strong data-i18n="map3">回到实验检验边界</strong></li></ol><p data-i18n="boundary">数值来自原创教学假设，不是硬件实测或性能承诺。</p></aside></section>
+<p id="knowledge-status" class="knowledge-status" role="status" aria-live="polite"></p>
+<div id="knowledge-error" class="notice" role="alert" hidden><p data-i18n="loadError">知识库暂时无法加载，请重试。也可下载离线手册阅读。</p><button id="knowledge-retry" class="button outline" type="button" data-i18n="retry">重新加载</button></div>
+<div class="knowledge-layout">
+<details id="knowledge-directory" class="knowledge-directory" open><summary data-i18n="directory">专题目录与筛选</summary><div class="knowledge-controls"><label for="knowledge-query" data-i18n="queryLabel">搜索概念或关键词</label><input id="knowledge-query" type="search" maxlength="160" autocomplete="off" placeholder="KV、stride、SLO…"><label for="knowledge-category" data-i18n="categoryLabel">技术方向</label><select id="knowledge-category"><option value="" data-i18n="all">全部方向</option><option value="serving" data-i18n="serving">推理与缓存</option><option value="performance" data-i18n="performance">性能与分布式训练</option><option value="platform" data-i18n="platform">平台与可靠性</option></select><span id="knowledge-count" role="status" aria-live="polite"></span><button id="knowledge-reset" class="text-button" type="button" data-i18n="reset">清空筛选</button></div><div id="knowledge-list" class="knowledge-list"></div></details>
+<article id="knowledge-reader" class="knowledge-reader" tabindex="-1" aria-label="Knowledge topic"><p data-i18n="loading">正在准备原理、算例与来源…</p></article>
+</div>
+</main>
+<footer class="site-footer section-shell"><span data-i18n="footer">聘枢 · 让每个工程判断都有可解释的依据。</span><a href="../start/" data-local="../start/" class="text-link" data-i18n="start">不知道从哪开始？入门自查 ↗</a></footer>
+<noscript><p class="notice section-shell">可以直接阅读 <a href="./handbook.zh.md">中文知识手册</a> / <a href="./handbook.en.md">English handbook</a>，或查看 <a href="./topics.json">完整内容 JSON</a>。筛选与专题切换需要 JavaScript。</p></noscript>
+</body></html>

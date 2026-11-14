@@ -1,0 +1,54 @@
+{
+  "requests": [
+    {
+      "kind": "long",
+      "arrival_ms": 0,
+      "service_ms": 100
+    },
+    {
+      "kind": "short",
+      "arrival_ms": 1,
+      "service_ms": 1
+    },
+    {
+      "kind": "short",
+      "arrival_ms": 2,
+      "service_ms": 1
+    },
+    {
+      "kind": "short",
+      "arrival_ms": 3,
+      "service_ms": 1
+    },
+    {
+      "kind": "short",
+      "arrival_ms": 4,
+      "service_ms": 1
+    },
+    {
+      "kind": "short",
+      "arrival_ms": 5,
+      "service_ms": 1
+    },
+    {
+      "kind": "short",
+      "arrival_ms": 6,
+      "service_ms": 1
+    },
+    {
+      "kind": "short",
+      "arrival_ms": 7,
+      "service_ms": 1
+    },
+    {
+      "kind": "short",
+      "arrival_ms": 8,
+      "service_ms": 1
+    },
+    {
+      "kind": "short",
+      "arrival_ms": 9,
+      "service_ms": 1
+    }
+  ]
+}

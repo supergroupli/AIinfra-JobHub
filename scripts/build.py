@@ -12,8 +12,14 @@ from urllib.parse import urlparse
 
 if __package__:
     from .learning import CATEGORIES, LEVELS, INTERACTIVE_KINDS, course_body, course_hero, course_markdown, course_nav, esc
+    from .practice import build_practice
+    from .search import build_search
+    from .handbooks import validate_supplements, write_handbooks
 else:
     from learning import CATEGORIES, LEVELS, INTERACTIVE_KINDS, course_body, course_hero, course_markdown, course_nav, esc
+    from practice import build_practice
+    from search import build_search
+    from handbooks import validate_supplements, write_handbooks
 
 ROOT = Path(__file__).resolve().parents[1]
 TECHNOLOGIES = {"Serving", "KV Cache", "vLLM", "SGLang", "LMCache", "Mooncake", "Dynamo", "CUDA", "Triton", "PyTorch", "Ray", "NCCL", "Kubernetes", "Distributed Systems", "Observability"}
@@ -296,6 +302,8 @@ def write_course_pages(courses, out, repository, projects):
             "__COURSE_CONTENT__": course_body(course, repository),
             "__PROJECT_URL__": esc(f"../../projects/{project_query}"),
             "__PORTFOLIO_URL__": esc(f"../../portfolio/{project_query}"),
+            "__PRACTICE_URL__": esc(f"../../practice/?course={course['id']}"),
+            "__SEARCH_URL__": esc(f"../../search/?course={course['id']}&kind=lesson"),
         }
         page = template
         for key, value in replacements.items():
@@ -304,7 +312,7 @@ def write_course_pages(courses, out, repository, projects):
         for lang in ("zh", "en"):
             (folder / f"{course['id']}.{lang}.md").write_text(course_markdown(course, lang, base), encoding="utf-8")
     if base:
-        locations = [base] + [f"{base}{section}/" for section in ("start", "projects", "portfolio", "career", "applications", "talent", "hiring")] + [f"{base}learn/{course['id']}/" for course in courses]
+        locations = [base] + [f"{base}{section}/" for section in ("start", "knowledge", "cases", "practice", "search", "projects", "portfolio", "career", "applications", "talent", "hiring")] + [f"{base}learn/{course['id']}/" for course in courses]
         (out / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + "".join(f"<url><loc>{esc(location)}</loc></url>" for location in locations) + "</urlset>\n", encoding="utf-8")
 
 
@@ -332,6 +340,9 @@ def build():
             }
         }
     projects = validate_projects(read_json("web/projects/projects.json"), tracks)
+    topics = read_json("web/knowledge/topics.json")["topics"]
+    cases = read_json("web/cases/cases.json")["cases"]
+    validate_supplements(topics, cases, tracks)
     reviews = validate_reviews(read_json("content/reviews.json"), repository, now.date())
     summaries = [{**{key: value for key, value in course.items() if key != "steps"}, "steps": [{"day": step["day"], "title": step["title"]} for step in course["steps"]]} for course in tracks]
     data = {
@@ -350,8 +361,11 @@ def build():
     if out.exists():
         shutil.rmtree(out)
     shutil.copytree(ROOT / "web", out, ignore=shutil.ignore_patterns("course.html", "__pycache__", "*.pyc", ".DS_Store", "out", "outputs", "results", "output", "artifacts"))
-    package_labs(tracks, out)
+    package_labs(tracks + [{"lab": {"path": "diagnostics"}}], out)
     write_course_pages(tracks, out, repository, projects)
+    build_practice(tracks, out)
+    build_search(tracks, projects, topics, cases, out)
+    write_handbooks(topics, cases, out, public_site_url(repository))
     (out / "data.json").write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (out / "reviews.json").write_text(json.dumps(reviews, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (out / ".nojekyll").touch()

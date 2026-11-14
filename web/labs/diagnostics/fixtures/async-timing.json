@@ -1,0 +1,14 @@
+{
+  "kernels": [
+    {
+      "name": "A",
+      "host_enqueue_ms": 0.02,
+      "device_elapsed_ms": 4
+    },
+    {
+      "name": "B",
+      "host_enqueue_ms": 0.03,
+      "device_elapsed_ms": 2
+    }
+  ]
+}

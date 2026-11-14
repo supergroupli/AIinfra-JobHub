@@ -1,0 +1,18 @@
+{
+  "layers": 32,
+  "kv_heads": 8,
+  "head_dim": 128,
+  "bytes": 2,
+  "block": 16,
+  "sequence_tokens": [
+    4096,
+    4096,
+    4096,
+    4096,
+    4096,
+    4096,
+    4096,
+    4096
+  ],
+  "kv_budget_bytes": 1073741824
+}

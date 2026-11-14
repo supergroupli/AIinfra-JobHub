@@ -13,6 +13,15 @@
 [Repository / 仓库](https://github.com/supergroupli/AIinfra-JobHub) ·
 [Discussions / 社区交流](https://github.com/supergroupli/AIinfra-JobHub/discussions)
 
+[Core concepts / 原理知识库](https://supergroupli.github.io/AIinfra-JobHub/knowledge/) ·
+[Diagnosis labs / 故障诊断](https://supergroupli.github.io/AIinfra-JobHub/cases/) ·
+[Practice & review / 练习与复习](https://supergroupli.github.io/AIinfra-JobHub/practice/) ·
+[Learning search / 学习搜索](https://supergroupli.github.io/AIinfra-JobHub/search/)
+
+The learning library combines 110 daily lessons, 18 core-concept chapters, 9 runnable CPU diagnosis cases and 220 course questions. Concepts include worked examples and primary sources; cases reveal evidence step by step. The practice center keeps first-attempt and latest results separately, with an explicit review list and JSON backup. Full-text search reaches explanations, lab steps and troubleshooting. Bilingual concept and case handbooks can be downloaded for offline reading.
+
+学习库包含 110 个日课、18 篇原理专题、9 个可运行 CPU 排障案例和 220 道课程题。专题提供逐步算例与官方来源，案例分阶段揭示证据；练习中心区分首次与最近结果，支持错题重练、手动复习清单和 JSON 备份。全文搜索覆盖讲解、实验与报错；知识和案例手册提供中英文离线下载。案例是原创合成数据教学，不代表生产事故或 GPU 实测。
+
 **Resume submissions / 简历投递：[career@yzinfra.com](mailto:career@yzinfra.com)**
 
 **项目发起人：李超群｜所属公司：元智引擎公司。**
