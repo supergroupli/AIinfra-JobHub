@@ -22,7 +22,7 @@ else:
     from handbooks import validate_supplements, write_handbooks
 
 ROOT = Path(__file__).resolve().parents[1]
-TECHNOLOGIES = {"Serving", "KV Cache", "vLLM", "SGLang", "LMCache", "Mooncake", "Dynamo", "CUDA", "Triton", "PyTorch", "Ray", "NCCL", "Kubernetes", "Distributed Systems", "Observability"}
+TECHNOLOGIES = {"Serving", "KV Cache", "vLLM", "SGLang", "LMCache", "Mooncake", "Dynamo", "CUDA", "Triton", "PyTorch", "Ray", "NCCL", "Kubernetes", "Distributed Systems", "Observability", "RSI"}
 WORK_MODES = {"remote-global", "remote-regional", "hybrid", "onsite"}
 KINDS = {"full-time", "internship", "contract", "research", "open-source"}
 
@@ -139,9 +139,11 @@ def validate_tracks(tracks):
         if "lab" in item:
             lab = item["lab"]
             require(isinstance(lab, dict) and lab.get("path") == ident and bilingual(lab.get("title")) and bilingual(lab.get("description")), f"{ident}: invalid lab package")
-        require(isinstance(item.get("steps"), list) and len(item["steps"]) == 10, f"{ident}: courses must contain exactly 10 days")
+        duration = item.get("durationDays", 10)
+        require(type(duration) is int and duration in (10, 20), f"{ident}: durationDays must be 10 or 20")
+        require(isinstance(item.get("steps"), list) and len(item["steps"]) == duration, f"{ident}: lesson count must match durationDays ({duration})")
         for number, step in enumerate(item["steps"], 1):
-            require(step.get("day") == number, f"{ident}: day numbers must run from 1 to 10")
+            require(type(step.get("day")) is int and step["day"] == number, f"{ident}: day numbers must run from 1 to {duration}")
             require(all(bilingual(step.get(key)) for key in ("title", "lesson", "task", "evidence", "noGpu")), f"{ident} day {number}: missing lesson content")
             require(isinstance(step.get("checklist"), dict) and all(isinstance(step["checklist"].get(lang), list) and 2 <= len(step["checklist"][lang]) <= 5 and all(nonempty(check) for check in step["checklist"][lang]) for lang in ("zh", "en")), f"{ident} day {number}: missing acceptance checks")
             require(len(step["checklist"]["zh"]) == len(step["checklist"]["en"]), f"{ident} day {number}: translated checklists must align")
@@ -294,6 +296,7 @@ def write_course_pages(courses, out, repository, projects):
         project_query = f'?project={project["id"]}' if project else ""
         replacements = {
             "__COURSE_TITLE__": esc(course["title"]["zh"]),
+            "__COURSE_DAYS__": str(len(course["steps"])),
             "__COURSE_DESCRIPTION__": esc(course["description"]["zh"]),
             "__COURSE_URL__": esc(f"{base}learn/{course['id']}/"),
             "__REPO_URL__": esc(f"https://github.com/{repository}" if repository else "https://github.com"),

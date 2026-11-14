@@ -12,8 +12,9 @@ class PracticeTests(unittest.TestCase):
         cls.courses = [json.loads(p.read_text()) for p in (ROOT/'content/courses').glob('*.json')]
     def test_every_original_question_and_source_is_preserved(self):
         bank=question_bank(self.courses)
-        self.assertEqual(len(bank['questions']),220)
-        self.assertEqual(len({q['id'] for q in bank['questions']}),220)
+        expected_count=sum(len(step['quiz']) for course in self.courses for step in course['steps'])
+        self.assertEqual(len(bank['questions']),expected_count)
+        self.assertEqual(len({q['id'] for q in bank['questions']}),expected_count)
         by_id={c['id']:c for c in self.courses}
         for q in bank['questions']:
             source=by_id[q['course']]['steps'][q['day']-1]['quiz'][q['number']-1]

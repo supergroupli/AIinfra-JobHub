@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "train": [
+    {"id": "train-repeat", "inputs": [120, 240, 120, 240, 120, 240, 120, 240]},
+    {"id": "train-mixed", "inputs": [40, 80, 160, 320, 40, 80, 160, 320]}
+  ],
+  "validation": [
+    {"id": "validation-repeat", "inputs": [180, 360, 180, 360, 180, 360, 180, 360]},
+    {"id": "validation-mixed", "inputs": [70, 140, 280, 560, 70, 140, 280, 560]}
+  ],
+  "holdout": [
+    {"id": "holdout-shift", "inputs": [90, 170, 250, 330, 410, 490, 570, 650]},
+    {"id": "holdout-boundary", "inputs": [0, 1, 2, 3, 511, 512, 513, 1024]}
+  ]
+}

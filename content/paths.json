@@ -14,6 +14,7 @@
       "foundations",
       "vllm",
       "sglang",
+      "rsi-infra",
       "lmcache",
       "mooncake",
       "dynamo",
@@ -25,7 +26,8 @@
     "requiredCourses": [
       "foundations",
       "vllm",
-      "sglang"
+      "sglang",
+      "rsi-infra"
     ],
     "electiveCourses": [
       "lmcache",
@@ -53,6 +55,7 @@
       "triton",
       "pytorch-distributed",
       "nccl",
+      "rsi-infra",
       "vllm",
       "sglang",
       "mooncake"
@@ -61,7 +64,8 @@
       "foundations",
       "triton",
       "pytorch-distributed",
-      "nccl"
+      "nccl",
+      "rsi-infra"
     ],
     "electiveCourses": [
       "vllm",
@@ -84,6 +88,7 @@
       "foundations",
       "ray",
       "kubernetes",
+      "rsi-infra",
       "vllm",
       "sglang",
       "dynamo",
@@ -94,7 +99,8 @@
     "requiredCourses": [
       "foundations",
       "ray",
-      "kubernetes"
+      "kubernetes",
+      "rsi-infra"
     ],
     "electiveCourses": [
       "vllm",

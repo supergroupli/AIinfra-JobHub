@@ -2,7 +2,29 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const models = require("../web/engineering-models.js");
-const { classify } = require("../web/curriculum.js");
+
+test("RSI budget includes failures and zero-budget boundaries", () => {
+  assert.deepEqual(models.rsiBudget(1000,20,25),{attempts:50,expectedValid:37.5});
+  assert.deepEqual(models.rsiBudget(0,20,25),{attempts:0,expectedValid:0});
+  assert.equal(models.rsiBudget(99,20,100).expectedValid,0);
+  assert.throws(()=>models.rsiBudget(20,0,0),RangeError);
+  assert.throws(()=>models.rsiBudget(20,1,101),RangeError);
+});
+test("RSI whole-system gain respects Amdahl boundaries", () => {
+  assert.equal(models.rsiGain(40,2).whole,1.25);
+  assert.equal(models.rsiGain(0,8).whole,1);
+  assert.equal(models.rsiGain(100,8).whole,8);
+  assert.throws(()=>models.rsiGain(101,2),RangeError);
+  assert.throws(()=>models.rsiGain(50,0),RangeError);
+});
+test("RSI repeated-test probability retains its independence assumption", () => {
+  assert.ok(Math.abs(models.rsiRetests(20,5).familyPercent-64.15140775914578)<1e-10);
+  assert.equal(models.rsiRetests(20,0).familyPercent,0);
+  assert.equal(models.rsiRetests(20,100).familyPercent,100);
+  assert.throws(()=>models.rsiRetests(0,5),RangeError);
+  assert.match(models.describe('rsi-retests',{trials:20,alpha:5},'en').summary,/independent/);
+});
+const { classify, daysFor } = require("../web/curriculum.js");
 const paths = require("../content/paths.json");
 
 test("roofline changes bottlenecks and ideal overlap is bounded by two", () => {
@@ -16,11 +38,20 @@ test("roofline changes bottlenecks and ideal overlap is bounded by two", () => {
 
 test("curriculum distinguishes common core, role core and optional study", () => {
   assert.equal(classify("foundations", paths, "platform-engineer").common, true);
+  assert.equal(classify("rsi-infra", paths).common, true);
   assert.equal(classify("sglang", paths, "inference-engineer").kind, "required");
   assert.equal(classify("sglang", paths, "platform-engineer").kind, "elective");
   assert.equal(classify("triton", paths, "performance-engineer").kind, "required");
   assert.equal(classify("lmcache", paths).kind, "elective");
   assert.equal(classify("pytorch-distributed", paths, "inference-engineer").applicable, false);
+});
+
+test("path duration sums mixed course lengths instead of assuming ten days each", () => {
+  const courses = paths.flatMap(path => path.courses).filter((id,index,all)=>all.indexOf(id)===index)
+    .map(id=>require(`../content/courses/${id}.json`));
+  assert.equal(daysFor(paths.find(path=>path.id==="inference-engineer").requiredCourses,courses),50);
+  assert.equal(daysFor(paths.find(path=>path.id==="performance-engineer").requiredCourses,courses),60);
+  assert.equal(daysFor(paths.find(path=>path.id==="platform-engineer").requiredCourses,courses),50);
 });
 
 test("transport uses decimal units and cache probabilities are conditional", () => {

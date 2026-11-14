@@ -12,6 +12,9 @@ const Curriculum = (() => {
       applicable: !path || path.courses.includes(courseId)
     };
   }
-  return { classify };
+  function daysFor(courseIds, courses) {
+    return courseIds.reduce((sum,id) => sum + (courses.find(course=>course.id===id)?.steps.length || 0),0);
+  }
+  return { classify, daysFor };
 })();
 if (typeof module !== "undefined" && module.exports) module.exports = Curriculum;

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-13",
+  "updatedAt": "2026-11-14",
   "projects": [
     {
       "id": "serving-baseline",
@@ -1214,6 +1214,171 @@
         {
           "title": "kind · Quick Start",
           "url": "https://kind.sigs.k8s.io/docs/user/quick-start/"
+        }
+      ]
+    },
+    {
+      "id": "rsi-improvement-loop",
+      "category": "platform",
+      "title": {
+        "zh": "可审计的 RSI 优化闭环",
+        "en": "An auditable RSI improvement loop"
+      },
+      "summary": {
+        "zh": "用固定契约、独立检查、预算账本和经验消融，判断一次优化是否值得保留。",
+        "en": "Use a fixed contract, independent checks, a budget ledger and experience ablation to decide whether an improvement should be kept."
+      },
+      "level": {
+        "zh": "进阶",
+        "en": "Intermediate"
+      },
+      "duration": {
+        "zh": "日课完成后约 6–10 小时，可自行延长",
+        "en": "About 6–10 hours after the lessons; extend as needed"
+      },
+      "cpuStart": true,
+      "tags": [
+        "RSI",
+        "Evaluation",
+        "Experiment Systems",
+        "Python"
+      ],
+      "problem": {
+        "zh": "候选跑得快，可能只是漏了计算、用了验证答案或没有计入失败成本。你需要让读者重新核算候选被接受的理由。",
+        "en": "A fast candidate may skip required work, leak validation answers or exclude failed-trial costs. Let another reader recompute why a candidate was accepted."
+      },
+      "scenario": {
+        "zh": "为一个小型计算任务建立受约束优化流程：候选只能更改允许的配置，验证和评分规则固定；记录拒绝、负结果以及回滚。",
+        "en": "Build a constrained optimization process for a small compute task. Candidates change only allowed settings; verification and scoring stay fixed. Preserve rejections, negative outcomes and rollback."
+      },
+      "roles": {
+        "zh": [
+          "AI 平台工程师",
+          "推理工程师",
+          "性能工程师"
+        ],
+        "en": [
+          "AI platform engineer",
+          "Inference engineer",
+          "Performance engineer"
+        ]
+      },
+      "prerequisites": [
+        {
+          "id": "foundations",
+          "title": {
+            "zh": "系统基础",
+            "en": "Systems foundations"
+          }
+        },
+        {
+          "id": "rsi-infra",
+          "title": {
+            "zh": "RSI Infra 20 天必修",
+            "en": "RSI Infra 20-day core"
+          }
+        }
+      ],
+      "environment": {
+        "zh": "Python 3.9+ 标准库和普通 CPU。下载 RSI 实验包，先跑日课，再在自己的副本中改变任务或提案策略。真实 CPU 计时与确定性成本模型分别记录。",
+        "en": "Python 3.9+ standard library and a CPU. Download the RSI lab, run the lessons, then change the task or proposal policy in your own copy. Label real CPU timings separately from deterministic cost models."
+      },
+      "steps": [
+        {
+          "title": {
+            "zh": "冻结契约和数据",
+            "en": "Freeze the contract and data"
+          },
+          "body": {
+            "zh": "明确可编辑项、输入输出、误差标准、成本预算和留出任务。记录源码与数据哈希；不能在看过候选结果后改验收线。",
+            "en": "Specify editable settings, inputs and outputs, tolerances, cost budget and held-out tasks. Record source and data hashes; do not change acceptance thresholds after seeing candidates."
+          }
+        },
+        {
+          "title": {
+            "zh": "复查基线与拒绝路径",
+            "en": "Check the baseline and rejection paths"
+          },
+          "body": {
+            "zh": "保存基线原始记录，注入一个输出错误或超预算候选，确认被拒绝且失败成本仍进入账本。解释为什么程序运行结束不等于验证通过。",
+            "en": "Preserve baseline records. Inject a wrong-output or over-budget candidate, verify rejection and retain failure costs in the ledger. Explain why process completion is not validation success."
+          }
+        },
+        {
+          "title": {
+            "zh": "做一个独立改动",
+            "en": "Make one independent change"
+          },
+          "body": {
+            "zh": "只修改一项任务参数或提案排序策略，固定其他条件。写出事前预期，运行对照，保留所有候选和最终未被采用的结果。",
+            "en": "Change one task parameter or proposal-ordering policy, keeping other conditions fixed. Write a prediction, run a comparison and preserve every candidate, including rejected results."
+          }
+        },
+        {
+          "title": {
+            "zh": "检验经验是否有帮助",
+            "en": "Test whether experience helps"
+          },
+          "body": {
+            "zh": "在同总预算和相同留出任务上比较有无经验。报告冷启动、构建经验和失败所需成本。无改善或负收益也应保留，不把单个赢家视为通用递归改进。",
+            "en": "Compare with and without experience on identical held-out tasks and equal total budgets. Include cold-start, experience-building and failure costs. Keep null or negative outcomes; a single winner is not general recursive improvement."
+          }
+        },
+        {
+          "title": {
+            "zh": "交付复现与回滚说明",
+            "en": "Deliver reproduction and rollback instructions"
+          },
+          "body": {
+            "zh": "在新输出目录重新运行，保存 REPORT.md、原始 JSON、manifest 和自己的修改。让另一位读者按文档复查；没有实际复查记录时标为待独立复现。",
+            "en": "Rerun in a fresh output directory. Preserve REPORT.md, raw JSON, the manifest and your changes. Ask another reader to reproduce; mark independent reproduction pending until it actually occurs."
+          }
+        }
+      ],
+      "deliverables": {
+        "zh": [
+          "任务契约、源码/数据版本与固定评测条件",
+          "基线、全部候选、失败成本和留出对照原始记录",
+          "本人改动说明、负结果、接受或拒绝理由",
+          "REPORT.md、manifest、复现命令与回滚步骤"
+        ],
+        "en": [
+          "Task contract, source/data versions and fixed evaluation settings",
+          "Baseline, all candidates, failure costs and held-out comparisons",
+          "Your change, negative outcomes and acceptance or rejection rationale",
+          "REPORT.md, manifest, reproduction commands and rollback steps"
+        ]
+      },
+      "acceptance": {
+        "zh": [
+          "错误输出、预算超限和验证污染都有可复现拒绝用例",
+          "经验对照使用相同总预算，独立留出未用于选候选",
+          "记录完整成本；收益和无收益都能从原始数据重算",
+          "报告区分真实CPU计时、模拟、设计和未执行GPU计划"
+        ],
+        "en": [
+          "Reproducible rejection cases cover wrong output, budget limits and evaluation leakage",
+          "Experience comparisons use equal total budgets; independent holdouts do not select candidates",
+          "Complete costs and positive or null gains can be recomputed from raw records",
+          "The report distinguishes real CPU timing, simulation, design and unexecuted GPU plans"
+        ]
+      },
+      "evidenceBoundary": {
+        "zh": "这是受约束教学闭环及方法验证，不是已实现通用自主 RSI。本站 CPU 实验不能证明 GPU、vLLM/SGLang 或多节点性能收益。",
+        "en": "This is a constrained teaching loop and method check, not general autonomous RSI. CPU lab results do not establish GPU, vLLM/SGLang or multi-node performance gains."
+      },
+      "sources": [
+        {
+          "title": "InfraRSI paper",
+          "url": "https://arxiv.org/abs/2611.11558"
+        },
+        {
+          "title": "ShinkaEvolve project authors",
+          "url": "https://sakana.ai/shinka-evolve/"
+        },
+        {
+          "title": "Inference RSI engineering practice",
+          "url": "https://www.infinigence-ai.com/news-updates/253.html"
         }
       ]
     }

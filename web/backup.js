@@ -7,14 +7,16 @@ const JobHubBackup = (() => {
   const check = condition => { if (!condition) throw new Error("Invalid or incompatible backup"); };
   const string = (value, limit) => { check(typeof value === "string" && value.length <= limit); return value; };
 
-  function normalize(data, kind) {
+  function normalize(data, kind, dayCount = 10) {
     check(object(data));
     if (kind === "course") {
-      check(Array.isArray(data.completed) && data.completed.length <= 10);
-      check(data.completed.every(n => Number.isInteger(n) && n >= 1 && n <= 10));
-      check(object(data.notes) && Object.keys(data.notes).every(k => /^(?:[1-9]|10)$/.test(k)));
-      check(Number.isInteger(data.lastDay) && data.lastDay >= 1 && data.lastDay <= 10);
-      const notes = Object.fromEntries(Array.from({length:10}, (_, i) => [String(i+1), string(data.notes[i+1] ?? "", 10000)]));
+      check(Number.isInteger(dayCount) && [10,20].includes(dayCount));
+      const isDay = n => Number.isInteger(n) && n >= 1 && n <= dayCount;
+      check(Array.isArray(data.completed) && data.completed.length <= dayCount);
+      check(data.completed.every(isDay));
+      check(object(data.notes) && Object.keys(data.notes).every(k => isDay(Number(k)) && String(Number(k)) === k));
+      check(isDay(data.lastDay));
+      const notes = Object.fromEntries(Array.from({length:dayCount}, (_, i) => [String(i+1), string(data.notes[i+1] ?? "", 10000)]));
       return {completed: [...new Set(data.completed)].sort((a,b)=>a-b), notes, lastDay:data.lastDay};
     }
     check(kind === "portfolio" && Object.keys(data).every(key => portfolioFields.includes(key)));
@@ -28,20 +30,20 @@ const JobHubBackup = (() => {
     return fields;
   }
 
-  function serialize(kind, courseId, data) {
-    const text=JSON.stringify({format:"jobhub-backup", version:1, kind, ...(kind === "course" ? {courseId} : {}), exportedAt:new Date().toISOString(), data:normalize(data,kind)}, null, 2);
+  function serialize(kind, courseId, data, dayCount = 10) {
+    const text=JSON.stringify({format:"jobhub-backup", version:1, kind, ...(kind === "course" ? {courseId} : {}), exportedAt:new Date().toISOString(), data:normalize(data,kind,dayCount)}, null, 2);
     check(new TextEncoder().encode(text).length<=LIMIT);
     return text;
   }
-  function parse(source, kind, courseId) {
+  function parse(source, kind, courseId, dayCount = 10) {
     check(typeof source === "string" && source.length <= LIMIT);
     const value = JSON.parse(source);
     check(object(value) && value.format === "jobhub-backup" && value.version === 1 && value.kind === kind);
     if (kind === "course") check(value.courseId === courseId);
-    return normalize(value.data, kind);
+    return normalize(value.data, kind, dayCount);
   }
-  function merge(current, incoming, kind, replace = false) {
-    current = normalize(current, kind); incoming = normalize(incoming, kind);
+  function merge(current, incoming, kind, replace = false, dayCount = 10) {
+    current = normalize(current, kind, dayCount); incoming = normalize(incoming, kind, dayCount);
     if (replace) return incoming;
     if (kind === "course") return {
       completed: [...new Set([...current.completed,...incoming.completed])].sort((a,b)=>a-b),
@@ -51,7 +53,7 @@ const JobHubBackup = (() => {
     return Object.fromEntries(portfolioFields.map(k=>[k,current[k].trim() ? current[k] : incoming[k]]));
   }
 
-  function mount({element, kind, courseId, read, apply, language}) {
+  function mount({element, kind, courseId, dayCount = 10, read, apply, language}) {
     if (!element) return;
     let pending = null, message = "", sequence = 0;
     const copy = {
@@ -110,19 +112,19 @@ const JobHubBackup = (() => {
       finally {if(current===sequence)preview.disabled=false;}
     });
     preview.addEventListener("click",()=>{
-      try {pending=parse(input.value,kind,courseId); mode.value="merge"; panel.hidden=false; message="ready";}
+      try {pending=parse(input.value,kind,courseId,dayCount); mode.value="merge"; panel.hidden=false; message="ready";}
       catch {pending=null; panel.hidden=true; message="invalid";}
       translate();
     });
     applyButton.addEventListener("click",()=>{
       if(!pending)return;
       let next;
-      try {next=merge(read(),pending,kind,mode.value==="replace");}
+      try {next=merge(read(),pending,kind,mode.value==="replace",dayCount);}
       catch {message="invalid"; translate(); return;}
       const saved=apply(next); pending=null; panel.hidden=true; message=saved===false ? "unsaved" : "done"; translate();
     });
     exportButton.addEventListener("click",()=>{
-      try {output.value=serialize(kind,courseId,read()); download.disabled=false; message="generated";}
+      try {output.value=serialize(kind,courseId,read(),dayCount); download.disabled=false; message="generated";}
       catch {message="invalid";}
       translate();
     });

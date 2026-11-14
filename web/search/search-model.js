@@ -5,14 +5,16 @@ const SearchModel = (() => {
   const bilingual = value => value && ["zh","en"].every(l=>typeof value[l]==="string");
   function validate(data) {
     if (!data || data.version!==1 || !Array.isArray(data.entries) || data.entries.length>5000 || !Array.isArray(data.courses)) throw new Error("index");
-    const ids=new Set(), courses=new Set();
+    const ids=new Set(), courses=new Map();
     for(const c of data.courses) {
       if(!c || typeof c.id!=="string" || !/^[a-z0-9-]+$/.test(c.id) || !bilingual(c.title) || courses.has(c.id)) throw new Error("course");
-      courses.add(c.id);
+      const dayCount=c.dayCount===undefined?10:c.dayCount;
+      if(!Number.isInteger(dayCount)||![10,20].includes(dayCount))throw new Error("duration");
+      courses.set(c.id,dayCount);
     }
     for(const e of data.entries) {
       if(!e || !kinds.includes(e.kind) || typeof e.id!=="string" || ids.has(e.id) || typeof e.target!=="string" || !/^[a-z0-9-]+$/.test(e.target) || ![e.title,e.summary,e.text].every(bilingual)) throw new Error("entry");
-      if(e.kind==="lesson" && (!courses.has(e.course) || e.target!==e.course || !Number.isInteger(e.day) || e.day<1 || e.day>10)) throw new Error("lesson");
+      if(e.kind==="lesson" && (!courses.has(e.course) || e.target!==e.course || !Number.isInteger(e.day) || e.day<1 || e.day>courses.get(e.course))) throw new Error("lesson");
       ids.add(e.id);
     }
     return data;
@@ -21,7 +23,7 @@ const SearchModel = (() => {
     if(!kinds.includes(entry.kind)||typeof entry.target!=="string"||!/^[a-z0-9-]+$/.test(entry.target)) throw new Error("target");
     const lang=language==="en"?"en":"zh",id=entry.target;
     if(entry.kind==="lesson") {
-      if(!Number.isInteger(entry.day)||entry.day<1||entry.day>10)throw new Error("day");
+      if(!Number.isInteger(entry.day)||entry.day<1||entry.day>20)throw new Error("day");
       return `../learn/${id}/?lang=${lang}#day-${entry.day}`;
     }
     const pages={concept:["knowledge","topic"],case:["cases","case"],project:["projects","project"]},[page,key]=pages[entry.kind];

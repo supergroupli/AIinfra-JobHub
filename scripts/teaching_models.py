@@ -6,6 +6,33 @@ def bi(zh, en):
 
 # key, bilingual label, default, min, max, step
 MODELS = {
+    "rsi-budget": {
+        "title": bi("失败也花预算：还能试多少次？", "Failed trials also consume budget"),
+        "description": bi("把提案、执行、检查合并为一次实验成本。假设每次成本相同、失败率固定，所有失败均记账。这里计算的是有效结果的期望，不是成功次数预测；真实实验还需记录实际时间、token和中断成本。", "Treat proposing, executing and checking as one trial cost. Assume equal costs and a fixed failure rate, charging all failures. This gives expected valid outcomes, not a predicted success count. Real experiments must record actual time, tokens and interruptions."),
+        "inputs": [("budget", bi("总预算 / 单位", "Total budget / units"), 1000, 0, 2000, 50), ("cost", bi("每次实验成本 / 单位", "Cost per attempt / units"), 20, 5, 100, 5), ("failure", bi("失败率假设 / %", "Assumed failure rate / %"), 25, 0, 100, 5)],
+        "formula": "attempts = floor(budget / cost); expected_valid = attempts × (1 − failure_rate)",
+        "rows": [bi("全部尝试数（含失败）", "All attempts, including failures"), bi("有效结果的期望", "Expected valid outcomes")],
+        "defaults": [50, 37.5], "unit": "trials",
+        "example": bi("1000/20=50次尝试，25%失败率下有效次数期望37.5。失败实验仍消耗预算。", "1000/20 = 50 attempts; a 25% failure rate gives 37.5 valid outcomes in expectation. Failed attempts still cost budget.")
+    },
+    "rsi-gain": {
+        "title": bi("局部更快，完整链路快多少？", "How much does a local improvement help overall?"),
+        "description": bi("Amdahl 教学模型：原总耗时归一为1，仅其中一段被优化。假设其余阶段不变，串行相加且没有额外开销。用完整任务的测量验证结果，不能将算子加速直接当作引擎加速。", "Amdahl teaching model: normalize original runtime to one and accelerate only one component. Remaining work stays fixed, times add sequentially and no overhead is added. Check the complete task; kernel speedup is not engine speedup."),
+        "inputs": [("share", bi("目标阶段原耗时占比 / %", "Original time in target stage / %"), 40, 0, 100, 5), ("local", bi("目标阶段加速倍数", "Local speedup factor"), 2, 1, 8, 0.25)],
+        "formula": "overall_speedup = 1 / ((1 − share) + share / local_speedup)",
+        "rows": [bi("整体理论加速", "Theoretical overall speedup"), bi("目标阶段加速", "Local speedup")],
+        "defaults": [1.25, 2], "unit": "×",
+        "example": bi("只将占40%的阶段加速2倍，整体为1/(0.6+0.4/2)=1.25倍。", "A 2× speedup in 40% of the work gives 1/(0.6+0.4/2)=1.25× overall.")
+    },
+    "rsi-retests": {
+        "title": bi("试得越多，偶然赢家越容易出现", "More trials create more chances for a false winner"),
+        "description": bi("假设候选实际都没有收益、每次检验相互独立且误报概率相同。反复挑最好结果会放大至少一次误报的概率；实际自适应搜索中的试验往往相关，下面的数值不能直接当作其置信度。", "Assume every candidate has no real gain, tests are independent and share a false-positive rate. Selecting the best from many tests increases the chance of at least one false positive. Adaptive trials are often correlated; these values are not their confidence levels."),
+        "inputs": [("trials", bi("检验次数", "Number of tests"), 20, 1, 100, 1), ("alpha", bi("单次误报率 / %", "Per-test false-positive rate / %"), 5, 1, 20, 1)],
+        "formula": "P(at least one false positive) = 1 − (1 − alpha)^trials [independent tests]",
+        "rows": [bi("单次误报概率", "Per-test false positive"), bi("至少一次误报概率", "At least one false positive")],
+        "defaults": [5, 64.15140775914578], "unit": "%",
+        "example": bi("20次独立检验、单次5%误报，至少一次误报概率约64.15%；保留独立验证与负结果。", "Across 20 independent tests at 5% each, probability of at least one false positive is about 64.15%. Preserve independent validation and negative results.")
+    },
     "roofline": {
         "title": bi("算力上限，还是带宽上限？", "Compute bound or bandwidth bound?"),
         "description": bi("算术强度是每搬运一字节所做的 FLOP。用同一精度的峰值算力和持续内存带宽构造理论上界，忽略延迟、缓存层次、形状和实现开销；它不是实测速度。GB 与 TFLOP 使用十进制。", "Arithmetic intensity is FLOP per byte transferred. Use peak compute at the same precision and sustained memory bandwidth for a theoretical bound. Latency, cache hierarchy, shapes and implementation overhead are omitted; this is not measured performance. Units are decimal."),

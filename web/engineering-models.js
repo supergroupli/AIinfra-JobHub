@@ -66,6 +66,19 @@ const EngineeringModels = (() => {
     const gpuSlots = Math.floor(integer(gpus) / integer(request));
     return { memorySlots, gpuSlots, replicas: Math.min(memorySlots, gpuSlots) };
   }
+  function rsiBudget(budget, cost, failurePercent) {
+    const attempts = Math.floor(finite(budget) / positive(cost));
+    return {attempts, expectedValid: attempts * (1 - fraction(failurePercent))};
+  }
+  function rsiGain(sharePercent, localSpeedup) {
+    const share = fraction(sharePercent), local = finite(localSpeedup, 1);
+    return {whole: 1 / (1 - share + share / local), local};
+  }
+  function rsiRetests(trials, alphaPercent) {
+    trials = integer(trials);
+    const alpha = fraction(alphaPercent);
+    return {singlePercent: alpha * 100, familyPercent: -Math.expm1(trials * Math.log1p(-alpha)) * 100};
+  }
   function describe(kind, v, lang) {
     const pick = (zh, en) => lang === "en" ? en : zh;
     const fmt = n => Number(n.toFixed(2)).toLocaleString(lang === "en" ? "en-US" : "zh-CN");
@@ -101,9 +114,18 @@ const EngineeringModels = (() => {
       case "placement-budget":
         d = placementBudget(v.memory, v.gpus, v.request);
         return { values: [d.memorySlots, d.gpuSlots], unit: "replicas", summary: pick(`这个简化节点最多容纳 ${d.replicas} 个副本；还需检查其他调度约束。`, `This simplified node fits at most ${d.replicas} replicas; other scheduling constraints still need checking.`) };
+      case "rsi-budget":
+        d = rsiBudget(v.budget, v.cost, v.failure);
+        return {values:[d.attempts,d.expectedValid],unit:pick("次","trials"),summary:pick(`预算支持 ${d.attempts} 次尝试，有效结果期望 ${fmt(d.expectedValid)} 次；失败也按同样成本计费，期望值不是完成保证。`,`Budget supports ${d.attempts} attempts, with ${fmt(d.expectedValid)} valid outcomes in expectation. Failures cost the same; expectation is not a guarantee.`)};
+      case "rsi-gain":
+        d = rsiGain(v.share, v.local);
+        return {values:[d.whole,d.local],unit:"×",summary:pick(`局部 ${fmt(d.local)} 倍加速，仅得到整体 ${fmt(d.whole)} 倍理论加速。假定其余成本不变，没有新增通信或内存开销。`,`A ${fmt(d.local)}× local speedup gives ${fmt(d.whole)}× theoretical overall speedup, assuming unchanged remaining work and no added communication or memory costs.`)};
+      case "rsi-retests":
+        d = rsiRetests(v.trials, v.alpha);
+        return {values:[d.singlePercent,d.familyPercent],unit:"%",scale:100,summary:pick(`独立检验假设下，至少一次误报的概率约 ${fmt(d.familyPercent)}%；选择最好结果后仍需独立留出验证。相关试验不能直接套用此值。`,`Under independent tests, probability of at least one false positive is about ${fmt(d.familyPercent)}%. Validate selected winners on a separate holdout; correlated trials do not follow this value.`)};
       default: throw new RangeError("Unknown teaching model");
     }
   }
-  return { roofline, overlapBound, transferCost, cacheTiers, pdBalance, tileWaste, trainingMemory, collectiveCost, taskQueue, placementBudget, describe };
+  return { roofline, overlapBound, transferCost, cacheTiers, pdBalance, tileWaste, trainingMemory, collectiveCost, taskQueue, placementBudget, rsiBudget, rsiGain, rsiRetests, describe };
 })();
 if (typeof module !== "undefined" && module.exports) module.exports = EngineeringModels;

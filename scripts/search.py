@@ -49,6 +49,6 @@ def build_search(courses, projects, topics, cases, out):
         raise ValueError("Duplicate search entries")
     folder = out / "search"
     folder.mkdir(exist_ok=True, parents=True)
-    data = {"version": 1, "courses": [{"id": c["id"], "title": c["title"]} for c in courses], "entries": entries}
+    data = {"version": 1, "courses": [{"id": c["id"], "title": c["title"], "dayCount": len(c["steps"])} for c in courses], "entries": entries}
     (folder / "index.json").write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     return data

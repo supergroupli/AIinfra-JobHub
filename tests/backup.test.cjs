@@ -37,3 +37,26 @@ test("portfolio restore keeps user prose and preserves existing fields when merg
   assert.equal(incoming.projectTitle,"测试");
   assert.throws(()=>backup.parse("x".repeat(1024*1024+1),"portfolio"));
 });
+
+test("20-day backups use the caller's course length and cannot extend a 10-day course",()=>{
+  const value={...course({11:"隔离边界",20:"Final review"},[1,11,20]),lastDay:20};
+  const raw=backup.serialize("course","rsi-infra",value,20);
+  assert.equal(JSON.parse(raw).version,1);
+  const restored=backup.parse(raw,"course","rsi-infra",20);
+  assert.equal(restored.notes[20],"Final review");assert.equal(restored.lastDay,20);assert.equal(Object.keys(restored.notes).length,20);
+  assert.throws(()=>backup.parse(raw,"course","vllm",20));
+  assert.throws(()=>backup.parse(raw,"course","rsi-infra",10));
+  const forged=JSON.parse(raw);forged.courseId="vllm";forged.dayCount=20;forged.durationDays=20;
+  assert.throws(()=>backup.parse(JSON.stringify(forged),"course","vllm"));
+  const merged=backup.merge({...course({20:"Mine"},[10]),lastDay:19},restored,"course",false,20);
+  assert.deepEqual(merged.completed,[1,10,11,20]);assert.equal(merged.notes[20],"Mine");assert.equal(merged.lastDay,19);
+  assert.equal(backup.merge(merged,restored,"course",true,20).lastDay,20);
+  for(const count of [0,11,21,20.5,"20",true])assert.throws(()=>backup.parse(raw,"course","rsi-infra",count));
+  for(const bad of [{...value,lastDay:21},course({21:"out of range"}),course({"01":"not canonical"}),course({},[21])])assert.throws(()=>backup.normalize(bad,"course",20));
+});
+
+test("legacy version-one course backups still restore with an implicit ten-day context",()=>{
+  const raw=JSON.stringify({format:"jobhub-backup",version:1,kind:"course",courseId:"vllm",data:{completed:[10],notes:{10:"Original notes"},lastDay:10}});
+  const result=backup.parse(raw,"course","vllm");
+  assert.deepEqual(result.completed,[10]);assert.equal(result.notes[10],"Original notes");assert.equal(Object.keys(result.notes).length,10);
+});

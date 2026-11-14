@@ -5,6 +5,13 @@ const pair=(zh,en=zh)=>({zh,en});
 const entry=(id,kind,title,body='',course='',day=0)=>({id:kind+':'+id+':'+day,kind,target:id,course,day,title:pair(title),summary:pair('Teaching explanation'),text:pair(body)});
 function bank(){return {version:1,courses:[{id:'vllm',title:pair('vLLM')}],entries:[entry('vllm','lesson','KV cache capacity','算出内存预算 memory budget','vllm',2),entry('cache-transfer','concept','Cache transfer','KV cache transfer payload'),entry('tail-queue','case','Tail latency','Investigate queue waiting'),entry('serving-baseline','project','Service baseline','Keep latency evidence')]};}
 
+test('search supports Day 20 only with the course’s declared duration',()=>{
+  const data=bank();data.courses.push({id:'rsi-infra',title:pair('RSI Infra'),dayCount:20});
+  const last=entry('rsi-infra','lesson','RSI capstone','final report','rsi-infra',20);data.entries.push(last);
+  M.validate(data);assert.equal(M.href(last,'en'),'../learn/rsi-infra/?lang=en#day-20');
+  data.entries[0].day=20;assert.throws(()=>M.validate(data));
+});
+
 test('bilingual deep search requires every token, normalizes width/case and ranks title matches first',()=>{
   const data=M.validate(bank());
   assert.equal(M.search(data.entries,'ＫＶ Cache')[0].entry.target,'vllm');

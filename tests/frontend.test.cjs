@@ -11,6 +11,7 @@ const { Blob } = require("node:buffer");
 
 const sourcePath = path.join(__dirname, "..", "web", "course.js");
 const source = readFileSync(sourcePath, "utf8");
+const backupSource = readFileSync(path.join(__dirname, "..", "web", "backup.js"), "utf8");
 const prefix = "infra-commons:";
 
 function storageFixture() {
@@ -41,7 +42,7 @@ function storageFixture() {
   };
 }
 
-function mountCourse(store, { id = "vllm", hash = "#day-1" } = {}) {
+function mountCourse(store, { id = "vllm", hash = "#day-1", dayCount = 10, withBackup = false } = {}) {
   const listeners = new Map();
   const downloads = [];
   const location = new URL(`https://example.test/learn/${id}/${hash}`);
@@ -54,12 +55,14 @@ function mountCourse(store, { id = "vllm", hash = "#day-1" } = {}) {
     const children = new Map();
     return {
       dataset,
+      children: [],
       value: "",
       textContent: "",
       hidden: false,
       checked: false,
       disabled: true,
       open: true,
+      append(...nodes) { this.children.push(...nodes); },
       classList: {
         toggle(name, enabled) {
           enabled ? classes.add(name) : classes.delete(name);
@@ -93,7 +96,7 @@ function mountCourse(store, { id = "vllm", hash = "#day-1" } = {}) {
     };
   }
 
-  const steps = Array.from({ length: 10 }, (_, index) => ({
+  const steps = Array.from({ length: dayCount }, (_, index) => ({
     day: index + 1,
     title: { zh: `测试第 ${index + 1} 天`, en: `Fixture day ${index + 1}` }
   }));
@@ -105,7 +108,7 @@ function mountCourse(store, { id = "vllm", hash = "#day-1" } = {}) {
   const sidebarHeading = element();
   const sidebarPanel = element();
 
-  for (const name of ["course-progress", "course-progress-count", "storage-status", "course-language", "download-guide", "export-progress"]) {
+  for (const name of ["course-progress", "course-progress-count", "storage-status", "course-language", "download-guide", "export-progress", "backup-panel"]) {
     ids.set(name, element());
   }
   ids.get("storage-status").hidden = true;
@@ -143,8 +146,8 @@ function mountCourse(store, { id = "vllm", hash = "#day-1" } = {}) {
       return selections[selector];
     },
     createElement(tag) {
-      assert.equal(tag, "a");
-      return element();
+      if (!withBackup) assert.equal(tag, "a");
+      return Object.assign(element(), {tagName: tag.toUpperCase()});
     }
   };
 
@@ -160,6 +163,8 @@ function mountCourse(store, { id = "vllm", hash = "#day-1" } = {}) {
     URL: DownloadURL,
     URLSearchParams,
     Blob,
+    TextEncoder,
+    MutationObserver: class { observe() {} },
     document,
     location,
     localStorage: store.localStorage,
@@ -181,6 +186,7 @@ function mountCourse(store, { id = "vllm", hash = "#day-1" } = {}) {
       return 0;
     }
   });
+  if (withBackup) new vm.Script(backupSource).runInContext(context, { timeout: 1000 });
   new vm.Script(source, { filename: sourcePath }).runInContext(context, { timeout: 1000 });
 
   return {
@@ -189,6 +195,7 @@ function mountCourse(store, { id = "vllm", hash = "#day-1" } = {}) {
     complete,
     downloads,
     document,
+    backupElements() { const walk = node => [node, ...node.children.flatMap(walk)]; return walk(ids.get("backup-panel")); },
     editNote(day, value) {
       notes[day - 1].value = value;
       notes[day - 1].focus();
@@ -317,4 +324,37 @@ test("a failed note write stays visibly unsaved after unrelated successful write
   page.editNote(3, "New work that needs a backup");
   assert.equal(store.read(noteKey), "New work that needs a backup");
   assert.ok(status.hidden || !/could not save|无法保存/.test(status.textContent));
+});
+
+test("20-day course navigation, notes, progress and export survive reload and language changes",async()=>{
+  const store=storageFixture(),options={id:"rsi-infra",dayCount:20,hash:"#day-20"};
+  const page=mountCourse(store,options);
+  assert.equal(page.visibleDay(),20);assert.equal(page.ids.get("course-progress").max,20);
+  page.editNote(20,"Independent held-out run and rollback evidence");page.setComplete(20,true);
+  assert.equal(page.ids.get("course-progress-count").textContent,"1 / 20");
+  page.ids.get("course-language").click();assert.match(page.document.title,/20-day guide/);assert.equal(page.visibleDay(),20);
+  page.ids.get("export-progress").click();const md=await page.downloads[0].text();assert.match(md,/## Day 20/);assert.match(md,/Independent held-out run/);
+  const reopened=mountCourse(store,{...options,hash:""});assert.equal(reopened.visibleDay(),20);assert.equal(reopened.notes[19].value,"Independent held-out run and rollback evidence");assert.equal(reopened.complete[19].checked,true);
+  reopened.navigate("#day-11");assert.equal(reopened.visibleDay(),11);reopened.navigate("#day-21");assert.equal(reopened.visibleDay(),1);
+  const old=mountCourse(store,{hash:"#day-20"});assert.equal(old.visibleDay(),1);assert.equal(old.ids.get("course-progress").max,10);
+});
+
+test("actual backup UI restores day 20 only after confirmation and preserves another course's records",()=>{
+  const backup=require("../web/backup.js"),store=storageFixture();
+  store.seed("course-progress-v2",["vllm:10"]);store.seed("notes-v2:vllm:10","Unrelated course");
+  const page=mountCourse(store,{id:"rsi-infra",dayCount:20,hash:"#day-12",withBackup:true});
+  page.editNote(12,"Current note");
+  const all=()=>page.backupElements(),input=all().find(e=>e.id==="backup-input");
+  input.value=backup.serialize("course","rsi-infra",{completed:[20],notes:{12:"Imported note",20:"Report"},lastDay:20},20);input.emit("input");
+  all().find(e=>e.textContent==="检查并预览导入").click();
+  assert.equal(store.read("notes-v2:rsi-infra:20"),null);
+  all().find(e=>e.textContent==="确认导入").click();
+  assert.equal(page.notes[19].value,"Report");assert.equal(page.notes[11].value,"Current note");assert.equal(page.complete[19].checked,true);assert.equal(page.visibleDay(),12);
+  assert.deepEqual(store.read("course-progress-v2").sort(),["rsi-infra:20","vllm:10"]);assert.equal(store.read("notes-v2:vllm:10"),"Unrelated course");
+  input.emit("input");all().find(e=>e.textContent==="检查并预览导入").click();all().find(e=>e.id==="backup-mode").value="replace";all().find(e=>e.textContent==="确认导入").click();
+  assert.equal(page.visibleDay(),20);assert.equal(page.notes[11].value,"Imported note");
+  all().find(e=>e.textContent==="生成 JSON 备份").click();const output=all().find(e=>e.id==="backup-output").value;
+  assert.equal(backup.parse(output,"course","rsi-infra",20).lastDay,20);
+  const old=mountCourse(store,{withBackup:true}),oldNodes=old.backupElements();oldNodes.find(e=>e.id==="backup-input").value=output;
+  oldNodes.find(e=>e.textContent==="检查并预览导入").click();assert.ok(oldNodes.some(e=>/无法导入/.test(e.textContent)));assert.equal(store.read("notes-v2:vllm:10"),"Unrelated course");
 });

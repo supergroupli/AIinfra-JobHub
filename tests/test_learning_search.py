@@ -21,7 +21,7 @@ class LearningSearchTest(unittest.TestCase):
     def test_index_preserves_deep_explanations_and_unique_destinations(self):
         with TemporaryDirectory() as directory:
             data = build_search(self.courses, self.projects, self.topics, self.cases, Path(directory))
-            self.assertEqual(len(data['entries']), 110 + len(self.projects) + len(self.topics) + len(self.cases))
+            self.assertEqual(len(data['entries']), sum(len(c['steps']) for c in self.courses) + len(self.projects) + len(self.topics) + len(self.cases))
             self.assertEqual(len({entry['id'] for entry in data['entries']}), len(data['entries']))
             day = next(e for e in data['entries'] if e['course'] == 'vllm' and e['day'] == 1)
             self.assertIn('python3 lab.py selfcheck', day['text']['en'])

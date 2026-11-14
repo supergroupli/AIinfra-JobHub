@@ -48,6 +48,7 @@ def source_links(resources):
 
 def course_hero(course):
     ident = course["id"]
+    days = len(course["steps"])
     facts = [
         (("每天投入", "Daily commitment"), course["hoursPerDay"]),
         (("先修知识", "Prerequisites"), course["prerequisites"]),
@@ -61,11 +62,11 @@ def course_hero(course):
         '<div class="breadcrumbs">' + label("a", "学习库", "Learning library", 'href="../../#learn"') +
         ' <span aria-hidden="true">/</span> ' + localized("span", course["title"]) + '</div>' +
         '<div class="course-kicker">' + localized("span", CATEGORIES[course["category"]]) + ' · ' +
-        label("span", "10 天实战学习", "10-day practical guide") + ' · ' + localized("span", LEVELS[course["level"]]) + '</div>' +
+        label("span", f"{days} 天实战学习", f"{days}-day practical guide") + ' · ' + localized("span", LEVELS[course["level"]]) + '</div>' +
         localized("h1", course["title"]) + localized("p", course["description"], 'class="course-summary"') +
         '<div class="course-facts">' + "".join('<div class="course-fact">' + label("small", *name) + localized("span", value) + '</div>' for name, value in facts) + '</div>' +
         '<p class="course-roles">' + label("strong", "关联方向：", "Related roles: ") + localized("span", roles) + '</p>' +
-        '<div class="course-actions">' + label("a", "下载 10 天学习文档 ↓", "Download the 10-day guide ↓", f'class="button primary" id="download-guide" href="./{ident}.zh.md" download') +
+        '<div class="course-actions">' + label("a", f"下载 {days} 天学习文档 ↓", f"Download the {days}-day guide ↓", f'class="button primary" id="download-guide" href="./{ident}.zh.md" download') +
         label("button", "导出我的学习记录 ↓", "Export my learning record ↓", 'class="button outline" id="export-progress" type="button" disabled') +
         (label("a", "下载实验代码 ZIP ↓", "Download lab ZIP ↓", f'class="button outline" href="../../labs/{esc(course["lab"]["path"])}.zip" download') if course.get("lab") and re.fullmatch(r"[a-z0-9-]+", course["lab"].get("path", "")) else "") +
         label("a", "作品记录模板 ↗", "Portfolio template ↗", 'class="text-link" href="../../resources/portfolio-template.md" download') + '</div>' +
@@ -266,10 +267,11 @@ def feedback_blocks(step):
 
 def course_body(course, repository=""):
     sections = []
+    days = len(course["steps"])
     for step in course["steps"]:
         day = step["day"]
         chunks = [f'<section class="day-content" id="day-{day}" data-day="{day}" tabindex="-1">',
-                  label("div", f"第 {day:02d} 天 / 共 10 天", f"DAY {day:02d} / 10", 'class="day-eyebrow"'),
+                  label("div", f"第 {day:02d} 天 / 共 {days} 天", f"DAY {day:02d} / {days}", 'class="day-eyebrow"'),
                   localized("h2", step["title"])]
         if day == 1 and course.get("lab"):
             chunks.append(lab_download(course))
@@ -292,7 +294,7 @@ def course_body(course, repository=""):
             chunks.append(label("a", "← 前一天", "← Previous day", f'class="button outline" href="#day-{day-1}"'))
         else:
             chunks.append(label("a", "← 学习库", "← Learning library", 'class="button outline" href="../../#learn"'))
-        if day < 10:
+        if day < days:
             chunks.append(label("a", "下一天 →", "Next day →", f'class="button primary" href="#day-{day+1}"'))
         else:
             chunks.append(label("a", "整理我的作品 ↗", "Build my portfolio ↗", 'class="button primary" href="../../resources/portfolio-template.md" download'))
@@ -305,16 +307,17 @@ def course_body(course, repository=""):
                        label("a", "查看作品评审队列 ↗", "View the project review queue ↗", 'class="text-link" href="../../talent/#reviews"'), '</aside>']
         chunks.append('</section>')
         sections.append("".join(chunks))
-    meta = {"id": course["id"], "title": course["title"], "steps": [{"day": x["day"], "title": x["title"]} for x in course["steps"]]}
+    meta = {"id": course["id"], "title": course["title"], "durationDays": days, "steps": [{"day": x["day"], "title": x["title"]} for x in course["steps"]]}
     safe_meta = json.dumps(meta, ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
     return "\n".join(sections) + f'<script type="application/json" id="course-meta">{safe_meta}</script>'
 
 
 def course_markdown(course, lang, site_url=None):
     english = lang == "en"
+    days = len(course["steps"])
     pick = lambda value: value[lang]
     labels = {"lesson": "Understand the idea" if english else "概念讲解", "task": "Practice" if english else "动手实践", "evidence": "Deliverable" if english else "交付物", "noGpu": "Without the required hardware" if english else "无对应硬件的替代路径"}
-    lines = [f'# {pick(course["title"])} · {"10-day guide" if english else "10 天实战学习"}', '', '聘枢 · AI Infra JobHub', '', pick(course["description"]), '']
+    lines = [f'# {pick(course["title"])} · {str(days) + "-day guide" if english else str(days) + " 天实战学习"}', '', '聘枢 · AI Infra JobHub', '', pick(course["description"]), '']
     for name, key in [("Daily commitment" if english else "每日投入", "hoursPerDay"), ("Prerequisites" if english else "先修知识", "prerequisites"), ("Hardware" if english else "实践环境", "hardware"), ("Final deliverable" if english else "结课作品", "outcome")]:
         lines += [f'**{name}:** {pick(course[key])}', '']
     if course.get("curriculum"):
