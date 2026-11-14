@@ -3,7 +3,10 @@
 **Learn. Build. Connect. / 学习、做作品、找到同行。**
 
 [Website / 网站](https://supergroupli.github.io/AIinfra-JobHub/) ·
+[Find your starting point / 入门自查](https://supergroupli.github.io/AIinfra-JobHub/start/) ·
 [Career preparation / 求职准备](https://supergroupli.github.io/AIinfra-JobHub/career/) ·
+[Application tracker / 投递记录](https://supergroupli.github.io/AIinfra-JobHub/applications/) ·
+[Hiring brief / 招聘需求](https://supergroupli.github.io/AIinfra-JobHub/hiring/) ·
 [Builders & reviews / 人才与评审](https://supergroupli.github.io/AIinfra-JobHub/talent/) ·
 [Projects / 实战项目](https://supergroupli.github.io/AIinfra-JobHub/projects/) ·
 [Portfolio / 作品档案](https://supergroupli.github.io/AIinfra-JobHub/portfolio/) ·

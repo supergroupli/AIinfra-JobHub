@@ -304,7 +304,7 @@ def write_course_pages(courses, out, repository, projects):
         for lang in ("zh", "en"):
             (folder / f"{course['id']}.{lang}.md").write_text(course_markdown(course, lang, base), encoding="utf-8")
     if base:
-        locations = [base, f"{base}projects/", f"{base}portfolio/", f"{base}career/", f"{base}talent/"] + [f"{base}learn/{course['id']}/" for course in courses]
+        locations = [base] + [f"{base}{section}/" for section in ("start", "projects", "portfolio", "career", "applications", "talent", "hiring")] + [f"{base}learn/{course['id']}/" for course in courses]
         (out / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + "".join(f"<url><loc>{esc(location)}</loc></url>" for location in locations) + "</urlset>\n", encoding="utf-8")
 
 

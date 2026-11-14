@@ -15,6 +15,7 @@ const state = {lang: storage.get("language", "zh") === "en" ? "en" : "zh", data:
 const technologies = ["vLLM", "SGLang", "LMCache", "Mooncake", "Dynamo", "KV Cache", "Serving", "CUDA", "Triton", "PyTorch", "Ray", "NCCL", "Kubernetes", "Distributed Systems", "Observability"];
 const messages = {
   zh: {
+    applicationTracker:"投递记录", hiringBrief:"整理招聘需求", findStart:"从哪里开始？做一次入门自查 ↗",
     navCareer:"求职准备", navTalent:"人才速览", growthTitle:"选择你的下一步。", growthIntro:"围绕一个作品准备求职，或从具体贡献认识下一位工程伙伴。", growthBuilderTitle:"我在准备下一次机会", growthBuilderBody:"按岗位安排 7 天作品与投递准备：独立实现、检查证据、整理简历，再发起有针对性的申请。已有作品可直接进入结课自评。", growthBuilderAction:"打开求职准备路线 ↗", growthTeamTitle:"我在寻找工程人才", growthTeamBody:"按技术、地区、语言与协作方式浏览自愿公开的名片，查看本人贡献和作品证据，把想进一步了解的人加入本机阅读清单。", growthTeamAction:"进入人才速览 ↗", growthReviews:"作品评审队列", growthOpportunities:"发布真实机会", founderName:"项目发起人：李超群", founderCompany:"所属公司：元智引擎公司",
     gpuExtensions: "含 GPU / 高速互连选做实验",
     requiredHeading: "必修课", electiveHeading: "选修课", commonRequired: "共同必修", roleRequired: "岗位必修", elective: "方向选修", requiredGroup: "必修 · 共 {days} 天", electiveGroup: "选修 · {count} 门，按需选择", selectedRequirement: "课程性质", allRequirements: "必修 + 选修", roleLabel: "目标岗位", allRoles: "全部方向", requiredCount: "{count} 门必修 · {days} 天",
@@ -42,6 +43,7 @@ const messages = {
     privacy3: "学习进度和语言偏好保存在本浏览器。本站代码不加载分析跟踪脚本，也不把这些进度上传。你可以通过邮件客户端将简历发送至 career@yzinfra.com，邮件由该邮箱运营方接收和处理，不会由网站自动发布到 GitHub。针对具体职位，也可使用企业官方申请入口。网站不提供私聊或简历上传存储；邮件和网页访问仍适用各服务提供方的数据处理政策。"
   },
   en: {
+    applicationTracker:"Application tracker", hiringBrief:"Write a hiring brief", findStart:"Where should I start? Find a first task ↗",
     navCareer:"Career prep", navTalent:"Find builders", growthTitle:"Choose your next step.", growthIntro:"Prepare for a role with one project, or meet an engineer through their contribution.", growthBuilderTitle:"Prepare for my next opportunity", growthBuilderBody:"A seven-day plan for independent work, evidence, a portfolio and targeted applications. If you already have a project, start with the capstone self-review.", growthBuilderAction:"Open my preparation plan ↗", growthTeamTitle:"Meet engineers through their work", growthTeamBody:"Browse voluntary profiles by technology and collaboration needs. Read contributions and evidence, then save a local reading shortlist for further review.", growthTeamAction:"Browse builders ↗", growthReviews:"Project review queue", growthOpportunities:"Share a real opportunity", founderName:"Project initiator: Li Chaoqun (李超群)", founderCompany:"Company: 元智引擎公司",
     gpuExtensions: "Optional GPU / fast-interconnect labs",
     requiredHeading: "Core courses", electiveHeading: "Electives", commonRequired: "Common core", roleRequired: "Role core", elective: "Elective", requiredGroup: "Core · {days} days", electiveGroup: "Electives · choose from {count}", selectedRequirement: "Course requirement", allRequirements: "Core + electives", roleLabel: "Target role", allRoles: "All roles", requiredCount: "{count} core courses · {days} days", curriculumNote: "Foundations is common to every path. Core and elective choices depend on your target role; use the lab checks to identify what you already know.",
@@ -78,6 +80,7 @@ const currentRecords = (kind) => (state.data?.[kind] ?? []).filter(x => x.status
 
 function translatePage() {
   document.documentElement.lang = state.lang === "zh" ? "zh-CN" : "en";
+  document.querySelectorAll("[data-language-link]").forEach(a => { const url = new URL(a.dataset.languageLink, location.href); url.searchParams.set("lang", state.lang); a.href = url.href; });
   document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
   document.querySelectorAll("[data-placeholder]").forEach(el => { el.placeholder = t(el.dataset.placeholder); });
   $("#language-toggle").innerHTML = `${state.lang === "zh" ? "EN" : "中文"} <span aria-hidden="true">↗</span>`;

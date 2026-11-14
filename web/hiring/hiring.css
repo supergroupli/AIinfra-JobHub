@@ -1,0 +1,65 @@
+.hiring-page { background: #f7f8f2; color: #183c35; }
+.hiring-shell { padding-top: 48px; padding-bottom: 64px; }
+.hiring-hero { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(220px, .6fr); align-items: center; gap: 48px; padding-bottom: 26px; }
+.hiring-hero h1 { font-size: clamp(2.2rem, 4.4vw, 4.25rem); line-height: 1.14; letter-spacing: -.05em; margin: 16px 0 22px; max-width: 15ch; text-wrap: balance; }
+.hiring-lede { font-size: 1.08rem; line-height: 1.9; max-width: 710px; color: #53695e; }
+.hiring-flow { list-style: none; margin: 0; padding: 24px; border: 1px solid #dce4d7; border-radius: 22px; background: #eaf0e4; }
+.hiring-flow li { display: flex; gap: 16px; align-items: baseline; padding: 16px 0; }
+.hiring-flow li + li { border-top: 1px solid #d2dfcf; }
+.hiring-flow span { font-size: .75rem; color: #648264; font-family: monospace; }
+.hiring-privacy { padding: 18px 22px; background: #edf2ea; border-radius: 12px; font-size: .88rem; line-height: 1.8; color: #496456; }
+.hiring-prompts, .hiring-card { border: 1px solid #d9e2d6; border-radius: 24px; padding: 28px; margin-top: 26px; background: #fff; }
+.hiring-prompts { background: #edf3f1; }
+.hiring-panel-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.hiring-panel-heading h2 { font-size: 1.4rem; letter-spacing: -.035em; margin: 6px 0; }
+.hiring-panel-heading .eyebrow { margin: 0; }
+.hiring-template-label { display: grid; gap: 6px; font-size: .78rem; color: #53695e; }
+.hiring-prompt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; line-height: 1.85; }
+.hiring-prompt-grid h3 { font-size: .95rem; margin: 14px 0 7px; }
+.hiring-prompt-grid p { margin: 0; color: #496456; }
+.hiring-prompt-grid ol { margin: 0; padding-left: 22px; color: #496456; }
+.hiring-reference-links { display: flex; flex-wrap: wrap; gap: 8px 20px; border-top: 1px solid #d4e0d8; padding-top: 17px; margin-top: 20px; font-size: .87rem; }
+.hiring-reference-links a { color: #24543f; text-decoration: underline; text-underline-offset: 4px; }
+.hiring-workspace { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr); gap: 28px; align-items: start; margin-top: 30px; }
+.hiring-editor, .hiring-preview-card { min-width: 0; border: 1px solid #d9e2d6; border-radius: 24px; padding: 28px; background: #fff; }
+.hiring-preview-column { min-width: 0; }
+.hiring-tag { display: inline-block; border-radius: 20px; padding: 6px 10px; background: #edf2e8; font-size: .75rem; color: #47654c; }
+.hiring-page fieldset { border: 0; padding: 0; margin: 28px 0 0; min-width: 0; }
+.hiring-page legend { display: block; padding: 14px 0 8px; border-top: 1px solid #e1e6dc; width: 100%; font-size: 1.05rem; font-weight: 700; }
+.hiring-field { margin-top: 17px; }
+.hiring-field label, .hiring-import-body > label { display: block; margin-bottom: 8px; font-size: .87rem; line-height: 1.6; font-weight: 650; }
+.hiring-page input, .hiring-page textarea, .hiring-page select { max-width: 100%; box-sizing: border-box; border: 1px solid #cbd7c9; border-radius: 9px; background: #fcfdf9; color: #183c35; padding: 11px 12px; font: inherit; font-size: .9rem; }
+.hiring-field input, .hiring-field textarea, .hiring-field select, #hiring-source, #hiring-import-source { width: 100%; }
+.hiring-page textarea { resize: vertical; line-height: 1.7; }
+.hiring-page :is(input,textarea,select,button,a,summary):focus-visible { outline: 3px solid #83aa80; outline-offset: 3px; }
+.hiring-page [aria-invalid="true"] { border-color: #a34e36; }
+.hiring-hint { font-size: .78rem; line-height: 1.75; color: #657568; margin: 7px 0 0; }
+.hiring-status { font-size: .82rem; line-height: 1.7; color: #526b58; min-height: 1.7em; overflow-wrap: anywhere; }
+.hiring-status[data-error="true"] { color: #94422e; }
+.hiring-checklist { background: #f4f5ec; border: 1px solid #e2e5d3; padding: 16px; border-radius: 12px; margin: 20px 0; }
+.hiring-page summary { cursor: pointer; font-size: .88rem; font-weight: 650; line-height: 1.65; }
+.hiring-checklist ul { columns: 2; column-gap: 24px; font-size: .75rem; line-height: 1.9; padding-left: 20px; margin-bottom: 0; }
+.hiring-checklist li { break-inside: avoid; }
+.hiring-document { overflow-wrap: anywhere; }
+.hiring-document h3 { font-size: 1.05rem; margin: 26px 0 16px; padding-bottom: 8px; border-bottom: 1px solid #e0e6db; }
+.hiring-document dl { margin: 0; }
+.hiring-document dt { font-size: .75rem; font-weight: 650; color: #5f7565; margin-top: 16px; }
+.hiring-document dd { margin: 5px 0 0; font-size: .88rem; line-height: 1.85; white-space: pre-wrap; }
+.hiring-document dd.is-empty { color: #8a8061; }
+.hiring-document a { color: #2b684b; text-decoration: underline; }
+.hiring-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+.hiring-actions .button { min-height: 44px; font-size: .85rem; }
+.hiring-page button:disabled { opacity: .45; cursor: not-allowed; }
+#hiring-source { margin-top: 10px; font-family: ui-monospace, monospace; font-size: .75rem; }
+.hiring-backup > p, .hiring-publish p { font-size: .92rem; line-height: 1.9; color: #5a6d5e; max-width: 850px; }
+.hiring-import-body { padding-top: 20px; }
+#hiring-import-file { display: block; margin-bottom: 18px; }
+.hiring-import-row { padding: 14px 0; border-bottom: 1px solid #e3e7dd; font-size: .88rem; }
+.hiring-import-row strong { display: block; margin-bottom: 6px; }
+.hiring-import-row p { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; margin: 0; }
+.hiring-publish { background: #eaf0e4; display: flex; align-items: center; justify-content: space-between; gap: 30px; }
+.hiring-publish h2 { font-size: 1.5rem; }
+.hiring-publish .button { flex-shrink: 0; text-align: center; }
+@media (max-width: 1000px) { .hiring-workspace { gap: 18px; } .hiring-editor,.hiring-preview-card { padding: 21px; } .hiring-publish { flex-direction: column; align-items: flex-start; } .hiring-checklist ul { columns: 1; } }
+@media (max-width: 760px) { .hiring-shell { padding-top: 28px; } .hiring-hero,.hiring-workspace,.hiring-prompt-grid { grid-template-columns: 1fr; gap: 22px; } .hiring-hero h1 { max-width: none; } .hiring-flow { padding: 12px 20px; } .hiring-flow li { padding: 11px 0; } .hiring-prompts,.hiring-card { padding: 22px; } .hiring-template-label { width: 100%; } .hiring-page select { width: 100%; } .hiring-prompt-grid { gap: 4px; } .hiring-preview-card { margin-top: 0; } }
+@media (prefers-reduced-motion: reduce) { .hiring-page * { scroll-behavior: auto !important; } }

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#183c35">
+  <meta name="description" content="根据目标方向、已有基础、设备与时间，找到 AI Infra 第一节课和首小时任务。普通 CPU 电脑也能开始。">
+  <title>从这里开始 · 聘枢 · AI Infra JobHub</title>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css?v=20261113-growth">
+  <link rel="stylesheet" href="./start.css">
+  <script src="./start-model.js" defer></script>
+  <script src="./start.js" defer></script>
+</head>
+<body class="start-page">
+  <a class="skip-link" href="#main" data-i18n="skip">跳到起步自查</a>
+  <header class="site-header">
+    <a class="brand" href="../" data-language-link="../"><img class="brand-mark" src="../assets/logo-mark.svg" width="40" height="40" alt=""><span class="brand-wordmark"><strong data-i18n="brand">聘枢</strong><small>AI Infra JobHub</small></span></a>
+    <nav aria-label="Main navigation"><a href="./" aria-current="page" data-i18n="start">从这里开始</a><a href="../#learn" data-language-link="../#learn" data-i18n="learn">学习库</a><a href="../projects/" data-language-link="../projects/" data-i18n="projects">实战项目</a><a href="../career/" data-language-link="../career/" data-i18n="career">求职准备</a></nav>
+    <button class="language-button" id="start-language" type="button" aria-label="Switch to English">EN ↗</button>
+  </header>
+  <main id="main" class="section-shell start-main">
+    <section class="start-hero">
+      <div><div class="eyebrow">YOUR FIRST STEP IN AI INFRA</div><h1 data-i18n="title">从你会的出发，找到下一步。</h1><p class="start-intro" data-i18n="intro">不用先学完所有技术。选一个方向，花两分钟自查，用手边的电脑做出第一份可以解释的作品。</p><div class="start-actions"><a class="button primary" href="#start-form" data-i18n="begin">找到我的起点 ↘</a><a id="hero-project" class="text-link" href="../projects/?project=serving-baseline" data-i18n="experienced">已有经验？直接挑战项目 ↗</a></div></div>
+      <aside class="start-map"><span class="mono">SMALL STEPS. REAL EVIDENCE.</span><ol><li><span>01</span><strong data-i18n="map1">说清起点</strong></li><li><span>02</span><strong data-i18n="map2">运行一个小实验</strong></li><li><span>03</span><strong data-i18n="map3">留下自己的解释</strong></li></ol><p data-i18n="mapNote">CPU 就能起步 · 建议附带原因 · 没有能力评分</p></aside>
+    </section>
+    <div class="start-layout">
+      <form id="start-form" class="start-form">
+        <div class="eyebrow">01 / YOUR STARTING POINT</div><h2 data-i18n="formTitle">按你的情况安排</h2>
+        <label for="start-role" data-i18n="role">我想探索的方向</label><select id="start-role" name="role"></select>
+        <div class="start-field-row"><div><label for="start-hardware" data-i18n="hardware">可用设备</label><select id="start-hardware" name="hardware"></select></div><div><label for="start-hours" data-i18n="hours">每周可用时间</label><select id="start-hours" name="hours"></select></div></div>
+        <fieldset><legend data-i18n="basics">六项基础自查</legend><p class="start-note" data-i18n="basicsNote">按现在能独立做的选择。不确定就选“还没接触”；这只会帮助安排复习，不会限制浏览课程或项目。</p><div id="start-skills"></div></fieldset>
+        <div class="start-actions"><button class="button primary" type="submit" data-i18n="show">查看我的建议 ↘</button><button id="start-reset" class="text-button" type="button" data-i18n="reset">重置本页选择</button></div>
+        <p id="start-storage-status" class="start-note" role="status"></p>
+      </form>
+      <section id="start-result" class="start-result" aria-labelledby="start-result-title" tabindex="-1"><div class="eyebrow">02 / A PLAN YOU CAN EXPLAIN</div><h2 id="start-result-title" data-i18n="resultTitle">你的起步建议</h2><p class="start-boundary" data-i18n="boundary">这里按明确规则选择资源，不打能力分、不决定录用。自述“能独立完成”不等于已验证；要用实际代码、结果与解释来检验。</p><div id="start-plan"></div></section>
+    </div>
+    <section class="start-method"><h2 data-i18n="methodTitle">这些建议是怎样产生的？</h2><div class="start-method-grid"><p data-i18n="rule1">基础：每一项“还没接触”或“需要复习”对应具体课程日；同一课只列一次，并保留每条理由。</p><p data-i18n="rule2">方向：目标岗位决定后续三节课、项目和求职准备路线。它不声称完整覆盖该岗位，也不要求先修完所有课。</p><p data-i18n="rule3">设备与时间：CPU 路线始终开放；GPU 只增加可选实机实验。每周时间只调整节奏，课程里的 Day 不等于你必须一天完成。</p></div></section>
+    <p id="start-action-status" class="start-note" role="status"></p>
+  </main>
+  <footer class="site-footer section-shell"><span data-i18n="footer">聘枢 · 用可核查的贡献连接学习与工作。</span><div class="footer-links"><a href="../#learn" data-language-link="../#learn" data-i18n="learn">学习库</a><a href="mailto:career@yzinfra.com">career@yzinfra.com</a></div></footer>
+  <noscript><p class="notice section-shell">自查工具需要 JavaScript；可以直接开始 <a href="../learn/foundations/#day-1">系统基础 Day 1 / Foundations Day 1</a>，普通 CPU 电脑即可。Enable JavaScript for personalized suggestions.</p></noscript>
+</body>
+</html>
