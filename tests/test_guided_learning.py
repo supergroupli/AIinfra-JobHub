@@ -17,7 +17,7 @@ class GuidedLearningTest(unittest.TestCase):
         return [json.loads(path.read_text()) for path in sorted((ROOT / "content/courses").glob("*.json"))]
 
     def test_all_guided_courses_are_complete(self):
-        self.assertEqual(len(self.courses()), 12)
+        self.assertEqual(len(self.courses()), 15)
         for course in self.courses():
             self.assertEqual(course["lab"]["path"], course["id"])
             validate_tracks([course])

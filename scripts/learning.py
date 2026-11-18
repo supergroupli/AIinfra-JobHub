@@ -26,6 +26,23 @@ LEVELS = {
     "advanced": {"zh": "深入", "en": "Advanced"},
 }
 
+ENVIRONMENT_FIELDS = (
+    ("reference", ("上游资料基线", "Upstream reference baseline")),
+    ("minimum", ("必做实验环境", "Required lab environment")),
+    ("verified", ("已验证范围", "Validated scope")),
+    ("unverified", ("实机扩展与限制", "Hardware extensions and limits")),
+)
+
+
+def environment_card(course):
+    environment = course.get("environment")
+    if not environment:
+        return ""
+    return ('<aside class="course-environment">' +
+            label("h2", "先确认版本与实验环境", "Check versions and lab environment") + '<dl>' +
+            "".join('<div>' + label("dt", *title) + localized("dd", environment[key]) + '</div>'
+                    for key, title in ENVIRONMENT_FIELDS) + '</dl></aside>')
+
 
 def esc(value):
     return html.escape(str(value), quote=True)
@@ -72,7 +89,7 @@ def course_hero(course):
         label("a", "作品记录模板 ↗", "Portfolio template ↗", 'class="text-link" href="../../resources/portfolio-template.md" download') + '</div>' +
         label("p", f'资料核对：{course["lastVerified"]}。目标是完成一轮系统学习与可复现作品；实际命令需匹配你锁定的版本。资料核对不代表所有硬件实验已在本平台运行。',
               f'Sources checked: {course["lastVerified"]}. Complete a structured learning cycle and a reproducible project. Match commands to your pinned release. Source review does not mean all hardware experiments were run by this platform.', 'class="course-research-note"') +
-        verification_card(course) +
+        environment_card(course) + verification_card(course) +
         '<p id="storage-status" class="course-research-note" role="status" hidden></p><details id="backup-panel" class="backup-panel"></details>'
     )
 
@@ -324,6 +341,9 @@ def course_markdown(course, lang, site_url=None):
         lines += [f'**{"Curriculum role" if english else "课程定位"}:** {pick(course["curriculum"]["label"])}', '']
     lines += [f'{"Sources checked" if english else "资料核对"}: {course["lastVerified"]}.', '',
               'Source review does not mean all hardware experiments were run here. Pin versions and label measured, simulated and planned work separately.' if english else '资料核对不代表所有硬件实验已由平台跑通。请固定版本，并区分实测、模拟与未执行的设计。', '']
+    if course.get("environment"):
+        for key, titles in ENVIRONMENT_FIELDS:
+            lines += [f'**{titles[1 if english else 0]}:** {pick(course["environment"][key])}', '']
     if course.get("lab"):
         lab = course["lab"]
         lab_url = f'{site_url.rstrip("/")}/labs/{lab["path"]}.zip' if site_url else f'../../labs/{lab["path"]}.zip'

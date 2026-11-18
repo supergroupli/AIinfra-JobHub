@@ -1,11 +1,17 @@
 """Explicit assumptions for browser-only engineering teaching models."""
 
+if __package__:
+    from .frontier_models import MODELS as FRONTIER_MODELS
+else:
+    from frontier_models import MODELS as FRONTIER_MODELS
+
 def bi(zh, en):
     return {"zh": zh, "en": en}
 
 
 # key, bilingual label, default, min, max, step
 MODELS = {
+    **FRONTIER_MODELS,
     "rsi-budget": {
         "title": bi("失败也花预算：还能试多少次？", "Failed trials also consume budget"),
         "description": bi("把提案、执行、检查合并为一次实验成本。假设每次成本相同、失败率固定，所有失败均记账。这里计算的是有效结果的期望，不是成功次数预测；真实实验还需记录实际时间、token和中断成本。", "Treat proposing, executing and checking as one trial cost. Assume equal costs and a fixed failure rate, charging all failures. This gives expected valid outcomes, not a predicted success count. Real experiments must record actual time, tokens and interruptions."),

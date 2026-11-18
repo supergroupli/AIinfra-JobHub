@@ -1,0 +1,4506 @@
+{
+  "id": "llm-d",
+  "number": "14",
+  "durationDays": 20,
+  "category": "platform",
+  "level": "intermediate",
+  "title": {
+    "zh": "llm-d：分布式推理与生产控制面",
+    "en": "llm-d: distributed serving and production control planes"
+  },
+  "subtitle": {
+    "zh": "20天，做出能解释路由、容量与故障的工程作品",
+    "en": "20 days to a portfolio explaining routing, capacity and failures"
+  },
+  "description": {
+    "zh": "以llm-d v1.0.0为资料基线，贯通Kubernetes端点发现、缓存感知路由、P/D分离、SLO、准入、升级和故障恢复。20个逐日CPU实验、20张图解、3种交互模型与40道解析题，先在普通电脑完成可复查作品，再制定真实集群验证。",
+    "en": "Use llm-d v1.0.0 as the source baseline to connect Kubernetes discovery, cache-aware routing, P/D separation, SLOs, admission, upgrades and recovery. Twenty daily CPU exercises, twenty diagrams, three interactive models and forty explained questions build a reviewable laptop portfolio before real-cluster validation."
+  },
+  "hoursPerDay": {
+    "zh": "每天90–150分钟；约30–50小时，可按先修基础延长",
+    "en": "90–150 minutes per day, about 30–50 hours; extend according to prerequisites"
+  },
+  "prerequisites": {
+    "zh": "先完成系统基础、vLLM与Kubernetes；能读Python列表/字典，理解Pod、Service、HTTP与Prefill/Decode。未学先修可先运行模型，但应补齐概念后完成设计题。",
+    "en": "Complete foundations, vLLM and Kubernetes first. Read Python lists/dicts and understand Pods, Services, HTTP and prefill/decode. You can run models earlier, but complete prerequisites before the design tasks."
+  },
+  "hardware": {
+    "zh": "必做：普通电脑、Python 3.9+标准库，无GPU、账户、网络或模型下载。可选真实部署：符合固定版本官方指南的Kubernetes集群、模型存储与CPU/加速器资源；本课未运行真实llm-d。",
+    "en": "Required: a laptop and Python 3.9+ standard library; no GPU, account, network or model download. Optional deployment needs a Kubernetes cluster, model storage and CPU/accelerator resources compatible with the pinned guide. Real llm-d was not executed here."
+  },
+  "hardwareTier": "cpu",
+  "tags": [
+    "llm-d",
+    "Kubernetes",
+    "Serving",
+    "KV Cache",
+    "SLO"
+  ],
+  "roles": {
+    "zh": [
+      "AI平台工程师",
+      "推理与服务工程师"
+    ],
+    "en": [
+      "AI platform engineer",
+      "Inference and serving engineer"
+    ]
+  },
+  "outcome": {
+    "zh": "一份分布式推理控制面作品：19组基线/扰动JSON、3个本人实现的决策函数、独立边界检查、路由/容量/故障分析、源码哈希和固定版本真实部署计划。所有合成成本与未执行步骤明确标注。",
+    "en": "A distributed-serving control-plane portfolio: nineteen baseline/stress JSON pairs, three learner-implemented decision functions, independent boundary checks, routing/capacity/fault analysis, source hash and a pinned real-deployment plan. Synthetic costs and unexecuted steps remain explicit."
+  },
+  "lastVerified": "2026-11-18",
+  "environment": {
+    "reference": {
+      "zh": "资料基线：llm-d v1.0.0（官方2026-10-20发布）；2026-11-18核对官方v1.0架构与quickstart。部署前解析标签commit并锁定Chart、镜像和模型版本。",
+      "en": "Source baseline: llm-d v1.0.0, released 2026-10-20; official v1.0 architecture and quickstart checked 2026-11-18. Resolve the tag commit and pin charts, images and model revisions before deployment."
+    },
+    "minimum": {
+      "zh": "Python 3.9+标准库，完整ZIP；必做路线离线CPU，不需要Kubernetes。",
+      "en": "Python 3.9+ standard library and the complete ZIP; required work is offline CPU and needs no Kubernetes."
+    },
+    "verified": {
+      "zh": "Python 3.9.6 本地通过7项独立测试；干净ZIP复查64条教学命令（学生TODO检查预期退出1），参考实现15个边界用例通过。验证范围为CPU控制面模型与输出。",
+      "en": "Python 3.9.6 passed seven independent tests. A fresh ZIP verified 64 documented commands (unfinished student TODO checks intentionally exit 1), and the reference passed fifteen boundary cases. Scope: CPU control-plane models and outputs."
+    },
+    "unverified": {
+      "zh": "未运行真实llm-d、Kubernetes部署、GPU推理或RDMA；所有延迟/容量/成本为声明假设，真实扩展是待执行计划。",
+      "en": "No real llm-d, Kubernetes deployment, GPU inference or RDMA was run. All latency/capacity/cost values are stated assumptions; the real extension is a plan to execute."
+    }
+  },
+  "resources": [
+    {
+      "title": "llm-d v1.0.0 release",
+      "url": "https://github.com/llm-d/llm-d/releases/tag/v1.0.0"
+    },
+    {
+      "title": "llm-d v1.0.0 resolved commit · 378b42d",
+      "url": "https://github.com/llm-d/llm-d/commit/378b42d18dabe0b9c4ced4e6f3670d93b52db08e"
+    },
+    {
+      "title": "llm-d architecture v1.0",
+      "url": "https://llm-d.ai/docs/architecture"
+    },
+    {
+      "title": "llm-d router",
+      "url": "https://llm-d.ai/docs/architecture/router"
+    },
+    {
+      "title": "llm-d disaggregation",
+      "url": "https://llm-d.ai/docs/architecture/disaggregation"
+    },
+    {
+      "title": "llm-d quickstart",
+      "url": "https://llm-d.ai/docs/getting-started/quickstart"
+    },
+    {
+      "title": "Kubernetes Deployments",
+      "url": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/"
+    },
+    {
+      "title": "Kubernetes probes",
+      "url": "https://kubernetes.io/docs/concepts/configuration/liveness-readiness-startup-probes/"
+    },
+    {
+      "title": "Google SRE handling overload",
+      "url": "https://sre.google/sre-book/handling-overload/"
+    }
+  ],
+  "lab": {
+    "path": "llm-d",
+    "title": {
+      "zh": "下载20天推理控制面实验",
+      "en": "Download the 20-day control-plane lab"
+    },
+    "description": {
+      "zh": "含独立逐日实验、学生TODO、参考实现、固定边界检查、双语操作说明和真实部署计划。完整解压后进入llm-d运行。",
+      "en": "Includes standalone daily experiments, student TODOs, references, fixed boundary checks, bilingual instructions and a real-deployment plan. Extract fully and run inside llm-d."
+    }
+  },
+  "steps": [
+    {
+      "day": 1,
+      "title": {
+        "zh": "一条推理请求经过哪些组件",
+        "en": "Trace an inference request"
+      },
+      "lesson": {
+        "zh": "先把模型执行与请求调度分开。客户端指定模型和生成上限，代理接收连接；端点选择器用后端状态给出目的地址，模型服务才执行生成。本实验打印结构化轨迹，每一跳都能解释职责；它没有加载权重。",
+        "en": "Separate model execution from request placement. The client supplies a model and output limit, the proxy receives the connection, the picker chooses a destination from backend state, and the model server generates tokens. This experiment emits a structured trace without loading weights."
+      },
+      "task": {
+        "zh": "画出请求与选择结果的方向，分别标出哪个组件持有连接、哪个运行模型；对比输出上限20与200。",
+        "en": "Draw request and selection-result directions, identify the connection owner and model executor, and compare limits of 20 and 200."
+      },
+      "evidence": {
+        "zh": "out/baseline/day01.json与out/stress/day01.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day01.json and out/stress/day01.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "画出请求与选择结果的方向，分别标出哪个组件持有连接、哪个运行模型；对比输出上限20与200。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Draw request and selection-result directions, identify the connection owner and model executor, and compare limits of 20 and 200.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://llm-d.ai/docs/architecture"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "先把模型执行与请求调度分开。客户端指定模型和生成上限，代理接收连接；端点选择器用后端状态给出目的地址，模型服务才执行生成。本实验打印结构化轨迹，每一跳都能解释职责；它没有加载权重。",
+            "en": "Separate model execution from request placement. The client supplies a model and output limit, the proxy receives the connection, the picker chooses a destination from backend state, and the model server generates tokens. This experiment emits a structured trace without loading weights."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "请求ID把入口、选择结果和响应串起来。观察 stress 只增加输出上限：组件拓扑没变，后续 Decode 负载却可能增加。真实系统还要记录实际输出数、取消和失败；仅记录请求数不足以比较工作负载。",
+            "en": "A request ID links admission, placement and response. Stress changes only the output limit: the topology stays fixed while potential decode work grows. Real traces also need actual output lengths, cancellations and failures; request count alone does not describe workload."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "一条推理请求经过哪些组件：决策流程",
+          "en": "Trace an inference request: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "客户端模型请求",
+            "en": "Client model request"
+          },
+          {
+            "zh": "代理接入",
+            "en": "Proxy admission"
+          },
+          {
+            "zh": "端点选择器",
+            "en": "Endpoint picker"
+          },
+          {
+            "zh": "模型执行",
+            "en": "Model execution"
+          },
+          {
+            "zh": "流式响应",
+            "en": "Streamed response"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day1 --out out/baseline",
+          "expected": {
+            "zh": "baseline output_limit=20，stress=200；model_executed始终false，hops不变。",
+            "en": "Baseline output_limit=20, stress=200; model_executed remains false and hops stay identical."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "画出请求与选择结果的方向，分别标出哪个组件持有连接、哪个运行模型；对比输出上限20与200。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Draw request and selection-result directions, identify the connection owner and model executor, and compare limits of 20 and 200. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day1 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline output_limit=20，stress=200；model_executed始终false，hops不变。",
+            "en": "Baseline output_limit=20, stress=200; model_executed remains false and hops stay identical."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day01.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把输出JSON当成真实服务调用记录",
+            "en": "Treating JSON as a real serving trace"
+          },
+          "fix": {
+            "zh": "检查framework_executed=false；这是职责模型。真实调用证据必须另附模型、服务日志和请求响应。",
+            "en": "Check framework_executed=false: this is a responsibility model. Real evidence needs a model, serving logs and actual request/response records."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "端点选择器主要返回什么？",
+            "en": "What does the endpoint picker primarily return?"
+          },
+          "options": [
+            {
+              "zh": "生成的全部token",
+              "en": "All generated tokens"
+            },
+            {
+              "zh": "每个后端生成的完整响应",
+              "en": "A complete response generated by each backend"
+            },
+            {
+              "zh": "适合该请求的后端地址",
+              "en": "A backend address for the request"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "调度选择目的端点；执行前向计算属于模型服务。驱动版本是环境信息，不是选择响应。",
+            "en": "Placement chooses a destination; forward computation belongs to the model server. Driver version is environment metadata."
+          }
+        },
+        {
+          "question": {
+            "zh": "请求数相同但输出上限增加，为什么仍需重新测量？",
+            "en": "Why remeasure when request count is unchanged but output limits grow?"
+          },
+          "options": [
+            {
+              "zh": "同样请求数就必然同样负载",
+              "en": "Equal request counts guarantee equal load"
+            },
+            {
+              "zh": "Decode工作量可能变化",
+              "en": "Decode work may change"
+            },
+            {
+              "zh": "每请求GPU成本必然不变",
+              "en": "GPU cost per request must remain constant"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "相同请求数不代表相同输入输出token分布，实际生成长度必须一并记录。",
+            "en": "Equal request counts do not imply equal token workloads; record actual generated lengths as well."
+          }
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": {
+        "zh": "端点发现：选择器与就绪状态",
+        "en": "Discovery: selectors and readiness"
+      },
+      "lesson": {
+        "zh": "候选集合先回答“能不能接”，再回答“谁更快”。同一个集群可能同时运行多个模型版本，名称相似不表示权重兼容。今天只选model=demo-v1且ready=true的端点，避免把快速但错误的模型当作候选。",
+        "en": "Candidate discovery first asks whether an endpoint is eligible, then which is faster. A cluster may run multiple model revisions; similar names do not make weights interchangeable. Today only ready demo-v1 endpoints are eligible."
+      },
+      "task": {
+        "zh": "逐个检查三个Pod被保留或排除的原因；记录空池时返回给调用者的策略。",
+        "en": "Explain inclusion or exclusion for all three pods and specify the caller-visible empty-pool policy."
+      },
+      "evidence": {
+        "zh": "out/baseline/day02.json与out/stress/day02.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day02.json and out/stress/day02.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "逐个检查三个Pod被保留或排除的原因；记录空池时返回给调用者的策略。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Explain inclusion or exclusion for all three pods and specify the caller-visible empty-pool policy.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://llm-d.ai/docs/architecture/router"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "候选集合先回答“能不能接”，再回答“谁更快”。同一个集群可能同时运行多个模型版本，名称相似不表示权重兼容。今天只选model=demo-v1且ready=true的端点，避免把快速但错误的模型当作候选。",
+            "en": "Candidate discovery first asks whether an endpoint is eligible, then which is faster. A cluster may run multiple model revisions; similar names do not make weights interchangeable. Today only ready demo-v1 endpoints are eligible."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "空候选集合是一种需要处理的状态。stress把唯一正确且就绪的端点移除，应该拒绝或有界等待。随便退到另一个模型会造成语义错误；无限排队则掩盖故障并占住连接。",
+            "en": "An empty candidate set needs explicit handling. Stress removes the sole correct ready endpoint; bounded waiting or rejection is appropriate. Falling back to a different model breaks semantics, while unbounded waiting hides the outage."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "端点发现：选择器与就绪状态：决策流程",
+          "en": "Discovery: selectors and readiness: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "模型契约",
+            "en": "Model contract"
+          },
+          {
+            "zh": "标签匹配",
+            "en": "Label match"
+          },
+          {
+            "zh": "Ready过滤",
+            "en": "Ready filter"
+          },
+          {
+            "zh": "候选集合",
+            "en": "Candidate set"
+          },
+          {
+            "zh": "空池处理",
+            "en": "Empty-pool handling"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day2 --out out/baseline",
+          "expected": {
+            "zh": "baseline eligible=[a]；stress eligible=[]，b虽然ready却模型不匹配。",
+            "en": "Baseline eligible=[a]; stress eligible=[]; b is ready but serves the wrong model."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "逐个检查三个Pod被保留或排除的原因；记录空池时返回给调用者的策略。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Explain inclusion or exclusion for all three pods and specify the caller-visible empty-pool policy. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day2 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline eligible=[a]；stress eligible=[]，b虽然ready却模型不匹配。",
+            "en": "Baseline eligible=[a]; stress eligible=[]; b is ready but serves the wrong model."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day02.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "Pod都在Running但eligible为空",
+            "en": "All pods are Running but eligible is empty"
+          },
+          "fix": {
+            "zh": "按模型标签和Ready两列核对；不要直接删除过滤条件来制造可用端点。",
+            "en": "Inspect both model labels and Ready; do not remove filters merely to produce a candidate."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "哪个端点可以进入候选集合？",
+            "en": "Which endpoint can enter the candidate set?"
+          },
+          "options": [
+            {
+              "zh": "任何Running Pod",
+              "en": "Any Running pod"
+            },
+            {
+              "zh": "模型匹配且Ready",
+              "en": "Matching model and Ready"
+            },
+            {
+              "zh": "只要CPU空闲",
+              "en": "Any idle CPU"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "标签用于服务身份，就绪状态用于接流量资格；Running只是容器生命周期状态。",
+            "en": "Labels establish serving identity and readiness establishes traffic eligibility; Running alone is a lifecycle state."
+          }
+        },
+        {
+          "question": {
+            "zh": "空池时为什么不能改发demo-v2？",
+            "en": "Why not route an empty demo-v1 pool to demo-v2?"
+          },
+          "options": [
+            {
+              "zh": "会违反请求模型契约",
+              "en": "It violates the requested model contract"
+            },
+            {
+              "zh": "不同模型一定共享同一份KV",
+              "en": "Different models always share one KV cache"
+            },
+            {
+              "zh": "模型版本只影响日志显示",
+              "en": "Model revision only affects log labels"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "兼容性必须明确约定，不能为了成功状态码偷换模型。",
+            "en": "Compatibility must be explicitly defined; returning a successful status does not justify changing the model."
+          }
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": {
+        "zh": "缓存亲和与排队成本",
+        "en": "Cache affinity versus queueing"
+      },
+      "lesson": {
+        "zh": "热缓存能减少重复Prefill，却无法消除排队。今天的选择成本明确为queue_ms+prefill_ms；候选热节点和冷节点完成同一请求，比较的是预计首阶段延迟而非缓存命中率。",
+        "en": "A warm cache saves repeated prefill but cannot remove queues. The declared score is queue_ms+prefill_ms. Both endpoints serve the same request; compare predicted early latency rather than optimizing hit rate alone."
+      },
+      "task": {
+        "zh": "先手算两个成本，再补完exercises.py中的pick_endpoint，用边界用例检验。",
+        "en": "Calculate both costs, then implement pick_endpoint in exercises.py and check boundary cases."
+      },
+      "evidence": {
+        "zh": "out/baseline/day03.json与out/stress/day03.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day03.json and out/stress/day03.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "先手算两个成本，再补完exercises.py中的pick_endpoint，用边界用例检验。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Calculate both costs, then implement pick_endpoint in exercises.py and check boundary cases.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://llm-d.ai/docs/architecture/router"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "热缓存能减少重复Prefill，却无法消除排队。今天的选择成本明确为queue_ms+prefill_ms；候选热节点和冷节点完成同一请求，比较的是预计首阶段延迟而非缓存命中率。",
+            "en": "A warm cache saves repeated prefill but cannot remove queues. The declared score is queue_ms+prefill_ms. Both endpoints serve the same request; compare predicted early latency rather than optimizing hit rate alone."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "默认热节点成本30ms，冷节点85ms；stress将热节点排队改成120ms，总成本140ms，选冷节点更合理。这些ms是输入假设，不是llm-d的实际打分公式或GPU实测。",
+            "en": "Baseline costs are 30 ms for hot and 85 ms for cold. Stress raises the hot queue to 120 ms, making its total 140 ms and favoring cold. These are assumed units, not llm-d production scoring or measured GPU latency."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "缓存亲和与排队成本：决策流程",
+          "en": "Cache affinity versus queueing: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "可用端点",
+            "en": "Eligible endpoints"
+          },
+          {
+            "zh": "排队估计",
+            "en": "Queue estimate"
+          },
+          {
+            "zh": "剩余Prefill",
+            "en": "Remaining prefill"
+          },
+          {
+            "zh": "总成本排序",
+            "en": "Total-cost ordering"
+          },
+          {
+            "zh": "选择",
+            "en": "Pick"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day3 --out out/baseline",
+          "expected": {
+            "zh": "baseline selected=hot；stress selected=cold。",
+            "en": "Baseline selected=hot; stress selected=cold."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "先手算两个成本，再补完exercises.py中的pick_endpoint，用边界用例检验。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Calculate both costs, then implement pick_endpoint in exercises.py and check boundary cases. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day3 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline selected=hot；stress selected=cold。",
+            "en": "Baseline selected=hot; stress selected=cold."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day03.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成学生代码挑战",
+            "en": "Complete the student coding challenge"
+          },
+          "body": {
+            "zh": "在exercises.py补齐三个TODO：端点选择、PD容量和升级容量。先读函数契约，再运行独立固定用例；未完成时NOT COMPLETE与退出1是预期行为。参考答案可用--reference检查，不能冒充自己的完成。",
+            "en": "Implement the three TODOs in exercises.py: endpoint selection, PD capacity and rollout capacity. Read contracts, then run independent fixed cases. Before completion, NOT COMPLETE and exit 1 are expected. --reference checks the reference solution and does not establish your own completion."
+          },
+          "command": "python3 check.py",
+          "expected": {
+            "zh": "完成三个函数后显示PASS: 15 fixed correctness cases；只验证声明用例，不是能力认证或GPU性能测试。",
+            "en": "After implementing all functions, PASS: 15 fixed correctness cases appears; this verifies stated cases, not certification or GPU performance."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "结果仍选hot但stress排队更长",
+            "en": "Hot stays selected despite the longer stress queue"
+          },
+          "fix": {
+            "zh": "检查是否只按prefill排序，或忽略queue字段；比较两个总和并保持tie-break按ID。",
+            "en": "Check whether scoring ignores the queue; compare both sums and retain the ID tie-break."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "热缓存为什么可能更慢？",
+            "en": "Why can a warm-cache endpoint be slower?"
+          },
+          "options": [
+            {
+              "zh": "排队成本超过节省的Prefill",
+              "en": "Queueing exceeds saved prefill"
+            },
+            {
+              "zh": "缓存一定损坏",
+              "en": "The cache must be corrupt"
+            },
+            {
+              "zh": "缓存命中能消除所有排队",
+              "en": "Cache hits remove all queueing"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "需要联合考虑复用和拥塞，而不是将命中作为唯一目标。",
+            "en": "Consider reuse together with congestion instead of treating hit rate as the sole objective."
+          }
+        },
+        {
+          "question": {
+            "zh": "这两个成本能证明真实llm-d加速多少吗？",
+            "en": "Do these costs establish a real llm-d speedup?"
+          },
+          "options": [
+            {
+              "zh": "能，单位是ms",
+              "en": "Yes, because the unit is ms"
+            },
+            {
+              "zh": "能，只要选热节点",
+              "en": "Yes, if hot is selected"
+            },
+            {
+              "zh": "不能，只验证声明模型下的决策",
+              "en": "No, they test decisions under stated assumptions"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "写成ms并没有进行测量；真实结论需要锁定环境和原始请求记录。",
+            "en": "A millisecond label is not a measurement; actual conclusions require a pinned environment and raw requests."
+          }
+        }
+      ],
+      "interactive": "routing-cost"
+    },
+    {
+      "day": 4,
+      "title": {
+        "zh": "Token前缀与块边界",
+        "en": "Token prefixes and block boundaries"
+      },
+      "lesson": {
+        "zh": "缓存复用依赖从开头连续匹配的token，而不是自然语言含义相似。第一个不同token后，即使后面再相同，也不能沿用原前缀的状态。本实验直接使用整数token，排除分词器差异。",
+        "en": "Prefix reuse requires matching tokens continuously from the beginning, not similar meaning. Once a token differs, later matching tokens do not restore the original prefix state. Integer tokens isolate this mechanism from tokenization."
+      },
+      "task": {
+        "zh": "修改副本中的一个token位置，预测匹配长度及完整块数；说明为什么不能用字符串相似度替代。",
+        "en": "Change one token position in a source copy, predict prefix and full-block reuse, and explain why string similarity is insufficient."
+      },
+      "evidence": {
+        "zh": "out/baseline/day04.json与out/stress/day04.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day04.json and out/stress/day04.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "修改副本中的一个token位置，预测匹配长度及完整块数；说明为什么不能用字符串相似度替代。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Change one token position in a source copy, predict prefix and full-block reuse, and explain why string similarity is insufficient.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://llm-d.ai/docs/architecture/router"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "缓存复用依赖从开头连续匹配的token，而不是自然语言含义相似。第一个不同token后，即使后面再相同，也不能沿用原前缀的状态。本实验直接使用整数token，排除分词器差异。",
+            "en": "Prefix reuse requires matching tokens continuously from the beginning, not similar meaning. Once a token differs, later matching tokens do not restore the original prefix state. Integer tokens isolate this mechanism from tokenization."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "设完整缓存块为4token。默认连续匹配6个，但只有4个落在完整块中；stress在第3个位置改变token，仅匹配2个，完整块复用为0。真实复用还受模型、tokenizer、adapter与缓存实现约束。",
+            "en": "With four-token blocks, six matching tokens contain only one complete reusable block. Stress changes the third token, leaving two matches and zero full blocks. Real reuse also depends on model, tokenizer, adapter and cache implementation."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "Token前缀与块边界：决策流程",
+          "en": "Token prefixes and block boundaries: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "模型与分词契约",
+            "en": "Model/tokenizer contract"
+          },
+          {
+            "zh": "逐token比较",
+            "en": "Compare tokens"
+          },
+          {
+            "zh": "首个差异停止",
+            "en": "Stop at first difference"
+          },
+          {
+            "zh": "完整块取整",
+            "en": "Floor to full blocks"
+          },
+          {
+            "zh": "可复用前缀",
+            "en": "Reusable prefix"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day4 --out out/baseline",
+          "expected": {
+            "zh": "baseline匹配6、复用4；stress匹配2、复用0。",
+            "en": "Baseline matches 6 and reuses 4; stress matches 2 and reuses 0."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "修改副本中的一个token位置，预测匹配长度及完整块数；说明为什么不能用字符串相似度替代。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Change one token position in a source copy, predict prefix and full-block reuse, and explain why string similarity is insufficient. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day4 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline匹配6、复用4；stress匹配2、复用0。",
+            "en": "Baseline matches 6 and reuses 4; stress matches 2 and reuses 0."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day04.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把6个匹配token全记成块命中",
+            "en": "Counting all six matched tokens as full-block hits"
+          },
+          "fix": {
+            "zh": "检查整除取整，并把理论匹配长度与实现的完整块复用分开报告。",
+            "en": "Use integer division and report theoretical prefix length separately from full-block reuse."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "块大小4、连续匹配6，完整块可复用多少token？",
+            "en": "With block size 4 and six matches, how many full-block tokens are reusable?"
+          },
+          "options": [
+            {
+              "zh": "6",
+              "en": "6"
+            },
+            {
+              "zh": "8",
+              "en": "8"
+            },
+            {
+              "zh": "4",
+              "en": "4"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "floor(6/4)×4=4；不能向上取整虚构状态。",
+            "en": "floor(6/4)×4=4; rounding up invents missing state."
+          }
+        },
+        {
+          "question": {
+            "zh": "第3个token不同，后面又相同，是否继续计入同一前缀？",
+            "en": "If token three differs, can later equal tokens extend the same prefix?"
+          },
+          "options": [
+            {
+              "zh": "能，主题一致即可",
+              "en": "Yes, if the topic matches"
+            },
+            {
+              "zh": "不能，连续前缀已断开",
+              "en": "No, the contiguous prefix has ended"
+            },
+            {
+              "zh": "能，只比较最后一个token",
+              "en": "Yes, compare only the last token"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "自回归状态依赖之前上下文；相同后缀不是相同前缀。",
+            "en": "Autoregressive state depends on preceding context; equal suffixes are not equal prefixes."
+          }
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": {
+        "zh": "缓存容量、LRU与驱逐",
+        "en": "Capacity, LRU and eviction"
+      },
+      "lesson": {
+        "zh": "缓存是有限资源。读取已有键需要更新最近使用次序；新键进入且容量不足时，驱逐最久未用的键。今天使用A/B/C/D代表完整前缀块，逐事件展示驻留集合。",
+        "en": "A cache is finite. Accessing a resident key updates recency; inserting beyond capacity evicts the least recently used key. A/B/C/D represent complete prefix blocks and each event records the resident set."
+      },
+      "task": {
+        "zh": "逐行手推访问序列A B C A D B A；在源代码副本中交换两个访问并解释驱逐变化。",
+        "en": "Trace A B C A D B A manually, swap two accesses in a source copy, and explain eviction changes."
+      },
+      "evidence": {
+        "zh": "out/baseline/day05.json与out/stress/day05.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day05.json and out/stress/day05.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "逐行手推访问序列A B C A D B A；在源代码副本中交换两个访问并解释驱逐变化。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Trace A B C A D B A manually, swap two accesses in a source copy, and explain eviction changes.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://llm-d.ai/docs/architecture/router"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "缓存是有限资源。读取已有键需要更新最近使用次序；新键进入且容量不足时，驱逐最久未用的键。今天使用A/B/C/D代表完整前缀块，逐事件展示驻留集合。",
+            "en": "A cache is finite. Accessing a resident key updates recency; inserting beyond capacity evicts the least recently used key. A/B/C/D represent complete prefix blocks and each event records the resident set."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "容量由3降为2会改变后续命中，但真实KV缓存还要管理引用计数、正在执行的请求和部分块。本模型故意只研究替换策略，不能直接当作引擎缓存管理器。",
+            "en": "Reducing capacity from three to two changes subsequent hits. Real KV systems also track references, in-flight requests and partial blocks. This model isolates replacement policy and is not an engine cache manager."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "缓存容量、LRU与驱逐：决策流程",
+          "en": "Capacity, LRU and eviction: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "前缀访问",
+            "en": "Prefix access"
+          },
+          {
+            "zh": "查找驻留",
+            "en": "Resident lookup"
+          },
+          {
+            "zh": "更新最近使用",
+            "en": "Refresh recency"
+          },
+          {
+            "zh": "容量检查",
+            "en": "Capacity check"
+          },
+          {
+            "zh": "驱逐与记录",
+            "en": "Evict and record"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day5 --out out/baseline",
+          "expected": {
+            "zh": "每个events元素包含hit、evicted和resident；baseline与stress容量分别3和2。",
+            "en": "Each event contains hit, evicted and resident; baseline has 3 slots and stress 2."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "逐行手推访问序列A B C A D B A；在源代码副本中交换两个访问并解释驱逐变化。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Trace A B C A D B A manually, swap two accesses in a source copy, and explain eviction changes. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day5 --variant stress --out out/stress",
+          "expected": {
+            "zh": "每个events元素包含hit、evicted和resident；baseline与stress容量分别3和2。",
+            "en": "Each event contains hit, evicted and resident; baseline has 3 slots and stress 2."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day05.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "减小容量却无法解释命中变化",
+            "en": "Unable to explain hits after reducing capacity"
+          },
+          "fix": {
+            "zh": "从空缓存重放，逐行检查resident；不能仅比较最终集合，因为中间驱逐决定后续命中。",
+            "en": "Replay from empty state and inspect every resident set; intermediate evictions determine later hits."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "LRU命中时为何更新顺序？",
+            "en": "Why update order on an LRU hit?"
+          },
+          "options": [
+            {
+              "zh": "因为键值会变化",
+              "en": "Because the key changes"
+            },
+            {
+              "zh": "命中代表刚刚使用",
+              "en": "A hit is a recent use"
+            },
+            {
+              "zh": "为了立即驱逐命中键",
+              "en": "To immediately evict the hit key"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "不更新会变成接近FIFO的行为，改变策略语义。",
+            "en": "Failing to refresh recency approaches FIFO behavior and changes the policy."
+          }
+        },
+        {
+          "question": {
+            "zh": "本实验缺少什么，不能直接管理真实KV？",
+            "en": "What is missing for real KV management?"
+          },
+          "options": [
+            {
+              "zh": "在途引用与块生命周期",
+              "en": "In-flight references and block lifecycle"
+            },
+            {
+              "zh": "只需把缓存容量改成无限大",
+              "en": "Only unlimited cache capacity is needed"
+            },
+            {
+              "zh": "只需将缓存命中率提升到100%",
+              "en": "Only a 100% hit rate is needed"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "驱逐仍被请求使用的块会破坏执行；教学模型没有并发引用。",
+            "en": "Evicting blocks used by in-flight requests breaks execution; this model has no concurrent references."
+          }
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": {
+        "zh": "遥测时效与降级决策",
+        "en": "Telemetry freshness and fallback"
+      },
+      "lesson": {
+        "zh": "路由器看到的是采样后的状态。低队列数若来自过期样本，就不一定代表当前空闲。今天添加age_ms与1000ms有效期，先过滤过期端点，再按同一成本函数排序。",
+        "en": "Routers see sampled state. A low queue value from an old sample may not describe present load. Today age_ms and a 1000 ms TTL filter stale endpoints before applying the same scoring function."
+      },
+      "task": {
+        "zh": "补测age=1000和1001的边界；为所有样本过期设计一个有界策略。",
+        "en": "Test ages 1000 and 1001 and design bounded behavior when every sample is stale."
+      },
+      "evidence": {
+        "zh": "out/baseline/day06.json与out/stress/day06.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day06.json and out/stress/day06.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "补测age=1000和1001的边界；为所有样本过期设计一个有界策略。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Test ages 1000 and 1001 and design bounded behavior when every sample is stale.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://llm-d.ai/docs/architecture/router"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "路由器看到的是采样后的状态。低队列数若来自过期样本，就不一定代表当前空闲。今天添加age_ms与1000ms有效期，先过滤过期端点，再按同一成本函数排序。",
+            "en": "Routers see sampled state. A low queue value from an old sample may not describe present load. Today age_ms and a 1000 ms TTL filter stale endpoints before applying the same scoring function."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "默认a的样本新鲜且成本低；stress只将其年龄设成2000ms，因此选择b。排除过期遥测只是本课策略；真实系统可以使用保守回退、探测或多级估计，必须说明失效时的行为。",
+            "en": "Baseline a is fresh and cheap; stress changes only its age to 2000 ms and selects b. Excluding stale telemetry is this course policy; production may use conservative fallback, probing or multiple estimators, with explicit failure behavior."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "遥测时效与降级决策：决策流程",
+          "en": "Telemetry freshness and fallback: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "采样时间",
+            "en": "Sample time"
+          },
+          {
+            "zh": "计算年龄",
+            "en": "Compute age"
+          },
+          {
+            "zh": "TTL检查",
+            "en": "TTL check"
+          },
+          {
+            "zh": "可用状态评分",
+            "en": "Score usable state"
+          },
+          {
+            "zh": "回退或选择",
+            "en": "Fallback or pick"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day6 --out out/baseline",
+          "expected": {
+            "zh": "baseline selected=a；stress selected=b；ttl_ms=1000。",
+            "en": "Baseline selected=a; stress selected=b; ttl_ms=1000."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "补测age=1000和1001的边界；为所有样本过期设计一个有界策略。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Test ages 1000 and 1001 and design bounded behavior when every sample is stale. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day6 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline selected=a；stress selected=b；ttl_ms=1000。",
+            "en": "Baseline selected=a; stress selected=b; ttl_ms=1000."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day06.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "断开指标采集后仍使用旧的零队列",
+            "en": "Old zero-queue values survive a telemetry outage"
+          },
+          "fix": {
+            "zh": "记录样本时间，并在路由决策中检查年龄；不要把缺失值默认转换成0。",
+            "en": "Record sample timestamps and validate age during routing; do not convert missing values to zero."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "age=1000在本课策略下是否有效？",
+            "en": "Is age=1000 valid under this policy?"
+          },
+          "options": [
+            {
+              "zh": "有效，条件是≤1000",
+              "en": "Yes, the condition is ≤1000"
+            },
+            {
+              "zh": "无效，条件是<1000",
+              "en": "No, the condition is <1000"
+            },
+            {
+              "zh": "只看成本",
+              "en": "Only cost matters"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "边界由明确的比较条件决定，测试能防止文档和代码不一致。",
+            "en": "The explicit comparison defines the boundary; tests keep code and documentation aligned."
+          }
+        },
+        {
+          "question": {
+            "zh": "为什么最低观测队列不一定最好？",
+            "en": "Why is the lowest observed queue not always best?"
+          },
+          "options": [
+            {
+              "zh": "队列与延迟无关",
+              "en": "Queues never affect latency"
+            },
+            {
+              "zh": "所有端点必须轮询",
+              "en": "All endpoints must use round robin"
+            },
+            {
+              "zh": "观测可能过期",
+              "en": "The observation may be stale"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "队列会随时间变化；必须同时考虑测量时间和内容。",
+            "en": "Queue state changes over time; consider both measurement content and age."
+          }
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": {
+        "zh": "P/D分离的三段容量",
+        "en": "Three capacity bounds in P/D serving"
+      },
+      "lesson": {
+        "zh": "Prefill、KV传输、Decode串联处理请求，稳态吞吐由最慢段限制。假设每个Prefill副本40ms/请求、Decode副本100ms/请求，每个请求传8MB；这允许把计算与网络转换成同一种req/s单位。",
+        "en": "Prefill, KV transfer and decode form serial stages, so the slowest stage limits steady-state throughput. Assume 40 ms per prefill request, 100 ms per decode request and 8 MB transferred per request; convert all bounds to requests per second."
+      },
+      "task": {
+        "zh": "完成pd_capacity练习，逐段写单位换算；判断增加P副本是否能解决网络瓶颈。",
+        "en": "Implement pd_capacity, show each unit conversion, and determine whether more P replicas solve a network bottleneck."
+      },
+      "evidence": {
+        "zh": "out/baseline/day07.json与out/stress/day07.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day07.json and out/stress/day07.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "完成pd_capacity练习，逐段写单位换算；判断增加P副本是否能解决网络瓶颈。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Implement pd_capacity, show each unit conversion, and determine whether more P replicas solve a network bottleneck.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://llm-d.ai/docs/architecture/disaggregation"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "Prefill、KV传输、Decode串联处理请求，稳态吞吐由最慢段限制。假设每个Prefill副本40ms/请求、Decode副本100ms/请求，每个请求传8MB；这允许把计算与网络转换成同一种req/s单位。",
+            "en": "Prefill, KV transfer and decode form serial stages, so the slowest stage limits steady-state throughput. Assume 40 ms per prefill request, 100 ms per decode request and 8 MB transferred per request; convert all bounds to requests per second."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "两个P、四个D、800MB/s网络分别给出50、40、100req/s上界，整体40。stress网络降为80MB/s后上界变10。这个流体模型忽略批处理、突发、重叠与尾延迟，不能直接推导生产SLO。",
+            "en": "Two P replicas, four D replicas and 800 MB/s give bounds of 50, 40 and 100 req/s, hence 40 overall. Stress lowers bandwidth to 80 MB/s, reducing capacity to 10. This fluid model omits batching, bursts, overlap and tails, so it cannot establish production SLOs."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "P/D分离的三段容量：决策流程",
+          "en": "Three capacity bounds in P/D serving: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "P服务时间",
+            "en": "P service time"
+          },
+          {
+            "zh": "P容量",
+            "en": "P capacity"
+          },
+          {
+            "zh": "KV网络容量",
+            "en": "KV network capacity"
+          },
+          {
+            "zh": "D容量",
+            "en": "D capacity"
+          },
+          {
+            "zh": "最小容量",
+            "en": "Minimum capacity"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day7 --out out/baseline",
+          "expected": {
+            "zh": "baseline capacity_rps=40、decode瓶颈；stress=10、network瓶颈。",
+            "en": "Baseline capacity_rps=40 with decode limiting; stress=10 with network limiting."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "完成pd_capacity练习，逐段写单位换算；判断增加P副本是否能解决网络瓶颈。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Implement pd_capacity, show each unit conversion, and determine whether more P replicas solve a network bottleneck. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day7 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline capacity_rps=40、decode瓶颈；stress=10、network瓶颈。",
+            "en": "Baseline capacity_rps=40 with decode limiting; stress=10 with network limiting."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day07.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成学生代码挑战",
+            "en": "Complete the student coding challenge"
+          },
+          "body": {
+            "zh": "在exercises.py补齐三个TODO：端点选择、PD容量和升级容量。先读函数契约，再运行独立固定用例；未完成时NOT COMPLETE与退出1是预期行为。参考答案可用--reference检查，不能冒充自己的完成。",
+            "en": "Implement the three TODOs in exercises.py: endpoint selection, PD capacity and rollout capacity. Read contracts, then run independent fixed cases. Before completion, NOT COMPLETE and exit 1 are expected. --reference checks the reference solution and does not establish your own completion."
+          },
+          "command": "python3 check.py",
+          "expected": {
+            "zh": "完成三个函数后显示PASS: 15 fixed correctness cases；只验证声明用例，不是能力认证或GPU性能测试。",
+            "en": "After implementing all functions, PASS: 15 fixed correctness cases appears; this verifies stated cases, not certification or GPU performance."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把MB/s直接当成req/s",
+            "en": "Using MB/s as req/s"
+          },
+          "fix": {
+            "zh": "先除以每请求传输的MB；所有阶段统一到req/s才可比较。",
+            "en": "Divide by MB per request before comparing stages in requests per second."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "三个容量50、40、100，整体上界多少？",
+            "en": "With bounds 50, 40 and 100, what is the overall bound?"
+          },
+          "options": [
+            {
+              "zh": "190",
+              "en": "190"
+            },
+            {
+              "zh": "100",
+              "en": "100"
+            },
+            {
+              "zh": "40",
+              "en": "40"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "串联阶段取最小值，不是相加或取最大。",
+            "en": "Serial stages are limited by the minimum, not the sum or maximum."
+          }
+        },
+        {
+          "question": {
+            "zh": "网络已成瓶颈，增加Prefill副本一定提高吞吐吗？",
+            "en": "Does adding prefill replicas necessarily help a network bottleneck?"
+          },
+          "options": [
+            {
+              "zh": "一定，网络会自动加速",
+              "en": "Yes, the network speeds up automatically"
+            },
+            {
+              "zh": "不一定，最小容量可能不变",
+              "en": "No, the minimum bound may stay unchanged"
+            },
+            {
+              "zh": "一定，GPU越多越快",
+              "en": "Yes, more GPUs always win"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "扩容必须针对限制段，并重新检查瓶颈是否转移。",
+            "en": "Scale the limiting stage and recheck where the bottleneck moves."
+          }
+        }
+      ],
+      "interactive": "pd-capacity"
+    },
+    {
+      "day": 8,
+      "title": {
+        "zh": "KV传输是否值得",
+        "en": "Does KV transfer pay off?"
+      },
+      "lesson": {
+        "zh": "跨设备复用带来传输启动成本和字节传输成本。按本课十进制单位，传输毫秒=setup_ms+KV_MB/network_MBps×1000；把它与省掉的Prefill比较，才有意义。",
+        "en": "Cross-device reuse pays setup and byte-transfer costs. In decimal units, transfer milliseconds equal setup_ms+KV_MB/network_MBps×1000. Compare this with the prefill work avoided."
+      },
+      "task": {
+        "zh": "手算盈亏平衡的KV大小；改动源码副本中的带宽，并记录什么时候收益符号改变。",
+        "en": "Calculate break-even KV size, change bandwidth in a source copy, and record when savings change sign."
+      },
+      "evidence": {
+        "zh": "out/baseline/day08.json与out/stress/day08.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day08.json and out/stress/day08.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "手算盈亏平衡的KV大小；改动源码副本中的带宽，并记录什么时候收益符号改变。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Calculate break-even KV size, change bandwidth in a source copy, and record when savings change sign.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://llm-d.ai/docs/architecture/disaggregation"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "跨设备复用带来传输启动成本和字节传输成本。按本课十进制单位，传输毫秒=setup_ms+KV_MB/network_MBps×1000；把它与省掉的Prefill比较，才有意义。",
+            "en": "Cross-device reuse pays setup and byte-transfer costs. In decimal units, transfer milliseconds equal setup_ms+KV_MB/network_MBps×1000. Compare this with the prefill work avoided."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "默认8MB、1000MB/s、2ms启动，共10ms，节省20ms Prefill后净省10ms。stress变32MB，传输34ms，净收益为−14ms。负结果应保留，它能说明小算量或大状态下拆分未必合算。",
+            "en": "Baseline 8 MB at 1000 MB/s plus 2 ms setup costs 10 ms, saving 10 ms net against 20 ms prefill. Stress transfers 32 MB and costs 34 ms, for a negative 14 ms saving. Keep negative results: large state or little saved work may make disaggregation unattractive."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "KV传输是否值得：决策流程",
+          "en": "Does KV transfer pay off?: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "可省Prefill",
+            "en": "Avoidable prefill"
+          },
+          {
+            "zh": "KV大小",
+            "en": "KV size"
+          },
+          {
+            "zh": "启动加传输",
+            "en": "Setup plus transfer"
+          },
+          {
+            "zh": "比较净收益",
+            "en": "Compare net savings"
+          },
+          {
+            "zh": "保留负结果",
+            "en": "Retain regressions"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day8 --out out/baseline",
+          "expected": {
+            "zh": "baseline net_saved_ms=10；stress=-14。",
+            "en": "Baseline net_saved_ms=10; stress=-14."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "手算盈亏平衡的KV大小；改动源码副本中的带宽，并记录什么时候收益符号改变。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Calculate break-even KV size, change bandwidth in a source copy, and record when savings change sign. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day8 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline net_saved_ms=10；stress=-14。",
+            "en": "Baseline net_saved_ms=10; stress=-14."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day08.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "单位换算导致传输比计算快1000倍",
+            "en": "A unit error makes transfer appear 1000 times faster"
+          },
+          "fix": {
+            "zh": "MB除以MB/s得到秒，转ms需乘1000；报告写明十进制MB，不混用MiB。",
+            "en": "MB divided by MB/s gives seconds; multiply by 1000 for ms and distinguish decimal MB from MiB."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "传输34ms，省20ms，净收益是多少？",
+            "en": "Transfer costs 34 ms and saves 20 ms; what is net saving?"
+          },
+          "options": [
+            {
+              "zh": "54ms",
+              "en": "54 ms"
+            },
+            {
+              "zh": "−14ms",
+              "en": "−14 ms"
+            },
+            {
+              "zh": "14ms",
+              "en": "14 ms"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "节省减成本=20−34，负值表示模型中更慢。",
+            "en": "Savings minus cost is 20−34; a negative value means slower under the model."
+          }
+        },
+        {
+          "question": {
+            "zh": "为什么不能只比较网络峰值带宽？",
+            "en": "Why is peak network bandwidth insufficient?"
+          },
+          "options": [
+            {
+              "zh": "还需状态大小、启动成本和可省计算",
+              "en": "State size, setup and avoided compute also matter"
+            },
+            {
+              "zh": "带宽永远不重要",
+              "en": "Bandwidth never matters"
+            },
+            {
+              "zh": "所有模型KV都同样大",
+              "en": "All models have equal KV size"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "端到端收益由多个量共同决定，峰值带宽也不等于实际可用带宽。",
+            "en": "End-to-end savings depend on several factors; peak bandwidth is not effective bandwidth."
+          }
+        }
+      ]
+    },
+    {
+      "day": 9,
+      "title": {
+        "zh": "TTFT、总延迟与阶段追踪",
+        "en": "TTFT, total latency and stage traces"
+      },
+      "lesson": {
+        "zh": "首token延迟是从请求开始到第一个输出的时间，总延迟则直到响应结束。今天显式约定首token在first_decode之后发出，代理、排队、Prefill和传输都发生在它之前。不同引擎统计口径可能不同，先写清边界。",
+        "en": "TTFT ends at the first output while total latency ends at completion. Here the first token follows first_decode; proxy, queue, prefill and transfer precede it. Engines can define measurement boundaries differently, so document the convention."
+      },
+      "task": {
+        "zh": "画出各段时间线并标首token；提出区分服务端等待与客户端网络等待的日志字段。",
+        "en": "Draw the timeline and first-token marker; propose logs that distinguish server queueing from client network delay."
+      },
+      "evidence": {
+        "zh": "out/baseline/day09.json与out/stress/day09.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day09.json and out/stress/day09.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "画出各段时间线并标首token；提出区分服务端等待与客户端网络等待的日志字段。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Draw the timeline and first-token marker; propose logs that distinguish server queueing from client network delay.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://llm-d.ai/docs/architecture/disaggregation"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "首token延迟是从请求开始到第一个输出的时间，总延迟则直到响应结束。今天显式约定首token在first_decode之后发出，代理、排队、Prefill和传输都发生在它之前。不同引擎统计口径可能不同，先写清边界。",
+            "en": "TTFT ends at the first output while total latency ends at completion. Here the first token follows first_decode; proxy, queue, prefill and transfer precede it. Engines can define measurement boundaries differently, so document the convention."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "增加remaining_decode只影响总延迟；增加queue同时影响TTFT与总延迟。本实验保持执行段不变，仅把排队从10改80ms，因此两项都增加70ms。真正流式客户端还需区分字节到达、token解析和网络缓冲。",
+            "en": "Increasing remaining_decode affects total latency only, while queue growth affects both TTFT and total. Stress changes queue from 10 to 80 ms, so both rise by 70 ms. Actual clients must also distinguish byte arrival, token parsing and buffering."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "TTFT、总延迟与阶段追踪：决策流程",
+          "en": "TTFT, total latency and stage traces: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "代理与排队",
+            "en": "Proxy and queue"
+          },
+          {
+            "zh": "Prefill",
+            "en": "Prefill"
+          },
+          {
+            "zh": "KV传输",
+            "en": "KV transfer"
+          },
+          {
+            "zh": "首Decode与TTFT",
+            "en": "First decode and TTFT"
+          },
+          {
+            "zh": "后续Decode与结束",
+            "en": "Remaining decode and end"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day9 --out out/baseline",
+          "expected": {
+            "zh": "baseline TTFT=66、total=161；stress TTFT=136、total=231。",
+            "en": "Baseline TTFT=66 and total=161; stress TTFT=136 and total=231."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "画出各段时间线并标首token；提出区分服务端等待与客户端网络等待的日志字段。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Draw the timeline and first-token marker; propose logs that distinguish server queueing from client network delay. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day9 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline TTFT=66、total=161；stress TTFT=136、total=231。",
+            "en": "Baseline TTFT=66 and total=161; stress TTFT=136 and total=231."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day09.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把总时长除token数称为TTFT",
+            "en": "Calling total time divided by tokens TTFT"
+          },
+          "fix": {
+            "zh": "TTFT需要首token时间戳；每token平均耗时是另一指标，不能互换。",
+            "en": "TTFT needs the first-token timestamp; average per-token time is a different metric."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "只增加后续Decode时间会怎样？",
+            "en": "What changes if only remaining decode grows?"
+          },
+          "options": [
+            {
+              "zh": "总延迟增加，TTFT不变",
+              "en": "Total grows; TTFT stays fixed"
+            },
+            {
+              "zh": "两者都不变",
+              "en": "Neither changes"
+            },
+            {
+              "zh": "TTFT降低",
+              "en": "TTFT decreases"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "TTFT的测量终点在后续Decode之前。",
+            "en": "The TTFT endpoint precedes remaining decode."
+          }
+        },
+        {
+          "question": {
+            "zh": "比较两工具的TTFT前应核对什么？",
+            "en": "What should be checked before comparing TTFT from two tools?"
+          },
+          "options": [
+            {
+              "zh": "只比较两工具的平均值",
+              "en": "Only compare the two tools’ means"
+            },
+            {
+              "zh": "只比较生成token总数",
+              "en": "Only compare total generated tokens"
+            },
+            {
+              "zh": "开始/首token边界和流式解析口径",
+              "en": "Start/first-token boundaries and streaming parsing"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "口径不同会造成看似性能差异，必须先统一测量定义。",
+            "en": "Different boundaries can create apparent performance differences; align definitions first."
+          }
+        }
+      ]
+    },
+    {
+      "day": 10,
+      "title": {
+        "zh": "SLO与失败请求分母",
+        "en": "SLOs and failure denominators"
+      },
+      "lesson": {
+        "zh": "成功请求的延迟分位数回答“成功时有多慢”，并不回答“用户有多大概率成功且够快”。今天同时保留失败数，并以全部请求为分母计算满足100ms目标的比例。",
+        "en": "Latency percentiles among successful requests describe successful latency, not the chance of success within a target. Keep failure counts and use all requests as the denominator for the fraction meeting 100 ms."
+      },
+      "task": {
+        "zh": "手算P95与合格率；再把失败请求从分母删掉，解释结果为什么更漂亮却更失真。",
+        "en": "Compute P95 and good fraction manually, then remove failures from the denominator and explain the misleading improvement."
+      },
+      "evidence": {
+        "zh": "out/baseline/day10.json与out/stress/day10.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day10.json and out/stress/day10.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "手算P95与合格率；再把失败请求从分母删掉，解释结果为什么更漂亮却更失真。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Compute P95 and good fraction manually, then remove failures from the denominator and explain the misleading improvement.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://sre.google/sre-book/handling-overload/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "成功请求的延迟分位数回答“成功时有多慢”，并不回答“用户有多大概率成功且够快”。今天同时保留失败数，并以全部请求为分母计算满足100ms目标的比例。",
+            "en": "Latency percentiles among successful requests describe successful latency, not the chance of success within a target. Keep failure counts and use all requests as the denominator for the fraction meeting 100 ms."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "默认10个成功均合格；stress有一个250ms成功请求和2个失败，合格率9/12=75%。只有10个成功样本，最近秩P95会取最大值，无法据此宣称尾延迟稳定。",
+            "en": "All ten baseline successes meet the target. Stress has one 250 ms success and two failures, so good fraction is 9/12=75%. With only ten successes, nearest-rank P95 is the maximum and cannot establish stable tail latency."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "SLO与失败请求分母：决策流程",
+          "en": "SLOs and failure denominators: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "全部请求",
+            "en": "All requests"
+          },
+          {
+            "zh": "成功与失败",
+            "en": "Successes and failures"
+          },
+          {
+            "zh": "成功延迟分位数",
+            "en": "Success latency quantile"
+          },
+          {
+            "zh": "SLO内成功数",
+            "en": "SLO-good successes"
+          },
+          {
+            "zh": "全量分母",
+            "en": "All-request denominator"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day10 --out out/baseline",
+          "expected": {
+            "zh": "baseline合格率1；stress P95=250，合格率0.75。",
+            "en": "Baseline good fraction=1; stress P95=250 and good fraction=0.75."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "手算P95与合格率；再把失败请求从分母删掉，解释结果为什么更漂亮却更失真。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Compute P95 and good fraction manually, then remove failures from the denominator and explain the misleading improvement. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day10 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline合格率1；stress P95=250，合格率0.75。",
+            "en": "Baseline good fraction=1; stress P95=250 and good fraction=0.75."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day10.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "失败率上升但延迟图更好看",
+            "en": "Latency charts improve while failures rise"
+          },
+          "fix": {
+            "zh": "检查是否丢掉失败和取消，保留全量请求计数及成功延迟口径。",
+            "en": "Check whether failures and cancellations were dropped; retain total counts and latency definitions."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "9个合格、1个超时目标成功、2个失败，合格率是多少？",
+            "en": "Nine good, one slow success and two failures: what is the good fraction?"
+          },
+          "options": [
+            {
+              "zh": "90%",
+              "en": "90%"
+            },
+            {
+              "zh": "100%",
+              "en": "100%"
+            },
+            {
+              "zh": "75%",
+              "en": "75%"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "分母为12，不是10个成功请求。",
+            "en": "The denominator is 12, not the ten successes."
+          }
+        },
+        {
+          "question": {
+            "zh": "10个样本的P95是否足以证明生产尾延迟？",
+            "en": "Do ten samples establish production P95?"
+          },
+          "options": [
+            {
+              "zh": "足够，只要没有失败",
+              "en": "Yes, if none fail"
+            },
+            {
+              "zh": "不足，样本及负载覆盖有限",
+              "en": "No, sample size and workload coverage are limited"
+            },
+            {
+              "zh": "足够，百分位天然稳定",
+              "en": "Yes, percentiles are inherently stable"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "分位数需要样本量、负载分布和时间窗口背景。",
+            "en": "Quantiles need sample-size, workload-distribution and observation-window context."
+          }
+        }
+      ]
+    },
+    {
+      "day": 11,
+      "title": {
+        "zh": "按Token预算做准入",
+        "en": "Admission with token reservations"
+      },
+      "lesson": {
+        "zh": "请求长度差异很大，单纯限制请求个数可能让长请求耗尽内存或队列。今天为每个请求预估token开销，在1000token预算中逐个预留，超过则拒绝。",
+        "en": "Requests vary in length, so limiting their count alone can exhaust memory or queues with long requests. Today each request reserves estimated tokens from a 1000-token budget and is rejected if it would exceed the limit."
+      },
+      "task": {
+        "zh": "跟踪每次admitted和reserved_after；写出取消时应该释放哪一笔预留。",
+        "en": "Trace admitted and reserved_after, then specify which reservation cancellation must release."
+      },
+      "evidence": {
+        "zh": "out/baseline/day11.json与out/stress/day11.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day11.json and out/stress/day11.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "跟踪每次admitted和reserved_after；写出取消时应该释放哪一笔预留。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Trace admitted and reserved_after, then specify which reservation cancellation must release.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://sre.google/sre-book/handling-overload/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "请求长度差异很大，单纯限制请求个数可能让长请求耗尽内存或队列。今天为每个请求预估token开销，在1000token预算中逐个预留，超过则拒绝。",
+            "en": "Requests vary in length, so limiting their count alone can exhaust memory or queues with long requests. Today each request reserves estimated tokens from a 1000-token budget and is rejected if it would exceed the limit."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "默认300+500+200正好用满；stress第三个变600则拒绝，已预留保持800。这里token只是统一预算单位，并非真实KV字节；实际系统还要在完成、取消和失败时释放预留，处理估计偏差。",
+            "en": "Baseline reservations 300+500+200 fill the budget. Stress changes the third to 600, so it is rejected and usage remains 800. Tokens are accounting units, not actual KV bytes; real systems must release reservations on completion, cancellation and failure and handle estimation error."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "按Token预算做准入：决策流程",
+          "en": "Admission with token reservations: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "请求长度估计",
+            "en": "Estimate request size"
+          },
+          {
+            "zh": "剩余预算",
+            "en": "Remaining budget"
+          },
+          {
+            "zh": "准入判断",
+            "en": "Admission decision"
+          },
+          {
+            "zh": "预留记账",
+            "en": "Reserve budget"
+          },
+          {
+            "zh": "完成或取消释放",
+            "en": "Release on finish/cancel"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day11 --out out/baseline",
+          "expected": {
+            "zh": "baseline三次准入；stress第三次拒绝，reserved_after=800。",
+            "en": "Baseline admits all three; stress rejects the third and reserved_after=800."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "跟踪每次admitted和reserved_after；写出取消时应该释放哪一笔预留。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Trace admitted and reserved_after, then specify which reservation cancellation must release. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day11 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline三次准入；stress第三次拒绝，reserved_after=800。",
+            "en": "Baseline admits all three; stress rejects the third and reserved_after=800."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day11.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "服务空闲但所有请求被预算拒绝",
+            "en": "An idle service rejects everything on budget"
+          },
+          "fix": {
+            "zh": "检查取消与异常路径是否释放预留，并按请求ID防止重复释放。",
+            "en": "Inspect cancellation/error releases and guard against double release using request IDs."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "预算1000已用800，新请求600怎么办？",
+            "en": "Budget is 1000 with 800 reserved; what about a 600 request?"
+          },
+          "options": [
+            {
+              "zh": "把估计改成200假装通过",
+              "en": "Rewrite the estimate to 200"
+            },
+            {
+              "zh": "拒绝或有界等待",
+              "en": "Reject or bounded wait"
+            },
+            {
+              "zh": "直接加到1400",
+              "en": "Reserve 1400"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "不得靠改小估计绕过预算；如排队也需有截止期限。",
+            "en": "Do not bypass accounting by shrinking estimates; waiting also needs a deadline."
+          }
+        },
+        {
+          "question": {
+            "zh": "请求取消后漏释放会怎样？",
+            "en": "What happens if cancellation does not release its reservation?"
+          },
+          "options": [
+            {
+              "zh": "账面容量泄漏，后续请求被误拒",
+              "en": "Accounting leaks and later requests are wrongly rejected"
+            },
+            {
+              "zh": "下一请求会自动补偿错误预留",
+              "en": "The next request automatically corrects stale reservations"
+            },
+            {
+              "zh": "预算自动恢复",
+              "en": "The budget automatically resets"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "预留有生命周期，失败路径也必须结束记账。",
+            "en": "Reservations have a lifecycle and failure paths must close it too."
+          }
+        }
+      ]
+    },
+    {
+      "day": 12,
+      "title": {
+        "zh": "重试预算与部分流式响应",
+        "en": "Retry budgets and partial streams"
+      },
+      "lesson": {
+        "zh": "网络超时不等于后端没有执行。自动重试可能重复耗费GPU，甚至在首个token已发出后造成响应重复。今天最多尝试2次，计数包含首次请求；所有可重试失败都假设发生在流式输出之前。",
+        "en": "A timeout does not prove the backend never ran. Retries may duplicate GPU work or repeat output after the first token. Today the two-attempt budget includes the initial attempt, and retryable failures are assumed to occur before streaming."
+      },
+      "task": {
+        "zh": "计算用户请求与后端尝试次数；为“已输出部分文本后断流”写单独处理策略。",
+        "en": "Count user requests versus backend attempts and define separate handling for disconnect after partial text."
+      },
+      "evidence": {
+        "zh": "out/baseline/day12.json与out/stress/day12.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day12.json and out/stress/day12.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "计算用户请求与后端尝试次数；为“已输出部分文本后断流”写单独处理策略。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Count user requests versus backend attempts and define separate handling for disconnect after partial text.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://sre.google/sre-book/handling-overload/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "网络超时不等于后端没有执行。自动重试可能重复耗费GPU，甚至在首个token已发出后造成响应重复。今天最多尝试2次，计数包含首次请求；所有可重试失败都假设发生在流式输出之前。",
+            "en": "A timeout does not prove the backend never ran. Retries may duplicate GPU work or repeat output after the first token. Today the two-attempt budget includes the initial attempt, and retryable failures are assumed to occur before streaming."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "默认一次超时后成功；stress连续两次超时，用完预算后停止，第三次潜在成功不会执行。有限重试防止故障时请求放大；实际策略还需要截止时间、退避和错误分类。",
+            "en": "Baseline times out once then succeeds. Stress times out twice and stops at the budget even though a third attempt could succeed. Bounded retries prevent amplification; production also needs deadlines, backoff and error classification."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "重试预算与部分流式响应：决策流程",
+          "en": "Retry budgets and partial streams: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "首次请求",
+            "en": "Initial request"
+          },
+          {
+            "zh": "失败阶段分类",
+            "en": "Classify failure stage"
+          },
+          {
+            "zh": "剩余尝试预算",
+            "en": "Remaining attempt budget"
+          },
+          {
+            "zh": "重试或停止",
+            "en": "Retry or stop"
+          },
+          {
+            "zh": "保留部分响应语义",
+            "en": "Preserve partial-stream semantics"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day12 --out out/baseline",
+          "expected": {
+            "zh": "baseline succeeded=true；stress=false且attempted长度2。",
+            "en": "Baseline succeeded=true; stress=false with two attempted outcomes."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "计算用户请求与后端尝试次数；为“已输出部分文本后断流”写单独处理策略。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Count user requests versus backend attempts and define separate handling for disconnect after partial text. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day12 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline succeeded=true；stress=false且attempted长度2。",
+            "en": "Baseline succeeded=true; stress=false with two attempted outcomes."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day12.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "配置2次却产生3次后端调用",
+            "en": "A two-attempt setting creates three backend calls"
+          },
+          "fix": {
+            "zh": "确认字段表示总尝试还是重试次数，并检查多层代理是否各自再重试。",
+            "en": "Check total-attempt versus retry semantics and whether multiple proxy layers retry independently."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "max_attempts=2是否意味着首次外还可重试两次？",
+            "en": "Does max_attempts=2 allow two retries after the first attempt?"
+          },
+          "options": [
+            {
+              "zh": "不是，总计两次",
+              "en": "No, two total attempts"
+            },
+            {
+              "zh": "是，总计三次",
+              "en": "Yes, three total"
+            },
+            {
+              "zh": "无限直到成功",
+              "en": "Unlimited until success"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "预算定义必须明确，否则客户端和服务端会共同放大重试。",
+            "en": "Define the budget clearly or client/server retry layers can amplify each other."
+          }
+        },
+        {
+          "question": {
+            "zh": "已发部分token时透明重启生成有什么风险？",
+            "en": "What is the risk of transparently restarting after partial tokens?"
+          },
+          "options": [
+            {
+              "zh": "保证无缝继续",
+              "en": "Guaranteed seamless continuation"
+            },
+            {
+              "zh": "服务端重试不消耗额外算力",
+              "en": "Server retries consume no additional compute"
+            },
+            {
+              "zh": "重复或不一致的输出",
+              "en": "Duplicate or inconsistent output"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "新生成未必与旧流一致，不能默认可拼接；需要显式恢复语义。",
+            "en": "A new generation may differ from the old stream; explicit resume semantics are required."
+          }
+        }
+      ]
+    },
+    {
+      "day": 13,
+      "title": {
+        "zh": "启动、存活与就绪",
+        "en": "Startup, liveness and readiness"
+      },
+      "lesson": {
+        "zh": "进程存活不表示权重已加载，权重加载完也不一定完成编译和预热。今天把alive、weights_loaded、warmed分开，以三者同时成立作为本课Ready条件。",
+        "en": "A live process may not have loaded weights, and loaded weights may still need compilation or warmup. Today alive, weights_loaded and warmed are separate, with readiness requiring all three under the teaching policy."
+      },
+      "task": {
+        "zh": "画状态表；分别说明哪种状态应从路由候选移除，哪种才需要重启。",
+        "en": "Draw the state table and distinguish removal from routing from a restart decision."
+      },
+      "evidence": {
+        "zh": "out/baseline/day13.json与out/stress/day13.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day13.json and out/stress/day13.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "画状态表；分别说明哪种状态应从路由候选移除，哪种才需要重启。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Draw the state table and distinguish removal from routing from a restart decision.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://kubernetes.io/docs/concepts/configuration/liveness-readiness-startup-probes/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "进程存活不表示权重已加载，权重加载完也不一定完成编译和预热。今天把alive、weights_loaded、warmed分开，以三者同时成立作为本课Ready条件。",
+            "en": "A live process may not have loaded weights, and loaded weights may still need compilation or warmup. Today alive, weights_loaded and warmed are separate, with readiness requiring all three under the teaching policy."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "stress让60秒时仍未预热完成，容器仍存活但不接流量。若把慢启动误当存活失败，反复重启会让模型永远无法完成加载。真实探针应结合启动窗口和服务提供的健康语义。",
+            "en": "Stress leaves warmup incomplete at 60 seconds: the container lives but does not receive traffic. Treating slow startup as liveness failure can create endless restarts. Configure startup windows and probes using actual server health semantics."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "启动、存活与就绪：决策流程",
+          "en": "Startup, liveness and readiness: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "进程启动",
+            "en": "Process startup"
+          },
+          {
+            "zh": "加载权重",
+            "en": "Load weights"
+          },
+          {
+            "zh": "编译预热",
+            "en": "Compile/warm"
+          },
+          {
+            "zh": "Ready",
+            "en": "Ready"
+          },
+          {
+            "zh": "接收流量",
+            "en": "Receive traffic"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day13 --out out/baseline",
+          "expected": {
+            "zh": "baseline最后一行ready=true；stress为false，restart_needed仍false。",
+            "en": "The final baseline row is ready; stress is not, while restart_needed remains false."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "画状态表；分别说明哪种状态应从路由候选移除，哪种才需要重启。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Draw the state table and distinguish removal from routing from a restart decision. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day13 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline最后一行ready=true；stress为false，restart_needed仍false。",
+            "en": "The final baseline row is ready; stress is not, while restart_needed remains false."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day13.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "Pod重启循环且总是卡在权重加载",
+            "en": "Restart loops always stop at weight loading"
+          },
+          "fix": {
+            "zh": "对照startup/liveness/readiness职责，记录实际加载耗时，再设置探针阈值。",
+            "en": "Separate startup/liveness/readiness responsibilities, measure loading duration, then set thresholds."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "Running但未加载权重，应如何处理流量？",
+            "en": "How should traffic treat a Running pod without loaded weights?"
+          },
+          "options": [
+            {
+              "zh": "立即接所有请求",
+              "en": "Send all requests"
+            },
+            {
+              "zh": "只看CPU利用率",
+              "en": "Only inspect CPU utilization"
+            },
+            {
+              "zh": "保持未就绪",
+              "en": "Keep it unready"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "生命周期状态不等于服务能力，Ready决定是否接流量。",
+            "en": "Lifecycle state is not serving capability; readiness governs traffic."
+          }
+        },
+        {
+          "question": {
+            "zh": "慢预热时不断重启有什么问题？",
+            "en": "What is wrong with restarting repeatedly during slow warmup?"
+          },
+          "options": [
+            {
+              "zh": "重启必然保留已加载权重",
+              "en": "Restarts necessarily preserve loaded weights"
+            },
+            {
+              "zh": "可能一直无法完成初始化",
+              "en": "Initialization may never complete"
+            },
+            {
+              "zh": "一定更快完成",
+              "en": "It always finishes faster"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "初始化每次重来，需要正确的启动窗口而不是无限重启。",
+            "en": "Each restart repeats initialization; use a suitable startup window."
+          }
+        }
+      ]
+    },
+    {
+      "day": 14,
+      "title": {
+        "zh": "滚动升级的容量余量",
+        "en": "Capacity headroom during rolling upgrades"
+      },
+      "lesson": {
+        "zh": "滚动更新期间，副本总数并不等于可接流量副本数。本课采用保守估计max(0,replicas−maxUnavailable)，忽略额外surge容量，并假设其余副本健康、Readiness正确。",
+        "en": "During rolling updates, desired replica count is not ready serving capacity. Use the conservative estimate max(0,replicas−maxUnavailable), ignore surge capacity, and assume remaining replicas are healthy with correct readiness."
+      },
+      "task": {
+        "zh": "完成available_capacity练习；给出升级暂停阈值和长请求排空步骤。",
+        "en": "Complete available_capacity and define an upgrade pause threshold plus a long-request drain procedure."
+      },
+      "evidence": {
+        "zh": "out/baseline/day14.json与out/stress/day14.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day14.json and out/stress/day14.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "完成available_capacity练习；给出升级暂停阈值和长请求排空步骤。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Complete available_capacity and define an upgrade pause threshold plus a long-request drain procedure.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "滚动更新期间，副本总数并不等于可接流量副本数。本课采用保守估计max(0,replicas−maxUnavailable)，忽略额外surge容量，并假设其余副本健康、Readiness正确。",
+            "en": "During rolling updates, desired replica count is not ready serving capacity. Use the conservative estimate max(0,replicas−maxUnavailable), ignore surge capacity, and assume remaining replicas are healthy with correct readiness."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "每副本10req/s、四副本、到达25req/s：允许一个不可用时容量30，余量5；允许两个不可用时容量20，缺口5。Kubernetes配置本身不能保证模型服务的真实吞吐，长连接还需要排空。",
+            "en": "At 10 req/s per replica, four replicas and demand 25, one unavailable leaves capacity 30 and headroom 5; two unavailable leave 20 and a deficit of 5. Kubernetes settings alone cannot guarantee actual serving throughput; long streams also need draining."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "滚动升级的容量余量：决策流程",
+          "en": "Capacity headroom during rolling upgrades: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "期望副本",
+            "en": "Desired replicas"
+          },
+          {
+            "zh": "不可用预算",
+            "en": "Unavailability budget"
+          },
+          {
+            "zh": "保守可用副本",
+            "en": "Conservative ready count"
+          },
+          {
+            "zh": "对比到达量",
+            "en": "Compare arrival rate"
+          },
+          {
+            "zh": "继续或暂停",
+            "en": "Continue or pause"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day14 --out out/baseline",
+          "expected": {
+            "zh": "baseline spare_rps=5；stress=-5。",
+            "en": "Baseline spare_rps=5; stress=-5."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "完成available_capacity练习；给出升级暂停阈值和长请求排空步骤。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Complete available_capacity and define an upgrade pause threshold plus a long-request drain procedure. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day14 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline spare_rps=5；stress=-5。",
+            "en": "Baseline spare_rps=5; stress=-5."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day14.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成学生代码挑战",
+            "en": "Complete the student coding challenge"
+          },
+          "body": {
+            "zh": "在exercises.py补齐三个TODO：端点选择、PD容量和升级容量。先读函数契约，再运行独立固定用例；未完成时NOT COMPLETE与退出1是预期行为。参考答案可用--reference检查，不能冒充自己的完成。",
+            "en": "Implement the three TODOs in exercises.py: endpoint selection, PD capacity and rollout capacity. Read contracts, then run independent fixed cases. Before completion, NOT COMPLETE and exit 1 are expected. --reference checks the reference solution and does not establish your own completion."
+          },
+          "command": "python3 check.py",
+          "expected": {
+            "zh": "完成三个函数后显示PASS: 15 fixed correctness cases；只验证声明用例，不是能力认证或GPU性能测试。",
+            "en": "After implementing all functions, PASS: 15 fixed correctness cases appears; this verifies stated cases, not certification or GPU performance."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "升级后Ready数量足够但延迟激增",
+            "en": "Enough Ready pods remain but latency spikes"
+          },
+          "fix": {
+            "zh": "比较剩余实际吞吐与到达量，检查预热、流量倾斜和旧连接排空。",
+            "en": "Compare remaining effective capacity with arrivals and inspect warmup, skew and stream draining."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "4副本允许2个不可用、每个10req/s，保守容量？",
+            "en": "Four replicas, two unavailable and 10 req/s each: conservative capacity?"
+          },
+          "options": [
+            {
+              "zh": "60req/s",
+              "en": "60 req/s"
+            },
+            {
+              "zh": "20req/s",
+              "en": "20 req/s"
+            },
+            {
+              "zh": "40req/s",
+              "en": "40 req/s"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "只计算剩余两个可用副本。",
+            "en": "Only the remaining two replicas count."
+          }
+        },
+        {
+          "question": {
+            "zh": "maxUnavailable设置正确就能保证零中断吗？",
+            "en": "Does a correct maxUnavailable guarantee zero interruption?"
+          },
+          "options": [
+            {
+              "zh": "不能，还依赖健康、Readiness、排空与容量",
+              "en": "No; health, readiness, draining and capacity also matter"
+            },
+            {
+              "zh": "能，配置即保证",
+              "en": "Yes, configuration guarantees it"
+            },
+            {
+              "zh": "能，与请求长度无关",
+              "en": "Yes, regardless of request length"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "控制器约束不是端到端服务保证，实验假设必须成立。",
+            "en": "Controller constraints are not end-to-end guarantees; the assumptions must hold."
+          }
+        }
+      ],
+      "interactive": "rollout-availability"
+    },
+    {
+      "day": 15,
+      "title": {
+        "zh": "扩容信号与缩容稳定窗口",
+        "en": "Scaling signals and stabilization"
+      },
+      "lesson": {
+        "zh": "队列增长可提示需求超过当前服务能力，但每个采样点都扩缩容会导致抖动。今天超过10就增加一个期望副本，连续3次低于5才减少一个，范围限制为1至4。",
+        "en": "Queue growth may indicate demand above capacity, but reacting in both directions to every sample causes churn. Today queue above 10 adds one desired replica; three consecutive values below 5 remove one, within bounds 1–4."
+      },
+      "task": {
+        "zh": "逐样本记录计数器；把源码副本的低负载窗口改成1，比较抖动。",
+        "en": "Trace counters per sample, change the low window to one in a copy, and compare churn."
+      },
+      "evidence": {
+        "zh": "out/baseline/day15.json与out/stress/day15.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day15.json and out/stress/day15.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "逐样本记录计数器；把源码副本的低负载窗口改成1，比较抖动。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Trace counters per sample, change the low window to one in a copy, and compare churn.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "队列增长可提示需求超过当前服务能力，但每个采样点都扩缩容会导致抖动。今天超过10就增加一个期望副本，连续3次低于5才减少一个，范围限制为1至4。",
+            "en": "Queue growth may indicate demand above capacity, but reacting in both directions to every sample causes churn. Today queue above 10 adds one desired replica; three consecutive values below 5 remove one, within bounds 1–4."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "默认持续低负载最终触发缩容；stress在高低之间交替，低样本计数不断重置。实验只算期望副本，没有模拟权重加载、GPU供给和实际Ready延迟，因此不能把扩容指令当成立即增加容量。",
+            "en": "Baseline sustained low load eventually scales down; alternating stress samples repeatedly reset the low counter. This computes desired replicas only, omitting weight loading, GPU supply and readiness delay, so a scale command does not instantly create capacity."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "扩容信号与缩容稳定窗口：决策流程",
+          "en": "Scaling signals and stabilization: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "队列采样",
+            "en": "Queue sample"
+          },
+          {
+            "zh": "高低阈值",
+            "en": "High/low thresholds"
+          },
+          {
+            "zh": "稳定窗口计数",
+            "en": "Stabilization count"
+          },
+          {
+            "zh": "期望副本",
+            "en": "Desired replicas"
+          },
+          {
+            "zh": "等待真实就绪",
+            "en": "Wait for actual readiness"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day15 --out out/baseline",
+          "expected": {
+            "zh": "输出events中每步desired_replicas与consecutive_low；stress不会累计三次连续低值。",
+            "en": "Events contain desired_replicas and consecutive_low; stress never accumulates three consecutive low samples."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "逐样本记录计数器；把源码副本的低负载窗口改成1，比较抖动。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Trace counters per sample, change the low window to one in a copy, and compare churn. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day15 --variant stress --out out/stress",
+          "expected": {
+            "zh": "输出events中每步desired_replicas与consecutive_low；stress不会累计三次连续低值。",
+            "en": "Events contain desired_replicas and consecutive_low; stress never accumulates three consecutive low samples."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day15.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "扩容后队列仍上涨",
+            "en": "Queues keep growing after scale-up"
+          },
+          "fix": {
+            "zh": "检查新副本是否已Ready、是否获得GPU、是否有模型下载瓶颈；不要只看desired值。",
+            "en": "Inspect actual readiness, GPU allocation and model download bottlenecks, not only desired count."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "为何缩容要求连续低负载？",
+            "en": "Why require consecutive low load for scale-down?"
+          },
+          "options": [
+            {
+              "zh": "抑制短暂波动造成的抖动",
+              "en": "Reduce churn from transient variation"
+            },
+            {
+              "zh": "保证永不浪费资源",
+              "en": "Guarantee zero waste"
+            },
+            {
+              "zh": "代替所有监控",
+              "en": "Replace all monitoring"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "稳定窗口是一种滞后机制，在响应速度与稳定性间取舍。",
+            "en": "A stabilization window adds hysteresis, trading reaction speed for stability."
+          }
+        },
+        {
+          "question": {
+            "zh": "期望副本从2变3意味着容量立即增加吗？",
+            "en": "Does changing desired replicas from two to three immediately add capacity?"
+          },
+          "options": [
+            {
+              "zh": "是，控制面字段就是吞吐",
+              "en": "Yes, the control field is throughput"
+            },
+            {
+              "zh": "是，无需设备",
+              "en": "Yes, without hardware"
+            },
+            {
+              "zh": "不，仍需调度、加载和就绪",
+              "en": "No, scheduling, loading and readiness remain"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "期望状态与实际可服务状态之间有延迟。",
+            "en": "Desired state and actual serving state are separated by delay."
+          }
+        }
+      ]
+    },
+    {
+      "day": 16,
+      "title": {
+        "zh": "租户权重与公平性单位",
+        "en": "Tenant weights and fairness units"
+      },
+      "lesson": {
+        "zh": "共享集群需要说明公平的单位。今天用A、A、B的循环实现2:1请求份额，假设所有请求成本相同；饱和时12个位置分给A8个、B4个。",
+        "en": "Shared clusters need a defined fairness unit. The A,A,B cycle implements a 2:1 request share assuming equal request cost; when both tenants are saturated, twelve slots allocate eight to A and four to B."
+      },
+      "task": {
+        "zh": "手推12个调度位置；给B请求设置更长输出时，说明哪些公平结论失效。",
+        "en": "Trace twelve slots and explain which fairness claims fail if B requests have longer outputs."
+      },
+      "evidence": {
+        "zh": "out/baseline/day16.json与out/stress/day16.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day16.json and out/stress/day16.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "手推12个调度位置；给B请求设置更长输出时，说明哪些公平结论失效。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Trace twelve slots and explain which fairness claims fail if B requests have longer outputs.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://sre.google/sre-book/handling-overload/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "共享集群需要说明公平的单位。今天用A、A、B的循环实现2:1请求份额，假设所有请求成本相同；饱和时12个位置分给A8个、B4个。",
+            "en": "Shared clusters need a defined fairness unit. The A,A,B cycle implements a 2:1 request share assuming equal request cost; when both tenants are saturated, twelve slots allocate eight to A and four to B."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "stress中B只有2个请求，空出的机会被A使用，得到A10、B2，这体现工作保守性。但长短请求混合时，请求数公平未必等于token、GPU时间或用户价值公平，需按产品目标选择。",
+            "en": "With only two B requests in stress, A uses the spare opportunities, yielding A10/B2 and work-conserving behavior. With variable lengths, request fairness differs from token, GPU-time or user-value fairness; choose the unit deliberately."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "租户权重与公平性单位：决策流程",
+          "en": "Tenant weights and fairness units: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "租户队列",
+            "en": "Tenant queues"
+          },
+          {
+            "zh": "权重轮次",
+            "en": "Weighted cycle"
+          },
+          {
+            "zh": "检查是否有工作",
+            "en": "Check pending work"
+          },
+          {
+            "zh": "分配位置",
+            "en": "Allocate slot"
+          },
+          {
+            "zh": "统计实际份额",
+            "en": "Measure actual shares"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day16 --out out/baseline",
+          "expected": {
+            "zh": "baseline allocated={A:8,B:4}；stress={A:10,B:2}。",
+            "en": "Baseline allocated={A:8,B:4}; stress={A:10,B:2}."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "手推12个调度位置；给B请求设置更长输出时，说明哪些公平结论失效。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Trace twelve slots and explain which fairness claims fail if B requests have longer outputs. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day16 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline allocated={A:8,B:4}；stress={A:10,B:2}。",
+            "en": "Baseline allocated={A:8,B:4}; stress={A:10,B:2}."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day16.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "份额符合配置却仍有租户抱怨等待",
+            "en": "Configured shares match but a tenant still waits too long"
+          },
+          "fix": {
+            "zh": "记录请求长度、等待时间和SLO，检查公平单位与用户需求是否一致。",
+            "en": "Record lengths, waiting and SLOs and check whether the fairness unit matches user needs."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "B无待处理请求时空闲位置给A属于什么策略？",
+            "en": "What policy lets A use slots when B has no pending work?"
+          },
+          "options": [
+            {
+              "zh": "永久剥夺B份额",
+              "en": "Permanently removing B share"
+            },
+            {
+              "zh": "模型量化",
+              "en": "Model quantization"
+            },
+            {
+              "zh": "工作保守",
+              "en": "Work-conserving scheduling"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "没有必要为无需求的租户闲置资源，但新需求到来仍需重新遵守策略。",
+            "en": "There is no need to idle for absent demand; new demand must again obey the policy."
+          }
+        },
+        {
+          "question": {
+            "zh": "2:1请求份额是否保证2:1GPU时间？",
+            "en": "Does a 2:1 request share guarantee 2:1 GPU time?"
+          },
+          "options": [
+            {
+              "zh": "相同权重即可忽略输出长度",
+              "en": "Equal weights make output length irrelevant"
+            },
+            {
+              "zh": "不，取决于每请求成本",
+              "en": "No, it depends on request costs"
+            },
+            {
+              "zh": "保证",
+              "en": "Yes"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "成本不同则同样请求数消耗不同资源。",
+            "en": "Unequal request costs consume unequal resources."
+          }
+        }
+      ]
+    },
+    {
+      "day": 17,
+      "title": {
+        "zh": "故障注入与空池恢复",
+        "en": "Fault injection and empty-pool handling"
+      },
+      "lesson": {
+        "zh": "故障演练应预先规定期望行为，而不是只看脚本是否结束。默认移除端点a，剩余b/c按成本选择；stress把全部端点标未就绪，结果必须是空选择和有界拒绝。",
+        "en": "Define expected fault behavior before injecting failures. Baseline removes a and chooses between b/c by cost. Stress marks every endpoint unready, requiring an empty selection and bounded rejection."
+      },
+      "task": {
+        "zh": "断言不会选未就绪端点；设计一张包含检测延迟的真实故障时间线。",
+        "en": "Assert unready endpoints are never selected and design a real drill timeline including detection delay."
+      },
+      "evidence": {
+        "zh": "out/baseline/day17.json与out/stress/day17.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day17.json and out/stress/day17.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "断言不会选未就绪端点；设计一张包含检测延迟的真实故障时间线。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Assert unready endpoints are never selected and design a real drill timeline including detection delay.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://kubernetes.io/docs/concepts/configuration/liveness-readiness-startup-probes/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "故障演练应预先规定期望行为，而不是只看脚本是否结束。默认移除端点a，剩余b/c按成本选择；stress把全部端点标未就绪，结果必须是空选择和有界拒绝。",
+            "en": "Define expected fault behavior before injecting failures. Baseline removes a and chooses between b/c by cost. Stress marks every endpoint unready, requiring an empty selection and bounded rejection."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "这里故障检测即时发生，真实系统则存在探针周期、缓存更新和在途请求。因此实验只验证“已知状态下的决策”，还不能声明真实故障恢复时间。实际演练应记录检测、停止路由和恢复三段时间。",
+            "en": "Failure detection is immediate here; real systems have probe periods, state propagation and in-flight requests. The experiment tests decisions given known state, not actual recovery time. Real drills need detection, routing-stop and recovery timestamps."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "故障注入与空池恢复：决策流程",
+          "en": "Fault injection and empty-pool handling: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "预设故障契约",
+            "en": "Define fault contract"
+          },
+          {
+            "zh": "标记故障",
+            "en": "Mark failure"
+          },
+          {
+            "zh": "过滤端点",
+            "en": "Filter endpoints"
+          },
+          {
+            "zh": "重选或拒绝",
+            "en": "Reroute or reject"
+          },
+          {
+            "zh": "记录恢复边界",
+            "en": "Record recovery boundary"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day17 --out out/baseline",
+          "expected": {
+            "zh": "baseline selected=b；stress selected=null、action=bounded rejection。",
+            "en": "Baseline selected=b; stress selected=null with bounded rejection."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "断言不会选未就绪端点；设计一张包含检测延迟的真实故障时间线。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Assert unready endpoints are never selected and design a real drill timeline including detection delay. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day17 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline selected=b；stress selected=null、action=bounded rejection。",
+            "en": "Baseline selected=b; stress selected=null with bounded rejection."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day17.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "故障演练通过却仍有在途请求失败",
+            "en": "The drill passes but in-flight requests still fail"
+          },
+          "fix": {
+            "zh": "增加流式连接和检测延迟的实测记录，明确本课模拟未覆盖这些路径。",
+            "en": "Measure streams and detection delays explicitly; those paths are outside this model."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "所有端点未就绪时应选谁？",
+            "en": "Who should be selected when every endpoint is unready?"
+          },
+          "options": [
+            {
+              "zh": "随机一个端点",
+              "en": "Any random endpoint"
+            },
+            {
+              "zh": "不选，进入已定义拒绝/等待策略",
+              "en": "None; apply defined rejection/wait policy"
+            },
+            {
+              "zh": "字母最小的端点",
+              "en": "The alphabetically first endpoint"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "错误流量不能为了保持非空结果而发给故障端点。",
+            "en": "Do not route to failed endpoints merely to keep the result nonempty."
+          }
+        },
+        {
+          "question": {
+            "zh": "这个模型能给出真实恢复秒数吗？",
+            "en": "Does this model determine real recovery seconds?"
+          },
+          "options": [
+            {
+              "zh": "不能，未模拟检测和传播延迟",
+              "en": "No, detection and propagation are omitted"
+            },
+            {
+              "zh": "能，输出null就是0秒",
+              "en": "Yes, null means zero seconds"
+            },
+            {
+              "zh": "能，由副本数决定",
+              "en": "Yes, replica count determines it"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "决策正确性与时间性质是不同验证目标。",
+            "en": "Decision correctness and temporal properties require different evidence."
+          }
+        }
+      ]
+    },
+    {
+      "day": 18,
+      "title": {
+        "zh": "有效吞吐与单位成本",
+        "en": "Goodput and unit cost"
+      },
+      "lesson": {
+        "zh": "便宜的实例不一定产生便宜的有效结果。以满足SLO的请求数作为有效产出，每小时成本除以每小时有效请求，得到单位有效请求成本；失败和超时目标的请求不能算入产出。",
+        "en": "A cheaper instance does not necessarily produce cheaper useful results. Divide hourly cost by hourly SLO-good requests to obtain cost per good request; failures and requests missing the target do not count as useful output."
+      },
+      "task": {
+        "zh": "算两组单位成本并解释排名反转；列出真实成本报告需要补充的账单项。",
+        "en": "Compute both unit costs, explain the ranking reversal, and list missing real billing components."
+      },
+      "evidence": {
+        "zh": "out/baseline/day18.json与out/stress/day18.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day18.json and out/stress/day18.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "算两组单位成本并解释排名反转；列出真实成本报告需要补充的账单项。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Compute both unit costs, explain the ranking reversal, and list missing real billing components.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://sre.google/sre-book/handling-overload/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "便宜的实例不一定产生便宜的有效结果。以满足SLO的请求数作为有效产出，每小时成本除以每小时有效请求，得到单位有效请求成本；失败和超时目标的请求不能算入产出。",
+            "en": "A cheaper instance does not necessarily produce cheaper useful results. Divide hourly cost by hourly SLO-good requests to obtain cost per good request; failures and requests missing the target do not count as useful output."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "默认A成本2产出100，B成本3产出180，B单位成本更低；stress把B有效产出降到80，A反而更好。这些成本为无币种教学单位，实际比较还需网络、存储、空闲和运维成本。",
+            "en": "Baseline A costs 2 for 100 good requests and B costs 3 for 180, making B cheaper per good request. Stress lowers B goodput to 80 and favors A. Costs are synthetic units without currency; actual accounting also needs network, storage, idle and operational costs."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "有效吞吐与单位成本：决策流程",
+          "en": "Goodput and unit cost: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "成本时间窗口",
+            "en": "Cost window"
+          },
+          {
+            "zh": "全量请求",
+            "en": "All requests"
+          },
+          {
+            "zh": "SLO筛选产出",
+            "en": "Filter SLO-good output"
+          },
+          {
+            "zh": "成本除有效产出",
+            "en": "Cost per good request"
+          },
+          {
+            "zh": "同口径比较",
+            "en": "Compare equal definitions"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day18 --out out/baseline",
+          "expected": {
+            "zh": "baseline preferred=B；stress preferred=A。",
+            "en": "Baseline preferred=B; stress preferred=A."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "算两组单位成本并解释排名反转；列出真实成本报告需要补充的账单项。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Compute both unit costs, explain the ranking reversal, and list missing real billing components. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day18 --variant stress --out out/stress",
+          "expected": {
+            "zh": "baseline preferred=B；stress preferred=A。",
+            "en": "Baseline preferred=B; stress preferred=A."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day18.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "成本报告只统计成功快请求的GPU时间",
+            "en": "Cost report counts GPU time only for fast successes"
+          },
+          "fix": {
+            "zh": "计入失败、超目标、预热和空闲等已消耗资源，保持成本与产出时间窗口一致。",
+            "en": "Include resources spent on failures, slow requests, warmup and idle time over the same window."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "系统更便宜应按什么比较？",
+            "en": "What should be compared for useful cost efficiency?"
+          },
+          "options": [
+            {
+              "zh": "同口径单位有效产出成本",
+              "en": "Cost per equally defined good output"
+            },
+            {
+              "zh": "仅每小时实例价格",
+              "en": "Instance hourly price alone"
+            },
+            {
+              "zh": "仅最大吞吐",
+              "en": "Peak throughput alone"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "成本与满足要求的产出需要一起计算。",
+            "en": "Cost must be evaluated together with output meeting the requirements."
+          }
+        },
+        {
+          "question": {
+            "zh": "吞吐提升但SLO内请求数下降意味着什么？",
+            "en": "What if throughput rises while SLO-good count falls?"
+          },
+          "options": [
+            {
+              "zh": "必然更好",
+              "en": "It must be better"
+            },
+            {
+              "zh": "SLO无需再统计",
+              "en": "SLO tracking is unnecessary"
+            },
+            {
+              "zh": "用户目标可能变差",
+              "en": "User outcomes may worsen"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "总吞吐可能由更高拥塞或更宽松定义换来，需要看有效产出。",
+            "en": "Total throughput may come from congestion or relaxed definitions; inspect goodput."
+          }
+        }
+      ]
+    },
+    {
+      "day": 19,
+      "title": {
+        "zh": "固定版本并制定真实部署验证",
+        "en": "Pin versions and plan real validation"
+      },
+      "lesson": {
+        "zh": "从教学模型迁移到真实llm-d需要先冻结基线。本课参考v1.0.0标签；标签之外还要记录实际commit、Chart版本、容器digest、模型revision和硬件网络。官方在线文档会更新，不能只写“latest”。",
+        "en": "Moving to real llm-d starts by freezing a baseline. This course references tag v1.0.0, supplemented by the resolved commit, chart versions, container digests, model revision, hardware and network. Online documentation can evolve; latest is not a reproducible specification."
+      },
+      "task": {
+        "zh": "填写真实环境清单；为模型不匹配、请求损坏、SLO退步各写一条停止条件。",
+        "en": "Fill the environment checklist and define stop conditions for model mismatch, request corruption and SLO regression."
+      },
+      "evidence": {
+        "zh": "out/baseline/day19.json与out/stress/day19.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day19.json and out/stress/day19.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "填写真实环境清单；为模型不匹配、请求损坏、SLO退步各写一条停止条件。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Fill the environment checklist and define stop conditions for model mismatch, request corruption and SLO regression.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://llm-d.ai/docs/getting-started/quickstart"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "从教学模型迁移到真实llm-d需要先冻结基线。本课参考v1.0.0标签；标签之外还要记录实际commit、Chart版本、容器digest、模型revision和硬件网络。官方在线文档会更新，不能只写“latest”。",
+            "en": "Moving to real llm-d starts by freezing a baseline. This course references tag v1.0.0, supplemented by the resolved commit, chart versions, container digests, model revision, hardware and network. Online documentation can evolve; latest is not a reproducible specification."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "今天只生成部署验证计划，没有安装或修改集群。可选联网步骤克隆固定标签并读取commit，之后按同版本官方quickstart在本人隔离环境实施。先建立单引擎正确基线，再一次只改变路由或TTL，预设失败与回滚条件。",
+            "en": "Today generates a validation plan without installing or changing a cluster. Optional network commands clone the tag and read its commit; actual deployment follows the corresponding official quickstart in an isolated environment. Establish a correct single-engine baseline before changing one routing or TTL variable and predefine rollback triggers."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "固定版本并制定真实部署验证：决策流程",
+          "en": "Pin versions and plan real validation: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "固定源码标签",
+            "en": "Pin source tag"
+          },
+          {
+            "zh": "记录依赖与模型",
+            "en": "Record dependencies/model"
+          },
+          {
+            "zh": "最小正确基线",
+            "en": "Correct minimal baseline"
+          },
+          {
+            "zh": "单变量验证",
+            "en": "One-variable validation"
+          },
+          {
+            "zh": "回滚与原始证据",
+            "en": "Rollback and raw evidence"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day19 --out out/baseline",
+          "expected": {
+            "zh": "tag=v1.0.0、deployment_executed=false；stress只改变计划中的实验变量。",
+            "en": "tag=v1.0.0 and deployment_executed=false; stress changes only the planned variable."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "填写真实环境清单；为模型不匹配、请求损坏、SLO退步各写一条停止条件。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Fill the environment checklist and define stop conditions for model mismatch, request corruption and SLO regression. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day19 --variant stress --out out/stress",
+          "expected": {
+            "zh": "tag=v1.0.0、deployment_executed=false；stress只改变计划中的实验变量。",
+            "en": "tag=v1.0.0 and deployment_executed=false; stress changes only the planned variable."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day19.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "在线文档命令与固定标签目录不同",
+            "en": "Live documentation commands differ from the pinned checkout"
+          },
+          "fix": {
+            "zh": "以固定版本仓库内容和对应发布说明核对；记录差异后调整计划，不混用main依赖。",
+            "en": "Reconcile against the pinned checkout and release notes, record differences, and avoid mixing main dependencies."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "写了v1.0.0标签是否就完整可复现？",
+            "en": "Is recording v1.0.0 alone sufficient for full reproduction?"
+          },
+          "options": [
+            {
+              "zh": "是，所有镜像都不会变",
+              "en": "Yes, no images ever change"
+            },
+            {
+              "zh": "是，硬件无影响",
+              "en": "Yes, hardware does not matter"
+            },
+            {
+              "zh": "不，还需依赖、模型与环境",
+              "en": "No, dependencies, model and environment are also needed"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "多组件系统的实际执行环境不是一个仓库标签就能描述。",
+            "en": "A multi-component runtime cannot be described by one repository tag."
+          }
+        },
+        {
+          "question": {
+            "zh": "生成plan.json可以标成真实部署成功吗？",
+            "en": "Does generating a plan establish a successful real deployment?"
+          },
+          "options": [
+            {
+              "zh": "能，有官方链接即可",
+              "en": "Yes, with official links"
+            },
+            {
+              "zh": "不能，必须有实际执行证据",
+              "en": "No, actual execution evidence is needed"
+            },
+            {
+              "zh": "能，JSON合法即可",
+              "en": "Yes, if JSON parses"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "计划描述未来动作，不能替代实际集群状态与请求日志。",
+            "en": "A plan describes intended actions and cannot replace cluster state or request logs."
+          }
+        }
+      ]
+    },
+    {
+      "day": 20,
+      "title": {
+        "zh": "交付可复查的推理控制面作品",
+        "en": "Deliver a reviewable control-plane portfolio"
+      },
+      "lesson": {
+        "zh": "结课作品需要让另一个人复查你的推理过程。day20独立重跑前19个基线与扰动算例，将两组输入结果放在一个JSON中，并生成带TODO的报告模板。程序完成只说明实验执行，不代表学习者完成解释。",
+        "en": "A capstone should let another person inspect your reasoning. Day20 independently reruns the nineteen baseline/stress pairs, stores their inputs/results in one JSON and creates a TODO report template. Execution alone does not complete the learner explanations."
+      },
+      "task": {
+        "zh": "提交代码差异、两组原始JSON、已补完报告和独立运行命令；通过学生挑战15个边界检查。",
+        "en": "Submit source diff, raw JSON pairs, a completed report and a clean reproduction command; pass the fifteen student challenge cases."
+      },
+      "evidence": {
+        "zh": "out/baseline/day20.json与out/stress/day20.json、本人手算预测、改动与边界解释。",
+        "en": "out/baseline/day20.json and out/stress/day20.json, plus your prediction, change and boundary explanation."
+      },
+      "checklist": {
+        "zh": [
+          "提交代码差异、两组原始JSON、已补完报告和独立运行命令；通过学生挑战15个边界检查。",
+          "核对输入、单位与预测，解释至少一个失败或反例",
+          "保留原始JSON，明确CPU模型与真实部署的差别"
+        ],
+        "en": [
+          "Submit source diff, raw JSON pairs, a completed report and a clean reproduction command; pass the fifteen student challenge cases.",
+          "Check inputs, units and predictions; explain a failure or counterexample",
+          "Keep raw JSON and distinguish the CPU model from actual deployment"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做路线只需Python 3.9+标准库。代码实际运行CPU决策模型，所有延迟、容量、成本为合成假设；不安装llm-d、不调用模型、不修改Kubernetes。真实框架扩展见实验README，未在本平台运行。",
+        "en": "Required work uses Python 3.9+ standard library. The CPU executes decision models; all latency, capacity and cost values are synthetic assumptions. It installs no llm-d, calls no model and changes no Kubernetes cluster. The lab README describes an unexecuted real-framework extension."
+      },
+      "reading": [
+        {
+          "title": "llm-d / Kubernetes / SRE · official reference",
+          "url": "https://github.com/llm-d/llm-d/releases/tag/v1.0.0"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "机制与因果关系",
+            "en": "Mechanism and causal reasoning"
+          },
+          "body": {
+            "zh": "结课作品需要让另一个人复查你的推理过程。day20独立重跑前19个基线与扰动算例，将两组输入结果放在一个JSON中，并生成带TODO的报告模板。程序完成只说明实验执行，不代表学习者完成解释。",
+            "en": "A capstone should let another person inspect your reasoning. Day20 independently reruns the nineteen baseline/stress pairs, stores their inputs/results in one JSON and creates a TODO report template. Execution alone does not complete the learner explanations."
+          }
+        },
+        {
+          "title": {
+            "zh": "算例、假设与边界",
+            "en": "Worked example, assumptions and limits"
+          },
+          "body": {
+            "zh": "选一个决策规则做自己的改动，先写预测，再在源码副本中修改并保留差异。用未调参的边界用例检验，报告负结果和适用范围。源码哈希帮助识别版本，却不能证明结论正确或已独立复现。",
+            "en": "Choose one rule to change, predict its effect, edit a source copy and retain the diff. Check untouched boundary cases and report regressions and limits. Source hashes identify content but do not prove correctness or independent reproduction."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "交付可复查的推理控制面作品：决策流程",
+          "en": "Deliver a reviewable control-plane portfolio: decision flow"
+        },
+        "nodes": [
+          {
+            "zh": "冻结问题与假设",
+            "en": "Freeze question/hypothesis"
+          },
+          {
+            "zh": "运行基线和改动",
+            "en": "Run baseline and change"
+          },
+          {
+            "zh": "独立边界检查",
+            "en": "Independent boundary checks"
+          },
+          {
+            "zh": "解释反例",
+            "en": "Explain counterexamples"
+          },
+          {
+            "zh": "交付证据与复现",
+            "en": "Deliver reproducible evidence"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头逐项写出输入、决定和输出。此图对应本日教学模型；真实系统的异步执行、重叠和错误路径需另行验证。",
+          "en": "Follow the arrows and label inputs, decisions and outputs. This diagram represents today’s teaching model; production asynchrony, overlap and failure paths require separate validation."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行独立基线",
+            "en": "Run the standalone baseline"
+          },
+          "body": {
+            "zh": "完整解压ZIP并进入含lab.py的llm-d目录。先用python3 --version确认3.9+；Windows可用py -3。每天可独立运行，同目录重复运行会覆盖生成记录。",
+            "en": "Extract the complete ZIP and enter llm-d containing lab.py. Check Python 3.9+ with python3 --version; Windows may use py -3. Every day runs independently; reusing a destination replaces its generated records."
+          },
+          "command": "python3 lab.py day20 --out out/baseline",
+          "expected": {
+            "zh": "day20.json含19组comparisons；REPORT.md仍有本人必须完成的TODO。",
+            "en": "day20.json contains nineteen comparisons; REPORT.md still has learner-owned TODO sections."
+          }
+        },
+        {
+          "title": {
+            "zh": "改变一个场景并比较",
+            "en": "Change the scenario and compare"
+          },
+          "body": {
+            "zh": "提交代码差异、两组原始JSON、已补完报告和独立运行命令；通过学生挑战15个边界检查。 使用单独目录保留基线；stress是代码中明确列出的扰动，并非真实压力测试。",
+            "en": "Submit source diff, raw JSON pairs, a completed report and a clean reproduction command; pass the fifteen student challenge cases. Keep baseline outputs in a separate directory. Stress is an explicit fixture variation, not a real load test."
+          },
+          "command": "python3 lab.py day20 --variant stress --out out/stress",
+          "expected": {
+            "zh": "day20.json含19组comparisons；REPORT.md仍有本人必须完成的TODO。",
+            "en": "day20.json contains nineteen comparisons; REPORT.md still has learner-owned TODO sections."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始字段",
+            "en": "Inspect raw fields"
+          },
+          "body": {
+            "zh": "逐字段核对evidence、framework_executed、source_sha256和result；不要只看退出码。",
+            "en": "Inspect evidence, framework_executed, source_sha256 and result; do not rely only on an exit code."
+          },
+          "command": "python3 -m json.tool out/baseline/day20.json",
+          "expected": {
+            "zh": "显示可读JSON及synthetic-control-plane-model证据类型；第20天还需手工补齐REPORT.md。",
+            "en": "Readable JSON identifies synthetic-control-plane-model evidence; on day20 also complete REPORT.md manually."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成学生代码挑战",
+            "en": "Complete the student coding challenge"
+          },
+          "body": {
+            "zh": "在exercises.py补齐三个TODO：端点选择、PD容量和升级容量。先读函数契约，再运行独立固定用例；未完成时NOT COMPLETE与退出1是预期行为。参考答案可用--reference检查，不能冒充自己的完成。",
+            "en": "Implement the three TODOs in exercises.py: endpoint selection, PD capacity and rollout capacity. Read contracts, then run independent fixed cases. Before completion, NOT COMPLETE and exit 1 are expected. --reference checks the reference solution and does not establish your own completion."
+          },
+          "command": "python3 check.py",
+          "expected": {
+            "zh": "完成三个函数后显示PASS: 15 fixed correctness cases；只验证声明用例，不是能力认证或GPU性能测试。",
+            "en": "After implementing all functions, PASS: 15 fixed correctness cases appears; this verifies stated cases, not certification or GPU performance."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把生成报告直接当成个人作品",
+            "en": "Submitting the generated template as a personal portfolio"
+          },
+          "fix": {
+            "zh": "补齐本人假设、代码差异、观察、反例和局限；保留真实框架未运行标记。",
+            "en": "Complete your hypothesis, diff, observations, counterexample and limits, preserving the unexecuted-framework label."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py，或对照结果覆盖了基线",
+            "en": "lab.py is missing, or comparison overwrites baseline"
+          },
+          "fix": {
+            "zh": "完整解压并进入llm-d目录；基线和扰动分别写out/baseline与out/stress。若改源码，先复制整个实验包并保留原始哈希。",
+            "en": "Extract fully and enter llm-d; use out/baseline and out/stress separately. Copy the complete package before editing source and preserve the original hash."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "哪种作品最有评审价值？",
+            "en": "Which portfolio is most reviewable?"
+          },
+          "options": [
+            {
+              "zh": "声称GPU提升但无环境",
+              "en": "GPU speedup claims without environment"
+            },
+            {
+              "zh": "代码差异、原始记录、反例与局限",
+              "en": "Code diff, raw records, counterexamples and limits"
+            },
+            {
+              "zh": "只有PASS截图",
+              "en": "Only a PASS screenshot"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "评审者需要知道你改了什么、为何成立以及何时不成立。",
+            "en": "Reviewers need to know what changed, why it works and where it fails."
+          }
+        },
+        {
+          "question": {
+            "zh": "哈希一致能证明性能结论正确吗？",
+            "en": "Does a matching hash prove a performance conclusion?"
+          },
+          "options": [
+            {
+              "zh": "不能，只证明对应内容一致",
+              "en": "No, it only establishes matching content"
+            },
+            {
+              "zh": "能，哈希就是认证",
+              "en": "Yes, a hash is certification"
+            },
+            {
+              "zh": "能，不需看实验方法",
+              "en": "Yes, methods need no review"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "内容完整性与科学正确性不同；复现仍需相同口径及独立解释。",
+            "en": "Content integrity differs from scientific validity; reproduction still needs aligned definitions and independent interpretation."
+          }
+        }
+      ]
+    }
+  ]
+}

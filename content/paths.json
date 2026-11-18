@@ -21,7 +21,10 @@
       "ray",
       "kubernetes",
       "triton",
-      "nccl"
+      "nccl",
+      "llm-d",
+      "moe-systems",
+      "post-training"
     ],
     "requiredCourses": [
       "foundations",
@@ -36,7 +39,10 @@
       "ray",
       "kubernetes",
       "triton",
-      "nccl"
+      "nccl",
+      "llm-d",
+      "moe-systems",
+      "post-training"
     ]
   },
   {
@@ -55,22 +61,28 @@
       "triton",
       "pytorch-distributed",
       "nccl",
+      "moe-systems",
       "rsi-infra",
       "vllm",
       "sglang",
-      "mooncake"
+      "mooncake",
+      "post-training",
+      "llm-d"
     ],
     "requiredCourses": [
       "foundations",
       "triton",
       "pytorch-distributed",
       "nccl",
+      "moe-systems",
       "rsi-infra"
     ],
     "electiveCourses": [
       "vllm",
       "sglang",
-      "mooncake"
+      "mooncake",
+      "post-training",
+      "llm-d"
     ]
   },
   {
@@ -88,27 +100,71 @@
       "foundations",
       "ray",
       "kubernetes",
-      "rsi-infra",
       "vllm",
+      "llm-d",
+      "rsi-infra",
       "sglang",
       "dynamo",
       "lmcache",
       "mooncake",
-      "nccl"
+      "nccl",
+      "post-training",
+      "moe-systems"
     ],
     "requiredCourses": [
       "foundations",
       "ray",
       "kubernetes",
+      "vllm",
+      "llm-d",
+      "rsi-infra"
+    ],
+    "electiveCourses": [
+      "sglang",
+      "dynamo",
+      "lmcache",
+      "mooncake",
+      "nccl",
+      "post-training",
+      "moe-systems"
+    ]
+  },
+  {
+    "id": "training-engineer",
+    "number": "04",
+    "title": {
+      "zh": "后训练与强化学习工程师",
+      "en": "Post-training & RL engineer"
+    },
+    "description": {
+      "zh": "连接训练、采样与评估，理解奖励、策略版本和资源调度，先做出可复现的最小训练闭环。",
+      "en": "Connect training, rollout and evaluation. Understand rewards, policy versions and resource scheduling through a reproducible minimal learning loop."
+    },
+    "requiredCourses": [
+      "foundations",
+      "pytorch-distributed",
+      "ray",
+      "post-training",
       "rsi-infra"
     ],
     "electiveCourses": [
       "vllm",
       "sglang",
-      "dynamo",
-      "lmcache",
-      "mooncake",
-      "nccl"
+      "nccl",
+      "moe-systems",
+      "kubernetes"
+    ],
+    "courses": [
+      "foundations",
+      "pytorch-distributed",
+      "ray",
+      "post-training",
+      "rsi-infra",
+      "vllm",
+      "sglang",
+      "nccl",
+      "moe-systems",
+      "kubernetes"
     ]
   }
 ]

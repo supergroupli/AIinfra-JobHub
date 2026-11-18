@@ -139,6 +139,9 @@ def validate_tracks(tracks):
         if "lab" in item:
             lab = item["lab"]
             require(isinstance(lab, dict) and lab.get("path") == ident and bilingual(lab.get("title")) and bilingual(lab.get("description")), f"{ident}: invalid lab package")
+        if "environment" in item:
+            environment = item["environment"]
+            require(isinstance(environment, dict) and all(bilingual(environment.get(key)) for key in ("reference", "minimum", "verified", "unverified")), f"{ident}: incomplete version and environment information")
         duration = item.get("durationDays", 10)
         require(type(duration) is int and duration in (10, 20), f"{ident}: durationDays must be 10 or 20")
         require(isinstance(item.get("steps"), list) and len(item["steps"]) == duration, f"{ident}: lesson count must match durationDays ({duration})")

@@ -42,7 +42,7 @@ Do not open `index.html` directly as a `file://` URL: the page fetches `data.jso
 | --- | --- |
 | `web/` | Static HTML, CSS, JavaScript and portfolio template |
 | `content/courses/*.json` | 10- and 20-day bilingual courses with primary-source reading |
-| `content/paths.json` | Three career-oriented course sequences |
+| `content/paths.json` | Four career-oriented course sequences |
 | `web/projects/` | Bilingual practice-project data and searchable project library |
 | `web/portfolio/` | Browser-local project portfolio editor and Markdown export |
 | `web/career/` | Seven-day preparation plans, three capstones and annotated teaching examples |
@@ -50,7 +50,7 @@ Do not open `index.html` directly as a `file://` URL: the page fetches `data.jso
 | `web/backup.js` | Validated local JSON backup/import for course records and portfolio drafts |
 | `web/labs/` | Downloadable CPU lab source, learner exercises and reference checks; ZIPs are built automatically |
 | `web/learning-widgets.js`, `web/engineering-models.js` | Browser quizzes, copy controls and explicit teaching simulations |
-| `scripts/teaching_models.py` | Bilingual model labels, assumptions, formulas and static fallback results |
+| `scripts/teaching_models.py`, `scripts/frontier_models.py` | Bilingual model labels, assumptions, formulas and static fallback results |
 | `content/jobs.json` | Reviewed opportunity records; starts empty |
 | `content/people.json` | Voluntary public portfolios; starts empty |
 | `content/reviews.json` | Consented public review requests with source, state and expiry; starts empty |

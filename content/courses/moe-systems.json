@@ -1,0 +1,4575 @@
+{
+  "id": "moe-systems",
+  "number": "15",
+  "durationDays": 20,
+  "category": "communication",
+  "level": "advanced",
+  "title": {
+    "zh": "MoE 系统工程：DeepEP 与 DeepGEMM",
+    "en": "MoE systems engineering: DeepEP and DeepGEMM"
+  },
+  "subtitle": {
+    "zh": "20天打通专家路由、计算、通信与作品验证",
+    "en": "20 days from expert routing to computation, communication and evidence"
+  },
+  "description": {
+    "zh": "从四个可手算的CPU专家出发，逐步理解dispatch/combine、专家负载、低精度误差、通信下界和真实测量。交付可运行的路由与聚合代码、20份实验记录和一份诚实的性能分析作品。",
+    "en": "Start with four hand-checkable CPU experts, then study dispatch/combine, load balance, quantization error, transfer bounds and measurements. Deliver routing/combine code, twenty experiment records and an honest analysis portfolio."
+  },
+  "hoursPerDay": {
+    "zh": "每天90–120分钟；GPU扩展另计",
+    "en": "90–120 minutes daily; GPU extensions take additional time"
+  },
+  "prerequisites": {
+    "zh": "Python列表/函数、矩阵乘法；建议先完成系统基础、Triton和NCCL课程",
+    "en": "Python lists/functions and matrix multiplication; foundations, Triton and NCCL recommended"
+  },
+  "hardware": {
+    "zh": "必做：普通CPU、Python 3.9+，无第三方依赖。可选GPU扩展需匹配固定上游commit的Linux、GPU、CUDA、PyTorch与通信环境，未做本平台GPU验证。",
+    "en": "Required: CPU and Python 3.9+, no third-party dependencies. Optional GPU work needs Linux, GPU, CUDA, PyTorch and communication dependencies matching pinned upstream commits; this platform has not validated GPU execution."
+  },
+  "hardwareTier": "cpu",
+  "tags": [
+    "MoE",
+    "DeepEP",
+    "DeepGEMM",
+    "Expert Parallelism",
+    "Performance"
+  ],
+  "roles": {
+    "zh": [
+      "GPU与分布式性能工程师",
+      "推理与服务工程师"
+    ],
+    "en": [
+      "GPU and distributed performance engineer",
+      "Inference and serving engineer"
+    ]
+  },
+  "outcome": {
+    "zh": "自己实现稳定top-k与加权combine，通过独立样例；提交专家布局受控对照、量化误差分析、CPU原始计时和可复查报告，不把模型成本当GPU结果。",
+    "en": "Implement stable top-k and weighted combine, pass independent cases, and submit controlled placement comparisons, quantization-error analysis, raw CPU samples and a reviewable report without presenting modeled costs as GPU measurements."
+  },
+  "lastVerified": "2026-11-18",
+  "environment": {
+    "reference": {
+      "zh": "2026-11-18查询：DeepEP f6aa38fe06cd4a0489e7730365d4e0114970a2f3；DeepGEMM 5081f8513af57e61696de4f4f04b0e707ffb503e。源码基线不等于GPU兼容性验证。",
+      "en": "Queried 2026-11-18: DeepEP f6aa38fe06cd4a0489e7730365d4e0114970a2f3; DeepGEMM 5081f8513af57e61696de4f4f04b0e707ffb503e. Source baselines do not establish GPU compatibility."
+    },
+    "minimum": {
+      "zh": "Python 3.9+标准库；普通CPU；完整实验ZIP。",
+      "en": "Python 3.9+ standard library, laptop CPU and complete lab ZIP."
+    },
+    "verified": {
+      "zh": "本地Python 3.9.6已运行20个日课、独立CPU正确性参照及参考练习检查；学生TODO保持待完成。",
+      "en": "All twenty daily commands, independent CPU correctness checks and reference exercises ran on local Python 3.9.6; student TODOs remain unfinished by design."
+    },
+    "unverified": {
+      "zh": "未运行DeepEP/DeepGEMM GPU内核、真实多rank通信、FP8/FP4算子或生产吞吐；第19天仅为迁移方案。",
+      "en": "No DeepEP/DeepGEMM GPU kernels, real multi-rank communication, FP8/FP4 operators or production throughput were executed; day19 is an extension plan."
+    }
+  },
+  "resources": [
+    {
+      "title": "DeepEP · pinned source baseline",
+      "url": "https://github.com/deepseek-ai/DeepEP/tree/f6aa38fe06cd4a0489e7730365d4e0114970a2f3"
+    },
+    {
+      "title": "DeepGEMM · pinned source baseline",
+      "url": "https://github.com/deepseek-ai/DeepGEMM/tree/5081f8513af57e61696de4f4f04b0e707ffb503e"
+    },
+    {
+      "title": "Python · perf_counter_ns",
+      "url": "https://docs.python.org/3/library/time.html#time.perf_counter_ns"
+    }
+  ],
+  "lab": {
+    "path": "moe-systems",
+    "title": {
+      "zh": "下载20天MoE系统实验包",
+      "en": "Download the 20-day MoE systems lab"
+    },
+    "description": {
+      "zh": "标准库CPU实验、学生函数练习、独立检查器、参考实现和固定版本GPU迁移方案。",
+      "en": "Standard-library CPU experiments, student functions, independent checks, reference solutions and a pinned GPU extension plan."
+    }
+  },
+  "steps": [
+    {
+      "day": 1,
+      "title": {
+        "zh": "先看懂 Token 到专家的路由",
+        "en": "Route tokens to experts"
+      },
+      "lesson": {
+        "zh": "稠密层让每个 Token 经过同一组参数；MoE 路由器从多个专家中选择少量专家。参数总量、每个 Token 激活的计算量与网络流量是三个不同的量。本课用四个线性专家研究数据路径，不模拟模型质量，也不是完整的门控 FFN。",
+        "en": "A dense layer applies the same parameters to every token. An MoE router selects a few experts. Total parameters, active computation per token and network traffic are different quantities. Four linear experts isolate the data path; they do not model quality or a complete gated FFN."
+      },
+      "task": {
+        "zh": "手算同分例与分数[2,1]的softmax。将top-k改为1，解释输出算子为何改变。",
+        "en": "Hand-calculate the tie case and softmax of [2,1]. Change top-k to 1 and explain why this changes the operator."
+      },
+      "evidence": {
+        "zh": "out/day01.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day01.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepEP · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepEP/tree/f6aa38fe06cd4a0489e7730365d4e0114970a2f3"
+        },
+        {
+          "title": "DeepGEMM · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepGEMM/tree/5081f8513af57e61696de4f4f04b0e707ffb503e"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "稠密层让每个 Token 经过同一组参数；MoE 路由器从多个专家中选择少量专家。参数总量、每个 Token 激活的计算量与网络流量是三个不同的量。本课用四个线性专家研究数据路径，不模拟模型质量，也不是完整的门控 FFN。",
+            "en": "A dense layer applies the same parameters to every token. An MoE router selects a few experts. Total parameters, active computation per token and network traffic are different quantities. Four linear experts isolate the data path; they do not model quality or a complete gated FFN."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "先按分数降序选 top-k，同分时用专家索引保证顺序稳定；随后只在选中专家内做 softmax 归一化。这个归一化是本实验的明确约定，并非所有生产路由器都相同。记录索引和权重，后续 combine 才能还原每个 Token 的加权输出。",
+            "en": "Select top-k by descending score, breaking ties by expert index, then normalize only the selected scores with softmax. This is a lab contract, not a universal router rule. Preserve indices and weights so combine can reconstruct each token’s weighted output."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "weights_sum 为1；同分例 [2,2,1,0] 的 top-2 为专家0与1，各0.5。默认不同分的两个权重约0.7311和0.2689。",
+            "en": "weights_sum is 1. Tied scores [2,2,1,0] select experts 0 and 1 with weight 0.5 each. Default unequal scores produce approximately 0.7311 and 0.2689."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "先看懂 Token 到专家的路由",
+          "en": "Route tokens to experts"
+        },
+        "nodes": [
+          {
+            "zh": "Token 与分数",
+            "en": "Tokens and scores"
+          },
+          {
+            "zh": "稳定 top-k",
+            "en": "Stable top-k"
+          },
+          {
+            "zh": "归一化权重",
+            "en": "Normalized weights"
+          },
+          {
+            "zh": "路由记录",
+            "en": "Route records"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day1 --out out",
+          "expected": {
+            "zh": "weights_sum 为1；同分例 [2,2,1,0] 的 top-2 为专家0与1，各0.5。默认不同分的两个权重约0.7311和0.2689。",
+            "en": "weights_sum is 1. Tied scores [2,2,1,0] select experts 0 and 1 with weight 0.5 each. Default unequal scores produce approximately 0.7311 and 0.2689."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day01.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "手算同分例与分数[2,1]的softmax。将top-k改为1，解释输出算子为何改变。",
+            "en": "Hand-calculate the tie case and softmax of [2,1]. Change top-k to 1 and explain why this changes the operator."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          },
+          "command": "python3 lab.py day1 --topk 1 --out out/changed-day01"
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "重复运行时同分专家顺序改变",
+            "en": "Tied expert order changes between runs"
+          },
+          "fix": {
+            "zh": "明确次级排序键为专家索引；不要让集合迭代或不稳定排序决定路由。",
+            "en": "Use expert index as the secondary key; do not rely on set iteration or an unstable sort."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "四个专家、top-k=2，是否每个Token都调用四个专家？",
+            "en": "With four experts and top-k=2, does every token invoke all four?"
+          },
+          "options": [
+            {
+              "zh": "是",
+              "en": "Yes"
+            },
+            {
+              "zh": "否，只调用所选两个",
+              "en": "No, only the selected two"
+            },
+            {
+              "zh": "只有训练时调用四个",
+              "en": "Only training invokes four"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "top-k决定激活专家数量；总参数数量不能直接当作每Token计算量。",
+            "en": "Top-k determines active experts; total parameters do not directly determine per-token work."
+          }
+        },
+        {
+          "question": {
+            "zh": "本实验为什么保存路由权重？",
+            "en": "Why does this lab preserve route weights?"
+          },
+          "options": [
+            {
+              "zh": "用于加权combine",
+              "en": "For weighted combine"
+            },
+            {
+              "zh": "为了改变Token ID",
+              "en": "To change token IDs"
+            },
+            {
+              "zh": "只用于画图",
+              "en": "Only for plotting"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "多个专家对同一Token的贡献需要按原权重求和，索引和权重都是正确性契约。",
+            "en": "Multiple expert contributions must be summed using their original weights; indices and weights are part of correctness."
+          }
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": {
+        "zh": "Dispatch：复制数据，保留身份",
+        "en": "Dispatch with identity preserved"
+      },
+      "lesson": {
+        "zh": "一个Token选中两个专家，就会产生两个专家工作项。Dispatch按照专家分桶；Token数仍是T，工作项数是T×k。把这两者混淆会造成容量估计错误，或者错误地把重复Token当成重复请求删除。",
+        "en": "A token selecting two experts creates two expert assignments. Dispatch groups assignments by expert. Token count remains T while assignment count is T×k. Confusing them corrupts capacity estimates or incorrectly deduplicates valid work."
+      },
+      "task": {
+        "zh": "把tokens改为8并手算16个工作项；指出哪个字段用于回到原序列。",
+        "en": "Set tokens to 8 and predict 16 assignments; identify the field that restores original sequence order."
+      },
+      "evidence": {
+        "zh": "out/day02.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day02.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepEP · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepEP/tree/f6aa38fe06cd4a0489e7730365d4e0114970a2f3"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "一个Token选中两个专家，就会产生两个专家工作项。Dispatch按照专家分桶；Token数仍是T，工作项数是T×k。把这两者混淆会造成容量估计错误，或者错误地把重复Token当成重复请求删除。",
+            "en": "A token selecting two experts creates two expert assignments. Dispatch groups assignments by expert. Token count remains T while assignment count is T×k. Confusing them corrupts capacity estimates or incorrectly deduplicates valid work."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "每个工作项保存原Token ID、权重与输入向量。专家桶中的顺序可以变化，身份却不能丢失。守恒检查包含总工作项数、Token覆盖与每个Token的专家集合；单看行数不能证明路由正确。",
+            "en": "Each assignment carries token ID, weight and input vector. Bucket order may change but identity must survive. Conservation checks include assignment count, token coverage and per-token expert sets; a row count alone does not prove routing correctness."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "默认assignments=32、expected=32、unique_tokens=16。读取buckets中的token和weight，追踪Token0的两个目的地。",
+            "en": "Defaults give assignments=32, expected=32 and unique_tokens=16. Follow token 0 to two destinations using token and weight in buckets."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "Dispatch：复制数据，保留身份",
+          "en": "Dispatch with identity preserved"
+        },
+        "nodes": [
+          {
+            "zh": "T个Token",
+            "en": "T tokens"
+          },
+          {
+            "zh": "T×k工作项",
+            "en": "T×k assignments"
+          },
+          {
+            "zh": "按专家分桶",
+            "en": "Expert buckets"
+          },
+          {
+            "zh": "核对身份与数量",
+            "en": "Check identity and counts"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day2 --out out",
+          "expected": {
+            "zh": "默认assignments=32、expected=32、unique_tokens=16。读取buckets中的token和weight，追踪Token0的两个目的地。",
+            "en": "Defaults give assignments=32, expected=32 and unique_tokens=16. Follow token 0 to two destinations using token and weight in buckets."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day02.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "把tokens改为8并手算16个工作项；指出哪个字段用于回到原序列。",
+            "en": "Set tokens to 8 and predict 16 assignments; identify the field that restores original sequence order."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          },
+          "command": "python3 lab.py day2 --tokens 8 --out out/changed-day02"
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "工作项数量翻倍，被误认为输入重复",
+            "en": "Doubled assignment count is mistaken for duplicated input"
+          },
+          "fix": {
+            "zh": "以Token ID区分输入与专家工作项；top-k=2的复制属于预期数据流。",
+            "en": "Distinguish tokens from assignments by token ID; duplication for top-k=2 is intentional."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "16个Token、top-k=2产生多少专家工作项？",
+            "en": "How many assignments do 16 tokens with top-k=2 create?"
+          },
+          "options": [
+            {
+              "zh": "16",
+              "en": "16"
+            },
+            {
+              "zh": "32",
+              "en": "32"
+            },
+            {
+              "zh": "64",
+              "en": "64"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "每个Token产生两个工作项，因此16×2=32。",
+            "en": "Each token creates two assignments, so 16×2=32."
+          }
+        },
+        {
+          "question": {
+            "zh": "分桶后最关键的身份信息是什么？",
+            "en": "Which identity must survive bucketing?"
+          },
+          "options": [
+            {
+              "zh": "桶中的行号",
+              "en": "Row number inside bucket"
+            },
+            {
+              "zh": "原Token ID",
+              "en": "Original token ID"
+            },
+            {
+              "zh": "总专家数",
+              "en": "Total expert count"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "桶内行号不等于原序列位置；combine必须用原Token ID回填。",
+            "en": "A bucket row index is not a sequence position; combine needs the original token ID."
+          }
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": {
+        "zh": "专家计算：从小矩阵理解 GEMM",
+        "en": "Understand expert GEMM with small matrices"
+      },
+      "lesson": {
+        "zh": "本实验专家接收长度4的向量：对角权重为专家ID+1，其他位置为0.125。四个专家执行相同形状但不同参数的线性变换。真实MoE常包含更多线性层、激活与门控；先把这一层算对，再讨论优化。",
+        "en": "Each lab expert receives a width-4 vector. Diagonal weights equal expert ID+1 and off-diagonal weights equal 0.125. Experts share shapes but not parameters. Real MoEs often include more projections, activations and gates; establish this layer’s correctness first."
+      },
+      "task": {
+        "zh": "保持输入不变，比较专家0与3；解释参数变化与数据布局变化的区别。",
+        "en": "Keep the input fixed and compare experts 0 and 3; distinguish parameter changes from layout changes."
+      },
+      "evidence": {
+        "zh": "out/day03.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day03.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepGEMM · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepGEMM/tree/5081f8513af57e61696de4f4f04b0e707ffb503e"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "本实验专家接收长度4的向量：对角权重为专家ID+1，其他位置为0.125。四个专家执行相同形状但不同参数的线性变换。真实MoE常包含更多线性层、激活与门控；先把这一层算对，再讨论优化。",
+            "en": "Each lab expert receives a width-4 vector. Diagonal weights equal expert ID+1 and off-diagonal weights equal 0.125. Experts share shapes but not parameters. Real MoEs often include more projections, activations and gates; establish this layer’s correctness first."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "对于M×H乘H×N的矩阵乘法，常用运算量约为2MHN，乘与加各计一次。它是工作量约定，不是Python实际执行的机器指令数。批量把同一专家的Token合并成矩阵，才能讨论分组GEMM和不同M带来的效率变化。",
+            "en": "For M×H times H×N, a conventional work count is approximately 2MHN FLOPs, counting multiply and add separately. This is not a Python instruction count. Grouping tokens for one expert makes M explicit and prepares us to analyze grouped GEMM efficiency."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "输出包含首个输入向量和四组专家输出；linear_flops_per_expert_row=32。手算专家0的第一个输出分量。",
+            "en": "The output contains the first vector and four expert outputs; linear_flops_per_expert_row=32. Hand-calculate expert 0’s first output component."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "专家计算：从小矩阵理解 GEMM",
+          "en": "Understand expert GEMM with small matrices"
+        },
+        "nodes": [
+          {
+            "zh": "专家桶 M×H",
+            "en": "Expert bucket M×H"
+          },
+          {
+            "zh": "专家权重 H×N",
+            "en": "Expert weights H×N"
+          },
+          {
+            "zh": "线性变换",
+            "en": "Linear transform"
+          },
+          {
+            "zh": "专家输出 M×N",
+            "en": "Expert output M×N"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day3 --out out",
+          "expected": {
+            "zh": "输出包含首个输入向量和四组专家输出；linear_flops_per_expert_row=32。手算专家0的第一个输出分量。",
+            "en": "The output contains the first vector and four expert outputs; linear_flops_per_expert_row=32. Hand-calculate expert 0’s first output component."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day03.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "保持输入不变，比较专家0与3；解释参数变化与数据布局变化的区别。",
+            "en": "Keep the input fixed and compare experts 0 and 3; distinguish parameter changes from layout changes."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把专家编号当作Token编号，结果随桶顺序改变",
+            "en": "Using expert IDs as token IDs changes results with bucket order"
+          },
+          "fix": {
+            "zh": "专家编号只选择权重；Token编号决定输出归属，两者不可复用。",
+            "en": "Expert ID selects weights; token ID determines output ownership. Keep the two separate."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "M=8、H=N=4时近似FLOPs是多少？",
+            "en": "What is the approximate FLOP count for M=8 and H=N=4?"
+          },
+          "options": [
+            {
+              "zh": "64",
+              "en": "64"
+            },
+            {
+              "zh": "128",
+              "en": "128"
+            },
+            {
+              "zh": "256",
+              "en": "256"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "2×8×4×4=256，按每次乘加计两次运算。",
+            "en": "2×8×4×4=256 under the two-FLOP multiply-add convention."
+          }
+        },
+        {
+          "question": {
+            "zh": "本实验线性专家等价于完整生产MoE吗？",
+            "en": "Is this linear expert equivalent to a full production MoE?"
+          },
+          "options": [
+            {
+              "zh": "等价",
+              "en": "Yes"
+            },
+            {
+              "zh": "不等价，省略门控等结构",
+              "en": "No, gates and other structure are omitted"
+            },
+            {
+              "zh": "只要输出维度相同就等价",
+              "en": "Yes if dimensions match"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "相同形状不代表相同算子或模型质量，实验仅验证数据流。",
+            "en": "Matching shape does not establish operator or quality equivalence; the lab validates data flow."
+          }
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": {
+        "zh": "Combine：加权还原原序列",
+        "en": "Combine weighted outputs into token order"
+      },
+      "lesson": {
+        "zh": "Combine不是把专家输出简单拼起来，而是按原Token ID把多个贡献加权相加。一个Token可能在多个桶里出现，累加而不是覆盖是关键。这里输出维度固定为输入Token数×4。",
+        "en": "Combine is not concatenation. It accumulates weighted contributions by original token ID. A token appears in multiple buckets, so accumulation rather than overwrite is essential. The output shape is token count×4."
+      },
+      "task": {
+        "zh": "改变seed生成另一组输入，验证仍满足误差阈值，并手算一个Token的两个贡献。",
+        "en": "Change seed for new inputs, check the same tolerance and calculate both contributions to one token by hand."
+      },
+      "evidence": {
+        "zh": "out/day04.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day04.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepEP · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepEP/tree/f6aa38fe06cd4a0489e7730365d4e0114970a2f3"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "Combine不是把专家输出简单拼起来，而是按原Token ID把多个贡献加权相加。一个Token可能在多个桶里出现，累加而不是覆盖是关键。这里输出维度固定为输入Token数×4。",
+            "en": "Combine is not concatenation. It accumulates weighted contributions by original token ID. A token appears in multiple buckets, so accumulation rather than overwrite is essential. The output shape is token count×4."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "正确性参照采用独立的Token优先直接公式，不调用dispatch或expert函数。两条路径实现方式不同，能发现桶编号、权重使用和回填位置的错误；仍需边界输入，才能避免共享错误被同样掩盖。",
+            "en": "The oracle uses a token-major direct expression without calling dispatch or expert. Its different structure can expose bucket IDs, weighting and scatter errors. Boundary cases are still needed to avoid common mistakes hidden in both implementations."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "max_abs_error通常在浮点舍入量级，必须小于1e-12；output和reference逐行可比较。",
+            "en": "max_abs_error is normally rounding-scale and must be below 1e-12; compare output and reference row by row."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "Combine：加权还原原序列",
+          "en": "Combine weighted outputs into token order"
+        },
+        "nodes": [
+          {
+            "zh": "专家结果",
+            "en": "Expert results"
+          },
+          {
+            "zh": "原ID与权重",
+            "en": "Original IDs and weights"
+          },
+          {
+            "zh": "按Token累加",
+            "en": "Accumulate by token"
+          },
+          {
+            "zh": "独立参照比较",
+            "en": "Compare independent oracle"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day4 --out out",
+          "expected": {
+            "zh": "max_abs_error通常在浮点舍入量级，必须小于1e-12；output和reference逐行可比较。",
+            "en": "max_abs_error is normally rounding-scale and must be below 1e-12; compare output and reference row by row."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day04.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "改变seed生成另一组输入，验证仍满足误差阈值，并手算一个Token的两个贡献。",
+            "en": "Change seed for new inputs, check the same tolerance and calculate both contributions to one token by hand."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          },
+          "command": "python3 lab.py day4 --seed 11 --out out/changed-day04"
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "只保留最后一个专家的输出",
+            "en": "Only the last expert contribution remains"
+          },
+          "fix": {
+            "zh": "将覆盖赋值改为累加；检查权重是否恰好应用一次。",
+            "en": "Accumulate instead of overwrite; verify each weight is applied exactly once."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "两个贡献为0.25×4和0.75×8，合并值是多少？",
+            "en": "What is 0.25×4 + 0.75×8?"
+          },
+          "options": [
+            {
+              "zh": "6",
+              "en": "6"
+            },
+            {
+              "zh": "7",
+              "en": "7"
+            },
+            {
+              "zh": "12",
+              "en": "12"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "1+6=7；不能简单平均，也不能忽略路由权重。",
+            "en": "1+6=7; neither an unweighted average nor an unweighted sum is correct."
+          }
+        },
+        {
+          "question": {
+            "zh": "为什么参照不复用dispatch实现？",
+            "en": "Why does the oracle avoid reusing dispatch?"
+          },
+          "options": [
+            {
+              "zh": "减少共享错误",
+              "en": "To reduce shared mistakes"
+            },
+            {
+              "zh": "使代码更长",
+              "en": "To make code longer"
+            },
+            {
+              "zh": "提高GPU性能",
+              "en": "To improve GPU performance"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "共享同一错误路径会导致两个输出一起错却相等。",
+            "en": "Reusing the faulty path can produce two equally wrong outputs."
+          }
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": {
+        "zh": "故障注入：数量正确仍可能算错",
+        "en": "Inject a permutation bug"
+      },
+      "lesson": {
+        "zh": "将每个工作项的Token ID循环偏移一位，行数、专家负载与计算次数全部保持不变。但输出被放入错误位置。这个反例说明性能指标与计数不构成正确性证明。",
+        "en": "Shift each assignment’s token ID by one. Row count, expert load and work remain unchanged, but outputs go to the wrong positions. Performance metrics and counters therefore cannot establish correctness."
+      },
+      "task": {
+        "zh": "把tokens改为2观察最小反例；写出为什么只断言行数会漏报。",
+        "en": "Use two tokens as a small counterexample and explain why checking only row counts misses the fault."
+      },
+      "evidence": {
+        "zh": "out/day05.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day05.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepEP · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepEP/tree/f6aa38fe06cd4a0489e7730365d4e0114970a2f3"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "将每个工作项的Token ID循环偏移一位，行数、专家负载与计算次数全部保持不变。但输出被放入错误位置。这个反例说明性能指标与计数不构成正确性证明。",
+            "en": "Shift each assignment’s token ID by one. Row count, expert load and work remain unchanged, but outputs go to the wrong positions. Performance metrics and counters therefore cannot establish correctness."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "先确定要保持的语义，再设计会破坏该语义的故障。本日只改回填ID，固定输入与专家权重，因此错误可归因于排列。若同时改seed、权重和路由，就无法判断哪项导致偏差。",
+            "en": "Define the semantics before injecting a violation. Today only scatter IDs change while inputs and expert weights remain fixed, isolating permutation as the cause. Changing seed, weights and routing together would confound the diagnosis."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "assignment_count_unchanged为true，而permuted_token_error明显大于correct_error。",
+            "en": "assignment_count_unchanged is true, while permuted_token_error substantially exceeds correct_error."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "故障注入：数量正确仍可能算错",
+          "en": "Inject a permutation bug"
+        },
+        "nodes": [
+          {
+            "zh": "正确工作项",
+            "en": "Correct assignments"
+          },
+          {
+            "zh": "只偏移Token ID",
+            "en": "Shift token ID only"
+          },
+          {
+            "zh": "错误回填",
+            "en": "Wrong scatter"
+          },
+          {
+            "zh": "oracle发现偏差",
+            "en": "Oracle detects mismatch"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day5 --out out",
+          "expected": {
+            "zh": "assignment_count_unchanged为true，而permuted_token_error明显大于correct_error。",
+            "en": "assignment_count_unchanged is true, while permuted_token_error substantially exceeds correct_error."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day05.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "把tokens改为2观察最小反例；写出为什么只断言行数会漏报。",
+            "en": "Use two tokens as a small counterexample and explain why checking only row counts misses the fault."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          },
+          "command": "python3 lab.py day5 --tokens 2 --out out/changed-day05"
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "行数自检通过，于是忽略输出差异",
+            "en": "Passing row-count checks hides output mismatches"
+          },
+          "fix": {
+            "zh": "把独立oracle误差作为强制门槛；计数检查只作为附加不变量。",
+            "en": "Make the oracle error a mandatory gate and use counters as additional invariants."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "行数守恒能证明combine正确吗？",
+            "en": "Does row conservation prove combine correctness?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能，还需检查映射和数值",
+              "en": "No, mappings and values also matter"
+            },
+            {
+              "zh": "只要GPU足够快就能",
+              "en": "Yes if the GPU is fast"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "错误排列可保持数量不变，却改变每个Token的结果。",
+            "en": "A wrong permutation preserves counts while changing per-token results."
+          }
+        },
+        {
+          "question": {
+            "zh": "定位排列错误时应先固定什么？",
+            "en": "What should stay fixed when diagnosing permutation errors?"
+          },
+          "options": [
+            {
+              "zh": "输入和权重",
+              "en": "Inputs and weights"
+            },
+            {
+              "zh": "错误数量",
+              "en": "Number of errors"
+            },
+            {
+              "zh": "报错文本",
+              "en": "Error text"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "固定输入与权重可把结果差异归因于唯一的排列改动。",
+            "en": "Holding inputs and weights fixed isolates the permutation change."
+          }
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": {
+        "zh": "专家热点：平均值掩盖了什么",
+        "en": "Expose hot experts"
+      },
+      "lesson": {
+        "zh": "同步阶段常被最忙的专家拖慢。四个专家总共处理32个工作项，平均8不代表每个都处理8。使用最大值/平均值描述不均衡，同时保留完整直方图以区分一个热点与多个热点。",
+        "en": "A synchronous phase can wait for its busiest expert. Thirty-two assignments over four experts average eight, but individual counts may differ. Report max/mean plus the complete histogram to distinguish one hot expert from several."
+      },
+      "task": {
+        "zh": "在交互图调热点份额；对照整数实验，说明分数近似与真实计数的区别。",
+        "en": "Adjust hot share in the interactive model and compare its fractional approximation with integer lab counts."
+      },
+      "evidence": {
+        "zh": "out/day06.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day06.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepEP · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepEP/tree/f6aa38fe06cd4a0489e7730365d4e0114970a2f3"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "同步阶段常被最忙的专家拖慢。四个专家总共处理32个工作项，平均8不代表每个都处理8。使用最大值/平均值描述不均衡，同时保留完整直方图以区分一个热点与多个热点。",
+            "en": "A synchronous phase can wait for its busiest expert. Thirty-two assignments over four experts average eight, but individual counts may differ. Report max/mean plus the complete histogram to distinguish one hot expert from several."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "实验保持Token数、top-k和专家数，另构造所有Token都优先选择专家0的热点路由。路由变化会改变模型算子，所以这个对照用于分析负载，不用于宣称相同模型质量下的无损加速。",
+            "en": "The lab keeps token count, top-k and expert count fixed, then makes every token prefer expert 0. Changing routing changes the operator. This comparison studies load, not lossless acceleration at equal model quality."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "hot_load中专家0接收16项，hot_max_to_mean=2；对照baseline_load，保留完整分布。",
+            "en": "Expert 0 receives 16 hot assignments and hot_max_to_mean=2. Compare with baseline_load and retain the full histogram."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "专家热点：平均值掩盖了什么",
+          "en": "Expose hot experts"
+        },
+        "nodes": [
+          {
+            "zh": "固定工作项总数",
+            "en": "Fixed assignment count"
+          },
+          {
+            "zh": "专家直方图",
+            "en": "Expert histogram"
+          },
+          {
+            "zh": "最大/平均",
+            "en": "Maximum/mean"
+          },
+          {
+            "zh": "定位热点",
+            "en": "Locate hot experts"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day6 --out out",
+          "expected": {
+            "zh": "hot_load中专家0接收16项，hot_max_to_mean=2；对照baseline_load，保留完整分布。",
+            "en": "Expert 0 receives 16 hot assignments and hot_max_to_mean=2. Compare with baseline_load and retain the full histogram."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day06.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "在交互图调热点份额；对照整数实验，说明分数近似与真实计数的区别。",
+            "en": "Adjust hot share in the interactive model and compare its fractional approximation with integer lab counts."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "只写平均负载，漏掉同步等待",
+            "en": "Only mean load is reported, hiding synchronization waits"
+          },
+          "fix": {
+            "zh": "同时报告最大值、平均值、直方图和Token总数，避免跨工作负载比较。",
+            "en": "Report maximum, mean, histogram and token count together; avoid mixing workloads."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "负载[16,6,5,5]的最大/平均比是多少？",
+            "en": "What is max/mean for [16,6,5,5]?"
+          },
+          "options": [
+            {
+              "zh": "1",
+              "en": "1"
+            },
+            {
+              "zh": "2",
+              "en": "2"
+            },
+            {
+              "zh": "4",
+              "en": "4"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "总量32，平均8，16/8=2。",
+            "en": "The total is 32, the mean is 8, and 16/8=2."
+          }
+        },
+        {
+          "question": {
+            "zh": "改变路由让负载均匀，是否证明质量不变？",
+            "en": "Does balancing load by changing routing prove unchanged quality?"
+          },
+          "options": [
+            {
+              "zh": "是",
+              "en": "Yes"
+            },
+            {
+              "zh": "否，需要模型质量评估",
+              "en": "No, model-quality evaluation is needed"
+            },
+            {
+              "zh": "只需行数相同",
+              "en": "Equal row counts suffice"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "路由决定使用哪些参数；负载改善不自动保留模型语义。",
+            "en": "Routing selects parameters; better balance does not automatically preserve semantics."
+          }
+        }
+      ],
+      "interactive": "moe-balance"
+    },
+    {
+      "day": 7,
+      "title": {
+        "zh": "容量与丢弃：优化必须先讲语义",
+        "en": "Capacity and dropped assignments"
+      },
+      "lesson": {
+        "zh": "教学容量按ceil(capacity_factor×T×k/E)计算，截断每个专家桶。它使缓冲需求有上界，但超过容量的贡献消失。本实验不对剩余权重重新归一化，也不添加回退专家，必须把这种语义写清楚。",
+        "en": "Teaching capacity is ceil(capacity_factor×T×k/E), applied by truncating expert buckets. This bounds storage but removes overflow contributions. The lab neither renormalizes remaining weights nor adds a fallback expert; state this semantic choice explicitly."
+      },
+      "task": {
+        "zh": "运行热点对照，再把capacity-factor改为2，核对丢弃消失与输出恢复。",
+        "en": "Run the hot case, then increase capacity-factor to 2 and check that dropping disappears and outputs recover."
+      },
+      "evidence": {
+        "zh": "out/day07.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day07.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepEP · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepEP/tree/f6aa38fe06cd4a0489e7730365d4e0114970a2f3"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "教学容量按ceil(capacity_factor×T×k/E)计算，截断每个专家桶。它使缓冲需求有上界，但超过容量的贡献消失。本实验不对剩余权重重新归一化，也不添加回退专家，必须把这种语义写清楚。",
+            "en": "Teaching capacity is ceil(capacity_factor×T×k/E), applied by truncating expert buckets. This bounds storage but removes overflow contributions. The lab neither renormalizes remaining weights nor adds a fallback expert; state this semantic choice explicitly."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "生产系统可以采用不同的容量或无丢弃策略。是否允许丢弃属于模型与系统共同的契约，不能为了让速度变好静默截断。这里用原始无丢弃输出作参照，将资源节省与数值变化同时展示。",
+            "en": "Production systems may use other capacity policies or dropless execution. Dropping is a model-system contract, not a silent speed optimization. Comparing against the original dropless output exposes both resource savings and numerical changes."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "默认capacity=10；用--skew 1时专家0负载16，至少丢弃6项，error_after_drop大于0。",
+            "en": "Default capacity is 10. With --skew 1, expert 0 has 16 assignments, at least six are dropped and error_after_drop is positive."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "容量与丢弃：优化必须先讲语义",
+          "en": "Capacity and dropped assignments"
+        },
+        "nodes": [
+          {
+            "zh": "路由工作项",
+            "en": "Routed assignments"
+          },
+          {
+            "zh": "容量阈值",
+            "en": "Capacity limit"
+          },
+          {
+            "zh": "保留与丢弃",
+            "en": "Keep or drop"
+          },
+          {
+            "zh": "检查输出偏差",
+            "en": "Check output error"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day7 --out out",
+          "expected": {
+            "zh": "默认capacity=10；用--skew 1时专家0负载16，至少丢弃6项，error_after_drop大于0。",
+            "en": "Default capacity is 10. With --skew 1, expert 0 has 16 assignments, at least six are dropped and error_after_drop is positive."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day07.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "运行热点对照，再把capacity-factor改为2，核对丢弃消失与输出恢复。",
+            "en": "Run the hot case, then increase capacity-factor to 2 and check that dropping disappears and outputs recover."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          },
+          "command": "python3 lab.py day7 --skew 1 --out out/changed-day07"
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "丢弃之后仍宣称与原模型完全相同",
+            "en": "Dropped assignments are presented as equivalent to the original model"
+          },
+          "fix": {
+            "zh": "报告dropped_assignments和误差；若改变归一化或回退策略，需要重新定义参照。",
+            "en": "Report dropped assignments and error; changing normalization or fallback requires a new reference contract."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "T=16、k=2、E=4、factor=1.25时容量是多少？",
+            "en": "What is capacity for T=16, k=2, E=4, factor=1.25?"
+          },
+          "options": [
+            {
+              "zh": "8",
+              "en": "8"
+            },
+            {
+              "zh": "10",
+              "en": "10"
+            },
+            {
+              "zh": "16",
+              "en": "16"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "ceil(1.25×16×2/4)=10。",
+            "en": "ceil(1.25×16×2/4)=10."
+          }
+        },
+        {
+          "question": {
+            "zh": "无损优化的首要验收是什么？",
+            "en": "What is the first gate for a claimed lossless optimization?"
+          },
+          "options": [
+            {
+              "zh": "更低延迟",
+              "en": "Lower latency"
+            },
+            {
+              "zh": "保持约定语义",
+              "en": "Preserved declared semantics"
+            },
+            {
+              "zh": "更小日志",
+              "en": "Smaller logs"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "先验证语义，才能在同一任务上比较性能。",
+            "en": "Preserve semantics before comparing performance on the same task."
+          }
+        }
+      ]
+    },
+    {
+      "day": 8,
+      "title": {
+        "zh": "分组 GEMM 与 Padding 浪费",
+        "en": "Grouped GEMM and padding overhead"
+      },
+      "lesson": {
+        "zh": "同一专家的Token构成一个M维度可变的矩阵。分组GEMM可以把多个专家的小矩阵交给同一次调度处理，但仍有布局与对齐要求。教学实验按8行对齐，明确这不是上游库通用的tile大小。",
+        "en": "Each expert receives a matrix with a variable M dimension. Grouped GEMM schedules several small expert matrices together, but layout and alignment requirements remain. The lab aligns to eight rows as a teaching choice, not a universal upstream tile size."
+      },
+      "task": {
+        "zh": "把tokens改为2，再与默认16比较padding比例，解释不能用补齐行数报告有效吞吐。",
+        "en": "Compare two tokens with the default sixteen and explain why padded rows cannot count as useful throughput."
+      },
+      "evidence": {
+        "zh": "out/day08.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day08.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepGEMM · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepGEMM/tree/5081f8513af57e61696de4f4f04b0e707ffb503e"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "同一专家的Token构成一个M维度可变的矩阵。分组GEMM可以把多个专家的小矩阵交给同一次调度处理，但仍有布局与对齐要求。教学实验按8行对齐，明确这不是上游库通用的tile大小。",
+            "en": "Each expert receives a matrix with a variable M dimension. Grouped GEMM schedules several small expert matrices together, but layout and alignment requirements remain. The lab aligns to eight rows as a teaching choice, not a universal upstream tile size."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "补齐行不应参与真实输出，也不应被算进有效Token吞吐。用有效行数/补齐后行数观察浪费。小批量和不均衡负载容易放大padding比例，真实是否更快还取决于launch、kernel实现和硬件。",
+            "en": "Padded rows must not enter real outputs or useful-token throughput. Track useful rows divided by padded rows. Small batches and uneven loads can amplify waste; actual speed also depends on launches, kernels and hardware."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "real_rows和padded_rows逐专家对照；padding_rows为两者总数差，useful_fraction不大于1。",
+            "en": "Compare real_rows and padded_rows per expert; padding_rows is the total difference and useful_fraction is at most 1."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "分组 GEMM 与 Padding 浪费",
+          "en": "Grouped GEMM and padding overhead"
+        },
+        "nodes": [
+          {
+            "zh": "各专家M",
+            "en": "Per-expert M"
+          },
+          {
+            "zh": "按tile补齐",
+            "en": "Tile padding"
+          },
+          {
+            "zh": "有效行掩码",
+            "en": "Valid-row mask"
+          },
+          {
+            "zh": "有效工作比例",
+            "en": "Useful-work fraction"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day8 --out out",
+          "expected": {
+            "zh": "real_rows和padded_rows逐专家对照；padding_rows为两者总数差，useful_fraction不大于1。",
+            "en": "Compare real_rows and padded_rows per expert; padding_rows is the total difference and useful_fraction is at most 1."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day08.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "把tokens改为2，再与默认16比较padding比例，解释不能用补齐行数报告有效吞吐。",
+            "en": "Compare two tokens with the default sixteen and explain why padded rows cannot count as useful throughput."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          },
+          "command": "python3 lab.py day8 --tokens 2 --out out/changed-day08"
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "补齐的行也回填到了Token0",
+            "en": "Padded rows are scattered into token 0"
+          },
+          "fix": {
+            "zh": "必须携带有效行掩码和真实Token映射，空行不应产生贡献。",
+            "en": "Carry a valid-row mask and real token mapping; padding must not contribute."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "3行按8行对齐，需要补几行？",
+            "en": "How many padding rows are needed to align 3 rows to 8?"
+          },
+          "options": [
+            {
+              "zh": "3",
+              "en": "3"
+            },
+            {
+              "zh": "5",
+              "en": "5"
+            },
+            {
+              "zh": "8",
+              "en": "8"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "8-3=5，有效比例为3/8。",
+            "en": "8-3=5 and useful fraction is 3/8."
+          }
+        },
+        {
+          "question": {
+            "zh": "分组GEMM一定消除所有padding吗？",
+            "en": "Does grouped GEMM always remove all padding?"
+          },
+          "options": [
+            {
+              "zh": "一定",
+              "en": "Always"
+            },
+            {
+              "zh": "不一定，仍受布局约束",
+              "en": "No, layout constraints remain"
+            },
+            {
+              "zh": "只要专家多就一定",
+              "en": "Always with many experts"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "分组调度与布局对齐是不同问题，需检查具体版本接口。",
+            "en": "Grouped scheduling and alignment are separate concerns; inspect the pinned interface."
+          }
+        }
+      ]
+    },
+    {
+      "day": 9,
+      "title": {
+        "zh": "低精度第一步：缩放与舍入",
+        "en": "Quantization: scale and rounding"
+      },
+      "lesson": {
+        "zh": "用对称INT8模型理解量化：scale=max(abs(x))/127，整数值round(x/scale)，反量化乘回scale。全零向量采用scale=1避免除零。这里是整数教学量化，不能将结果或误差等同于FP8。",
+        "en": "Use symmetric INT8 to understand quantization: scale=max(abs(x))/127, integer=round(x/scale), then multiply by scale to reconstruct. Zero vectors use scale=1 to avoid division by zero. This integer model is not FP8."
+      },
+      "task": {
+        "zh": "用quantize函数手工测试[0,1,100]，解释大值如何影响1的相对误差。",
+        "en": "Use quantize on [0,1,100] and explain how the outlier affects relative error near 1."
+      },
+      "evidence": {
+        "zh": "out/day09.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day09.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepGEMM · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepGEMM/tree/5081f8513af57e61696de4f4f04b0e707ffb503e"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "用对称INT8模型理解量化：scale=max(abs(x))/127，整数值round(x/scale)，反量化乘回scale。全零向量采用scale=1避免除零。这里是整数教学量化，不能将结果或误差等同于FP8。",
+            "en": "Use symmetric INT8 to understand quantization: scale=max(abs(x))/127, integer=round(x/scale), then multiply by scale to reconstruct. Zero vectors use scale=1 to avoid division by zero. This integer model is not FP8."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "本例不裁剪非零最大值时，单元素误差近似受半个量化步长约束。异常大值扩大整个张量的步长，会损失小值分辨率。分组缩放可以缩小动态范围，但增加scale元数据及布局约束。",
+            "en": "Without clipping the maximum, element error is approximately bounded by half a quantization step. Outliers enlarge a tensor-wide step and reduce resolution for small values. Group scaling narrows dynamic range but adds scale metadata and layout constraints."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "scheme明确标为NOT-FP8；integers在[-127,127]；zero_tensor恢复为[0,0]。",
+            "en": "scheme explicitly says NOT-FP8; integers lie in [-127,127] and zero_tensor reconstructs [0,0]."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "低精度第一步：缩放与舍入",
+          "en": "Quantization: scale and rounding"
+        },
+        "nodes": [
+          {
+            "zh": "浮点输入",
+            "en": "Floating input"
+          },
+          {
+            "zh": "选择scale",
+            "en": "Choose scale"
+          },
+          {
+            "zh": "舍入整数",
+            "en": "Round integers"
+          },
+          {
+            "zh": "反量化与误差",
+            "en": "Reconstruct and compare"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day9 --out out",
+          "expected": {
+            "zh": "scheme明确标为NOT-FP8；integers在[-127,127]；zero_tensor恢复为[0,0]。",
+            "en": "scheme explicitly says NOT-FP8; integers lie in [-127,127] and zero_tensor reconstructs [0,0]."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day09.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "用quantize函数手工测试[0,1,100]，解释大值如何影响1的相对误差。",
+            "en": "Use quantize on [0,1,100] and explain how the outlier affects relative error near 1."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "全零输入产生除零异常",
+            "en": "Zero input causes division by zero"
+          },
+          "fix": {
+            "zh": "给零动态范围定义明确scale，检查恢复全零且有限，不用NaN掩盖错误。",
+            "en": "Define a scale for zero range and verify finite zeros; do not hide the error with NaN."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "INT8教学量化可以当作FP8硬件测试吗？",
+            "en": "Can this INT8 teaching model count as an FP8 hardware test?"
+          },
+          "options": [
+            {
+              "zh": "可以",
+              "en": "Yes"
+            },
+            {
+              "zh": "不可以，格式与执行不同",
+              "en": "No, formats and execution differ"
+            },
+            {
+              "zh": "只要误差小就可以",
+              "en": "Yes if error is small"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "INT8定点缩放与FP8指数格式不同，CPU模型也没有运行GPU内核。",
+            "en": "Scaled INT8 differs from an FP8 exponent format, and no GPU kernel runs here."
+          }
+        },
+        {
+          "question": {
+            "zh": "异常大值通常会怎样影响张量级scale？",
+            "en": "How does an outlier affect tensor-wide scale?"
+          },
+          "options": [
+            {
+              "zh": "缩小量化步长",
+              "en": "Reduce the step"
+            },
+            {
+              "zh": "增大量化步长",
+              "en": "Increase the step"
+            },
+            {
+              "zh": "自动消除误差",
+              "en": "Eliminate error"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "最大绝对值越大，scale越大，小数值的分辨率越低。",
+            "en": "A larger absolute maximum increases scale and reduces resolution for small values."
+          }
+        }
+      ]
+    },
+    {
+      "day": 10,
+      "title": {
+        "zh": "误差预算：看绝对值也看相对值",
+        "en": "Measure absolute and relative error"
+      },
+      "lesson": {
+        "zh": "把每个Token输入分别量化、反量化后，再执行相同路由与专家计算。参照仍使用原始浮点输入。这样只改变输入表示，能够隔离输入量化误差；权重没有量化，不能宣称覆盖完整低精度MoE。",
+        "en": "Quantize and reconstruct each token input, then use unchanged routing and experts. The reference uses original floats. This isolates input quantization; weights remain unquantized, so the experiment does not cover a fully low-precision MoE."
+      },
+      "task": {
+        "zh": "改seed保留两份误差结果；先写好容差再判断，不要为通过测试临时放宽阈值。",
+        "en": "Change seed and preserve both error records; declare tolerances before judging rather than relaxing them after failure."
+      },
+      "evidence": {
+        "zh": "out/day10.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day10.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepGEMM · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepGEMM/tree/5081f8513af57e61696de4f4f04b0e707ffb503e"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "把每个Token输入分别量化、反量化后，再执行相同路由与专家计算。参照仍使用原始浮点输入。这样只改变输入表示，能够隔离输入量化误差；权重没有量化，不能宣称覆盖完整低精度MoE。",
+            "en": "Quantize and reconstruct each token input, then use unchanged routing and experts. The reference uses original floats. This isolates input quantization; weights remain unquantized, so the experiment does not cover a fully low-precision MoE."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "最大绝对误差寻找最坏元素，relative L2比较整体误差能量与参照能量。参照接近零时相对误差易失真，因此使用分母下界并同时报告绝对误差。容差必须在看结果前设定，并说明用途。",
+            "en": "Maximum absolute error catches the worst element; relative L2 compares aggregate error energy with reference energy. Near-zero references make relative error unstable, so use a denominator floor and retain absolute error. Specify tolerances before inspecting results."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "max_abs_error与relative_l2均为有限非负数；quantized_input_only为true，不能写成整网量化精度。",
+            "en": "max_abs_error and relative_l2 are finite and nonnegative; quantized_input_only=true, so this is not whole-model quantization accuracy."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "误差预算：看绝对值也看相对值",
+          "en": "Measure absolute and relative error"
+        },
+        "nodes": [
+          {
+            "zh": "原始输入与量化副本",
+            "en": "Original and quantized input"
+          },
+          {
+            "zh": "固定路由",
+            "en": "Fixed routing"
+          },
+          {
+            "zh": "同一专家算子",
+            "en": "Same expert operator"
+          },
+          {
+            "zh": "两种误差指标",
+            "en": "Two error metrics"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day10 --out out",
+          "expected": {
+            "zh": "max_abs_error与relative_l2均为有限非负数；quantized_input_only为true，不能写成整网量化精度。",
+            "en": "max_abs_error and relative_l2 are finite and nonnegative; quantized_input_only=true, so this is not whole-model quantization accuracy."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day10.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "改seed保留两份误差结果；先写好容差再判断，不要为通过测试临时放宽阈值。",
+            "en": "Change seed and preserve both error records; declare tolerances before judging rather than relaxing them after failure."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          },
+          "command": "python3 lab.py day10 --seed 19 --out out/changed-day10"
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "接近零的参照导致相对误差异常大",
+            "en": "Near-zero references inflate relative error"
+          },
+          "fix": {
+            "zh": "核对分母下界，补报绝对误差和输入范围，不能只挑好看的指标。",
+            "en": "Check the denominator floor and report absolute error and input range; do not select only favorable metrics."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "只量化输入可以证明权重量化也安全吗？",
+            "en": "Does quantizing inputs prove weight quantization is safe?"
+          },
+          "options": [
+            {
+              "zh": "可以",
+              "en": "Yes"
+            },
+            {
+              "zh": "不可以",
+              "en": "No"
+            },
+            {
+              "zh": "只要路由相同就可以",
+              "en": "Yes if routing matches"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "权重量化会引入另一组误差，需要独立控制变量实验。",
+            "en": "Weight quantization introduces additional errors requiring a separate controlled experiment."
+          }
+        },
+        {
+          "question": {
+            "zh": "误差容差何时确定更合理？",
+            "en": "When should tolerances be chosen?"
+          },
+          "options": [
+            {
+              "zh": "看完结果之后",
+              "en": "After inspecting results"
+            },
+            {
+              "zh": "测试之前根据用途",
+              "en": "Before testing, based on purpose"
+            },
+            {
+              "zh": "任何结果都改为通过",
+              "en": "Adjust until everything passes"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "预先制定容差避免对结果过拟合，同时需解释容差与应用要求的关系。",
+            "en": "Predeclared tolerances avoid fitting acceptance to outcomes and should reflect application needs."
+          }
+        }
+      ]
+    },
+    {
+      "day": 11,
+      "title": {
+        "zh": "专家放置：局部性与流量",
+        "en": "Place experts and count remote traffic"
+      },
+      "lesson": {
+        "zh": "专家并行把不同专家放到不同rank。实验固定两个rank，Token的来源rank为Token ID模2，比较连续放置[0,0,1,1]与交错放置[0,1,0,1]。这里rank只是CPU整数标签，不启动分布式通信。",
+        "en": "Expert parallelism places experts on ranks. Two simulated ranks use token ID modulo 2 as source. Compare contiguous placement [0,0,1,1] with striped placement [0,1,0,1]. Ranks are integer labels, not distributed processes."
+      },
+      "task": {
+        "zh": "比较默认与热点输入的两种放置，保留让流量变差的结果；解释为何不能只展示收益。",
+        "en": "Compare both layouts under baseline and hot routing, retain regressions and explain why gains alone are misleading."
+      },
+      "evidence": {
+        "zh": "out/day11.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day11.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepEP · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepEP/tree/f6aa38fe06cd4a0489e7730365d4e0114970a2f3"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "专家并行把不同专家放到不同rank。实验固定两个rank，Token的来源rank为Token ID模2，比较连续放置[0,0,1,1]与交错放置[0,1,0,1]。这里rank只是CPU整数标签，不启动分布式通信。",
+            "en": "Expert parallelism places experts on ranks. Two simulated ranks use token ID modulo 2 as source. Compare contiguous placement [0,0,1,1] with striped placement [0,1,0,1]. Ranks are integer labels, not distributed processes."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "只改专家位置、保持Token及专家参数时，数学输出应保持不变，远端工作项数却可能增加或减少。放置优劣取决于路由分布，不存在对所有工作负载都最优的固定布局。",
+            "en": "Changing only expert placement preserves mathematical output while remote assignment count may increase or decrease. Placement quality depends on routing distribution; no fixed mapping is optimal for every workload."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "两种放置分别给出2×2工作项矩阵，local+remote等于T×k；output_invariant为true。",
+            "en": "Both placements provide a 2×2 assignment matrix, local+remote=T×k, and output_invariant=true."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "专家放置：局部性与流量",
+          "en": "Place experts and count remote traffic"
+        },
+        "nodes": [
+          {
+            "zh": "Token来源rank",
+            "en": "Source rank"
+          },
+          {
+            "zh": "专家归属rank",
+            "en": "Expert rank"
+          },
+          {
+            "zh": "本地/远端计数",
+            "en": "Local/remote counts"
+          },
+          {
+            "zh": "同语义对照",
+            "en": "Equal-semantics comparison"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day11 --out out",
+          "expected": {
+            "zh": "两种放置分别给出2×2工作项矩阵，local+remote等于T×k；output_invariant为true。",
+            "en": "Both placements provide a 2×2 assignment matrix, local+remote=T×k, and output_invariant=true."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day11.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "比较默认与热点输入的两种放置，保留让流量变差的结果；解释为何不能只展示收益。",
+            "en": "Compare both layouts under baseline and hot routing, retain regressions and explain why gains alone are misleading."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          },
+          "command": "python3 lab.py day11 --skew 1 --out out/changed-day11"
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "换布局时也换了路由，无法归因",
+            "en": "Routing changes with placement, confounding the comparison"
+          },
+          "fix": {
+            "zh": "固定seed、tokens、top-k与skew，只改变placement，然后再讨论流量差异。",
+            "en": "Hold seed, tokens, top-k and skew fixed; change only placement before attributing traffic differences."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "改变专家所在rank一定改变数学输出吗？",
+            "en": "Must moving an expert to another rank change mathematical output?"
+          },
+          "options": [
+            {
+              "zh": "一定",
+              "en": "Always"
+            },
+            {
+              "zh": "不一定，参数与路由不变可保持",
+              "en": "No, unchanged parameters and routing can preserve it"
+            },
+            {
+              "zh": "只要跨节点就改变",
+              "en": "Always across nodes"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "数据放置与算子语义可分开；需要正确传输、身份映射与combine。",
+            "en": "Placement can be separated from semantics with correct transfer, mapping and combine."
+          }
+        },
+        {
+          "question": {
+            "zh": "两种布局比较必须固定什么？",
+            "en": "What must stay fixed when comparing layouts?"
+          },
+          "options": [
+            {
+              "zh": "输入与路由",
+              "en": "Inputs and routing"
+            },
+            {
+              "zh": "输出日志文件名",
+              "en": "Output filename"
+            },
+            {
+              "zh": "网页颜色",
+              "en": "Page color"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "相同输入与路由保证测量的是布局差异，而非另一种负载。",
+            "en": "Identical input and routing isolate placement rather than workload differences."
+          }
+        }
+      ]
+    },
+    {
+      "day": 12,
+      "title": {
+        "zh": "通信字节：先估下界再看测量",
+        "en": "Estimate communication payload and a lower bound"
+      },
+      "lesson": {
+        "zh": "每个远端工作项需要发送输入并收回输出。教学模型假设两者宽度均4096、BF16每元素2字节，因此每项往返payload为2×4096×2=16384字节。Top-k已体现在远端工作项计数中，不能再乘一次。",
+        "en": "Each remote assignment sends an input and returns an output. Assuming width 4096 for both and two-byte BF16, round-trip payload is 2×4096×2=16384 bytes. Top-k is already included in assignment counts and must not be multiplied again."
+      },
+      "task": {
+        "zh": "把bandwidth从25改为50，预测下界减半；说明真实端到端延迟为何不一定减半。",
+        "en": "Double bandwidth from 25 to 50, predict a halved bound and explain why end-to-end latency need not halve."
+      },
+      "evidence": {
+        "zh": "out/day12.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day12.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepEP · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepEP/tree/f6aa38fe06cd4a0489e7730365d4e0114970a2f3"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "每个远端工作项需要发送输入并收回输出。教学模型假设两者宽度均4096、BF16每元素2字节，因此每项往返payload为2×4096×2=16384字节。Top-k已体现在远端工作项计数中，不能再乘一次。",
+            "en": "Each remote assignment sends an input and returns an output. Assuming width 4096 for both and two-byte BF16, round-trip payload is 2×4096×2=16384 bytes. Top-k is already included in assignment counts and must not be multiplied again."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "字节数除以有效带宽给出无额外开销的传输下界。模型不包含元数据、协议、争用和launch；带宽采用十进制GB/s。浏览器演示还用远端比例近似，而Python实验从离散路由逐项计数。",
+            "en": "Payload divided by effective bandwidth is an overhead-free transfer lower bound. Metadata, protocol, contention and launch are excluded. GB/s is decimal. The browser approximates remote share while Python counts discrete routed assignments."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "roundtrip_payload_bytes=remote_assignments×16384，payload_lower_bound_us=bytes/(GBps×10^9)×10^6。",
+            "en": "roundtrip_payload_bytes=remote_assignments×16384; payload_lower_bound_us=bytes/(GBps×10^9)×10^6."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "通信字节：先估下界再看测量",
+          "en": "Estimate communication payload and a lower bound"
+        },
+        "nodes": [
+          {
+            "zh": "远端工作项",
+            "en": "Remote assignments"
+          },
+          {
+            "zh": "往返payload",
+            "en": "Round-trip payload"
+          },
+          {
+            "zh": "有效GB/s",
+            "en": "Effective GB/s"
+          },
+          {
+            "zh": "无开销时间下界",
+            "en": "Overhead-free lower bound"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day12 --out out",
+          "expected": {
+            "zh": "roundtrip_payload_bytes=remote_assignments×16384，payload_lower_bound_us=bytes/(GBps×10^9)×10^6。",
+            "en": "roundtrip_payload_bytes=remote_assignments×16384; payload_lower_bound_us=bytes/(GBps×10^9)×10^6."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day12.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "把bandwidth从25改为50，预测下界减半；说明真实端到端延迟为何不一定减半。",
+            "en": "Double bandwidth from 25 to 50, predict a halved bound and explain why end-to-end latency need not halve."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          },
+          "command": "python3 lab.py day12 --bandwidth 50 --out out/changed-day12"
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "重复乘top-k，流量多算一倍",
+            "en": "Top-k is multiplied twice, doubling estimated traffic"
+          },
+          "fix": {
+            "zh": "检查计数单位：输入是Token还是专家工作项。本实验remote_assignments已经包含top-k复制。",
+            "en": "Check whether the input counts tokens or assignments; remote_assignments already includes top-k replication."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "1个远端工作项往返payload是多少？",
+            "en": "What is round-trip payload for one remote assignment?"
+          },
+          "options": [
+            {
+              "zh": "8192 B",
+              "en": "8192 B"
+            },
+            {
+              "zh": "16384 B",
+              "en": "16384 B"
+            },
+            {
+              "zh": "4096 B",
+              "en": "4096 B"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "输入和输出各4096×2字节，总16384字节。",
+            "en": "Input and output each use 4096×2 bytes, totaling 16384."
+          }
+        },
+        {
+          "question": {
+            "zh": "带宽加倍就能保证整模型快两倍吗？",
+            "en": "Does doubled bandwidth guarantee a 2× model speedup?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能，仍有计算及其他开销",
+              "en": "No, compute and other overhead remain"
+            },
+            {
+              "zh": "只要top-k=2就能",
+              "en": "Yes with top-k=2"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "这个公式只覆盖payload传输下界，不覆盖整个请求。",
+            "en": "The formula covers payload transfer only, not the full request."
+          }
+        }
+      ],
+      "interactive": "moe-traffic"
+    },
+    {
+      "day": 13,
+      "title": {
+        "zh": "All-to-all：读懂流量矩阵",
+        "en": "Read an all-to-all traffic matrix"
+      },
+      "lesson": {
+        "zh": "流量矩阵的行表示发送rank，列表示接收rank。对角线是本地工作，非对角线才是远端。本实验统计的是工作项数量，不是实际网络包；合并消息、对齐和协议会改变真实字节与包数。",
+        "en": "Rows are source ranks and columns are destinations. Diagonal entries are local; off-diagonal entries are remote. The lab counts assignments, not network packets. Message coalescing, alignment and protocol change actual bytes and packet counts."
+      },
+      "task": {
+        "zh": "将矩阵手画成带箭头的双rank图，给每个箭头标数量；改变skew并比较。",
+        "en": "Draw the matrix as two ranks connected by labeled arrows, then change skew and compare."
+      },
+      "evidence": {
+        "zh": "out/day13.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day13.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepEP · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepEP/tree/f6aa38fe06cd4a0489e7730365d4e0114970a2f3"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "流量矩阵的行表示发送rank，列表示接收rank。对角线是本地工作，非对角线才是远端。本实验统计的是工作项数量，不是实际网络包；合并消息、对齐和协议会改变真实字节与包数。",
+            "en": "Rows are source ranks and columns are destinations. Diagonal entries are local; off-diagonal entries are remote. The lab counts assignments, not network packets. Message coalescing, alignment and protocol change actual bytes and packet counts."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "每个非空远端单元格可对应一次按peer聚合的消息，这是有条件的消息计数。Collective的完成取决于参与者和协议约定；不能因为某个rank本轮无数据，就任意跳过必须共同执行的通信步骤。",
+            "en": "Each nonempty remote cell can represent one coalesced peer message under an explicit assumption. Collective completion depends on participant and protocol contracts. A rank with zero payload cannot arbitrarily skip a required collective step."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "矩阵所有元素之和为total_dispatch_assignments；非空远端消息计数至多2，不能当成真实包数。",
+            "en": "The matrix sum equals total_dispatch_assignments. Nonempty remote message count is at most two and is not a packet count."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "All-to-all：读懂流量矩阵",
+          "en": "Read an all-to-all traffic matrix"
+        },
+        "nodes": [
+          {
+            "zh": "路由记录",
+            "en": "Route records"
+          },
+          {
+            "zh": "源/目的rank",
+            "en": "Source/destination rank"
+          },
+          {
+            "zh": "2×2矩阵",
+            "en": "2×2 matrix"
+          },
+          {
+            "zh": "计数与参与契约",
+            "en": "Counts and participation contract"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day13 --out out",
+          "expected": {
+            "zh": "矩阵所有元素之和为total_dispatch_assignments；非空远端消息计数至多2，不能当成真实包数。",
+            "en": "The matrix sum equals total_dispatch_assignments. Nonempty remote message count is at most two and is not a packet count."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day13.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "将矩阵手画成带箭头的双rank图，给每个箭头标数量；改变skew并比较。",
+            "en": "Draw the matrix as two ranks connected by labeled arrows, then change skew and compare."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          },
+          "command": "python3 lab.py day13 --skew 1 --out out/changed-day13"
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "按列当作发送方，误判热点链路",
+            "en": "Columns are mistaken for senders, reversing hotspot direction"
+          },
+          "fix": {
+            "zh": "图上同时写明source/destination；核对行和对应本rank发出的工作项。",
+            "en": "Label source and destination explicitly; row sums should match work sent by that rank."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "流量矩阵对角线表示什么？",
+            "en": "What do diagonal traffic-matrix entries represent?"
+          },
+          "options": [
+            {
+              "zh": "跨节点传输",
+              "en": "Inter-node transfers"
+            },
+            {
+              "zh": "同rank工作",
+              "en": "Same-rank work"
+            },
+            {
+              "zh": "丢弃的Token",
+              "en": "Dropped tokens"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "源rank等于目的rank，因此属于本地分配。",
+            "en": "Source and destination ranks match, so these are local assignments."
+          }
+        },
+        {
+          "question": {
+            "zh": "一个peer消息是否一定等于一个网络包？",
+            "en": "Does one peer message necessarily mean one network packet?"
+          },
+          "options": [
+            {
+              "zh": "是",
+              "en": "Yes"
+            },
+            {
+              "zh": "否，会受分片和协议影响",
+              "en": "No, segmentation and protocol matter"
+            },
+            {
+              "zh": "只在CPU上是",
+              "en": "Only on CPU"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "消息是逻辑单位，网络可将其拆成多个包。",
+            "en": "A message is a logical unit that may be segmented into multiple packets."
+          }
+        }
+      ]
+    },
+    {
+      "day": 14,
+      "title": {
+        "zh": "Roofline：计算还是带宽受限",
+        "en": "Roofline: compute or bandwidth bound"
+      },
+      "lesson": {
+        "zh": "用单个BF16 GEMM近似一个专家中的一层：M×H乘H×H，FLOPs=2MH²，冷读写字节=2(MH+H²+MH)。假设权重冷读、输出写一次，不包含路由、激活、通信或完整FFN。",
+        "en": "Model one expert layer as a BF16 GEMM: M×H times H×H, with 2MH² FLOPs and 2(MH+H²+MH) cold bytes. Assume cold weights and one output write, excluding routing, activation, communication and a full FFN."
+      },
+      "task": {
+        "zh": "在交互演示中增大M，定位两条下界交叉的位置；说明真实系统还需采样验证。",
+        "en": "Increase M in the interactive model, locate the crossover and explain why real measurements remain necessary."
+      },
+      "evidence": {
+        "zh": "out/day14.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day14.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepGEMM · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepGEMM/tree/5081f8513af57e61696de4f4f04b0e707ffb503e"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "用单个BF16 GEMM近似一个专家中的一层：M×H乘H×H，FLOPs=2MH²，冷读写字节=2(MH+H²+MH)。假设权重冷读、输出写一次，不包含路由、激活、通信或完整FFN。",
+            "en": "Model one expert layer as a BF16 GEMM: M×H times H×H, with 2MH² FLOPs and 2(MH+H²+MH) cold bytes. Assume cold weights and one output write, excluding routing, activation, communication and a full FFN."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "计算下界=FLOPs/峰值，带宽下界=bytes/带宽，取较大者作为乐观总下界。算术强度随M增大而上升，因为权重可以被更多行复用。峰值能力与实际利用率不同，这不是DeepGEMM测速。",
+            "en": "Compute and memory lower bounds are FLOPs/peak and bytes/bandwidth; their maximum is an optimistic total bound. Arithmetic intensity rises with M as more rows reuse weights. Peak capacity differs from utilization; this is not a DeepGEMM benchmark."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "比较decode M=1与prefill M=256的intensity、compute_ms和memory_ms，所有时间都是假设计算值。",
+            "en": "Compare intensity, compute_ms and memory_ms for decode M=1 and prefill M=256; every time is analytical."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "Roofline：计算还是带宽受限",
+          "en": "Roofline: compute or bandwidth bound"
+        },
+        "nodes": [
+          {
+            "zh": "GEMM形状",
+            "en": "GEMM shape"
+          },
+          {
+            "zh": "FLOPs与字节",
+            "en": "FLOPs and bytes"
+          },
+          {
+            "zh": "两个时间下界",
+            "en": "Two lower bounds"
+          },
+          {
+            "zh": "取max定位瓶颈",
+            "en": "Take max to identify bound"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day14 --out out",
+          "expected": {
+            "zh": "比较decode M=1与prefill M=256的intensity、compute_ms和memory_ms，所有时间都是假设计算值。",
+            "en": "Compare intensity, compute_ms and memory_ms for decode M=1 and prefill M=256; every time is analytical."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day14.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "在交互演示中增大M，定位两条下界交叉的位置；说明真实系统还需采样验证。",
+            "en": "Increase M in the interactive model, locate the crossover and explain why real measurements remain necessary."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把算术强度当成TFLOPs/s",
+            "en": "Arithmetic intensity is confused with TFLOPs/s"
+          },
+          "fix": {
+            "zh": "算术强度单位是FLOPs/byte，吞吐是FLOPs/second；带上单位再代入公式。",
+            "en": "Intensity is FLOPs/byte; throughput is FLOPs/second. Preserve units through each formula."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "两个下界是2ms和5ms，总下界取多少？",
+            "en": "If bounds are 2 ms and 5 ms, which bounds total time?"
+          },
+          "options": [
+            {
+              "zh": "2ms",
+              "en": "2 ms"
+            },
+            {
+              "zh": "5ms",
+              "en": "5 ms"
+            },
+            {
+              "zh": "7ms一定实测",
+              "en": "7 ms measured"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "理想同时受两种资源约束至少耗时max(2,5)=5ms，实际可能更大。",
+            "en": "Under both constraints time is at least max(2,5)=5 ms and may be higher."
+          }
+        },
+        {
+          "question": {
+            "zh": "增大M为何可能提高算术强度？",
+            "en": "Why can larger M increase arithmetic intensity?"
+          },
+          "options": [
+            {
+              "zh": "权重被更多行复用",
+              "en": "More rows reuse weights"
+            },
+            {
+              "zh": "自动消除通信",
+              "en": "Communication disappears"
+            },
+            {
+              "zh": "自动提高峰值算力",
+              "en": "Peak hardware compute increases"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "更多Token共享同一权重矩阵，单位冷权重读取对应更多计算。",
+            "en": "More tokens share a weight matrix, adding work per cold weight read."
+          }
+        }
+      ],
+      "interactive": "moe-roofline"
+    },
+    {
+      "day": 15,
+      "title": {
+        "zh": "通信计算重叠：下界与依赖",
+        "en": "Overlap communication with computation"
+      },
+      "lesson": {
+        "zh": "串行阶段耗时可相加；不同chunk的通信与计算若能流水化，理想稳态接近较慢阶段。必须先辨认数据依赖：一个chunk的专家计算不能读取尚未完成传输的数据。",
+        "en": "Serial stage times add. Communication and compute for different chunks may pipeline toward the slower stage in steady state. Respect dependencies: an expert cannot read a chunk before its transfer completes."
+      },
+      "task": {
+        "zh": "画三条时间线，标出第一个chunk等待与最后一个chunk收尾；解释稳态不等于整请求耗时。",
+        "en": "Draw all three timelines, mark startup and drain, and explain why steady state differs from whole-request latency."
+      },
+      "evidence": {
+        "zh": "out/day15.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day15.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepEP · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepEP/tree/f6aa38fe06cd4a0489e7730365d4e0114970a2f3"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "串行阶段耗时可相加；不同chunk的通信与计算若能流水化，理想稳态接近较慢阶段。必须先辨认数据依赖：一个chunk的专家计算不能读取尚未完成传输的数据。",
+            "en": "Serial stage times add. Communication and compute for different chunks may pipeline toward the slower stage in steady state. Respect dependencies: an expert cannot read a chunk before its transfer completes."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "实验设通信5ms、计算7ms，串行为12ms，理想重叠下界为7ms；再加入2ms依赖空洞得到9ms。数值是人为假设，用来反驳“只要开两条stream就必然完全重叠”。",
+            "en": "Assume communication takes 5 ms and compute 7 ms: serial time is 12 ms and ideal overlap 7 ms. A 2 ms dependency gap gives 9 ms. These assumptions show why two streams alone do not guarantee full overlap."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "serial_ms=12、ideal_overlap_ms=7、with_dependency_gap_ms=9；没有真实设备时间线。",
+            "en": "serial_ms=12, ideal_overlap_ms=7, with_dependency_gap_ms=9; there is no measured device timeline."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "通信计算重叠：下界与依赖",
+          "en": "Overlap communication with computation"
+        },
+        "nodes": [
+          {
+            "zh": "切分chunk",
+            "en": "Split chunks"
+          },
+          {
+            "zh": "声明依赖",
+            "en": "Declare dependencies"
+          },
+          {
+            "zh": "流水线调度",
+            "en": "Pipeline schedule"
+          },
+          {
+            "zh": "检查空洞与尾部",
+            "en": "Inspect gaps and tail"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day15 --out out",
+          "expected": {
+            "zh": "serial_ms=12、ideal_overlap_ms=7、with_dependency_gap_ms=9；没有真实设备时间线。",
+            "en": "serial_ms=12, ideal_overlap_ms=7, with_dependency_gap_ms=9; there is no measured device timeline."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day15.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "画三条时间线，标出第一个chunk等待与最后一个chunk收尾；解释稳态不等于整请求耗时。",
+            "en": "Draw all three timelines, mark startup and drain, and explain why steady state differs from whole-request latency."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "通过省略同步取得虚假的加速",
+            "en": "Omitting synchronization creates a false speedup"
+          },
+          "fix": {
+            "zh": "实际GPU扩展需用正确事件依赖及计时同步，记录完整关键路径；本日只作设计。",
+            "en": "Real GPU extensions need correct event dependencies and timing synchronization; record the full critical path. Today is a design model."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "5ms通信和7ms计算，理想重叠下界是多少？",
+            "en": "What is ideal overlap for 5 ms communication and 7 ms compute?"
+          },
+          "options": [
+            {
+              "zh": "2ms",
+              "en": "2 ms"
+            },
+            {
+              "zh": "7ms",
+              "en": "7 ms"
+            },
+            {
+              "zh": "12ms",
+              "en": "12 ms"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "完全重叠时较慢阶段决定下界，不能把较快阶段从较慢阶段相减。",
+            "en": "The slower stage determines the bound; subtracting stages is incorrect."
+          }
+        },
+        {
+          "question": {
+            "zh": "两个stream能保证数据依赖正确吗？",
+            "en": "Do two streams guarantee correct dependencies?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能，需要显式依赖",
+              "en": "No, dependencies must be enforced"
+            },
+            {
+              "zh": "只要测得快就能",
+              "en": "Yes if timing is fast"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "调度并发不等于数据已经可用，缺少依赖可产生竞态。",
+            "en": "Concurrent scheduling does not mean data is ready; missing dependencies cause races."
+          }
+        }
+      ]
+    },
+    {
+      "day": 16,
+      "title": {
+        "zh": "Prefill 与 Decode：批量的代价",
+        "en": "Prefill, decode and batch tradeoffs"
+      },
+      "lesson": {
+        "zh": "较大批量可摊薄固定launch开销，并增加每个专家的有效M。实验只假设每批launch为10微秒，比较1、8、64、256个Token的每Token开销。没有假设大批量一定满足交互延迟。",
+        "en": "Larger batches amortize launch overhead and can increase expert M. Assume a fixed 10 microsecond launch and compare per-token overhead for batches of 1, 8, 64 and 256. This does not imply large batches meet interactive latency targets."
+      },
+      "task": {
+        "zh": "以低流量语音服务为例解释为何不应无限增大批量，并写出要补测的两个时延指标。",
+        "en": "Explain why a low-traffic voice service cannot grow batches indefinitely and name two latency metrics to measure."
+      },
+      "evidence": {
+        "zh": "out/day16.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day16.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepGEMM · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepGEMM/tree/5081f8513af57e61696de4f4f04b0e707ffb503e"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "较大批量可摊薄固定launch开销，并增加每个专家的有效M。实验只假设每批launch为10微秒，比较1、8、64、256个Token的每Token开销。没有假设大批量一定满足交互延迟。",
+            "en": "Larger batches amortize launch overhead and can increase expert M. Assume a fixed 10 microsecond launch and compare per-token overhead for batches of 1, 8, 64 and 256. This does not imply large batches meet interactive latency targets."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "等批量的等待、首Token延迟与生成间隔属于用户体验；吞吐量属于系统工作率。批量选择需同时检查时延目标、负载波动和专家分布。Prefill与Decode的不同工作形状意味着同一配置未必适合两者。",
+            "en": "Batch waiting, time to first token and generation gaps affect user experience; throughput measures work rate. Batch selection must consider latency targets, arrivals and expert distribution. Prefill and decode shapes need not share an optimal configuration."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "launch_us_per_token依次为10、1.25、0.15625、0.0390625；unmodeled列出未计入的等待等因素。",
+            "en": "launch_us_per_token is 10, 1.25, 0.15625 and 0.0390625. unmodeled lists omitted waiting and other effects."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "Prefill 与 Decode：批量的代价",
+          "en": "Prefill, decode and batch tradeoffs"
+        },
+        "nodes": [
+          {
+            "zh": "到达请求",
+            "en": "Request arrivals"
+          },
+          {
+            "zh": "形成批量",
+            "en": "Form batch"
+          },
+          {
+            "zh": "摊薄launch",
+            "en": "Amortize launch"
+          },
+          {
+            "zh": "检查时延目标",
+            "en": "Check latency targets"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day16 --out out",
+          "expected": {
+            "zh": "launch_us_per_token依次为10、1.25、0.15625、0.0390625；unmodeled列出未计入的等待等因素。",
+            "en": "launch_us_per_token is 10, 1.25, 0.15625 and 0.0390625. unmodeled lists omitted waiting and other effects."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day16.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "以低流量语音服务为例解释为何不应无限增大批量，并写出要补测的两个时延指标。",
+            "en": "Explain why a low-traffic voice service cannot grow batches indefinitely and name two latency metrics to measure."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "只报告吞吐提升，隐藏排队时间",
+            "en": "Throughput gains hide queueing delays"
+          },
+          "fix": {
+            "zh": "补报端到端分位时延和批量等待；确保使用相同到达负载。",
+            "en": "Report end-to-end latency percentiles and batch waiting under identical arrivals."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "10微秒launch摊到8个Token，每Token多少？",
+            "en": "How much of a 10 μs launch is amortized per token for eight tokens?"
+          },
+          "options": [
+            {
+              "zh": "1.25微秒",
+              "en": "1.25 μs"
+            },
+            {
+              "zh": "8微秒",
+              "en": "8 μs"
+            },
+            {
+              "zh": "80微秒",
+              "en": "80 μs"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "10/8=1.25，仅代表该项固定开销。",
+            "en": "10/8=1.25, covering only that fixed overhead."
+          }
+        },
+        {
+          "question": {
+            "zh": "吞吐更高一定意味着首Token更快吗？",
+            "en": "Does higher throughput guarantee faster first token?"
+          },
+          "options": [
+            {
+              "zh": "一定",
+              "en": "Yes"
+            },
+            {
+              "zh": "不一定，可能增加等待",
+              "en": "No, waiting may increase"
+            },
+            {
+              "zh": "只要GPU更多就一定",
+              "en": "Yes with more GPUs"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "攒批提高吞吐可能增加排队和首Token等待。",
+            "en": "Batch formation can improve throughput while increasing queueing and first-token wait."
+          }
+        }
+      ]
+    },
+    {
+      "day": 17,
+      "title": {
+        "zh": "可信测量：先正确，再计时",
+        "en": "Measure CPU execution honestly"
+      },
+      "lesson": {
+        "zh": "今天首次测量真实耗时：Python执行dispatch、线性专家与combine。先预热3次，再记录7次perf_counter_ns原始样本，取中位数。独立oracle在计时区间之外检查，避免把参照成本算入被测算子。",
+        "en": "Today measures actual elapsed time: Python dispatch, linear experts and combine. Warm up three times, record seven perf_counter_ns samples and report the median. The oracle checks outside the timed interval so its cost is excluded."
+      },
+      "task": {
+        "zh": "把tokens改为128后另存输出，解释变慢可能源自工作量变化，不能称为优化退步。",
+        "en": "Use 128 tokens and a separate output; explain why more work taking longer is not an optimization regression."
+      },
+      "evidence": {
+        "zh": "out/day17.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day17.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "Python · perf_counter_ns",
+          "url": "https://docs.python.org/3/library/time.html#time.perf_counter_ns"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "今天首次测量真实耗时：Python执行dispatch、线性专家与combine。先预热3次，再记录7次perf_counter_ns原始样本，取中位数。独立oracle在计时区间之外检查，避免把参照成本算入被测算子。",
+            "en": "Today measures actual elapsed time: Python dispatch, linear experts and combine. Warm up three times, record seven perf_counter_ns samples and report the median. The oracle checks outside the timed interval so its cost is excluded."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "CPU解释器、操作系统调度和背景负载会影响结果。它不反映GPU并行、CUDA launch或网络；更不能把教学模型的下界与这些CPU纳秒相除得到GPU加速比。报告计时范围、Python版本和全部原始值。",
+            "en": "The interpreter, OS scheduling and background load affect timings. They do not represent GPU parallelism, CUDA launch or networking. Dividing an analytical bound by CPU nanoseconds does not yield a GPU speedup. Preserve scope, Python version and raw samples."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "evidence为measured-python-cpu-only；samples_ns包含7个正整数，median_ns由样本求得且不固定。",
+            "en": "evidence is measured-python-cpu-only; samples_ns has seven positive integers and median_ns is computed, not fixed."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "可信测量：先正确，再计时",
+          "en": "Measure CPU execution honestly"
+        },
+        "nodes": [
+          {
+            "zh": "正确性检查",
+            "en": "Correctness gate"
+          },
+          {
+            "zh": "预热",
+            "en": "Warmup"
+          },
+          {
+            "zh": "原始CPU样本",
+            "en": "Raw CPU samples"
+          },
+          {
+            "zh": "中位数与范围",
+            "en": "Median and scope"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day17 --out out",
+          "expected": {
+            "zh": "evidence为measured-python-cpu-only；samples_ns包含7个正整数，median_ns由样本求得且不固定。",
+            "en": "evidence is measured-python-cpu-only; samples_ns has seven positive integers and median_ns is computed, not fixed."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day17.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "把tokens改为128后另存输出，解释变慢可能源自工作量变化，不能称为优化退步。",
+            "en": "Use 128 tokens and a separate output; explain why more work taking longer is not an optimization regression."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          },
+          "command": "python3 lab.py day17 --tokens 128 --out out/changed-day17"
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "拿不同Token数的耗时直接算优化加速比",
+            "en": "Different token counts are compared as an optimization speedup"
+          },
+          "fix": {
+            "zh": "固定工作量、路由、版本与计时范围；更改负载时报告为扩展性实验。",
+            "en": "Hold workload, routing, version and timing scope fixed; label changed loads as scaling experiments."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "为什么保留7个样本而不只留最快一次？",
+            "en": "Why retain all seven samples instead of only the fastest?"
+          },
+          "options": [
+            {
+              "zh": "观察波动并避免挑结果",
+              "en": "To expose variation and avoid cherry-picking"
+            },
+            {
+              "zh": "增加文件大小",
+              "en": "To enlarge files"
+            },
+            {
+              "zh": "保证GPU性能",
+              "en": "To guarantee GPU performance"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "原始样本可检查波动；最快一次可能不代表典型运行。",
+            "en": "Raw samples expose variation; the fastest run need not be typical."
+          }
+        },
+        {
+          "question": {
+            "zh": "本日时间可用来证明DeepEP性能吗？",
+            "en": "Can these timings establish DeepEP performance?"
+          },
+          "options": [
+            {
+              "zh": "可以",
+              "en": "Yes"
+            },
+            {
+              "zh": "不可以，没有运行DeepEP",
+              "en": "No, DeepEP did not run"
+            },
+            {
+              "zh": "只要单位是ns就可以",
+              "en": "Yes if measured in ns"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "测量只覆盖本机Python实现，不能外推不同硬件与实现。",
+            "en": "Measurement covers the local Python implementation only."
+          }
+        }
+      ]
+    },
+    {
+      "day": 18,
+      "title": {
+        "zh": "自己动手：实现路由和聚合",
+        "en": "Implement routing and combine yourself"
+      },
+      "lesson": {
+        "zh": "阅读exercises.py中两个契约：stable_topk返回稳定专家索引；weighted_combine接收任意顺序的贡献，按Token累加。先在纸上算出同分路由与空桶结果，再写代码，不需要第三方包。",
+        "en": "Read two contracts in exercises.py: stable_topk returns stable expert indices; weighted_combine accumulates arbitrarily ordered contributions by token. Work out tied routes and empty buckets on paper before coding. No third-party package is required."
+      },
+      "task": {
+        "zh": "独立实现两个函数，并新增一个不同于现有测试的负分数/空贡献样例，说明预期值。",
+        "en": "Implement both functions and add a new negative-score or empty-contribution case with an explained expected result."
+      },
+      "evidence": {
+        "zh": "out/day18.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day18.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepEP · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepEP/tree/f6aa38fe06cd4a0489e7730365d4e0114970a2f3"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "阅读exercises.py中两个契约：stable_topk返回稳定专家索引；weighted_combine接收任意顺序的贡献，按Token累加。先在纸上算出同分路由与空桶结果，再写代码，不需要第三方包。",
+            "en": "Read two contracts in exercises.py: stable_topk returns stable expert indices; weighted_combine accumulates arbitrarily ordered contributions by token. Work out tied routes and empty buckets on paper before coding. No third-party package is required."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "独立检查器不导入lab.py，用手算常量和多种行排列检验实现。参考答案可以通过同一检查，但--reference通过仅说明提供的参考答案满足这些样例，不代表学生已完成，也不证明覆盖所有输入。",
+            "en": "The checker does not import lab.py. It uses hand-computed constants and several row permutations. The supplied reference runs through the same checks. Passing --reference validates that reference on these cases, not student completion or all possible inputs."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "day18.json列出练习与命令；原始exercises.py检查应FAIL TODO，--reference应PASS reference。完成本人实现后应PASS exercises。",
+            "en": "day18.json lists exercises. The untouched student checker must FAIL TODO; --reference must PASS reference. Your implementation should later PASS exercises."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "自己动手：实现路由和聚合",
+          "en": "Implement routing and combine yourself"
+        },
+        "nodes": [
+          {
+            "zh": "读函数契约",
+            "en": "Read contracts"
+          },
+          {
+            "zh": "填写两个TODO",
+            "en": "Implement two TODOs"
+          },
+          {
+            "zh": "独立样例检查",
+            "en": "Independent checks"
+          },
+          {
+            "zh": "增加自选边界例",
+            "en": "Add a boundary case"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day18 --out out",
+          "expected": {
+            "zh": "day18.json列出练习与命令；原始exercises.py检查应FAIL TODO，--reference应PASS reference。完成本人实现后应PASS exercises。",
+            "en": "day18.json lists exercises. The untouched student checker must FAIL TODO; --reference must PASS reference. Your implementation should later PASS exercises."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day18.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "独立实现两个函数，并新增一个不同于现有测试的负分数/空贡献样例，说明预期值。",
+            "en": "Implement both functions and add a new negative-score or empty-contribution case with an explained expected result."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          }
+        },
+        {
+          "title": {
+            "zh": "验证提供的参考答案",
+            "en": "Check the supplied reference"
+          },
+          "body": {
+            "zh": "先确认检查器工作；之后实现exercises.py并运行不带--reference的命令。原始TODO失败属于预期。",
+            "en": "First validate the checker, then implement exercises.py and run without --reference. Untouched TODO failure is expected."
+          },
+          "command": "python3 check_exercises.py --reference",
+          "expected": {
+            "zh": "PASS reference；这不计为学生作业通过。",
+            "en": "PASS reference; this does not count as passing student work."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "运行reference通过后误认为自己作业完成",
+            "en": "A passing reference check is mistaken for completed student work"
+          },
+          "fix": {
+            "zh": "运行不带--reference的命令检查exercises.py，提交自己的代码与新增样例；不要只提交生成JSON。",
+            "en": "Run without --reference to check exercises.py; submit your code and new case, not just generated JSON."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "同分分数[2,2,1]的top-2应返回？",
+            "en": "What is stable top-2 for [2,2,1]?"
+          },
+          "options": [
+            {
+              "zh": "[1,0]",
+              "en": "[1,0]"
+            },
+            {
+              "zh": "[0,1]",
+              "en": "[0,1]"
+            },
+            {
+              "zh": "[0,2]",
+              "en": "[0,2]"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "契约规定同分时较小索引优先，因此为[0,1]。",
+            "en": "The contract prefers smaller indices on ties, yielding [0,1]."
+          }
+        },
+        {
+          "question": {
+            "zh": "改变贡献行顺序应改变combine结果吗？",
+            "en": "Should permuting contribution rows change combine results?"
+          },
+          "options": [
+            {
+              "zh": "应改变",
+              "en": "Yes"
+            },
+            {
+              "zh": "数学上不应，浮点容差内相等",
+              "en": "Mathematically no, up to floating tolerance"
+            },
+            {
+              "zh": "只在没有空桶时不变",
+              "en": "Only without empty buckets"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "按Token求和不依赖逻辑行顺序，浮点加法顺序可带来舍入微差。",
+            "en": "Token-wise summation is logically order-independent, though floating addition may round differently."
+          }
+        }
+      ]
+    },
+    {
+      "day": 19,
+      "title": {
+        "zh": "迁移到 DeepEP 与 DeepGEMM",
+        "en": "Plan a pinned DeepEP and DeepGEMM extension"
+      },
+      "lesson": {
+        "zh": "将已验证的语义映射到上游库：DeepEP承担专家工作项交换，DeepGEMM承担相应矩阵计算。GPU_EXTENSION.md记录本次查询到的完整源码修订。阅读同一修订内的README和测试后再设计环境，不能拼接不同时代API。",
+        "en": "Map verified semantics to upstream libraries: DeepEP exchanges expert assignments and DeepGEMM handles corresponding matrix work. GPU_EXTENSION.md records full source revisions. Read README and tests from the same revision rather than mixing APIs across eras."
+      },
+      "task": {
+        "zh": "写一张输入形状、dtype、scale、Token映射、同步事件的接入表，标出尚未验证项。",
+        "en": "Create an integration table for shape, dtype, scale, token mapping and synchronization events; mark every unverified item."
+      },
+      "evidence": {
+        "zh": "out/day19.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day19.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepEP · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepEP/tree/f6aa38fe06cd4a0489e7730365d4e0114970a2f3"
+        },
+        {
+          "title": "DeepGEMM · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepGEMM/tree/5081f8513af57e61696de4f4f04b0e707ffb503e"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "将已验证的语义映射到上游库：DeepEP承担专家工作项交换，DeepGEMM承担相应矩阵计算。GPU_EXTENSION.md记录本次查询到的完整源码修订。阅读同一修订内的README和测试后再设计环境，不能拼接不同时代API。",
+            "en": "Map verified semantics to upstream libraries: DeepEP exchanges expert assignments and DeepGEMM handles corresponding matrix work. GPU_EXTENSION.md records full source revisions. Read README and tests from the same revision rather than mixing APIs across eras."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "当前DeepEP V2.5说明已移除V1 API与NVSHMEM后端，环境和API均可能与旧教程不同。课程中的CPU运行不会检查GPU依赖兼容性。本日交付环境表、数据布局表和正确性门槛，不输出“已复现”的GPU性能结论。",
+            "en": "Current DeepEP V2.5 documentation removes V1 APIs and its NVSHMEM backend, so old tutorials may have incompatible APIs and environments. CPU execution does not validate GPU dependencies. Deliver environment, layout and correctness plans rather than a claimed GPU reproduction."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "upstream_commands_executed=false；检查GPU_EXTENSION.md，明确两份commit只固定源码，不保证两库可直接互换布局。",
+            "en": "upstream_commands_executed=false. Read GPU_EXTENSION.md: commits pin source, not automatic interoperability between layouts."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "迁移到 DeepEP 与 DeepGEMM",
+          "en": "Plan a pinned DeepEP and DeepGEMM extension"
+        },
+        "nodes": [
+          {
+            "zh": "固定两个commit",
+            "en": "Pin both commits"
+          },
+          {
+            "zh": "读取对应测试",
+            "en": "Read matching tests"
+          },
+          {
+            "zh": "核对硬件与布局",
+            "en": "Check hardware and layout"
+          },
+          {
+            "zh": "制定真实测量方案",
+            "en": "Plan actual measurements"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day19 --out out",
+          "expected": {
+            "zh": "upstream_commands_executed=false；检查GPU_EXTENSION.md，明确两份commit只固定源码，不保证两库可直接互换布局。",
+            "en": "upstream_commands_executed=false. Read GPU_EXTENSION.md: commits pin source, not automatic interoperability between layouts."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day19.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "写一张输入形状、dtype、scale、Token映射、同步事件的接入表，标出尚未验证项。",
+            "en": "Create an integration table for shape, dtype, scale, token mapping and synchronization events; mark every unverified item."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          }
+        },
+        {
+          "title": {
+            "zh": "打开固定版本迁移方案",
+            "en": "Open the pinned migration plan"
+          },
+          "body": {
+            "zh": "此命令只打印本地文档，不安装或运行GPU库。",
+            "en": "This prints a local document; it installs or executes no GPU library."
+          },
+          "command": "python3 -c \"from pathlib import Path; print(Path('GPU_EXTENSION.md').read_text())\"",
+          "expected": {
+            "zh": "看到两个完整commit与未执行标记。",
+            "en": "Two full commits and the unexecuted boundary are visible."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "复制旧NVSHMEM安装教程后新版本导入失败",
+            "en": "Old NVSHMEM setup instructions fail with a new version"
+          },
+          "fix": {
+            "zh": "回到固定commit的依赖和测试；不要在不同版本API之间猜测兼容。记录失败原文与版本。",
+            "en": "Return to dependencies and tests at the pinned commit; do not guess compatibility across APIs. Preserve errors and versions."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "固定commit意味着GPU实验已跑通吗？",
+            "en": "Does a pinned commit prove the GPU experiment ran successfully?"
+          },
+          "options": [
+            {
+              "zh": "意味着",
+              "en": "Yes"
+            },
+            {
+              "zh": "不意味着，还需环境与运行证据",
+              "en": "No, environment and execution evidence are needed"
+            },
+            {
+              "zh": "只要仓库有Star就意味着",
+              "en": "Yes if the repo has stars"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "源码身份与执行证据是不同信息；需要记录实际硬件、依赖与日志。",
+            "en": "Source identity is not execution evidence; actual hardware, dependencies and logs are needed."
+          }
+        },
+        {
+          "question": {
+            "zh": "两库衔接时除shape外还要检查什么？",
+            "en": "Besides shape, what must be checked when connecting both libraries?"
+          },
+          "options": [
+            {
+              "zh": "dtype、scale布局与同步",
+              "en": "Dtype, scale layout and synchronization"
+            },
+            {
+              "zh": "网页主题",
+              "en": "Page theme"
+            },
+            {
+              "zh": "仓库大小",
+              "en": "Repository size"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "相同形状不能保证布局、精度语义或数据就绪条件一致。",
+            "en": "Matching shapes do not establish matching layout, precision semantics or readiness."
+          }
+        }
+      ]
+    },
+    {
+      "day": 20,
+      "title": {
+        "zh": "结课作品：可复查的 MoE 分析报告",
+        "en": "Build a reviewable MoE analysis portfolio"
+      },
+      "lesson": {
+        "zh": "运行day20会重新生成所有20份日记录，并生成报告骨架及SHA-256清单。哈希用于定位文件变化，不证明结果正确或他人已经复现。第17天含真实CPU计时，因此重复运行不要求所有输出字节完全相同。",
+        "en": "day20 regenerates all twenty records, a report scaffold and SHA-256 manifest. Hashes identify changed files but prove neither correctness nor independent reproduction. Day17 contains actual CPU timings, so repeated output bytes need not be identical."
+      },
+      "task": {
+        "zh": "完成REPORT.md全部TODO，附上两个函数的本人实现、检查日志及一个保留失败结果的对照。请另一人按README复跑后记录差异。",
+        "en": "Complete every REPORT.md TODO; attach your two functions, checker log and a comparison retaining failures. Ask a peer to reproduce from README and document differences."
+      },
+      "evidence": {
+        "zh": "out/day20.json、本人预测与改动说明；保持原记录以便第20天比较。",
+        "en": "out/day20.json, your prediction and change notes; retain the baseline for day20."
+      },
+      "checklist": {
+        "zh": [
+          "能逐项解释本日预期输出",
+          "完成独立变更并说明其语义影响",
+          "用原始记录支持结论，标明模型与真实CPU测量"
+        ],
+        "en": [
+          "Explain each expected output",
+          "Complete the independent change and explain its semantic effect",
+          "Support conclusions with raw records and label models versus CPU measurements"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做全部使用Python 3.9+标准库和普通CPU。第17天只测Python执行；所有GPU扩展均未在本平台验证。",
+        "en": "All required work uses Python 3.9+ standard library and a laptop CPU. Day17 measures Python only; GPU extensions have not been validated by this platform."
+      },
+      "reading": [
+        {
+          "title": "DeepEP · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepEP/tree/f6aa38fe06cd4a0489e7730365d4e0114970a2f3"
+        },
+        {
+          "title": "DeepGEMM · pinned source baseline",
+          "url": "https://github.com/deepseek-ai/DeepGEMM/tree/5081f8513af57e61696de4f4f04b0e707ffb503e"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "概念与数据契约",
+            "en": "Concept and data contract"
+          },
+          "body": {
+            "zh": "运行day20会重新生成所有20份日记录，并生成报告骨架及SHA-256清单。哈希用于定位文件变化，不证明结果正确或他人已经复现。第17天含真实CPU计时，因此重复运行不要求所有输出字节完全相同。",
+            "en": "day20 regenerates all twenty records, a report scaffold and SHA-256 manifest. Hashes identify changed files but prove neither correctness nor independent reproduction. Day17 contains actual CPU timings, so repeated output bytes need not be identical."
+          }
+        },
+        {
+          "title": {
+            "zh": "机制与适用边界",
+            "en": "Mechanism and limits"
+          },
+          "body": {
+            "zh": "作品必须包含本人假设、单一改动、固定输入、正确性结果和局限。专家放置的对照保持算子不变，可以讨论模型流量变化；改变top-k则改变算子，应单独报告。保留负结果，才能让招聘方看懂你如何判断。",
+            "en": "Include your hypothesis, one controlled change, fixed inputs, correctness evidence and limitations. Placement comparisons preserve the operator and support modeled-traffic analysis; changing top-k changes the operator and belongs in a separate experiment. Retain negative results so reviewers can assess your judgment."
+          }
+        },
+        {
+          "title": {
+            "zh": "先预测，再读输出",
+            "en": "Predict before reading output"
+          },
+          "body": {
+            "zh": "生成day01.json到day20.json、REPORT.md和manifest.json；executed_days表示脚本运行，不表示学员已通过课程。",
+            "en": "Creates day01.json through day20.json, REPORT.md and manifest.json. executed_days records script execution, not course completion."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "结课作品：可复查的 MoE 分析报告",
+          "en": "Build a reviewable MoE analysis portfolio"
+        },
+        "nodes": [
+          {
+            "zh": "20份原始证据",
+            "en": "20 raw records"
+          },
+          {
+            "zh": "本人代码与假设",
+            "en": "Your code and hypothesis"
+          },
+          {
+            "zh": "受控对照",
+            "en": "Controlled comparison"
+          },
+          {
+            "zh": "报告与复现清单",
+            "en": "Report and reproduction manifest"
+          }
+        ],
+        "caption": {
+          "zh": "沿箭头追踪本日数据或决策。数值模型是教学假设；只有第17天包含本机Python计时。",
+          "en": "Follow the data or decision flow. Numerical cost models are teaching assumptions; only day17 includes local Python timings."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行并检查当天实验",
+            "en": "Run and inspect today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的moe-systems目录，确认Python 3.9+。每天独立运行；重复使用out会覆盖同名生成文件，对照实验另设目录。",
+            "en": "Extract the complete ZIP, enter moe-systems beside lab.py and check Python 3.9+. Each day runs independently; reusing out overwrites generated files, so give comparisons their own directory."
+          },
+          "command": "python3 lab.py day20 --out out",
+          "expected": {
+            "zh": "生成day01.json到day20.json、REPORT.md和manifest.json；executed_days表示脚本运行，不表示学员已通过课程。",
+            "en": "Creates day01.json through day20.json, REPORT.md and manifest.json. executed_days records script execution, not course completion."
+          }
+        },
+        {
+          "title": {
+            "zh": "读取原始记录",
+            "en": "Read the raw record"
+          },
+          "body": {
+            "zh": "先核对evidence、gpu_executed、parameters与输入/源码哈希，再按本日字段解释结果。",
+            "en": "Check evidence, gpu_executed, parameters and input/source hashes before interpreting the day-specific fields."
+          },
+          "command": "python3 -m json.tool out/day20.json",
+          "expected": {
+            "zh": "JSON可读；必须能解释本日预期字段，不能用PASS替代本人分析。",
+            "en": "Readable JSON; explain the expected fields rather than treating PASS as your analysis."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立变更与解释",
+            "en": "Make and explain your own change"
+          },
+          "body": {
+            "zh": "完成REPORT.md全部TODO，附上两个函数的本人实现、检查日志及一个保留失败结果的对照。请另一人按README复跑后记录差异。",
+            "en": "Complete every REPORT.md TODO; attach your two functions, checker log and a comparison retaining failures. Ask a peer to reproduce from README and document differences."
+          },
+          "expected": {
+            "zh": "保存预测、单一改动、原始记录和解释；说明哪项语义保持不变、哪项发生变化。",
+            "en": "Keep your prediction, single change, raw record and explanation; identify preserved and changed semantics."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "只上传自动生成报告，缺少个人贡献",
+            "en": "Only the generated report is submitted, with no personal contribution"
+          },
+          "fix": {
+            "zh": "补齐假设、改动、解释和局限；把教学成本、Python时间与未运行GPU方案分别标注。",
+            "en": "Add hypothesis, change, interpretation and limitations; label analytical costs, Python timing and unexecuted GPU plans separately."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到lab.py或没有输出目录权限",
+            "en": "lab.py is missing or the output directory is unwritable"
+          },
+          "fix": {
+            "zh": "完整解压后进入moe-systems目录；确认python3 --version为3.9+。Windows可用py -3替换python3；输出换到本人可写目录。",
+            "en": "Extract the whole package and enter moe-systems; check python3 --version is 3.9+. On Windows use py -3. Choose a writable output directory."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "manifest中的哈希能证明什么？",
+            "en": "What does a manifest hash establish?"
+          },
+          "options": [
+            {
+              "zh": "文件内容身份",
+              "en": "File-content identity"
+            },
+            {
+              "zh": "GPU加速",
+              "en": "GPU speedup"
+            },
+            {
+              "zh": "模型质量",
+              "en": "Model quality"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "哈希可帮助判断内容是否改变，不是正确性或性能证明。",
+            "en": "Hashes help identify content changes; they do not prove correctness or performance."
+          }
+        },
+        {
+          "question": {
+            "zh": "哪个作品结论有证据支持？",
+            "en": "Which portfolio conclusion is supported?"
+          },
+          "options": [
+            {
+              "zh": "已跑通CPU语义并分析模型流量",
+              "en": "CPU semantics ran and modeled traffic was analyzed"
+            },
+            {
+              "zh": "已复现GPU生产吞吐",
+              "en": "Production GPU throughput was reproduced"
+            },
+            {
+              "zh": "已证明改变路由不损质量",
+              "en": "Changed routing preserves quality"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "本实验实际执行CPU算子，其他硬件与质量结论需要额外证据。",
+            "en": "The lab executes CPU operators; hardware and quality claims require additional evidence."
+          }
+        }
+      ]
+    }
+  ]
+}

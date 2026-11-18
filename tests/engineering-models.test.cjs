@@ -50,8 +50,8 @@ test("path duration sums mixed course lengths instead of assuming ten days each"
   const courses = paths.flatMap(path => path.courses).filter((id,index,all)=>all.indexOf(id)===index)
     .map(id=>require(`../content/courses/${id}.json`));
   assert.equal(daysFor(paths.find(path=>path.id==="inference-engineer").requiredCourses,courses),50);
-  assert.equal(daysFor(paths.find(path=>path.id==="performance-engineer").requiredCourses,courses),60);
-  assert.equal(daysFor(paths.find(path=>path.id==="platform-engineer").requiredCourses,courses),50);
+  assert.equal(daysFor(paths.find(path=>path.id==="performance-engineer").requiredCourses,courses),80);
+  assert.equal(daysFor(paths.find(path=>path.id==="platform-engineer").requiredCourses,courses),80);
 });
 
 test("transport uses decimal units and cache probabilities are conditional", () => {

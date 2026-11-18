@@ -1,0 +1,4444 @@
+{
+  "id": "post-training",
+  "number": "13",
+  "durationDays": 20,
+  "category": "training",
+  "title": {
+    "zh": "后训练 Infra：verl 与 AReaL",
+    "en": "Post-training Infra: verl and AReaL"
+  },
+  "subtitle": {
+    "zh": "20天，把采样、奖励、更新和评估连成可复核作品",
+    "en": "20 days connecting rollout, reward, updates and evaluation"
+  },
+  "description": {
+    "zh": "从可验证奖励、策略梯度与版本契约，到异步队列、权重同步和断点恢复。20天图解、3种交互模型、40道解析题和无需GPU的代码实验，完成一个有明确边界的后训练工程作品，并准备真实框架扩展。",
+    "en": "Connect verifiable rewards, policy gradients and version contracts with async queues, weight synchronization and recovery. Twenty illustrated lessons, three interactive models, forty explained questions and CPU code exercises lead to a bounded post-training portfolio and a plan for real-framework extensions."
+  },
+  "level": "intermediate",
+  "hoursPerDay": {
+    "zh": "每天90–150分钟，共30–50小时；可按基础延长",
+    "en": "90–150 minutes daily; 30–50 hours, extend as needed"
+  },
+  "prerequisites": {
+    "zh": "系统基础、Python函数与JSON、基础概率与导数；建议先学vLLM或SGLang，并理解PyTorch分布式和Ray的职责。",
+    "en": "Foundations, Python functions/JSON, basic probability and derivatives. Study vLLM or SGLang first and understand the roles of distributed PyTorch and Ray."
+  },
+  "hardware": {
+    "zh": "必做：普通电脑、Python 3.9+标准库。标量REINFORCE实际在CPU计算，系统延迟/内存为教学模型；不启动verl/AReaL，不运行GPU。扩展按固定上游版本配置兼容Linux、GPU、驱动、模型与依赖。",
+    "en": "Required: a laptop and Python 3.9+ standard library. Scalar REINFORCE executes on CPU; latency/memory are teaching models. No verl/AReaL or GPU is launched. Extensions require compatible Linux, GPU, drivers, models and dependencies for the selected upstream revision."
+  },
+  "hardwareTier": "cpu",
+  "tags": [
+    "Post-training",
+    "verl",
+    "AReaL",
+    "RL",
+    "Rollout"
+  ],
+  "roles": {
+    "zh": [
+      "后训练与分布式训练工程师",
+      "AI平台工程师",
+      "推理与服务工程师"
+    ],
+    "en": [
+      "Post-training and distributed training engineer",
+      "AI platform engineer",
+      "Inference and serving engineer"
+    ]
+  },
+  "outcome": {
+    "zh": "20份日课JSON、可复现标量策略更新、3个本人实现的正确性练习、版本/重试/恢复演练、单变量对照和框架接入计划。附源码哈希、环境与局限，形成可复查作品。",
+    "en": "Twenty daily JSON records, reproducible scalar policy updates, three independently implemented correctness exercises, version/retry/recovery drills, a controlled comparison and framework integration plan, with source hashes, environment and limits."
+  },
+  "lastVerified": "2026-11-18",
+  "resources": [
+    {
+      "title": "verl · v0.9.1 release baseline",
+      "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+    },
+    {
+      "title": "AReaL · v2.1.1 release baseline",
+      "url": "https://github.com/areal-project/AReaL/releases/tag/v2.1.1"
+    },
+    {
+      "title": "verl · official quickstart (moving documentation)",
+      "url": "https://verl.readthedocs.io/en/latest/start/quickstart.html"
+    },
+    {
+      "title": "PPO · original paper",
+      "url": "https://arxiv.org/abs/1707.06347"
+    },
+    {
+      "title": "Python · random state and reproducibility",
+      "url": "https://docs.python.org/3/library/random.html"
+    },
+    {
+      "title": "Python · hashlib",
+      "url": "https://docs.python.org/3/library/hashlib.html"
+    },
+    {
+      "title": "verl · GRPO concepts and configuration",
+      "url": "https://verl.readthedocs.io/en/latest/algo/grpo.html"
+    },
+    {
+      "title": "OpenAI Spinning Up · policy-gradient derivation",
+      "url": "https://spinningup.openai.com/en/latest/spinningup/rl_intro3.html"
+    }
+  ],
+  "lab": {
+    "path": "post-training",
+    "title": {
+      "zh": "下载20天后训练实验包",
+      "en": "Download the 20-day post-training lab"
+    },
+    "description": {
+      "zh": "无依赖CPU实验、三项学生练习、独立检查、参考答案、作品模板与固定版本扩展说明。",
+      "en": "Dependency-free CPU experiments, three student exercises, independent checks, reference answers, portfolio template and pinned-version extension guidance."
+    }
+  },
+  "environment": {
+    "reference": {
+      "zh": "资料基线：verl v0.9.1、AReaL v2.1.1；2026-11-18核对。发布标签用于阅读定位，真实运行须记录解析后的commit、容器digest和模型修订。",
+      "en": "Source baseline: verl v0.9.1 and AReaL v2.1.1, checked 2026-11-18. Tags locate the reading baseline; actual runs must record resolved commits, image digests and model revisions."
+    },
+    "minimum": {
+      "zh": "Python 3.9+标准库、CPU；完整解压实验包，无需网络或模型下载。",
+      "en": "Python 3.9+ standard library and CPU; fully extract the lab. No network or model downloads needed."
+    },
+    "verified": {
+      "zh": "Python 3.9.6：20个日课命令、参考练习检查和语义回归测试已本地运行；结果限于CPU教学程序。",
+      "en": "Python 3.9.6: twenty daily commands, reference exercise checks and semantic regression tests run locally; results cover only the CPU teaching program."
+    },
+    "unverified": {
+      "zh": "未执行verl/AReaL真实训练、GPU性能、分布式网络和生产部署验证；第18/19天为接入契约与故障演练设计。",
+      "en": "Real verl/AReaL training, GPU performance, distributed networking and production deployment were not run. Days 18/19 are integration contracts and fault-drill designs."
+    }
+  },
+  "steps": [
+    {
+      "day": 1,
+      "title": {
+        "zh": "从推理服务走向后训练闭环",
+        "en": "From serving to a post-training loop"
+      },
+      "lesson": {
+        "zh": "今天围绕“从推理服务走向后训练闭环”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect from serving to a post-training loop through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "画出五个阶段，给每条边写一个JSON字段，说明采样策略与参考策略的区别。",
+        "en": "Draw five stages, label each edge with a JSON field and distinguish behavior policy from reference policy."
+      },
+      "evidence": {
+        "zh": "out/day01.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day01.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "推理只执行当前策略；后训练还要把输出变成奖励，计算更新，并将新权重重新送回采样端。一次训练步并不是一次HTTP请求：数据、策略版本、奖励规则和评估集都需要跟随记录。先画清楚每个组件读写什么。",
+            "en": "Inference executes the current policy. Post-training additionally scores outputs, updates parameters and sends new weights back to the sampler. A training step is not one HTTP request: data, policy versions, reward rules and evaluation splits must remain traceable. Start by identifying each component’s inputs and outputs."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "实验中的策略只有一个标量：它选择输出正确加法答案或偏一答案的概率。答案由已知算术规则构造，策略没有学习加法。这个简化让你能观察完整更新流程；结课证据只能说明控制流程和标量优化，不支持大模型能力或推理泛化结论。",
+            "en": "Our policy has one scalar: the probability of choosing a correct addition answer rather than an off-by-one answer. Answers come from a known arithmetic rule; the policy does not learn addition. This makes the update loop inspectable, but evidence supports control flow and scalar optimization, not language-model capabilities or reasoning generalization."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "从推理服务走向后训练闭环",
+          "en": "From serving to a post-training loop"
+        },
+        "nodes": [
+          {
+            "zh": "题目",
+            "en": "Prompt"
+          },
+          {
+            "zh": "采样",
+            "en": "Rollout"
+          },
+          {
+            "zh": "奖励",
+            "en": "Reward"
+          },
+          {
+            "zh": "参数更新",
+            "en": "Update"
+          },
+          {
+            "zh": "独立评估",
+            "en": "Evaluate"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 1 --out out",
+          "expected": {
+            "zh": "stages有5项，initial_probability为0.5；policy明确写出一个标量。",
+            "en": "stages has five entries; initial_probability is 0.5; policy explicitly describes one scalar."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day01.json",
+          "expected": {
+            "zh": "stages有5项，initial_probability为0.5；policy明确写出一个标量。",
+            "en": "stages has five entries; initial_probability is 0.5; policy explicitly describes one scalar."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "画出五个阶段，给每条边写一个JSON字段，说明采样策略与参考策略的区别。",
+            "en": "Draw five stages, label each edge with a JSON field and distinguish behavior policy from reference policy."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把正确答案概率上升说成学会加法",
+            "en": "Calling increased correct-answer probability learned arithmetic"
+          },
+          "fix": {
+            "zh": "打开rollout函数：两个备选答案都由a+b构造。报告应写“学习选择已有动作”，并说明缺少真实语言建模。",
+            "en": "Inspect rollout: both candidates are constructed from a+b. Report learning to choose existing actions and explain the absence of language modeling."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day01.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "哪个组件把输出变成优化信号？",
+            "en": "Which component turns outputs into an optimization signal?"
+          },
+          "options": [
+            {
+              "zh": "奖励计算",
+              "en": "Reward computation"
+            },
+            {
+              "zh": "静态页面",
+              "en": "Static page"
+            },
+            {
+              "zh": "文件压缩",
+              "en": "ZIP packaging"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "奖励定义目标信号；页面与压缩只负责展示和分发。",
+            "en": "Rewards define the objective signal; pages and ZIPs only display and distribute content."
+          }
+        },
+        {
+          "question": {
+            "zh": "本实验策略学到什么？",
+            "en": "What can this policy learn?"
+          },
+          "options": [
+            {
+              "zh": "语言理解",
+              "en": "Language understanding"
+            },
+            {
+              "zh": "选择正确备选动作的概率",
+              "en": "Probability of choosing the constructed correct action"
+            },
+            {
+              "zh": "GPU调度",
+              "en": "GPU scheduling"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "答案预先通过算术构造，只有一个Bernoulli参数变化。",
+            "en": "Answers are constructed arithmetically; only a Bernoulli parameter changes."
+          }
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": {
+        "zh": "数据契约与训练集泄漏",
+        "en": "Data contracts and split leakage"
+      },
+      "lesson": {
+        "zh": "今天围绕“数据契约与训练集泄漏”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect data contracts and split leakage through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "新增一个内容重复但ID不同的例子，解释现有检查为何漏掉它，并提出内容哈希字段。",
+        "en": "Create a content duplicate with a different ID, explain why this check misses it and propose a content-hash field."
+      },
+      "evidence": {
+        "zh": "out/day02.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day02.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "后训练数据至少需要稳定ID、输入、奖励目标和数据划分。训练集用于更新，验证集用于选择设置，测试集用于最后报告；让测试结果反复影响设置会把测试集变成新的验证集。数据版本必须与模型版本一起记录。",
+            "en": "Post-training data needs stable IDs, inputs, reward targets and splits. Training updates parameters; validation selects settings; test data supports the final report. Repeatedly tuning against test results effectively creates another validation set. Record data versions alongside model versions."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "本日用互不重叠的ID集合演示泄漏检查。ID不重叠只是必要条件：同一题改写后换ID仍可能泄漏，真实任务还要检查规范化内容和近重复。注入ID 2后，检查必须指出具体冲突，而不是只输出“数据有效”。",
+            "en": "Disjoint ID sets demonstrate leakage detection. Disjoint IDs are necessary but insufficient: paraphrasing a task with a new ID can still leak information. Real datasets also need normalized-content and near-duplicate checks. Injecting ID 2 must identify that conflict, rather than merely claim valid data."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "数据契约与训练集泄漏",
+          "en": "Data contracts and split leakage"
+        },
+        "nodes": [
+          {
+            "zh": "原始题目",
+            "en": "Raw tasks"
+          },
+          {
+            "zh": "稳定ID",
+            "en": "Stable IDs"
+          },
+          {
+            "zh": "分割",
+            "en": "Split"
+          },
+          {
+            "zh": "交集检查",
+            "en": "Intersection check"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 2 --out out",
+          "expected": {
+            "zh": "overlap为空，injected_leak为[2]；train/validation/test各有12/4/4个ID。",
+            "en": "overlap is empty, injected_leak is [2]; train/validation/test contain 12/4/4 IDs."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day02.json",
+          "expected": {
+            "zh": "overlap为空，injected_leak为[2]；train/validation/test各有12/4/4个ID。",
+            "en": "overlap is empty, injected_leak is [2]; train/validation/test contain 12/4/4 IDs."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "新增一个内容重复但ID不同的例子，解释现有检查为何漏掉它，并提出内容哈希字段。",
+            "en": "Create a content duplicate with a different ID, explain why this check misses it and propose a content-hash field."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "换了ID就认为没有泄漏",
+            "en": "Assuming a new ID eliminates leakage"
+          },
+          "fix": {
+            "zh": "补做规范化题目内容比较；不要把ID集合检查当语义去重。",
+            "en": "Also compare normalized task content; ID checks do not perform semantic deduplication."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day02.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "训练ID为0–11，验证包含2，会发生什么？",
+            "en": "Training IDs are 0–11 and validation includes 2. What happens?"
+          },
+          "options": [
+            {
+              "zh": "没有问题",
+              "en": "No issue"
+            },
+            {
+              "zh": "出现交集泄漏",
+              "en": "An overlap leaks across splits"
+            },
+            {
+              "zh": "自动增强泛化",
+              "en": "Generalization automatically improves"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "ID 2参与更新也参与验证，验证不再独立。",
+            "en": "ID 2 participates in both updates and validation, breaking independence."
+          }
+        },
+        {
+          "question": {
+            "zh": "反复根据测试集调参数会怎样？",
+            "en": "What happens when tuning repeatedly on the test set?"
+          },
+          "options": [
+            {
+              "zh": "测试集承担了验证集的角色",
+              "en": "It takes the role of a validation set"
+            },
+            {
+              "zh": "更独立",
+              "en": "It becomes more independent"
+            },
+            {
+              "zh": "只影响磁盘",
+              "en": "Only disk use changes"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "设置选择已依赖测试信息，最终评估需要另留未使用数据。",
+            "en": "Selection now depends on test information; final evaluation needs another untouched split."
+          }
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": {
+        "zh": "奖励函数：格式、正确性与漏洞",
+        "en": "Rewards: format, correctness and loopholes"
+      },
+      "lesson": {
+        "zh": "今天围绕“奖励函数：格式、正确性与漏洞”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect rewards: format, correctness and loopholes through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "给cases加上负数、重复标记和正文含正确数字三种输入，手算奖励后修改实验。",
+        "en": "Add a negative answer, repeated markers and a body containing the correct number; predict rewards before modifying the lab."
+      },
+      "evidence": {
+        "zh": "out/day03.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day03.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "可验证奖励把输出解析成结构，再与目标比较。先定义什么是有效答案，之后才计算分数。不能在任意文本中搜索正确数字：输出“5不是答案，50才是”可能误获奖励。奖励函数本身需要反例测试。",
+            "en": "A verifiable reward parses output into a structure before comparing it with the target. Define a valid answer before scoring it. Searching arbitrary text for a correct number can reward contradictory statements. The reward function itself needs adversarial examples."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "本日契约要求整个去除首尾空白的字符串匹配“#### 整数”。这是一条教学格式规则，实际框架的评分规则可能不同。fullmatch拒绝多答案与额外解释；正确格式但错误数值仍得0。若将来放宽格式，必须先更新契约和反例。",
+            "en": "The teaching contract requires the entire stripped response to match “#### integer”. Real framework scorers may use different rules. fullmatch rejects multiple answers and extra explanations; valid formatting with the wrong value still earns zero. Relaxing the format requires updating the contract and counterexamples first."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "奖励函数：格式、正确性与漏洞",
+          "en": "Rewards: format, correctness and loopholes"
+        },
+        "nodes": [
+          {
+            "zh": "原始输出",
+            "en": "Raw output"
+          },
+          {
+            "zh": "严格解析",
+            "en": "Strict parsing"
+          },
+          {
+            "zh": "整数比较",
+            "en": "Integer comparison"
+          },
+          {
+            "zh": "奖励与原因",
+            "en": "Reward and reason"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 3 --out out",
+          "expected": {
+            "zh": "默认五条奖励依次为1、0、0、0、1。",
+            "en": "The five default rewards are 1, 0, 0, 0, 1."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day03.json",
+          "expected": {
+            "zh": "默认五条奖励依次为1、0、0、0、1。",
+            "en": "The five default rewards are 1, 0, 0, 0, 1."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "给cases加上负数、重复标记和正文含正确数字三种输入，手算奖励后修改实验。",
+            "en": "Add a negative answer, repeated markers and a body containing the correct number; predict rewards before modifying the lab."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "答对数字却得0",
+            "en": "The correct number gets zero"
+          },
+          "fix": {
+            "zh": "检查是否满足完整格式，不把解析失败误诊为训练器失效。保留原始输出和评分规则。",
+            "en": "Check the complete format before blaming the trainer. Preserve raw output and the scoring rule."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day03.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "“#### 50”的目标为5，应得几分？",
+            "en": "With target 5, what reward should “#### 50” receive?"
+          },
+          "options": [
+            {
+              "zh": "1",
+              "en": "1"
+            },
+            {
+              "zh": "0",
+              "en": "0"
+            },
+            {
+              "zh": "0.5",
+              "en": "0.5"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "解析后的整数50不等于5，子串命中不能代替正确性。",
+            "en": "Parsed integer 50 differs from 5; substring matching is not correctness."
+          }
+        },
+        {
+          "question": {
+            "zh": "最有价值的评分测试是什么？",
+            "en": "Which scoring test adds the most value?"
+          },
+          "options": [
+            {
+              "zh": "仅检查满分样本",
+              "en": "Only full-credit samples"
+            },
+            {
+              "zh": "仅检查脚本能导入",
+              "en": "Only import success"
+            },
+            {
+              "zh": "加入多答案和伪格式反例",
+              "en": "Multiple-answer and malformed counterexamples"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "反例检验奖励是否能被格式或数字投机利用。",
+            "en": "Counterexamples test whether formatting or number tricks exploit the reward."
+          }
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": {
+        "zh": "Rollout、随机种子与行为概率",
+        "en": "Rollouts, seeds and behavior probabilities"
+      },
+      "lesson": {
+        "zh": "今天围绕“Rollout、随机种子与行为概率”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect rollouts, seeds and behavior probabilities through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "用--seed 8重跑并保留out-seed8，比较batch_sha256及奖励比例。",
+        "en": "Rerun with --seed 8 into out-seed8 and compare batch_sha256 and reward fractions."
+      },
+      "evidence": {
+        "zh": "out/day04.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day04.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        },
+        {
+          "title": "Python · random state and reproducibility",
+          "url": "https://docs.python.org/3/library/random.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "轨迹需要记录动作、奖励和生成时的概率。后续策略已经改变时，行为概率仍属于旧策略；用新概率覆盖它会破坏重要性比率的含义。可复现还要固定题目顺序、采样参数与随机数生成器。",
+            "en": "A trajectory records actions, rewards and probabilities at generation time. Once the policy changes, behavior probabilities still belong to the old policy. Replacing them with current probabilities breaks importance ratios. Reproducibility also depends on task order, sampling parameters and the random generator."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "本日每次运行创建独立Random实例，固定种子可得到相同32条轨迹。此处相等来自完全受控的Python程序；GPU算子、并行调度与模型软件版本还可能引入不确定性。种子相同不是跨平台逐位一致的通用承诺。",
+            "en": "Each run creates an independent Random instance and generates 32 trajectories. Repeating the seed reproduces this controlled Python program. GPU kernels, parallel scheduling and software versions can introduce additional nondeterminism; matching seeds do not guarantee bitwise identity across platforms."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "Rollout、随机种子与行为概率",
+          "en": "Rollouts, seeds and behavior probabilities"
+        },
+        "nodes": [
+          {
+            "zh": "种子与策略",
+            "en": "Seed and policy"
+          },
+          {
+            "zh": "动作采样",
+            "en": "Sample action"
+          },
+          {
+            "zh": "行为logprob",
+            "en": "Behavior logprob"
+          },
+          {
+            "zh": "轨迹哈希",
+            "en": "Trajectory hash"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 4 --out out",
+          "expected": {
+            "zh": "same_seed_equal为true，different_seed_equal为false；保存32条rows及哈希。",
+            "en": "same_seed_equal is true and different_seed_equal is false; 32 rows and a hash are saved."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day04.json",
+          "expected": {
+            "zh": "same_seed_equal为true，different_seed_equal为false；保存32条rows及哈希。",
+            "en": "same_seed_equal is true and different_seed_equal is false; 32 rows and a hash are saved."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "用--seed 8重跑并保留out-seed8，比较batch_sha256及奖励比例。",
+            "en": "Rerun with --seed 8 into out-seed8 and compare batch_sha256 and reward fractions."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "每次结果不同却只检查模型参数",
+            "en": "Checking only parameters when runs differ"
+          },
+          "fix": {
+            "zh": "比较seed、输入顺序和源码哈希；不要在循环中重置同一个种子造成重复样本。",
+            "en": "Compare seed, input order and source hash; repeatedly resetting a seed inside the sampling loop can duplicate samples."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day04.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "重要性比率的分母是哪种概率？",
+            "en": "Which probability is the denominator of an importance ratio?"
+          },
+          "options": [
+            {
+              "zh": "实际生成动作时的行为概率",
+              "en": "The behavior probability that generated the action"
+            },
+            {
+              "zh": "文件大小",
+              "en": "File size"
+            },
+            {
+              "zh": "更新后的任意概率",
+              "en": "Any updated probability"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "分母对应采样分布；否则比率不能描述分布变化。",
+            "en": "The denominator represents the sampling distribution; otherwise the ratio cannot describe distribution change."
+          }
+        },
+        {
+          "question": {
+            "zh": "相同种子意味着所有GPU实验逐位相同吗？",
+            "en": "Does the same seed make every GPU experiment bitwise identical?"
+          },
+          "options": [
+            {
+              "zh": "一定",
+              "en": "Always"
+            },
+            {
+              "zh": "不，仍取决于算子和执行环境",
+              "en": "No; kernels and execution environment also matter"
+            },
+            {
+              "zh": "只要CPU相同就一定",
+              "en": "Yes, if the CPU matches"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "还需控制软件、算法确定性和执行顺序。",
+            "en": "Software, algorithmic determinism and execution order must also be controlled."
+          }
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": {
+        "zh": "Response mask 与损失归约",
+        "en": "Response masks and loss reduction"
+      },
+      "lesson": {
+        "zh": "今天围绕“Response mask 与损失归约”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect response masks and loss reduction through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "完成exercises.py中的masked_mean，先用参考检查理解边界，再运行自己的检查。",
+        "en": "Implement masked_mean in exercises.py, inspect reference checks for edge cases and run your own checks."
+      },
+      "evidence": {
+        "zh": "out/day05.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day05.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "训练批次混合了prompt、response和padding。策略梯度通常应作用在生成的response上；把提示词或填充位置纳入同一个平均值，会改变目标权重。attention mask和loss mask解决不同问题，不能仅因形状相同就互换。",
+            "en": "A batch contains prompt, response and padding tokens. Policy gradients generally apply to generated responses. Including prompts or padding in the same mean changes the objective weighting. Attention masks and loss masks serve different purposes and are not interchangeable merely because their shapes match."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "本例五个logprob为-1、-2、-3、-4、-9，mask只选择第三和第四个，平均值为-3.5。全序列平均是-3.8。学生需实现masked_mean，并拒绝长度不一致或全零mask；悄悄除以1会掩盖空响应数据问题。",
+            "en": "The five logprobs are -1, -2, -3, -4 and -9. Selecting only the third and fourth gives -3.5; averaging the whole sequence gives -3.8. Implement masked_mean and reject mismatched lengths or empty selection. Silently substituting a denominator of one hides empty-response data errors."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "Response mask 与损失归约",
+          "en": "Response masks and loss reduction"
+        },
+        "nodes": [
+          {
+            "zh": "Token角色",
+            "en": "Token roles"
+          },
+          {
+            "zh": "响应mask",
+            "en": "Response mask"
+          },
+          {
+            "zh": "选中求和",
+            "en": "Selected sum"
+          },
+          {
+            "zh": "有效长度归约",
+            "en": "Valid-length reduction"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 5 --out out",
+          "expected": {
+            "zh": "response_mean_logprob=-3.5，wrong_unmasked_mean=-3.8。",
+            "en": "response_mean_logprob=-3.5 and wrong_unmasked_mean=-3.8."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day05.json",
+          "expected": {
+            "zh": "response_mean_logprob=-3.5，wrong_unmasked_mean=-3.8。",
+            "en": "response_mean_logprob=-3.5 and wrong_unmasked_mean=-3.8."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "完成exercises.py中的masked_mean，先用参考检查理解边界，再运行自己的检查。",
+            "en": "Implement masked_mean in exercises.py, inspect reference checks for edge cases and run your own checks."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        },
+        {
+          "title": {
+            "zh": "学生练习与独立检查",
+            "en": "Student exercises and independent checks"
+          },
+          "body": {
+            "zh": "依次完成exercises.py的三个函数。参考模式可立即通过；学生模式在尚未完成函数时会返回NOT YET，这是预期提示，不要只复制参考输出。",
+            "en": "Complete the three functions in exercises.py over the course. Reference mode passes immediately; student mode returns NOT YET until unfinished functions are implemented. Do not submit reference output as your solution."
+          },
+          "command": "python3 check_exercises.py --reference",
+          "expected": {
+            "zh": "参考答案通过15个固定边界用例；完成全部函数后再运行python3 check_exercises.py检验自己的实现。",
+            "en": "Reference answers pass fifteen fixed edge cases. After implementing all functions, run python3 check_exercises.py to check your own code."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "loss突然变成NaN或0",
+            "en": "Loss unexpectedly becomes NaN or zero"
+          },
+          "fix": {
+            "zh": "先打印有效response数量；全零mask应报错，检查截断和token对齐。",
+            "en": "Inspect the number of valid response tokens. Reject all-zero masks and check truncation and token alignment."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day05.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "选中-3、-4后的均值是多少？",
+            "en": "What is the mean of selected values -3 and -4?"
+          },
+          "options": [
+            {
+              "zh": "-3.8",
+              "en": "-3.8"
+            },
+            {
+              "zh": "-7",
+              "en": "-7"
+            },
+            {
+              "zh": "-3.5",
+              "en": "-3.5"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "有效数量为2，因此(-3-4)/2=-3.5。",
+            "en": "There are two selected values, so (-3-4)/2=-3.5."
+          }
+        },
+        {
+          "question": {
+            "zh": "全零loss mask最适合怎样处理？",
+            "en": "How should an all-zero loss mask be handled here?"
+          },
+          "options": [
+            {
+              "zh": "悄悄当全1",
+              "en": "Silently replace it with ones"
+            },
+            {
+              "zh": "明确拒绝并检查数据",
+              "en": "Reject it and inspect the data"
+            },
+            {
+              "zh": "提高学习率",
+              "en": "Increase the learning rate"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "空选择无法定义本课均值；改学习率不能修数据语义。",
+            "en": "An empty selection has no defined mean here; changing learning rate does not repair data semantics."
+          }
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": {
+        "zh": "组内优势与零方差组",
+        "en": "Group advantages and zero-variance groups"
+      },
+      "lesson": {
+        "zh": "今天围绕“组内优势与零方差组”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect group advantages and zero-variance groups through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "将奖励改为[0,0,0,1]，手算均值及方差，并解释唯一成功样本的优势为何更大。",
+        "en": "Change rewards to [0,0,0,1], calculate mean and variance, and explain the larger advantage of the sole success."
+      },
+      "evidence": {
+        "zh": "out/day06.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day06.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · GRPO concepts and configuration",
+          "url": "https://verl.readthedocs.io/en/latest/algo/grpo.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "组内优势将同一题的多个奖励与组均值比较，突出相对更好的回答。归一化时必须说明方差定义和epsilon。不同实现可以只减均值或再除标准差，不能把一个公式当作所有GRPO变体的固定定义。",
+            "en": "Group advantages compare several rewards for the same prompt with their group mean. Specify the variance convention and epsilon when normalizing. Implementations may center only or also divide by standard deviation; one formula is not the universal definition of every GRPO variant."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "本课用总体方差：奖励[0,1,1,0]的均值0.5、方差0.25，优势约[-1,1,1,-1]。全1组中心化后全零，没有组内相对信号。增加采样数也不能保证出现奖励差异，需观察任务难度与奖励分辨率。",
+            "en": "Using population variance, rewards [0,1,1,0] have mean 0.5 and variance 0.25, producing advantages near [-1,1,1,-1]. An all-one group has zero centered values and no relative signal. More samples do not guarantee reward diversity; inspect task difficulty and reward resolution."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "组内优势与零方差组",
+          "en": "Group advantages and zero-variance groups"
+        },
+        "nodes": [
+          {
+            "zh": "同题采样组",
+            "en": "Same-prompt group"
+          },
+          {
+            "zh": "奖励向量",
+            "en": "Rewards"
+          },
+          {
+            "zh": "组均值/方差",
+            "en": "Mean/variance"
+          },
+          {
+            "zh": "归一化优势",
+            "en": "Normalized advantages"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 6 --out out",
+          "expected": {
+            "zh": "advantages接近[-1,1,1,-1]，constant_group全零。",
+            "en": "advantages is approximately [-1,1,1,-1]; constant_group is all zeros."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day06.json",
+          "expected": {
+            "zh": "advantages接近[-1,1,1,-1]，constant_group全零。",
+            "en": "advantages is approximately [-1,1,1,-1]; constant_group is all zeros."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "将奖励改为[0,0,0,1]，手算均值及方差，并解释唯一成功样本的优势为何更大。",
+            "en": "Change rewards to [0,0,0,1], calculate mean and variance, and explain the larger advantage of the sole success."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "奖励全满分但没有优势信号",
+            "en": "Full reward yields no advantage signal"
+          },
+          "fix": {
+            "zh": "检查组内差异；全满分不意味着归一化出错，应结合难度与任务采样分析。",
+            "en": "Inspect within-group variation. Full reward does not imply broken normalization; consider difficulty and task sampling."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day06.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "奖励全为1时中心化优势是什么？",
+            "en": "What are centered advantages when every reward is 1?"
+          },
+          "options": [
+            {
+              "zh": "全为0",
+              "en": "All zero"
+            },
+            {
+              "zh": "全为1",
+              "en": "All one"
+            },
+            {
+              "zh": "无穷大",
+              "en": "Infinite"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "每个奖励减去同样为1的均值后为0。",
+            "en": "Each reward subtracts the identical mean of 1."
+          }
+        },
+        {
+          "question": {
+            "zh": "本课为何明确总体方差？",
+            "en": "Why specify population variance?"
+          },
+          "options": [
+            {
+              "zh": "让文件更大",
+              "en": "To enlarge files"
+            },
+            {
+              "zh": "样本方差分母不同，数值会变化",
+              "en": "Sample variance uses another denominator and changes values"
+            },
+            {
+              "zh": "方差与公式无关",
+              "en": "Variance is irrelevant"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "除以n与n-1会改变标准差及优势幅值。",
+            "en": "Dividing by n versus n-1 changes standard deviation and advantage scale."
+          }
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": {
+        "zh": "PPO 裁剪：正负优势都要检查",
+        "en": "PPO clipping with both advantage signs"
+      },
+      "lesson": {
+        "zh": "今天围绕“PPO 裁剪：正负优势都要检查”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect ppo clipping with both advantage signs through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "手算六组ratio和advantage组合，写出为什么负优势必须单独测试。",
+        "en": "Calculate all six ratio/advantage combinations and explain why negative advantages need separate tests."
+      },
+      "evidence": {
+        "zh": "out/day07.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day07.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        },
+        {
+          "title": "PPO · original paper",
+          "url": "https://arxiv.org/abs/1707.06347"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "重要性比率r=exp(logπ_new−logπ_behavior)度量动作概率变化。PPO裁剪代理目标取min(rA,clip(r,1−ε,1+ε)A)。这里按最大化目标讲解；实现为最小化loss时常需要取负号，符号混淆会反向更新。",
+            "en": "The ratio r=exp(logπ_new−logπ_behavior) measures a change in action probability. The PPO clipped surrogate is min(rA,clip(r,1−ε,1+ε)A). We discuss objective maximization; minimizing a loss commonly requires negating it. Sign mistakes can reverse updates."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "ε=0.2时，r=1.5、A=1得到min(1.5,1.2)=1.2；A=-1得到min(-1.5,-1.2)=-1.5。裁剪不是把最终数值简单夹到[-1.2,1.2]。本日只算目标值，不运行完整PPO优化器。",
+            "en": "With ε=0.2, r=1.5 and A=1 give min(1.5,1.2)=1.2; A=-1 gives min(-1.5,-1.2)=-1.5. This is not clamping the final result to [-1.2,1.2]. Today evaluates objective values, not a full PPO optimizer."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "PPO 裁剪：正负优势都要检查",
+          "en": "PPO clipping with both advantage signs"
+        },
+        "nodes": [
+          {
+            "zh": "新旧logprob",
+            "en": "New/old logprob"
+          },
+          {
+            "zh": "概率比率",
+            "en": "Probability ratio"
+          },
+          {
+            "zh": "裁剪分支",
+            "en": "Clipped branch"
+          },
+          {
+            "zh": "取较小目标",
+            "en": "Minimum surrogate"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 7 --out out",
+          "expected": {
+            "zh": "r=1.5时，正优势目标1.2，负优势目标-1.5。",
+            "en": "At r=1.5, the positive-advantage objective is 1.2 and the negative-advantage objective is -1.5."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day07.json",
+          "expected": {
+            "zh": "r=1.5时，正优势目标1.2，负优势目标-1.5。",
+            "en": "At r=1.5, the positive-advantage objective is 1.2 and the negative-advantage objective is -1.5."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "手算六组ratio和advantage组合，写出为什么负优势必须单独测试。",
+            "en": "Calculate all six ratio/advantage combinations and explain why negative advantages need separate tests."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "正优势测试通过，负优势方向错误",
+            "en": "Positive tests pass but negative advantages behave incorrectly"
+          },
+          "fix": {
+            "zh": "逐项写出两个乘积再取min；不要先对advantage取绝对值。",
+            "en": "Write both products before taking min; do not take the absolute value of the advantage."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day07.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "r=1.5,A=-1,ε=0.2的目标值？",
+            "en": "What is the objective for r=1.5,A=-1,ε=0.2?"
+          },
+          "options": [
+            {
+              "zh": "-1.2",
+              "en": "-1.2"
+            },
+            {
+              "zh": "-1.5",
+              "en": "-1.5"
+            },
+            {
+              "zh": "1.2",
+              "en": "1.2"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "两个候选为-1.5与-1.2，取较小的-1.5。",
+            "en": "The candidates are -1.5 and -1.2; the minimum is -1.5."
+          }
+        },
+        {
+          "question": {
+            "zh": "此日输出证明什么？",
+            "en": "What does this day establish?"
+          },
+          "options": [
+            {
+              "zh": "完整PPO已经收敛",
+              "en": "Full PPO has converged"
+            },
+            {
+              "zh": "目标公式的数值行为",
+              "en": "The numerical behavior of a surrogate formula"
+            },
+            {
+              "zh": "GPU通信正常",
+              "en": "GPU communication works"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "没有优化器、神经网络或GPU，只有标量公式检查。",
+            "en": "There is no optimizer, neural network or GPU, only scalar formula checks."
+          }
+        }
+      ]
+    },
+    {
+      "day": 8,
+      "title": {
+        "zh": "参考策略与 KL 正则",
+        "en": "Reference policies and KL regularization"
+      },
+      "lesson": {
+        "zh": "今天围绕“参考策略与 KL 正则”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect reference policies and kl regularization through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "固定p=0.9，把beta改成2并比较目标；说明更高原始奖励为何不保证更高正则化目标。",
+        "en": "Fix p=0.9, change beta to 2 and compare objectives; explain why higher raw reward need not improve the regularized objective."
+      },
+      "evidence": {
+        "zh": "out/day08.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day08.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        },
+        {
+          "title": "PPO · original paper",
+          "url": "https://arxiv.org/abs/1707.06347"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "行为策略用于描述数据来自哪里；参考策略用于限制当前策略偏离某个基线。二者不一定相同。KL也有方向性：KL(p||q)与KL(q||p)通常不同。记录方向、单位和权重，避免把不同日志里的KL直接比较。",
+            "en": "The behavior policy describes the source of data; the reference policy constrains deviation from a baseline. They need not be identical. KL is directional: KL(p||q) usually differs from KL(q||p). Record direction, units and weight before comparing logs."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "对Bernoulli策略可精确求KL=p ln(p/q)+(1−p)ln((1−p)/(1−q))。固定q=0.5，本日比较p=0.5、0.7、0.9的奖励减0.2倍KL。公式的单位是nat，既不是毫秒，也不能与任意采样KL估计不加说明地对比。",
+            "en": "For Bernoulli policies, KL=p ln(p/q)+(1−p)ln((1−p)/(1−q)) is exact. With q=0.5, compare p=0.5,0.7,0.9 under reward minus 0.2 KL. Units are nats, not milliseconds; comparisons with sampled KL estimators require specifying the estimator."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "参考策略与 KL 正则",
+          "en": "Reference policies and KL regularization"
+        },
+        "nodes": [
+          {
+            "zh": "当前分布p",
+            "en": "Current p"
+          },
+          {
+            "zh": "参考分布q",
+            "en": "Reference q"
+          },
+          {
+            "zh": "精确KL",
+            "en": "Exact KL"
+          },
+          {
+            "zh": "奖励减惩罚",
+            "en": "Reward minus penalty"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 8 --out out",
+          "expected": {
+            "zh": "p=0.5的KL为0；p=0.9的KL约0.3681 nat。",
+            "en": "KL is zero at p=0.5 and approximately 0.3681 nats at p=0.9."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day08.json",
+          "expected": {
+            "zh": "p=0.5的KL为0；p=0.9的KL约0.3681 nat。",
+            "en": "KL is zero at p=0.5 and approximately 0.3681 nats at p=0.9."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "固定p=0.9，把beta改成2并比较目标；说明更高原始奖励为何不保证更高正则化目标。",
+            "en": "Fix p=0.9, change beta to 2 and compare objectives; explain why higher raw reward need not improve the regularized objective."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "KL为负或出现log(0)",
+            "en": "Negative KL or log(0)"
+          },
+          "fix": {
+            "zh": "检查概率范围和方向；本函数拒绝0与1，真实实现还需说明稳定化和采样估计偏差。",
+            "en": "Check probability bounds and direction. This function rejects 0 and 1; real implementations also require explicit numerical stabilization and estimator assumptions."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day08.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "当前分布与参考分布相同，精确KL是多少？",
+            "en": "What is exact KL for identical distributions?"
+          },
+          "options": [
+            {
+              "zh": "0",
+              "en": "0"
+            },
+            {
+              "zh": "1",
+              "en": "1"
+            },
+            {
+              "zh": "-1",
+              "en": "-1"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "每项概率比为1，log(1)=0。",
+            "en": "Each probability ratio is one, so log(1)=0."
+          }
+        },
+        {
+          "question": {
+            "zh": "行为策略和参考策略是否总是同一个？",
+            "en": "Are behavior and reference policies always identical?"
+          },
+          "options": [
+            {
+              "zh": "是",
+              "en": "Yes"
+            },
+            {
+              "zh": "只有文件名决定",
+              "en": "Only filenames decide"
+            },
+            {
+              "zh": "不是，它们承担不同角色",
+              "en": "No; they serve different roles"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "采样来源与偏离约束是两个独立概念。",
+            "en": "Sampling origin and deviation constraint are distinct concepts."
+          }
+        }
+      ]
+    },
+    {
+      "day": 9,
+      "title": {
+        "zh": "训练与 Rollout 的显存账本",
+        "en": "Memory ledgers for training and rollout"
+      },
+      "lesson": {
+        "zh": "今天围绕“训练与 Rollout 的显存账本”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect memory ledgers for training and rollout through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "分别使用--shards 1和8，记录状态内存变化，并列出三个不会自动按分片数缩小的开销。",
+        "en": "Compare --shards 1 and 8 and list three overheads that do not automatically shrink with shard count."
+      },
+      "evidence": {
+        "zh": "out/day09.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day09.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "训练状态包含参数、梯度与优化器状态；推理侧还需要权重和KV缓存。将“模型权重能放下”当作“训练能放下”会低估容量。先声明精度、状态复制与分片策略，再讨论优化。",
+            "en": "Training stores parameters, gradients and optimizer state; inference also needs weights and KV cache. Fitting weights does not imply fitting training. Declare precision, replication and sharding assumptions before optimizing."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "教学账本假设FP32参数4 bytes、梯度4 bytes、Adam两个状态共8 bytes，因此16 bytes/参数。BF16 rollout权重是2 bytes/参数。十亿参数对应训练状态约14.90 GiB，四分片约3.73 GiB；这不含激活、KV、临时缓冲或碎片。",
+            "en": "The teaching ledger assumes 4-byte FP32 parameters, 4-byte gradients and two 4-byte Adam states: 16 bytes per parameter. BF16 rollout weights use 2 bytes per parameter. One billion parameters need about 14.90 GiB of training state or 3.73 GiB over four shards, excluding activations, KV, temporary buffers and fragmentation."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "训练与 Rollout 的显存账本",
+          "en": "Memory ledgers for training and rollout"
+        },
+        "nodes": [
+          {
+            "zh": "参数数量",
+            "en": "Parameter count"
+          },
+          {
+            "zh": "状态精度",
+            "en": "State precision"
+          },
+          {
+            "zh": "分片假设",
+            "en": "Sharding assumption"
+          },
+          {
+            "zh": "内存下界",
+            "en": "Memory lower bound"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 9 --out out",
+          "expected": {
+            "zh": "训练状态约14.901 GiB，BF16权重约1.863 GiB；默认4分片约3.725 GiB。",
+            "en": "Training state is about 14.901 GiB, BF16 weights 1.863 GiB; four-way sharding gives about 3.725 GiB."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day09.json",
+          "expected": {
+            "zh": "训练状态约14.901 GiB，BF16权重约1.863 GiB；默认4分片约3.725 GiB。",
+            "en": "Training state is about 14.901 GiB, BF16 weights 1.863 GiB; four-way sharding gives about 3.725 GiB."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "分别使用--shards 1和8，记录状态内存变化，并列出三个不会自动按分片数缩小的开销。",
+            "en": "Compare --shards 1 and 8 and list three overheads that do not automatically shrink with shard count."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "按公式有余量却OOM",
+            "en": "OOM despite apparent formula headroom"
+          },
+          "fix": {
+            "zh": "该式只给状态账本，补测激活、KV和峰值临时张量；不要宣称剩余显存全部可分配。",
+            "en": "The formula covers state only. Measure activations, KV and temporary peaks; do not assume every remaining byte is usable."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day09.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "本课FP32 Adam状态占多少bytes/参数？",
+            "en": "How many bytes per parameter does the teaching FP32 Adam ledger use?"
+          },
+          "options": [
+            {
+              "zh": "2",
+              "en": "2"
+            },
+            {
+              "zh": "16",
+              "en": "16"
+            },
+            {
+              "zh": "4",
+              "en": "4"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "参数4+梯度4+两个优化器状态8=16。",
+            "en": "Parameters 4 + gradients 4 + two optimizer states 8 = 16."
+          }
+        },
+        {
+          "question": {
+            "zh": "四分片后的数值包含KV吗？",
+            "en": "Does the four-shard figure include KV cache?"
+          },
+          "options": [
+            {
+              "zh": "包含全部",
+              "en": "Everything is included"
+            },
+            {
+              "zh": "只要除以4就包含",
+              "en": "Yes after dividing by four"
+            },
+            {
+              "zh": "不包含，需单独核算",
+              "en": "No; account for KV separately"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "分片只作用于公式中已列出的训练状态。",
+            "en": "Sharding applies only to training states included in the formula."
+          }
+        }
+      ],
+      "interactive": "rl-memory"
+    },
+    {
+      "day": 10,
+      "title": {
+        "zh": "同步屏障与理想流水线",
+        "en": "Synchronous barriers and ideal pipelines"
+      },
+      "lesson": {
+        "zh": "今天围绕“同步屏障与理想流水线”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect synchronous barriers and ideal pipelines through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "把--train-ms改成20，先预测瓶颈是否变成采样，再比较两个报告。",
+        "en": "Set --train-ms to 20, predict whether rollout becomes the bottleneck and compare reports."
+      },
+      "evidence": {
+        "zh": "out/day10.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day10.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "同步闭环在采样、训练和权重发布之间等待，容易解释策略版本，却可能让资源交替空闲。流水线将不同批次放到不同阶段并行处理；只有资源可独立使用时，阶段重叠才有可能。",
+            "en": "Synchronous loops wait between sampling, training and weight publication, simplifying policy-version reasoning but potentially alternating idle resources. Pipelines overlap different batches across stages, which requires independently available resources."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "本日12批、采样40ms、训练60ms、同步10ms，串行总成本1320ms。理想流水线为首批110ms加11×70ms，共880ms。它忽略真实传输、抢占和旧策略代价，仅用于理解吞吐由最慢阶段决定；网页交互采用另一套明确标注的参数。",
+            "en": "For 12 batches with 40ms rollout, 60ms training and 10ms synchronization, serial modeled cost is 1320ms. The ideal pipeline costs 110ms for the first batch plus 11×70ms, totaling 880ms. It omits transfer, contention and stale-policy costs. The browser model uses its own explicitly stated parameters."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "同步屏障与理想流水线",
+          "en": "Synchronous barriers and ideal pipelines"
+        },
+        "nodes": [
+          {
+            "zh": "批次采样",
+            "en": "Batch rollout"
+          },
+          {
+            "zh": "训练阶段",
+            "en": "Training stage"
+          },
+          {
+            "zh": "权重同步",
+            "en": "Weight sync"
+          },
+          {
+            "zh": "下一批重叠",
+            "en": "Next-batch overlap"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 10 --out out",
+          "expected": {
+            "zh": "默认serial_model_ms=1320，ideal_pipeline_model_ms=880。",
+            "en": "Defaults: serial_model_ms=1320 and ideal_pipeline_model_ms=880."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day10.json",
+          "expected": {
+            "zh": "默认serial_model_ms=1320，ideal_pipeline_model_ms=880。",
+            "en": "Defaults: serial_model_ms=1320 and ideal_pipeline_model_ms=880."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "把--train-ms改成20，先预测瓶颈是否变成采样，再比较两个报告。",
+            "en": "Set --train-ms to 20, predict whether rollout becomes the bottleneck and compare reports."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把流水线成本比当GPU加速比",
+            "en": "Reporting modeled overlap as GPU speedup"
+          },
+          "fix": {
+            "zh": "检查字段的model后缀；真实实验需要同工作负载、独立时间戳和质量约束。",
+            "en": "Check the model suffix. Real comparisons require identical workloads, measured timestamps and quality constraints."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day10.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "理想两阶段稳态吞吐受什么限制？",
+            "en": "What limits ideal two-stage steady-state throughput?"
+          },
+          "options": [
+            {
+              "zh": "最慢阶段",
+              "en": "The slower stage"
+            },
+            {
+              "zh": "最快阶段",
+              "en": "The faster stage"
+            },
+            {
+              "zh": "网页速度",
+              "en": "Page speed"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "更快的阶段会等待，阶段最大耗时决定批次间隔。",
+            "en": "The faster stage waits; the maximum stage time determines the batch interval."
+          }
+        },
+        {
+          "question": {
+            "zh": "首批延迟等于稳态批次间隔吗？",
+            "en": "Does first-batch latency equal the steady-state interval?"
+          },
+          "options": [
+            {
+              "zh": "总是",
+              "en": "Always"
+            },
+            {
+              "zh": "不，首批需经过所有阶段",
+              "en": "No; the first batch traverses every stage"
+            },
+            {
+              "zh": "两者都为0",
+              "en": "Both are zero"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "流水线要先填充，首批不能获得已有批次的重叠收益。",
+            "en": "The pipeline must fill first; the initial batch cannot benefit from an already-filled pipeline."
+          }
+        }
+      ],
+      "interactive": "rl-pipeline"
+    },
+    {
+      "day": 11,
+      "title": {
+        "zh": "异步队列与反压",
+        "en": "Async queues and backpressure"
+      },
+      "lesson": {
+        "zh": "今天围绕“异步队列与反压”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect async queues and backpressure through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "比较--buffer 1与8，解释max_queued、blocked_events和elapsed_model_ms的差别。",
+        "en": "Compare --buffer 1 and 8; explain max_queued, blocked_events and elapsed_model_ms."
+      },
+      "evidence": {
+        "zh": "out/day11.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day11.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "采样端速度高于训练端时，无界队列会累积内存与旧轨迹。反压让生产者等待容量，丢弃策略则明确减少工作。选择哪种策略取决于任务成本和训练语义，必须记录丢弃与阻塞，而不能只报告生成吞吐。",
+            "en": "When sampling outruns training, unbounded queues accumulate memory and old trajectories. Backpressure pauses producers; dropping explicitly removes work. The choice depends on generation cost and training semantics. Record blocked or dropped work instead of reporting generation throughput alone."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "本日是单生产者、单消费者离散事件模拟。buffer只计算等待队列，不包括正在训练的一批；相同时刻先消费再生产。改变容量能改变阻塞次数，但在训练持续成为瓶颈时，不会无限提高总吞吐。",
+            "en": "This is a single-producer/single-consumer discrete-event simulation. buffer counts waiting batches, excluding the batch being trained. Consumption happens first on timestamp ties. Capacity changes blocking events but cannot indefinitely improve throughput when training remains the bottleneck."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "异步队列与反压",
+          "en": "Async queues and backpressure"
+        },
+        "nodes": [
+          {
+            "zh": "生产完成",
+            "en": "Production finishes"
+          },
+          {
+            "zh": "检查队列容量",
+            "en": "Check queue capacity"
+          },
+          {
+            "zh": "等待或入队",
+            "en": "Block or enqueue"
+          },
+          {
+            "zh": "训练消费",
+            "en": "Training consumes"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 11 --out out",
+          "expected": {
+            "zh": "produced与consumed都为12，max_queued不超过buffer；完整events可逐条追踪。",
+            "en": "produced and consumed are both 12; max_queued never exceeds buffer; every event is traceable."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day11.json",
+          "expected": {
+            "zh": "produced与consumed都为12，max_queued不超过buffer；完整events可逐条追踪。",
+            "en": "produced and consumed are both 12; max_queued never exceeds buffer; every event is traceable."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "比较--buffer 1与8，解释max_queued、blocked_events和elapsed_model_ms的差别。",
+            "en": "Compare --buffer 1 and 8; explain max_queued, blocked_events and elapsed_model_ms."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把buffer当成含训练中批次的容量",
+            "en": "Counting the in-flight batch inside buffer"
+          },
+          "fix": {
+            "zh": "从events区分queued与in_flight；容量语义要在配置说明里固定。",
+            "en": "Distinguish queued from in-flight work; document the chosen capacity semantics."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day11.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "生产持续快于消费，无界队列会怎样？",
+            "en": "What happens with unbounded queues when production stays faster?"
+          },
+          "options": [
+            {
+              "zh": "自动变为零",
+              "en": "They automatically empty"
+            },
+            {
+              "zh": "积压持续增加",
+              "en": "Backlog keeps growing"
+            },
+            {
+              "zh": "训练自动更准",
+              "en": "Training automatically improves"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "输入速率大于服务速率，未处理工作会累积。",
+            "en": "Input rate exceeds service rate, so unfinished work accumulates."
+          }
+        },
+        {
+          "question": {
+            "zh": "本课buffer包含哪部分？",
+            "en": "What does buffer include here?"
+          },
+          "options": [
+            {
+              "zh": "仅等待队列",
+              "en": "Only waiting batches"
+            },
+            {
+              "zh": "所有历史轨迹",
+              "en": "All historical trajectories"
+            },
+            {
+              "zh": "权重文件",
+              "en": "Weight files"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "正在训练的一批单独记录，不占等待队列槽位。",
+            "en": "The in-flight training batch is tracked separately from waiting slots."
+          }
+        }
+      ]
+    },
+    {
+      "day": 12,
+      "title": {
+        "zh": "策略版本与陈旧轨迹门槛",
+        "en": "Policy versions and stale-trajectory gates"
+      },
+      "lesson": {
+        "zh": "今天围绕“策略版本与陈旧轨迹门槛”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect policy versions and stale-trajectory gates through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "实现accept_trajectory，并用--max-lag 0观察纯当前版本门槛。",
+        "en": "Implement accept_trajectory and run --max-lag 0 to require current-version trajectories."
+      },
+      "evidence": {
+        "zh": "out/day12.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day12.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "异步训练中，轨迹可能来自比当前训练器更旧的权重。应记录behavior_version并计算trainer_version−behavior_version；墙钟年龄只能近似反映陈旧程度。未来版本通常意味着标签或发布错误，应独立拒绝。",
+            "en": "Async trajectories can come from weights older than the trainer’s current version. Record behavior_version and compute trainer_version−behavior_version; wall-clock age only approximates staleness. Future versions generally indicate labeling or publication errors and should be rejected separately."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "本课接收条件为0≤lag≤max_lag。训练版本8、预算2时，版本6、7、8通过，4过旧，9来自未来。这个门槛检查数据资格，不是重要性修正，更不能保证旧数据训练无偏。",
+            "en": "The teaching admission rule is 0≤lag≤max_lag. At trainer version 8 with budget 2, versions 6,7,8 pass; 4 is too old and 9 is from the future. Admission checks eligibility; it is not importance correction and does not guarantee unbiased training on old data."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "策略版本与陈旧轨迹门槛",
+          "en": "Policy versions and stale-trajectory gates"
+        },
+        "nodes": [
+          {
+            "zh": "轨迹版本",
+            "en": "Behavior version"
+          },
+          {
+            "zh": "训练版本",
+            "en": "Trainer version"
+          },
+          {
+            "zh": "计算版本差",
+            "en": "Compute lag"
+          },
+          {
+            "zh": "接收或拒绝",
+            "en": "Admit or reject"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 12 --out out",
+          "expected": {
+            "zh": "默认版本4/6/7/8/9的accepted依次false/true/true/true/false。",
+            "en": "For versions 4/6/7/8/9, default accepted values are false/true/true/true/false."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day12.json",
+          "expected": {
+            "zh": "默认版本4/6/7/8/9的accepted依次false/true/true/true/false。",
+            "en": "For versions 4/6/7/8/9, default accepted values are false/true/true/true/false."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "实现accept_trajectory，并用--max-lag 0观察纯当前版本门槛。",
+            "en": "Implement accept_trajectory and run --max-lag 0 to require current-version trajectories."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        },
+        {
+          "title": {
+            "zh": "学生练习与独立检查",
+            "en": "Student exercises and independent checks"
+          },
+          "body": {
+            "zh": "依次完成exercises.py的三个函数。参考模式可立即通过；学生模式在尚未完成函数时会返回NOT YET，这是预期提示，不要只复制参考输出。",
+            "en": "Complete the three functions in exercises.py over the course. Reference mode passes immediately; student mode returns NOT YET until unfinished functions are implemented. Do not submit reference output as your solution."
+          },
+          "command": "python3 check_exercises.py --reference",
+          "expected": {
+            "zh": "参考答案通过15个固定边界用例；完成全部函数后再运行python3 check_exercises.py检验自己的实现。",
+            "en": "Reference answers pass fifteen fixed edge cases. After implementing all functions, run python3 check_exercises.py to check your own code."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "未来版本被当作很新而接收",
+            "en": "A future version is admitted as merely fresh"
+          },
+          "fix": {
+            "zh": "补上lag≥0条件，并核对权重发布与版本递增顺序。",
+            "en": "Require lag≥0 and inspect weight publication and version increment order."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day12.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "trainer=8、behavior=9、预算2能通过吗？",
+            "en": "Can trainer=8, behavior=9 pass with budget 2?"
+          },
+          "options": [
+            {
+              "zh": "能，越新越好",
+              "en": "Yes, newer is better"
+            },
+            {
+              "zh": "不能，lag=-1",
+              "en": "No, lag=-1"
+            },
+            {
+              "zh": "由文件大小决定",
+              "en": "File size decides"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "负lag违反版本因果关系，不能只检查上界。",
+            "en": "Negative lag violates version causality; checking only an upper bound is insufficient."
+          }
+        },
+        {
+          "question": {
+            "zh": "陈旧门槛等价于重要性修正吗？",
+            "en": "Is a staleness gate equivalent to importance correction?"
+          },
+          "options": [
+            {
+              "zh": "等价",
+              "en": "Yes"
+            },
+            {
+              "zh": "不等价，前者选择数据资格",
+              "en": "No; the gate selects eligibility"
+            },
+            {
+              "zh": "只与网络相关",
+              "en": "It only concerns networking"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "修正涉及概率分布与目标权重，版本门槛只是准入规则。",
+            "en": "Correction concerns distributions and objective weights; version gating is only admission."
+          }
+        }
+      ],
+      "interactive": "rl-staleness"
+    },
+    {
+      "day": 13,
+      "title": {
+        "zh": "权重发布的完整性与原子切换",
+        "en": "Complete weight publication and atomic switching"
+      },
+      "lesson": {
+        "zh": "今天围绕“权重发布的完整性与原子切换”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect complete weight publication and atomic switching through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "为发布协议画出prepare、validate、switch、ack四步，指出每一步失败后的活动版本。",
+        "en": "Draw prepare, validate, switch and acknowledge; state the active version after each possible failure."
+      },
+      "evidence": {
+        "zh": "out/day13.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day13.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "训练器更新完权重，不代表所有采样器已经看到同一版本。分块传输时若新旧片段混合，采样器运行的是没有被定义过的模型。发布协议应先校验完整性，再切换活动版本，最后确认消费者已加载。",
+            "en": "Completing a trainer update does not mean every sampler sees the same version. Mixing old and new chunks produces a model that was never defined. A publication protocol validates completeness, switches the active version and confirms consumers loaded it."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "本日构造版本3与4的混合块，检查必须拒绝发布；完整版本4以内容哈希描述。这里验证的是内存中记录，不执行网络传输或真实原子文件替换。真实系统还需要超时、失败清理以及版本确认协议。",
+            "en": "Today mixes chunks from versions 3 and 4 and rejects publication. A complete version-4 bundle has a content hash. This checks in-memory records, not network transfer or real atomic file replacement. Production also needs timeouts, cleanup and version acknowledgements."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "权重发布的完整性与原子切换",
+          "en": "Complete weight publication and atomic switching"
+        },
+        "nodes": [
+          {
+            "zh": "准备新权重",
+            "en": "Prepare weights"
+          },
+          {
+            "zh": "校验块与哈希",
+            "en": "Validate chunks/hash"
+          },
+          {
+            "zh": "切换活动版本",
+            "en": "Switch active version"
+          },
+          {
+            "zh": "消费者确认",
+            "en": "Consumer acknowledges"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 13 --out out",
+          "expected": {
+            "zh": "publish_mixed=false，complete_bundle包含version=4和sha256。",
+            "en": "publish_mixed=false; complete_bundle contains version=4 and sha256."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day13.json",
+          "expected": {
+            "zh": "publish_mixed=false，complete_bundle包含version=4和sha256。",
+            "en": "publish_mixed=false; complete_bundle contains version=4 and sha256."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "为发布协议画出prepare、validate、switch、ack四步，指出每一步失败后的活动版本。",
+            "en": "Draw prepare, validate, switch and acknowledge; state the active version after each possible failure."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "模型能加载却输出突然异常",
+            "en": "A model loads but outputs abruptly change"
+          },
+          "fix": {
+            "zh": "核对所有分片的版本和哈希；形状正确并不证明属于同一训练检查点。",
+            "en": "Check each shard’s version and hash; correct shapes do not prove a common checkpoint."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day13.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "版本3与4的两块能作为版本4发布吗？",
+            "en": "Can version-3 and version-4 chunks be published as version 4?"
+          },
+          "options": [
+            {
+              "zh": "能，形状相同即可",
+              "en": "Yes, if shapes match"
+            },
+            {
+              "zh": "不能，内容不属于同一版本",
+              "en": "No, they are from different versions"
+            },
+            {
+              "zh": "重命名即可",
+              "en": "Rename them"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "发布完整性要求同一版本的完整集合，重命名不改变内容。",
+            "en": "Publication requires a complete set from one version; renaming does not change content."
+          }
+        },
+        {
+          "question": {
+            "zh": "哈希校验后还需要什么？",
+            "en": "What is still needed after hash validation?"
+          },
+          "options": [
+            {
+              "zh": "版本切换与消费者确认",
+              "en": "Version switching and consumer acknowledgement"
+            },
+            {
+              "zh": "只换网页标题",
+              "en": "Only a new page title"
+            },
+            {
+              "zh": "删除版本号",
+              "en": "Delete version numbers"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "内容正确与正在使用它是不同状态。",
+            "en": "Correct content and active use are different states."
+          }
+        }
+      ]
+    },
+    {
+      "day": 14,
+      "title": {
+        "zh": "重试、幂等与奖励去重",
+        "en": "Retries, idempotency and reward deduplication"
+      },
+      "lesson": {
+        "zh": "今天围绕“重试、幂等与奖励去重”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect retries, idempotency and reward deduplication through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "实现unique_rewards，增加同ID不同奖励的反例并确认抛错。",
+        "en": "Implement unique_rewards and verify that the same ID with conflicting rewards raises an error."
+      },
+      "evidence": {
+        "zh": "out/day14.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day14.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "分布式队列可能重复投递，重试不应让同一轨迹多次计入训练或奖励统计。稳定trajectory ID可以识别同一事件；相同ID不同内容则是冲突，静默覆盖会隐藏数据损坏。",
+            "en": "Distributed queues may redeliver work. Retries must not count a trajectory repeatedly in training or reward statistics. Stable trajectory IDs identify repeated events; identical IDs with different payloads are conflicts, and silently overwriting them hides corruption."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "本日事件a奖励1、b奖励0、a重试奖励1。按投递算均值是2/3，按唯一轨迹算是1/2。幂等并不自动实现端到端exactly-once：真实训练还需将消费确认与更新记录关联。",
+            "en": "Events are a with reward 1, b with 0 and a retried with 1. Delivery-weighted mean is 2/3; unique-trajectory mean is 1/2. Idempotency alone does not provide end-to-end exactly-once updates; real systems must connect acknowledgement with update records."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "重试、幂等与奖励去重",
+          "en": "Retries, idempotency and reward deduplication"
+        },
+        "nodes": [
+          {
+            "zh": "投递事件",
+            "en": "Delivery events"
+          },
+          {
+            "zh": "稳定ID",
+            "en": "Stable ID"
+          },
+          {
+            "zh": "一致性检查",
+            "en": "Consistency check"
+          },
+          {
+            "zh": "唯一奖励统计",
+            "en": "Unique reward statistics"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 14 --out out",
+          "expected": {
+            "zh": "delivery_events有3项，unique有2项；均值从2/3纠正为0.5。",
+            "en": "Three deliveries become two unique events; the mean changes from 2/3 to 0.5."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day14.json",
+          "expected": {
+            "zh": "delivery_events有3项，unique有2项；均值从2/3纠正为0.5。",
+            "en": "Three deliveries become two unique events; the mean changes from 2/3 to 0.5."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "实现unique_rewards，增加同ID不同奖励的反例并确认抛错。",
+            "en": "Implement unique_rewards and verify that the same ID with conflicting rewards raises an error."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        },
+        {
+          "title": {
+            "zh": "学生练习与独立检查",
+            "en": "Student exercises and independent checks"
+          },
+          "body": {
+            "zh": "依次完成exercises.py的三个函数。参考模式可立即通过；学生模式在尚未完成函数时会返回NOT YET，这是预期提示，不要只复制参考输出。",
+            "en": "Complete the three functions in exercises.py over the course. Reference mode passes immediately; student mode returns NOT YET until unfinished functions are implemented. Do not submit reference output as your solution."
+          },
+          "command": "python3 check_exercises.py --reference",
+          "expected": {
+            "zh": "参考答案通过15个固定边界用例；完成全部函数后再运行python3 check_exercises.py检验自己的实现。",
+            "en": "Reference answers pass fifteen fixed edge cases. After implementing all functions, run python3 check_exercises.py to check your own code."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "重试越多奖励均值越高",
+            "en": "More retries increase average reward"
+          },
+          "fix": {
+            "zh": "按稳定轨迹ID去重，并保留重试次数作为系统指标，不作为额外训练样本。",
+            "en": "Deduplicate by stable trajectory ID and record retry counts as system metrics, not additional examples."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day14.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "a=1,b=0,a=1去重后均值？",
+            "en": "What is the deduplicated mean for a=1,b=0,a=1?"
+          },
+          "options": [
+            {
+              "zh": "2/3",
+              "en": "2/3"
+            },
+            {
+              "zh": "1",
+              "en": "1"
+            },
+            {
+              "zh": "1/2",
+              "en": "1/2"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "唯一轨迹只有a与b，(1+0)/2=0.5。",
+            "en": "Only a and b are unique: (1+0)/2=0.5."
+          }
+        },
+        {
+          "question": {
+            "zh": "同ID出现不同奖励该怎么办？",
+            "en": "What should conflicting rewards for one ID do?"
+          },
+          "options": [
+            {
+              "zh": "明确报冲突并排查",
+              "en": "Raise a conflict and investigate"
+            },
+            {
+              "zh": "保留较大值",
+              "en": "Keep the larger value"
+            },
+            {
+              "zh": "随机选",
+              "en": "Choose randomly"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "自动选择会掩盖数据不一致或非幂等奖励计算。",
+            "en": "Automatic selection hides inconsistent data or non-idempotent scoring."
+          }
+        }
+      ]
+    },
+    {
+      "day": 15,
+      "title": {
+        "zh": "检查点与精确恢复",
+        "en": "Checkpoints and exact resumption"
+      },
+      "lesson": {
+        "zh": "今天围绕“检查点与精确恢复”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect checkpoints and exact resumption through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "复制checkpoint并把step重置为0，说明为什么恢复后会重复使用旧随机序列。",
+        "en": "Copy the checkpoint, reset step to zero and explain why it reuses earlier random sequences."
+      },
+      "evidence": {
+        "zh": "out/day15.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day15.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        },
+        {
+          "title": "Python · random state and reproducibility",
+          "url": "https://docs.python.org/3/library/random.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "恢复训练需要的不仅是权重，还包括优化器、全局步、数据位置与随机数状态。漏掉其中任一项，恢复后的轨迹可能偏离原运行。明确承诺是继续训练、数值接近还是逐步一致，三者要求不同。",
+            "en": "Resuming training needs more than weights: optimizer state, global step, data position and randomness also matter. Missing state can change the resumed trajectory. Continuing training, numerical closeness and stepwise identity are different guarantees."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "本实验没有Adam状态，每一步用seed+global_step×997产生采样，所以只需theta、step和相同seed/lr即可恢复。先跑10步，经JSON序列化后再跑10步，与连续20步严格比较。这个简化不能直接套用到真实神经网络。",
+            "en": "Our lab has no Adam state and samples using seed+global_step×997, so theta, step and matching seed/lr suffice. Run ten steps, serialize through JSON and run ten more; compare with twenty uninterrupted steps. This simplification cannot be transferred directly to neural networks."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "检查点与精确恢复",
+          "en": "Checkpoints and exact resumption"
+        },
+        "nodes": [
+          {
+            "zh": "前10步",
+            "en": "First ten steps"
+          },
+          {
+            "zh": "序列化状态",
+            "en": "Serialize state"
+          },
+          {
+            "zh": "恢复全局步",
+            "en": "Restore global step"
+          },
+          {
+            "zh": "对照连续运行",
+            "en": "Compare uninterrupted run"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 15 --out out",
+          "expected": {
+            "zh": "exact_match=true，resumed_theta等于uninterrupted_theta。",
+            "en": "exact_match=true; resumed_theta equals uninterrupted_theta."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day15.json",
+          "expected": {
+            "zh": "exact_match=true，resumed_theta等于uninterrupted_theta。",
+            "en": "exact_match=true; resumed_theta equals uninterrupted_theta."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "复制checkpoint并把step重置为0，说明为什么恢复后会重复使用旧随机序列。",
+            "en": "Copy the checkpoint, reset step to zero and explain why it reuses earlier random sequences."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "恢复后奖励曲线不同",
+            "en": "Reward curves diverge after recovery"
+          },
+          "fix": {
+            "zh": "先核对全局步、seed和lr；真实框架还应核对优化器、数据游标与随机状态。",
+            "en": "Check global step, seed and lr first; real frameworks also require optimizer, data cursor and RNG state."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day15.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "本课全局步为何影响恢复？",
+            "en": "Why does global step affect recovery here?"
+          },
+          "options": [
+            {
+              "zh": "它进入采样种子计算",
+              "en": "It enters the sampling seed calculation"
+            },
+            {
+              "zh": "只用于打印",
+              "en": "It is only printed"
+            },
+            {
+              "zh": "只决定文件名",
+              "en": "It only names files"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "重置步数会重用早期采样序列，改变后续更新。",
+            "en": "Resetting steps reuses earlier sampling sequences and changes updates."
+          }
+        },
+        {
+          "question": {
+            "zh": "真实Adam训练只存权重够吗？",
+            "en": "Are weights alone enough to resume real Adam training?"
+          },
+          "options": [
+            {
+              "zh": "够",
+              "en": "Yes"
+            },
+            {
+              "zh": "不够，优化器等状态也要保存",
+              "en": "No; optimizer and other states matter"
+            },
+            {
+              "zh": "只要文件大就够",
+              "en": "Yes if the file is large"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "动量和方差等优化器状态影响下一步参数更新。",
+            "en": "Optimizer moments affect the next parameter update."
+          }
+        }
+      ]
+    },
+    {
+      "day": 16,
+      "title": {
+        "zh": "亲手跑通标量策略梯度",
+        "en": "Run an actual scalar policy-gradient loop"
+      },
+      "lesson": {
+        "zh": "今天围绕“亲手跑通标量策略梯度”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect run an actual scalar policy-gradient loop through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "保留默认报告，再用--lr 0.03做单变量对照，比较40步后的概率、梯度与评估成功率。",
+        "en": "Preserve the default report, then compare --lr 0.03, changing only one variable; inspect final probability, gradients and evaluation success."
+      },
+      "evidence": {
+        "zh": "out/day16.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day16.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        },
+        {
+          "title": "Python · random state and reproducibility",
+          "url": "https://docs.python.org/3/library/random.html"
+        },
+        {
+          "title": "OpenAI Spinning Up · policy-gradient derivation",
+          "url": "https://spinningup.openai.com/en/latest/spinningup/rl_intro3.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "现在把采样、奖励和更新连起来。Bernoulli概率p=sigmoid(theta)，动作a的log概率对theta的导数为a−p。REINFORCE估计用reward×(a−p)的批均值更新theta；本实现没有使用前面演示的PPO裁剪或组内优势。",
+            "en": "Connect sampling, reward and updates. With Bernoulli probability p=sigmoid(theta), the derivative of log probability with respect to theta is a−p. REINFORCE uses the batch mean of reward×(a−p) to update theta. This implementation does not use the earlier PPO clipping or group advantages."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "默认40步、每步32样本，学习率0.3。评估使用独立随机序列，训练期间不根据该序列调参。训练和评估仍来自同一构造任务族；观察成功率上升只能说明选择器改善，不能说明学到了新的算术知识。",
+            "en": "Defaults are forty steps, thirty-two samples per step and learning rate 0.3. Evaluation uses an independent random sequence not used to tune during the run. Training and evaluation still share the same constructed task family; improved success only indicates a better selector, not newly learned arithmetic."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "亲手跑通标量策略梯度",
+          "en": "Run an actual scalar policy-gradient loop"
+        },
+        "nodes": [
+          {
+            "zh": "采样动作",
+            "en": "Sample actions"
+          },
+          {
+            "zh": "规则奖励",
+            "en": "Rule reward"
+          },
+          {
+            "zh": "估计梯度",
+            "en": "Estimate gradient"
+          },
+          {
+            "zh": "更新theta",
+            "en": "Update theta"
+          },
+          {
+            "zh": "独立序列评估",
+            "en": "Independent-sequence evaluation"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 16 --out out",
+          "expected": {
+            "zh": "history有40步，默认after_accuracy高于before_accuracy；method明确为scalar REINFORCE。",
+            "en": "history contains forty steps; default after_accuracy exceeds before_accuracy; method explicitly says scalar REINFORCE."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day16.json",
+          "expected": {
+            "zh": "history有40步，默认after_accuracy高于before_accuracy；method明确为scalar REINFORCE。",
+            "en": "history contains forty steps; default after_accuracy exceeds before_accuracy; method explicitly says scalar REINFORCE."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "保留默认报告，再用--lr 0.03做单变量对照，比较40步后的概率、梯度与评估成功率。",
+            "en": "Preserve the default report, then compare --lr 0.03, changing only one variable; inspect final probability, gradients and evaluation success."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把本实验称为GRPO训练大模型",
+            "en": "Calling this GRPO training of an LLM"
+          },
+          "fix": {
+            "zh": "检查train函数：这里只有一个Bernoulli参数与REINFORCE梯度，没有token模型、PPO裁剪或组归一化。",
+            "en": "Inspect train: one Bernoulli parameter and a REINFORCE gradient, with no token model, PPO clipping or group normalization."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day16.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "本实现使用哪个更新方法？",
+            "en": "Which update method does this implementation use?"
+          },
+          "options": [
+            {
+              "zh": "完整PPO",
+              "en": "Full PPO"
+            },
+            {
+              "zh": "标量REINFORCE",
+              "en": "Scalar REINFORCE"
+            },
+            {
+              "zh": "GRPO大模型训练",
+              "en": "GRPO LLM training"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "代码直接平均reward×(a−p)，没有其他算法所需组件。",
+            "en": "The code directly averages reward×(a−p) without the other algorithms’ components."
+          }
+        },
+        {
+          "question": {
+            "zh": "学习率对照应同时改变seed吗？",
+            "en": "Should a learning-rate comparison also change the seed?"
+          },
+          "options": [
+            {
+              "zh": "应随机改所有参数",
+              "en": "Change everything randomly"
+            },
+            {
+              "zh": "不，应先控制其他变量",
+              "en": "No; first control other variables"
+            },
+            {
+              "zh": "种子无关",
+              "en": "Seeds are irrelevant"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "同时改变多个因素就无法将差异归因于学习率。",
+            "en": "Changing several factors prevents attributing differences to learning rate."
+          }
+        }
+      ]
+    },
+    {
+      "day": 17,
+      "title": {
+        "zh": "可观测性：吞吐、有效吞吐与尾延迟",
+        "en": "Observability: throughput, goodput and tail latency"
+      },
+      "lesson": {
+        "zh": "今天围绕“可观测性：吞吐、有效吞吐与尾延迟”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect observability: throughput, goodput and tail latency through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "把120改成20，重算均值和P95；在图上标注这是合成数据。",
+        "en": "Change 120 to 20, recalculate mean and P95, and label the chart as synthetic data."
+      },
+      "evidence": {
+        "zh": "out/day17.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day17.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "生成数量、训练接收数量和成功任务数量是不同指标。有效吞吐应说明什么叫有效：通过版本门槛、有效格式或任务成功。平均延迟会掩盖少量慢请求；分位数还需注明计算方法与样本数。",
+            "en": "Generated, admitted and successful samples are different metrics. Define goodput eligibility explicitly: version admission, valid format or task success. Mean latency can hide slow outliers; percentiles also require a calculation convention and sample count."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "本例假设十个请求严格串行，彼此不重叠且没有空闲间隙。因此请求延迟之和恰好等于模型观测窗口：255ms，平均25.5ms。nearest-rank P95取第ceil(0.95×10)=10项，为120ms。8个接收样本除以0.255模型秒，得到约31.37条/模型秒。并发工作负载应单独记录墙钟观测窗口，不能把请求延迟相加当分母。这里没有任何真实服务计时。",
+            "en": "This example assumes ten strictly serial requests with no overlap or idle gaps, so summed latency equals the modeled observation window: 255ms, with mean latency 25.5ms. Nearest-rank P95 selects item ceil(0.95×10)=10, which is 120ms. Eight admitted samples divided by 0.255 modeled seconds yield about 31.37 per modeled second. Concurrent workloads require a separately measured wall-clock observation window, not a sum of request latencies. No real service timing is measured."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "可观测性：吞吐、有效吞吐与尾延迟",
+          "en": "Observability: throughput, goodput and tail latency"
+        },
+        "nodes": [
+          {
+            "zh": "原始时间样本",
+            "en": "Raw timing samples"
+          },
+          {
+            "zh": "接收统计",
+            "en": "Admission counts"
+          },
+          {
+            "zh": "均值与P95",
+            "en": "Mean and P95"
+          },
+          {
+            "zh": "带边界报告",
+            "en": "Bounded report"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 17 --out out",
+          "expected": {
+            "zh": "workload_assumption明确为串行、无重叠或空闲；elapsed_model_ms=255，mean_model_ms=25.5，P95=120，有效吞吐约31.37/模型秒。",
+            "en": "workload_assumption explicitly says serial, no overlap or idle gaps; elapsed_model_ms=255, mean_model_ms=25.5, P95=120 and goodput is about 31.37 per modeled second."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day17.json",
+          "expected": {
+            "zh": "workload_assumption明确为串行、无重叠或空闲；elapsed_model_ms=255，mean_model_ms=25.5，P95=120，有效吞吐约31.37/模型秒。",
+            "en": "workload_assumption explicitly says serial, no overlap or idle gaps; elapsed_model_ms=255, mean_model_ms=25.5, P95=120 and goodput is about 31.37 per modeled second."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "把120改成20，重算均值和P95；在图上标注这是合成数据。",
+            "en": "Change 120 to 20, recalculate mean and P95, and label the chart as synthetic data."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "不同工具的P95不一致",
+            "en": "Tools disagree on P95"
+          },
+          "fix": {
+            "zh": "核对nearest-rank或插值方法、采样窗口和数量；十条样本的P95非常接近最大值。",
+            "en": "Compare nearest-rank versus interpolation, window and count; P95 over ten samples is near the maximum."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day17.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "十条样本的nearest-rank P95取第几项？",
+            "en": "Which sorted item gives nearest-rank P95 for ten samples?"
+          },
+          "options": [
+            {
+              "zh": "第5项",
+              "en": "Fifth"
+            },
+            {
+              "zh": "第9项",
+              "en": "Ninth"
+            },
+            {
+              "zh": "第10项",
+              "en": "Tenth"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "ceil(0.95×10)=10。",
+            "en": "ceil(0.95×10)=10."
+          }
+        },
+        {
+          "question": {
+            "zh": "报告有效吞吐还需要说明什么？",
+            "en": "What must accompany a goodput report?"
+          },
+          "options": [
+            {
+              "zh": "有效样本的定义与时间分母",
+              "en": "Eligibility definition and time denominator"
+            },
+            {
+              "zh": "只写越高越好",
+              "en": "Only say higher is better"
+            },
+            {
+              "zh": "只给颜色",
+              "en": "Only a color"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "必须定义有效样本及独立观测窗口。本日只有在严格串行且无间隙时，延迟之和才等于窗口；并发不能这样计算。",
+            "en": "Define eligible samples and an observation window. Only the strict serial, gap-free assumption makes summed latency equal that window here; concurrent workloads cannot use that shortcut."
+          }
+        }
+      ]
+    },
+    {
+      "day": 18,
+      "title": {
+        "zh": "映射到 verl：契约与版本锁定",
+        "en": "Map contracts to verl and pin versions"
+      },
+      "lesson": {
+        "zh": "今天围绕“映射到 verl：契约与版本锁定”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect map contracts to verl and pin versions through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "将本课的response mask、behavior logprob、reward分别映射到选定verl版本的数据流，并列出尚未验证项。",
+        "en": "Map response mask, behavior logprob and reward into your selected verl dataflow, and list unverified items."
+      },
+      "evidence": {
+        "zh": "out/day18.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day18.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "把教学对象映射到真实框架前，先列出数据字段、训练后端、rollout后端和日志要求。verl集成分布式训练与推理组件，依赖关系必须一起锁定；单独升级vLLM可能改变权重加载或输出语义。",
+            "en": "Before moving to a framework, map data fields, training backend, rollout backend and logging requirements. verl integrates training and inference components, so dependencies must be pinned together. Upgrading vLLM alone may alter weight loading or output semantics."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "本课资料基线为verl v0.9.1发布记录。必做命令只生成接入契约，不启动verl；README给出固定标签获取源码与记录commit的步骤，之后按该版本安装和示例操作。latest文档可能前进，模型、容器digest和数据版本必须补齐后才算可复现环境。",
+            "en": "The source baseline is the verl v0.9.1 release. The required command produces an integration contract without launching verl. README explains obtaining the fixed tag and recording its commit, followed by that version’s installation and examples. Latest docs can move; model, container digest and dataset revisions must also be recorded."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "映射到 verl：契约与版本锁定",
+          "en": "Map contracts to verl and pin versions"
+        },
+        "nodes": [
+          {
+            "zh": "锁定上游tag",
+            "en": "Pin upstream tag"
+          },
+          {
+            "zh": "记录commit/环境",
+            "en": "Record commit/environment"
+          },
+          {
+            "zh": "映射数据契约",
+            "en": "Map data contracts"
+          },
+          {
+            "zh": "真实硬件验证",
+            "en": "Validate on hardware"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 18 --out out",
+          "expected": {
+            "zh": "reference_tag=v0.9.1，executed_framework=false；contract包含四组映射。",
+            "en": "reference_tag=v0.9.1 and executed_framework=false; contract contains four mapping groups."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day18.json",
+          "expected": {
+            "zh": "reference_tag=v0.9.1，executed_framework=false；contract包含四组映射。",
+            "en": "reference_tag=v0.9.1 and executed_framework=false; contract contains four mapping groups."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "将本课的response mask、behavior logprob、reward分别映射到选定verl版本的数据流，并列出尚未验证项。",
+            "en": "Map response mask, behavior logprob and reward into your selected verl dataflow, and list unverified items."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "把latest安装说明混用到旧tag",
+            "en": "Mixing latest installation guidance with an older tag"
+          },
+          "fix": {
+            "zh": "回到固定tag的文档和依赖声明，记录差异；不要因为pip安装成功就宣称训练可运行。",
+            "en": "Use the pinned tag’s docs and dependency declarations; record differences. Successful installation alone does not verify training."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day18.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "本日CPU命令启动verl了吗？",
+            "en": "Does today’s CPU command launch verl?"
+          },
+          "options": [
+            {
+              "zh": "没有，只输出接入契约",
+              "en": "No; it outputs an integration contract"
+            },
+            {
+              "zh": "启动了8卡训练",
+              "en": "It starts eight-GPU training"
+            },
+            {
+              "zh": "自动下载模型",
+              "en": "It downloads a model"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "JSON明确executed_framework=false，实际依赖仍是Python标准库。",
+            "en": "JSON explicitly sets executed_framework=false; dependencies remain Python standard library."
+          }
+        },
+        {
+          "question": {
+            "zh": "记录tag后还应记录什么？",
+            "en": "What should be recorded in addition to the tag?"
+          },
+          "options": [
+            {
+              "zh": "仅网页颜色",
+              "en": "Only page colors"
+            },
+            {
+              "zh": "解析后的commit与依赖/模型修订",
+              "en": "Resolved commit and dependency/model revisions"
+            },
+            {
+              "zh": "只写最新版",
+              "en": "Only “latest”"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "完整修订和依赖快照用于复查，tag名字不能描述整个运行栈。",
+            "en": "Resolved revisions and dependency snapshots support review; a tag name does not describe the entire runtime stack."
+          }
+        }
+      ]
+    },
+    {
+      "day": 19,
+      "title": {
+        "zh": "映射到 AReaL：异步服务边界",
+        "en": "Map async service boundaries to AReaL"
+      },
+      "lesson": {
+        "zh": "今天围绕“映射到 AReaL：异步服务边界”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect map async service boundaries to areal through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "给四个服务分别写健康信号、超时条件和恢复动作，说明谁有权推进权重版本。",
+        "en": "For each service, write a health signal, timeout and recovery action; identify who may advance the weight version."
+      },
+      "evidence": {
+        "zh": "out/day19.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day19.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "AReaL · v2.1.1 release baseline",
+          "url": "https://github.com/areal-project/AReaL/releases/tag/v2.1.1"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "异步后训练把Agent执行、推理、训练和权重更新拆成有状态服务。服务解耦后，吞吐和故障隔离可能更灵活，同时必须管理版本、队列、重试与取消。不能仅凭组件图判定端到端更快。",
+            "en": "Async post-training separates agent execution, inference, training and weight updates into stateful services. Decoupling can improve scheduling flexibility and fault isolation while requiring version, queue, retry and cancellation management. A component diagram alone cannot establish end-to-end speedup."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "资料基线为AReaL v2.1.1。今天复用版本准入案例，把每种失败映射到负责服务：停止权重发布、拒绝未来版本、按稳定轨迹ID重试。必做程序只输出演练计划；真实AReaL与GPU部署需单独运行并保留日志。",
+            "en": "The source baseline is AReaL v2.1.1. Reuse version-admission cases and assign ownership for paused weight publication, future-version rejection and stable-ID retries. The required program outputs a drill plan; actual AReaL/GPU deployment requires separate execution and logs."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "映射到 AReaL：异步服务边界",
+          "en": "Map async service boundaries to AReaL"
+        },
+        "nodes": [
+          {
+            "zh": "Agent轨迹",
+            "en": "Agent trajectory"
+          },
+          {
+            "zh": "推理服务",
+            "en": "Inference service"
+          },
+          {
+            "zh": "训练服务",
+            "en": "Training service"
+          },
+          {
+            "zh": "权重更新服务",
+            "en": "Weight-update service"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 19 --out out",
+          "expected": {
+            "zh": "reference_tag=v2.1.1，services有4项，executed_framework=false。",
+            "en": "reference_tag=v2.1.1; services contains four entries; executed_framework=false."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence及参数；再逐项解释result。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence and parameters, then interpret result fields. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day19.json",
+          "expected": {
+            "zh": "reference_tag=v2.1.1，services有4项，executed_framework=false。",
+            "en": "reference_tag=v2.1.1; services contains four entries; executed_framework=false."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "给四个服务分别写健康信号、超时条件和恢复动作，说明谁有权推进权重版本。",
+            "en": "For each service, write a health signal, timeout and recovery action; identify who may advance the weight version."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "所有服务健康但训练不前进",
+            "en": "All services appear healthy but training stalls"
+          },
+          "fix": {
+            "zh": "检查端到端进度：队列是否有合格版本、权重确认是否完成、重试是否被去重；进程存活不是任务进展。",
+            "en": "Check end-to-end progress: eligible queue entries, weight acknowledgements and deduplicated retries. Process liveness is not task progress."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day19.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "异步服务存活能证明训练有进展吗？",
+            "en": "Does service liveness prove training progress?"
+          },
+          "options": [
+            {
+              "zh": "能",
+              "en": "Yes"
+            },
+            {
+              "zh": "不能，还需端到端进度信号",
+              "en": "No; end-to-end progress signals are needed"
+            },
+            {
+              "zh": "只需CPU使用率",
+              "en": "CPU utilization is sufficient"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "版本停滞或无合格轨迹时，进程可以存活但系统没有有效更新。",
+            "en": "Processes can remain alive while versions stall or no eligible trajectories reach training."
+          }
+        },
+        {
+          "question": {
+            "zh": "谁应负责轨迹身份稳定？",
+            "en": "What should preserve trajectory identity?"
+          },
+          "options": [
+            {
+              "zh": "重试全链路的同一ID契约",
+              "en": "A stable ID contract across retries"
+            },
+            {
+              "zh": "每次重试生成新ID",
+              "en": "A new ID for each retry"
+            },
+            {
+              "zh": "删除所有ID",
+              "en": "Removing IDs"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "稳定ID使重复识别与冲突排查成为可能。",
+            "en": "Stable IDs enable duplicate detection and conflict diagnosis."
+          }
+        }
+      ]
+    },
+    {
+      "day": 20,
+      "title": {
+        "zh": "结课作品：可复核的后训练系统实验",
+        "en": "Capstone: a reviewable post-training experiment"
+      },
+      "lesson": {
+        "zh": "今天围绕“结课作品：可复核的后训练系统实验”完成解释、手算和代码检查，再用一个受控改动验证理解。",
+        "en": "Connect capstone: a reviewable post-training experiment through explanation, a worked example and runnable checks, then test your understanding with one controlled change."
+      },
+      "task": {
+        "zh": "完成REPORT_TEMPLATE.md，附自己的三项练习通过结果与至少一个对照；邀请读者按README复跑。",
+        "en": "Complete REPORT_TEMPLATE.md, attach your three passing exercises and at least one comparison, and make reproduction possible through README."
+      },
+      "evidence": {
+        "zh": "out/day20.json、本人预测与改动记录；区分CPU标量更新、合成系统成本和未执行框架方案。",
+        "en": "out/day20.json plus your prediction and change record. Distinguish CPU scalar updates, modeled systems costs and unexecuted framework plans."
+      },
+      "checklist": {
+        "zh": [
+          "解释本日原理与默认算例",
+          "保存原始记录和一个受控改动",
+          "答完两题并说明错误选项的问题"
+        ],
+        "en": [
+          "Explain today’s mechanism and worked example",
+          "Preserve raw records and one controlled change",
+          "Answer both questions and explain the distractors"
+        ]
+      },
+      "noGpu": {
+        "zh": "必做实验只用Python 3.9+标准库和CPU；不需要服务器、GPU、API key或模型下载。真实verl/AReaL扩展需另备兼容硬件环境，本站未验证其训练性能。",
+        "en": "Required work uses Python 3.9+ standard library and CPU, with no server, GPU, API key or model download. Actual verl/AReaL extensions need a compatible hardware environment; their training performance is not verified here."
+      },
+      "reading": [
+        {
+          "title": "verl · v0.9.1 release baseline",
+          "url": "https://github.com/verl-project/verl/releases/tag/v0.9.1"
+        },
+        {
+          "title": "Python · hashlib",
+          "url": "https://docs.python.org/3/library/hashlib.html"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先理解机制",
+            "en": "Understand the mechanism"
+          },
+          "body": {
+            "zh": "作品应让别人回答：运行了什么、改变了什么、结果来自哪里、哪些结论不能推出。代码输出不是个人解释，参考答案通过也不是完成了自己的实现。将原始JSON、源文件哈希、参数、独立练习和单变量对照组织成最小可复核包。",
+            "en": "A portfolio should explain what ran, what changed, where results came from and what remains unsupported. Program output is not your interpretation, and passing reference answers does not complete your implementation. Package raw JSON, source hashes, parameters, independent exercises and a controlled comparison."
+          }
+        },
+        {
+          "title": {
+            "zh": "手算、实现与边界",
+            "en": "Worked example, implementation and limits"
+          },
+          "body": {
+            "zh": "第20天重新生成前19天证据，并为每份JSON生成SHA-256。它记录CPU教学执行，不运行GPU框架。最终报告必须把标量更新结果、合成系统成本、真实框架接入设计分成三类，保留无收益结果，并说明下一步如何在固定版本真实硬件上验证。",
+            "en": "Day 20 regenerates days 1–19 and hashes every JSON with SHA-256. It records CPU teaching execution, not GPU frameworks. Separate scalar-update results, synthetic systems costs and framework integration designs; retain negative results and explain the next validation on pinned software and actual hardware."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "结课作品：可复核的后训练系统实验",
+          "en": "Capstone: a reviewable post-training experiment"
+        },
+        "nodes": [
+          {
+            "zh": "重跑19天",
+            "en": "Rerun nineteen days"
+          },
+          {
+            "zh": "校验源与参数",
+            "en": "Check source/config"
+          },
+          {
+            "zh": "独立练习",
+            "en": "Independent exercises"
+          },
+          {
+            "zh": "比较与局限",
+            "en": "Comparison/limits"
+          },
+          {
+            "zh": "作品交付",
+            "en": "Portfolio delivery"
+          }
+        ],
+        "caption": {
+          "zh": "按顺序追踪本日数据或状态；每个箭头表示依赖关系，不能解释为实际GPU并发时间线。",
+          "en": "Trace today’s data or state in order. Arrows indicate dependencies, not a measured GPU concurrency timeline."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "运行本日实验",
+            "en": "Run today’s experiment"
+          },
+          "body": {
+            "zh": "完整解压ZIP，进入含lab.py的post-training目录。Python 3.9+，无需安装包；每一天可独立运行。使用相同out会覆盖该日输出，对照实验请换目录。",
+            "en": "Extract the full ZIP and enter post-training beside lab.py. Python 3.9+ needs no packages. Each day runs independently; reuse of out replaces generated daily output, so use another directory for comparisons."
+          },
+          "command": "python3 lab.py 20 --out out",
+          "expected": {
+            "zh": "生成day01.json至day20.json；day20.files包含19个可核对的SHA-256。",
+            "en": "Creates day01.json through day20.json; day20.files contains nineteen verifiable SHA-256 hashes."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查原始结果",
+            "en": "Inspect raw results"
+          },
+          "body": {
+            "zh": "核对day、evidence、参数与files中的19份报告哈希。保存自己的预测和实际观察，不能用脚本完成替代实验结论。",
+            "en": "Check day, evidence, parameters and nineteen file hashes. Save your prediction and observation; program completion is not an experimental conclusion."
+          },
+          "command": "python3 -m json.tool out/day20.json",
+          "expected": {
+            "zh": "生成day01.json至day20.json；day20.files包含19个可核对的SHA-256。",
+            "en": "Creates day01.json through day20.json; day20.files contains nineteen verifiable SHA-256 hashes."
+          }
+        },
+        {
+          "title": {
+            "zh": "完成自己的改动",
+            "en": "Make your own change"
+          },
+          "body": {
+            "zh": "完成REPORT_TEMPLATE.md，附自己的三项练习通过结果与至少一个对照；邀请读者按README复跑。",
+            "en": "Complete REPORT_TEMPLATE.md, attach your three passing exercises and at least one comparison, and make reproduction possible through README."
+          },
+          "expected": {
+            "zh": "交付一个预测、改动、原始结果和局限；至少给出能证伪自己解释的检查。",
+            "en": "Deliver a prediction, change, raw result and limitation; include a check that could falsify your explanation."
+          }
+        },
+        {
+          "title": {
+            "zh": "学生练习与独立检查",
+            "en": "Student exercises and independent checks"
+          },
+          "body": {
+            "zh": "依次完成exercises.py的三个函数。参考模式可立即通过；学生模式在尚未完成函数时会返回NOT YET，这是预期提示，不要只复制参考输出。",
+            "en": "Complete the three functions in exercises.py over the course. Reference mode passes immediately; student mode returns NOT YET until unfinished functions are implemented. Do not submit reference output as your solution."
+          },
+          "command": "python3 check_exercises.py --reference",
+          "expected": {
+            "zh": "参考答案通过15个固定边界用例；完成全部函数后再运行python3 check_exercises.py检验自己的实现。",
+            "en": "Reference answers pass fifteen fixed edge cases. After implementing all functions, run python3 check_exercises.py to check your own code."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "只有参考实现通过，却标成自己的作品",
+            "en": "Claiming reference checks as your own work"
+          },
+          "fix": {
+            "zh": "运行不带--reference的检查；保留自己的实现和解释，明确参考代码的使用范围。",
+            "en": "Run checks without --reference. Include your implementation and explanation, and disclose use of reference code."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "找不到脚本、报告或误读旧输出",
+            "en": "Missing scripts/reports or stale output"
+          },
+          "fix": {
+            "zh": "进入完整解压的post-training目录，运行python3 --version，再运行本日命令。检查out/day20.json里的day与configuration，换目录保留对照。",
+            "en": "Enter the fully extracted post-training directory, run python3 --version and rerun today’s command. Check day and configuration in the JSON; use separate directories to preserve comparisons."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "哪种结课证据最完整？",
+            "en": "Which capstone evidence is most complete?"
+          },
+          "options": [
+            {
+              "zh": "一张成功截图",
+              "en": "One success screenshot"
+            },
+            {
+              "zh": "代码、环境、原始记录、自己的改动与局限",
+              "en": "Code, environment, raw records, your changes and limitations"
+            },
+            {
+              "zh": "只写速度提升",
+              "en": "Only a speedup claim"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "可复查需要输入、方法与证据链，截图无法说明假设或复现条件。",
+            "en": "Review requires inputs, method and evidence lineage; screenshots do not establish assumptions or reproduction conditions."
+          }
+        },
+        {
+          "question": {
+            "zh": "CPU模型成本下降可以宣称GPU加速吗？",
+            "en": "Can lower CPU-model cost establish GPU speedup?"
+          },
+          "options": [
+            {
+              "zh": "可以",
+              "en": "Yes"
+            },
+            {
+              "zh": "只要超过两倍就可以",
+              "en": "Yes if it exceeds 2×"
+            },
+            {
+              "zh": "不可以，需真实硬件同条件测量",
+              "en": "No; matched real-hardware measurements are needed"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "成本模型是明确假设下的计算，未测量GPU执行。",
+            "en": "Modeled cost follows declared assumptions and does not measure GPU execution."
+          }
+        }
+      ]
+    }
+  ]
+}

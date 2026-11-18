@@ -12,7 +12,7 @@
 
 AI Infra 的成长需要读懂原理，也需要亲手运行、观察结果、定位问题。聘枢围绕这条路径组织内容：
 
-- **有路线地学习。** 按推理工程、性能工程和平台工程选择必修与选修课程，用中英双语讲解、直观图解和交互演示理解系统。
+- **有路线地学习。** 按推理工程、性能工程、平台工程和后训练工程选择必修与选修课程，用中英双语讲解、直观图解和交互演示理解系统。
 - **动手做出成果。** 跟着实验步骤运行代码，处理常见报错，再完成自己的项目，留下代码、实验记录和技术复盘。
 - **带着作品连接机会。** 整理作品档案、准备求职、记录投递；招聘团队可以描述工程需求、查看自愿公开的作品名片，发起进一步交流。
 
@@ -34,7 +34,9 @@ AI Infra 的成长需要读懂原理，也需要亲手运行、观察结果、�
 | 系统入门 | [系统基础](https://supergroupli.github.io/AIinfra-JobHub/learn/foundations/) |
 | 推理与服务 | [vLLM](https://supergroupli.github.io/AIinfra-JobHub/learn/vllm/) · [SGLang](https://supergroupli.github.io/AIinfra-JobHub/learn/sglang/) · [LMCache](https://supergroupli.github.io/AIinfra-JobHub/learn/lmcache/) · [Mooncake](https://supergroupli.github.io/AIinfra-JobHub/learn/mooncake/) · [NVIDIA Dynamo](https://supergroupli.github.io/AIinfra-JobHub/learn/dynamo/) |
 | 性能与分布式计算 | [Triton](https://supergroupli.github.io/AIinfra-JobHub/learn/triton/) · [PyTorch Distributed](https://supergroupli.github.io/AIinfra-JobHub/learn/pytorch-distributed/) · [NCCL](https://supergroupli.github.io/AIinfra-JobHub/learn/nccl/) |
-| 平台工程 | [Ray](https://supergroupli.github.io/AIinfra-JobHub/learn/ray/) · [Kubernetes](https://supergroupli.github.io/AIinfra-JobHub/learn/kubernetes/) |
+| 后训练工程 | [verl + AReaL 后训练 Infra](https://supergroupli.github.io/AIinfra-JobHub/learn/post-training/) |
+| MoE 系统工程 | [DeepEP + DeepGEMM](https://supergroupli.github.io/AIinfra-JobHub/learn/moe-systems/) |
+| 平台工程 | [Ray](https://supergroupli.github.io/AIinfra-JobHub/learn/ray/) · [Kubernetes](https://supergroupli.github.io/AIinfra-JobHub/learn/kubernetes/) · [llm-d](https://supergroupli.github.io/AIinfra-JobHub/learn/llm-d/) |
 | 共同进阶必修 | [RSI Infra：20 天搭建可验证的改进闭环](https://supergroupli.github.io/AIinfra-JobHub/learn/rsi-infra/) |
 
 学习过程中，还可以用 [原理知识库](https://supergroupli.github.io/AIinfra-JobHub/knowledge/) 补齐概念，用 [故障诊断实验室](https://supergroupli.github.io/AIinfra-JobHub/cases/) 练习排障，在 [练习与复习中心](https://supergroupli.github.io/AIinfra-JobHub/practice/) 检查理解，或通过 [学习搜索](https://supergroupli.github.io/AIinfra-JobHub/search/) 找到具体问题的讲解。

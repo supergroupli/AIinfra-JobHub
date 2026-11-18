@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-14",
+  "updatedAt": "2026-11-18",
   "projects": [
     {
       "id": "serving-baseline",
@@ -1381,6 +1381,461 @@
           "url": "https://www.infinigence-ai.com/news-updates/253.html"
         }
       ]
+    },
+    {
+      "id": "post-training-loop",
+      "category": "distributed",
+      "title": {
+        "zh": "建立可复现的后训练闭环",
+        "en": "Build a reproducible post-training loop"
+      },
+      "summary": {
+        "zh": "用小型策略学习奖励与更新的关系，再把轨迹版本、评估和恢复纳入同一份证据包。",
+        "en": "Use a tiny policy to study rewards and updates, then collect trajectory versions, evaluation and recovery in one evidence package."
+      },
+      "level": {
+        "zh": "进阶 · 后训练方向",
+        "en": "Intermediate · post-training"
+      },
+      "duration": {
+        "zh": "配合 20 天课程，按验收推进",
+        "en": "Alongside the 20-day course; progress by acceptance checks"
+      },
+      "cpuStart": true,
+      "tags": [
+        "verl",
+        "AReaL",
+        "RL",
+        "Rollout"
+      ],
+      "problem": {
+        "zh": "只展示奖励上升无法说明训练闭环可靠。如何证明奖励计算、样本准入、策略更新与独立评估各自正确？",
+        "en": "An increasing reward alone does not establish a reliable training loop. How can you verify reward calculation, sample admission, policy updates and independent evaluation?"
+      },
+      "scenario": {
+        "zh": "构建标量策略的实际 CPU 更新实验，注入过期轨迹、重复任务和中断；每个结论都能回到原始记录。",
+        "en": "Build an actual CPU update experiment for a scalar policy, inject stale trajectories, duplicate tasks and interruption, and trace claims back to raw records."
+      },
+      "roles": {
+        "zh": [
+          "后训练工程师",
+          "训练平台工程师"
+        ],
+        "en": [
+          "Post-training engineer",
+          "Training platform engineer"
+        ]
+      },
+      "prerequisites": [
+        {
+          "id": "post-training",
+          "title": {
+            "zh": "后训练 Infra",
+            "en": "Post-training infra"
+          }
+        },
+        {
+          "id": "pytorch-distributed",
+          "title": {
+            "zh": "PyTorch Distributed",
+            "en": "PyTorch Distributed"
+          }
+        }
+      ],
+      "steps": [
+        {
+          "title": {
+            "zh": "固定任务与评估边界",
+            "en": "Fix tasks and evaluation boundaries"
+          },
+          "body": {
+            "zh": "先写奖励规则、训练/评估分离、随机种子和成功条件，保存未更新策略的基线，不看结果再改评分。",
+            "en": "Define rewards, separated training/evaluation, seeds and success conditions. Save a pre-update baseline; do not change the rubric after seeing results."
+          }
+        },
+        {
+          "title": {
+            "zh": "追踪一次真实参数更新",
+            "en": "Trace one actual parameter update"
+          },
+          "body": {
+            "zh": "运行课程中的标量策略实验，独立计算一组奖励和更新方向；解释它与 LLM 的 PPO/GRPO 训练有何不同。",
+            "en": "Run the scalar policy lab, independently calculate rewards and the update direction, and explain differences from LLM PPO/GRPO training."
+          }
+        },
+        {
+          "title": {
+            "zh": "注入运行故障",
+            "en": "Inject operational faults"
+          },
+          "body": {
+            "zh": "构造过期版本、重复任务和恢复场景，保留被拒绝轨迹及其原因；检查恢复后计数和版本连续性。",
+            "en": "Construct stale-version, duplicate-task and recovery scenarios. Preserve rejected trajectories with reasons and check counts and versions after recovery."
+          }
+        },
+        {
+          "title": {
+            "zh": "独立复算与对外说明",
+            "en": "Recompute and explain independently"
+          },
+          "body": {
+            "zh": "完成学生练习与独立检查。导出代码、配置、原始记录、评估结果和限制；把模拟成本与实际测量分栏。",
+            "en": "Finish learner exercises and independent checks. Export code, configuration, raw records, evaluation and limits; separate simulated costs from actual measurements."
+          }
+        }
+      ],
+      "deliverables": {
+        "zh": [
+          "可运行实验与独立检查结果",
+          "包含版本、种子、失败记录的原始证据",
+          "更新前后评估与逐项限制说明",
+          "按问题、贡献、验证组织的项目 README"
+        ],
+        "en": [
+          "Runnable experiment and independent check results",
+          "Raw evidence including versions, seeds and failures",
+          "Before/after evaluation and explicit limitations",
+          "Project README organized by problem, contribution and validation"
+        ]
+      },
+      "acceptance": {
+        "zh": [
+          "手算样例与程序结果一致，未完成练习会被检查器拒绝。",
+          "版本过期、重试和恢复反例有原始记录，没有只保留成功样本。",
+          "从干净目录可复现报告，未把标量策略实验称为真实 LLM 后训练。"
+        ],
+        "en": [
+          "Hand-calculated examples match the code and incomplete exercises fail the checker.",
+          "Stale-version, retry and recovery counterexamples remain in raw evidence rather than retaining successes only.",
+          "The report reproduces from a clean directory and never labels scalar-policy work as real LLM post-training."
+        ]
+      },
+      "sources": [
+        {
+          "title": "verl official repository",
+          "url": "https://github.com/verl-project/verl"
+        },
+        {
+          "title": "AReaL official repository",
+          "url": "https://github.com/areal-project/AReaL"
+        }
+      ],
+      "environment": {
+        "zh": "Python 3.9+ 与标准库，普通 CPU。使用课程 ZIP 中的固定教学实现，保存 Python/操作系统版本、源码哈希和运行命令；真实框架/GPU 是另外的扩展。",
+        "en": "Python 3.9+ and standard library on a CPU. Use the course ZIP teaching implementation and retain Python/OS versions, source hashes and commands. Real-framework/GPU work is a separate extension."
+      },
+      "evidenceBoundary": {
+        "zh": "CPU 教学实现验证明确列出的机制与正确性；合成成本不是真实 GPU 性能。真实 Python CPU 计时也不代表上游框架吞吐。尚未执行的上游实验、同伴复现和生产部署应分别写明。",
+        "en": "CPU teaching code validates only the stated mechanisms and correctness. Synthetic costs are not GPU measurements, and Python CPU timings do not represent upstream throughput. Mark unexecuted upstream experiments, peer reproduction and production deployment separately."
+      }
+    },
+    {
+      "id": "llmd-control-plane",
+      "category": "platform",
+      "title": {
+        "zh": "推理控制面的路由与故障实验",
+        "en": "Inference control-plane routing and fault experiments"
+      },
+      "summary": {
+        "zh": "对比缓存与队列感知决策，追踪 PD 与传输瓶颈，并检验升级期间的服务目标。",
+        "en": "Compare cache/queue-aware decisions, trace PD and transfer bottlenecks, and check service objectives during upgrades."
+      },
+      "level": {
+        "zh": "进阶 · 平台方向",
+        "en": "Intermediate · platform"
+      },
+      "duration": {
+        "zh": "配合 20 天课程，按验收推进",
+        "en": "Alongside the 20-day course; progress by acceptance checks"
+      },
+      "cpuStart": true,
+      "tags": [
+        "llm-d",
+        "Kubernetes",
+        "Routing",
+        "SLO"
+      ],
+      "problem": {
+        "zh": "缓存命中率变高不一定让用户更快得到结果。如何把队列、前缀、容量与故障一起纳入判断？",
+        "en": "Higher cache hit rate does not necessarily improve user latency. How should queueing, prefixes, capacity and faults inform decisions together?"
+      },
+      "scenario": {
+        "zh": "使用固定请求与合成端点状态比较路由策略，构造遥测过期、超时重试、节点失效和滚动升级情形。",
+        "en": "Compare routing policies over fixed requests and synthetic endpoint state, then inject stale telemetry, retries, node loss and rolling upgrades."
+      },
+      "roles": {
+        "zh": [
+          "AI 平台工程师",
+          "推理服务工程师"
+        ],
+        "en": [
+          "AI platform engineer",
+          "Inference serving engineer"
+        ]
+      },
+      "prerequisites": [
+        {
+          "id": "llm-d",
+          "title": {
+            "zh": "llm-d 分布式推理",
+            "en": "llm-d distributed inference"
+          }
+        },
+        {
+          "id": "kubernetes",
+          "title": {
+            "zh": "Kubernetes",
+            "en": "Kubernetes"
+          }
+        },
+        {
+          "id": "vllm",
+          "title": {
+            "zh": "vLLM",
+            "en": "vLLM"
+          }
+        }
+      ],
+      "steps": [
+        {
+          "title": {
+            "zh": "定义请求与服务目标",
+            "en": "Define requests and service objectives"
+          },
+          "body": {
+            "zh": "固定请求集、截止时间和成功分母，分别定义成功率、延迟与 goodput；列出哪些数值来自模拟。",
+            "en": "Fix requests, deadlines and success denominators. Define success rate, latency and goodput separately and label simulated values."
+          }
+        },
+        {
+          "title": {
+            "zh": "比较两种路由策略",
+            "en": "Compare two routing policies"
+          },
+          "body": {
+            "zh": "运行缓存感知与队列感知样例，保留热节点更慢的反例，检查前缀匹配是否按 token 顺序而非任意字符串相等。",
+            "en": "Run cache-aware and queue-aware examples, retain a slower-warm-node counterexample, and check token-prefix semantics rather than arbitrary string equality."
+          }
+        },
+        {
+          "title": {
+            "zh": "检查容量与故障边界",
+            "en": "Check capacity and failure boundaries"
+          },
+          "body": {
+            "zh": "改变 P/D 副本和传输预算，记录瓶颈转移；再注入过期遥测、节点失效和升级不可用副本，检查限流与重试预算。",
+            "en": "Vary P/D replicas and transfer budgets, record bottleneck changes, then inject stale telemetry, endpoint loss and rollout unavailability; check admission and retry budgets."
+          }
+        },
+        {
+          "title": {
+            "zh": "交付运维说明",
+            "en": "Deliver an operations explanation"
+          },
+          "body": {
+            "zh": "完成课程独立挑战，把决策日志与 SLO 结果复算到报告。单独列出部署 llm-d v1.0.0 还需要的集群、GPU 与版本检查。",
+            "en": "Finish the course challenges and recompute decision logs and SLO results in the report. Separately list cluster, GPU and version checks still needed to deploy llm-d v1.0.0."
+          }
+        }
+      ],
+      "deliverables": {
+        "zh": [
+          "请求集与端点状态 fixture",
+          "逐请求决策与失败原始记录",
+          "策略比较、瓶颈与故障分析报告",
+          "复现命令及真实部署前置检查"
+        ],
+        "en": [
+          "Request and endpoint fixtures",
+          "Per-request decisions and raw failures",
+          "Policy, bottleneck and fault-analysis report",
+          "Reproduction commands and real-deployment prerequisites"
+        ]
+      },
+      "acceptance": {
+        "zh": [
+          "相同输入能复现路由决策，缓存热点造成排队的反例保留。",
+          "吞吐、goodput 与失败计数分母明确，超时请求没有静默消失。",
+          "没有把控制面模拟称为真实 Kubernetes/GPU 集群测试。"
+        ],
+        "en": [
+          "Identical inputs reproduce decisions, including a cache-hotspot queueing counterexample.",
+          "Throughput, goodput and failures have explicit denominators; timeouts never disappear silently.",
+          "Control-plane simulation is not presented as an actual Kubernetes/GPU cluster test."
+        ]
+      },
+      "sources": [
+        {
+          "title": "llm-d official repository",
+          "url": "https://github.com/llm-d/llm-d"
+        },
+        {
+          "title": "llm-d v1.0.0 release",
+          "url": "https://github.com/llm-d/llm-d/releases/tag/v1.0.0"
+        }
+      ],
+      "environment": {
+        "zh": "Python 3.9+ 与标准库，普通 CPU。使用课程 ZIP 中的固定教学实现，保存 Python/操作系统版本、源码哈希和运行命令；真实框架/GPU 是另外的扩展。",
+        "en": "Python 3.9+ and standard library on a CPU. Use the course ZIP teaching implementation and retain Python/OS versions, source hashes and commands. Real-framework/GPU work is a separate extension."
+      },
+      "evidenceBoundary": {
+        "zh": "CPU 教学实现验证明确列出的机制与正确性；合成成本不是真实 GPU 性能。真实 Python CPU 计时也不代表上游框架吞吐。尚未执行的上游实验、同伴复现和生产部署应分别写明。",
+        "en": "CPU teaching code validates only the stated mechanisms and correctness. Synthetic costs are not GPU measurements, and Python CPU timings do not represent upstream throughput. Mark unexecuted upstream experiments, peer reproduction and production deployment separately."
+      }
+    },
+    {
+      "id": "moe-routing-analysis",
+      "category": "kernels",
+      "title": {
+        "zh": "MoE 路由正确性与通信账本",
+        "en": "MoE routing correctness and communication ledger"
+      },
+      "summary": {
+        "zh": "独立检查 dispatch/combine 的 Token 映射，分析专家热点、精度误差与数据搬运。",
+        "en": "Independently check token mapping through dispatch/combine and analyze expert hotspots, precision error and data movement."
+      },
+      "level": {
+        "zh": "深入 · 性能方向",
+        "en": "Advanced · performance"
+      },
+      "duration": {
+        "zh": "配合 20 天课程，按验收推进",
+        "en": "Alongside the 20-day course; progress by acceptance checks"
+      },
+      "cpuStart": true,
+      "tags": [
+        "MoE",
+        "DeepEP",
+        "DeepGEMM",
+        "Expert Parallelism"
+      ],
+      "problem": {
+        "zh": "专家重排后，错误的 combine 也可能返回形状正确的张量。怎样先证明语义正确，再解释负载和通信开销？",
+        "en": "An incorrect combine can return a correctly shaped tensor after expert reordering. How do you prove semantics before interpreting load and communication cost?"
+      },
+      "scenario": {
+        "zh": "对小型线性专家运行实际 CPU 分发与合并，以 token-major 参考实现独立核对，再加入热点、容量和量化反例。",
+        "en": "Run actual CPU dispatch and combine for small linear experts, compare with an independent token-major oracle, then introduce hotspots, capacity limits and quantization counterexamples."
+      },
+      "roles": {
+        "zh": [
+          "GPU 性能工程师",
+          "分布式系统工程师"
+        ],
+        "en": [
+          "GPU performance engineer",
+          "Distributed systems engineer"
+        ]
+      },
+      "prerequisites": [
+        {
+          "id": "moe-systems",
+          "title": {
+            "zh": "MoE 系统工程",
+            "en": "MoE systems"
+          }
+        },
+        {
+          "id": "nccl",
+          "title": {
+            "zh": "NCCL",
+            "en": "NCCL"
+          }
+        },
+        {
+          "id": "triton",
+          "title": {
+            "zh": "Triton",
+            "en": "Triton"
+          }
+        }
+      ],
+      "steps": [
+        {
+          "title": {
+            "zh": "固定路由语义",
+            "en": "Fix routing semantics"
+          },
+          "body": {
+            "zh": "为每个 token 保存专家 ID、权重和恢复索引，手算两 token 样例，再运行独立参考检查。",
+            "en": "Keep expert IDs, weights and inverse indices per token. Hand-calculate a two-token example and run the independent reference check."
+          }
+        },
+        {
+          "title": {
+            "zh": "比较平衡与热点",
+            "en": "Compare balanced and hotspot traffic"
+          },
+          "body": {
+            "zh": "保持 token 数和 top-k 不变，只改变路由分布；记录每专家负载、padding、容量与丢弃语义，不把丢弃当作加速。",
+            "en": "Keep token count and top-k fixed while varying routing distribution. Record per-expert load, padding, capacity and dropping semantics; dropping is not a speedup."
+          }
+        },
+        {
+          "title": {
+            "zh": "建立精度与通信账本",
+            "en": "Build precision and communication ledgers"
+          },
+          "body": {
+            "zh": "检查低精度误差和容差，分别计算逻辑 payload、远端 payload 与通信下界；列出未建模的协议、拓扑和融合开销。",
+            "en": "Check low-precision error against tolerances. Separate logical payload, remote payload and transfer lower bounds, listing omitted protocol, topology and fusion costs."
+          }
+        },
+        {
+          "title": {
+            "zh": "保留证据与反例",
+            "en": "Preserve evidence and counterexamples"
+          },
+          "body": {
+            "zh": "完成学生实现与独立检查，记录真实 CPU 计时及其范围。把 DeepEP/DeepGEMM GPU 扩展的固定源码版本与硬件要求单独列出。",
+            "en": "Complete the learner implementation and independent checks. Record actual CPU timings and their scope, and separately list pinned DeepEP/DeepGEMM sources and GPU requirements."
+          }
+        }
+      ],
+      "deliverables": {
+        "zh": [
+          "路由、dispatch、combine 与独立 oracle",
+          "平衡/热点/容量/精度反例及原始 JSON",
+          "带单位和假设的通信与 roofline 账本",
+          "本人实现、测试结果和复现 README"
+        ],
+        "en": [
+          "Routing, dispatch, combine and independent oracle",
+          "Balanced/hotspot/capacity/precision cases with raw JSON",
+          "Communication and roofline ledgers with units and assumptions",
+          "Own implementation, test results and reproduction README"
+        ]
+      },
+      "acceptance": {
+        "zh": [
+          "改变分发顺序仍与独立参考输出一致，错误恢复索引会被检查发现。",
+          "负载分配、padding 与丢弃数量可追溯，低精度误差没有被隐藏。",
+          "CPU 计时、公式下界、未执行 GPU 实验分别标注。"
+        ],
+        "en": [
+          "Dispatch reordering still matches the independent oracle and incorrect inverse indices are detected.",
+          "Assignments, padding and drops are traceable, and low-precision error is disclosed.",
+          "CPU timing, formula bounds and unexecuted GPU experiments are labeled separately."
+        ]
+      },
+      "sources": [
+        {
+          "title": "DeepEP official repository",
+          "url": "https://github.com/deepseek-ai/DeepEP"
+        },
+        {
+          "title": "DeepGEMM official repository",
+          "url": "https://github.com/deepseek-ai/DeepGEMM"
+        }
+      ],
+      "environment": {
+        "zh": "Python 3.9+ 与标准库，普通 CPU。使用课程 ZIP 中的固定教学实现，保存 Python/操作系统版本、源码哈希和运行命令；真实框架/GPU 是另外的扩展。",
+        "en": "Python 3.9+ and standard library on a CPU. Use the course ZIP teaching implementation and retain Python/OS versions, source hashes and commands. Real-framework/GPU work is a separate extension."
+      },
+      "evidenceBoundary": {
+        "zh": "CPU 教学实现验证明确列出的机制与正确性；合成成本不是真实 GPU 性能。真实 Python CPU 计时也不代表上游框架吞吐。尚未执行的上游实验、同伴复现和生产部署应分别写明。",
+        "en": "CPU teaching code validates only the stated mechanisms and correctness. Synthetic costs are not GPU measurements, and Python CPU timings do not represent upstream throughput. Mark unexecuted upstream experiments, peer reproduction and production deployment separately."
+      }
     }
   ]
 }
