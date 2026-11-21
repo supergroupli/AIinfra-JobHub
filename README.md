@@ -22,6 +22,7 @@ AI Infra 的成长需要读懂原理，也需要亲手运行、观察结果、�
 | --- | --- |
 | 刚接触 AI Infra，想知道先学什么 | [入门自查](https://supergroupli.github.io/AIinfra-JobHub/start/) → [系统基础](https://supergroupli.github.io/AIinfra-JobHub/learn/foundations/) |
 | 已有开发基础，想深入一个技术方向 | [学习路线](https://supergroupli.github.io/AIinfra-JobHub/#learn) → [实战项目](https://supergroupli.github.io/AIinfra-JobHub/projects/) |
+| 想用压测数据练习面试，解释该上线哪种配置 | 在浏览器中比较两组请求，引用记录并导出复盘。[推理压测复盘台](https://supergroupli.github.io/AIinfra-JobHub/bench/) |
 | 正在找实习或工作，想把能力讲清楚 | [求职准备](https://supergroupli.github.io/AIinfra-JobHub/career/) → [作品档案](https://supergroupli.github.io/AIinfra-JobHub/portfolio/) → [投递记录](https://supergroupli.github.io/AIinfra-JobHub/applications/) |
 | 正在招聘，想围绕真实工程问题找伙伴 | [整理招聘需求](https://supergroupli.github.io/AIinfra-JobHub/hiring/) → [人才与作品](https://supergroupli.github.io/AIinfra-JobHub/talent/) → [机会广场](https://supergroupli.github.io/AIinfra-JobHub/#opportunities) |
 
@@ -63,7 +64,7 @@ AI Infra 的成长需要读懂原理，也需要亲手运行、观察结果、�
 
 **AI Infra JobHub** is a free, open community for learning AI infrastructure, building reproducible projects, and discovering work and collaborators. Follow bilingual Chinese/English learning paths, turn practice into a portfolio, and connect through real engineering work.
 
-[Explore the website](https://supergroupli.github.io/AIinfra-JobHub/?lang=en) · [Join the discussion](https://github.com/supergroupli/AIinfra-JobHub/discussions)
+[Explore the website](https://supergroupli.github.io/AIinfra-JobHub/?lang=en) · [Inference benchmark lab](https://supergroupli.github.io/AIinfra-JobHub/bench/?lang=en) · [Join the discussion](https://github.com/supergroupli/AIinfra-JobHub/discussions)
 
 ## 发起与联系
 

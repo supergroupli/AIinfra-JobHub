@@ -292,11 +292,17 @@ def validate_projects(document, courses):
 def write_course_pages(courses, out, repository, projects):
     template = (ROOT / "web/course.html").read_text(encoding="utf-8")
     base = public_site_url(repository)
+    bench_cases = {"foundations": "batch-v1", "vllm": "prefix-v1", "llm-d": "upgrade-v1"}
     for course in courses:
         folder = out / "learn" / course["id"]
         folder.mkdir(parents=True)
         project = next((item for item in projects if any(ref["id"] == course["id"] for ref in item["prerequisites"])), None)
         project_query = f'?project={project["id"]}' if project else ""
+        bench_case = bench_cases.get(course["id"])
+        bench_link = (
+            f'<a class="text-link" href="../../bench/?case={bench_case}" data-i18n="benchLab">推理压测复盘台</a>'
+            if bench_case else ""
+        )
         replacements = {
             "__COURSE_TITLE__": esc(course["title"]["zh"]),
             "__COURSE_DAYS__": str(len(course["steps"])),
@@ -309,6 +315,7 @@ def write_course_pages(courses, out, repository, projects):
             "__PROJECT_URL__": esc(f"../../projects/{project_query}"),
             "__PORTFOLIO_URL__": esc(f"../../portfolio/{project_query}"),
             "__PRACTICE_URL__": esc(f"../../practice/?course={course['id']}"),
+            "__BENCH_LINK__": bench_link,
             "__SEARCH_URL__": esc(f"../../search/?course={course['id']}&kind=lesson"),
         }
         page = template
@@ -318,7 +325,7 @@ def write_course_pages(courses, out, repository, projects):
         for lang in ("zh", "en"):
             (folder / f"{course['id']}.{lang}.md").write_text(course_markdown(course, lang, base), encoding="utf-8")
     if base:
-        locations = [base] + [f"{base}{section}/" for section in ("start", "knowledge", "cases", "practice", "search", "projects", "portfolio", "career", "applications", "talent", "hiring")] + [f"{base}learn/{course['id']}/" for course in courses]
+        locations = [base] + [f"{base}{section}/" for section in ("start", "knowledge", "cases", "bench", "practice", "search", "projects", "portfolio", "career", "applications", "talent", "hiring")] + [f"{base}learn/{course['id']}/" for course in courses]
         (out / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + "".join(f"<url><loc>{esc(location)}</loc></url>" for location in locations) + "</urlset>\n", encoding="utf-8")
 
 

@@ -17,6 +17,7 @@ const state = {lang: initialLanguage === "en" ? "en" : "zh", data: null, skills:
 const technologies = ["vLLM", "SGLang", "LMCache", "Mooncake", "Dynamo", "KV Cache", "Serving", "CUDA", "Triton", "PyTorch", "Ray", "NCCL", "Kubernetes", "Distributed Systems", "Observability", "RSI"];
 const messages = {
   zh: {
+    benchLearner: "推理压测复盘台", benchInterview: "用压测案例面试",
     rsiBadge:"新增 · 共同进阶必修", rsiTitle:"RSI Infra：20 天搭建可验证的改进闭环", rsiBody:"从任务契约、候选生成和独立评测，到经验积累、相同预算消融与回滚。普通电脑即可开始，完成一份带原始证据的结课报告。", rsiAction:"进入 RSI Infra 必修课 ↗",
     knowledgeTitle:"原理知识库", knowledgeBody:"把调度、内存、通信和可靠性连起来，用逐步算例读懂取舍。", knowledgeAction:"读原理与算例 ↗", casesTitle:"故障诊断实验室", casesBody:"从具体日志与数据开始，提出假设、运行检查，再看解析。", casesAction:"开始排障练习 ↗", practiceTitle:"练习与复习中心", practiceBody:"按课程做题、查看解析，把错题和需要再练的内容留下来。", practiceAction:"做题与重练错题 ↗", searchTitle:"搜索学习内容", searchBody:"跨课程检索讲解、代码步骤、常见报错、专题和项目。", searchAction:"带着问题找答案 ↗",
     applicationTracker:"投递记录", hiringBrief:"整理招聘需求", findStart:"从哪里开始？做一次入门自查 ↗",
@@ -47,6 +48,7 @@ const messages = {
     privacy3: "学习进度和语言偏好保存在本浏览器。这些进度不会上传。首页访客地图由 MapMyVisitors 提供；加载地图时，MapMyVisitors 会处理访问 IP、浏览器信息并估计国家或地区。统计脚本不读取学习笔记、投递或招聘草稿，也不会加载到投递、招聘草稿、作品编辑和搜索页面。你可以通过邮件客户端将简历发送至 career@yzinfra.com，邮件由该邮箱运营方接收和处理，不会由网站自动发布到 GitHub。针对具体职位，也可使用企业官方申请入口。网站不提供私聊或简历上传存储；邮件和网页访问仍适用各服务提供方的数据处理政策。"
   },
   en: {
+    benchLearner: "Inference benchmark lab", benchInterview: "Discuss a benchmark in an interview",
     rsiBadge:"NEW · ADVANCED COMMON CORE", rsiTitle:"RSI Infra: build a verifiable improvement loop in 20 study days", rsiBody:"From task contracts, candidate proposals and independent evaluation to experience, equal-budget ablations and rollback. Start on a laptop and build a capstone report with raw evidence.", rsiAction:"Open the RSI Infra core course ↗",
     knowledgeTitle:"Core concepts", knowledgeBody:"Connect scheduling, memory, communication and reliability through step-by-step worked examples.", knowledgeAction:"Explore principles & examples ↗", casesTitle:"Diagnosis labs", casesBody:"Start from logs and data. Form a hypothesis, run a check, then read the explanation.", casesAction:"Investigate a case ↗", practiceTitle:"Practice & review", practiceBody:"Practice by course, read explanations and return to mistakes or topics you want to revisit.", practiceAction:"Practice & revisit mistakes ↗", searchTitle:"Search learning materials", searchBody:"Search across daily explanations, code steps, troubleshooting, concepts and projects.", searchAction:"Find an explanation ↗",
     applicationTracker:"Application tracker", hiringBrief:"Write a hiring brief", findStart:"Where should I start? Find a first task ↗",

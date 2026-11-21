@@ -3,8 +3,9 @@ import copy
 import json
 import unittest
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
-from scripts.build import validate_paths, validate_tracks
+from scripts.build import validate_paths, validate_tracks, write_course_pages
 from scripts.learning import course_body, course_markdown, course_nav
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +33,22 @@ class LearningLibraryTest(unittest.TestCase):
                 course["steps"][0]["lesson"].pop("en")
             with self.subTest(mutation=mutation), self.assertRaises(ValueError):
                 validate_tracks([course])
+
+    def test_benchmark_entry_points_preserve_course_context_and_pages_prefix(self):
+        cases = {"foundations": "batch-v1", "vllm": "prefix-v1", "llm-d": "upgrade-v1"}
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_course_pages(self.courses, root, "example/JobHub", [])
+            for course in self.courses:
+                course_id = course["id"]
+                page = (root / "learn" / course_id / "index.html").read_text()
+                with self.subTest(course=course_id):
+                    self.assertNotIn("__BENCH_LINK__", page)
+                    if course_id in cases:
+                        self.assertIn(f'href="../../bench/?case={cases[course_id]}"', page)
+                    else:
+                        self.assertNotIn('href="../../bench/', page)
+            self.assertIn("<loc>https://example.github.io/JobHub/bench/</loc>", (root / "sitemap.xml").read_text())
 
     def test_unknown_path_reference_is_rejected(self):
         paths = [{"id": "test", "title": {"zh": "测试", "en": "Test"}, "description": {"zh": "测试", "en": "Test"}, "courses": ["does-not-exist"]}]
