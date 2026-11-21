@@ -20,7 +20,7 @@ AI Infra 的成长需要读懂原理，也需要亲手运行、观察结果、�
 
 | 你想做什么 | 从这里开始 |
 | --- | --- |
-| 刚接触 AI Infra，想知道先学什么 | [入门自查](https://supergroupli.github.io/AIinfra-JobHub/start/) → [系统基础](https://supergroupli.github.io/AIinfra-JobHub/learn/foundations/) |
+| 第一次听说模型推理，想亲手试一次 | 用手机或电脑给小模型发送开头，看它怎样接出下一块文字。[从零认识 AI 推理 · 第一课](https://supergroupli.github.io/AIinfra-JobHub/learn/inference-101/?lang=zh#day-1) |
 | 已有开发基础，想深入一个技术方向 | [学习路线](https://supergroupli.github.io/AIinfra-JobHub/#learn) → [实战项目](https://supergroupli.github.io/AIinfra-JobHub/projects/) |
 | 想用压测数据练习面试，解释该上线哪种配置 | 在浏览器中比较两组请求，引用记录并导出复盘。[推理压测复盘台](https://supergroupli.github.io/AIinfra-JobHub/bench/) |
 | 正在找实习或工作，想把能力讲清楚 | [求职准备](https://supergroupli.github.io/AIinfra-JobHub/career/) → [作品档案](https://supergroupli.github.io/AIinfra-JobHub/portfolio/) → [投递记录](https://supergroupli.github.io/AIinfra-JobHub/applications/) |
@@ -28,11 +28,12 @@ AI Infra 的成长需要读懂原理，也需要亲手运行、观察结果、�
 
 ## 学习库
 
-课程按 10 天或 20 天组织，提供概念讲解、流程图、可运行实验、常见报错和带解析的练习。你可以按自己的基础调整节奏；基础实践可从普通电脑开始，GPU 与集群实验会单独说明环境要求。
+零基础预备课有 10 节浏览器短课，每节约 5–10 分钟。后续工程课按 10 天或 20 天组织，配有流程图、可运行实验、常见报错和带解析的练习。已经接触过推理的读者，可以按现有基础选择起点。[入门自查](https://supergroupli.github.io/AIinfra-JobHub/start/)
 
 | 技术方向 | 课程 |
 | --- | --- |
-| 系统入门 | [系统基础](https://supergroupli.github.io/AIinfra-JobHub/learn/foundations/) |
+| 零基础预备课 | [从零认识 AI 推理](https://supergroupli.github.io/AIinfra-JobHub/learn/inference-101/?lang=zh#day-1) |
+| 系统基础 | [系统基础](https://supergroupli.github.io/AIinfra-JobHub/learn/foundations/) |
 | 推理与服务 | [vLLM](https://supergroupli.github.io/AIinfra-JobHub/learn/vllm/) · [SGLang](https://supergroupli.github.io/AIinfra-JobHub/learn/sglang/) · [LMCache](https://supergroupli.github.io/AIinfra-JobHub/learn/lmcache/) · [Mooncake](https://supergroupli.github.io/AIinfra-JobHub/learn/mooncake/) · [NVIDIA Dynamo](https://supergroupli.github.io/AIinfra-JobHub/learn/dynamo/) |
 | 性能与分布式计算 | [Triton](https://supergroupli.github.io/AIinfra-JobHub/learn/triton/) · [PyTorch Distributed](https://supergroupli.github.io/AIinfra-JobHub/learn/pytorch-distributed/) · [NCCL](https://supergroupli.github.io/AIinfra-JobHub/learn/nccl/) |
 | 后训练工程 | [verl + AReaL 后训练 Infra](https://supergroupli.github.io/AIinfra-JobHub/learn/post-training/) |
@@ -64,7 +65,7 @@ AI Infra 的成长需要读懂原理，也需要亲手运行、观察结果、�
 
 **AI Infra JobHub** is a free, open community for learning AI infrastructure, building reproducible projects, and discovering work and collaborators. Follow bilingual Chinese/English learning paths, turn practice into a portfolio, and connect through real engineering work.
 
-[Explore the website](https://supergroupli.github.io/AIinfra-JobHub/?lang=en) · [Inference benchmark lab](https://supergroupli.github.io/AIinfra-JobHub/bench/?lang=en) · [Join the discussion](https://github.com/supergroupli/AIinfra-JobHub/discussions)
+[AI inference from zero](https://supergroupli.github.io/AIinfra-JobHub/learn/inference-101/?lang=en#day-1) · [Explore the website](https://supergroupli.github.io/AIinfra-JobHub/?lang=en) · [Inference benchmark lab](https://supergroupli.github.io/AIinfra-JobHub/bench/?lang=en) · [Join the discussion](https://github.com/supergroupli/AIinfra-JobHub/discussions)
 
 ## 发起与联系
 

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#183b32">
+  <title>推理启蒙 · 离线练习册 · AI Infra JobHub</title>
+  <link rel="stylesheet" href="./lab.css">
+  <script src="./activities.js" defer></script>
+</head>
+<body class="primer-book">
+  <header><strong>聘枢 · AI Infra JobHub</strong><button type="button" data-primer-language hidden aria-label="Switch to English">English</button></header>
+  <main>
+    <h1 data-offline-en="Your first inference experiments">我的第一个推理实验</h1>
+    <p data-offline-en="Start with “I” and see how a tiny model continues a sentence. Then change a vocabulary and the number of people waiting at a service counter. Everything runs in this browser.">先发送一个「我」，看看小模型怎样续写。然后试着更换词表、改变服务窗口前的人数。三个实验都在本浏览器中运行。</p>
+    <nav aria-label="实验目录 / Experiments">
+      <a href="#predict" data-offline-en="Generate a sentence">续写一句话</a>
+      <a href="#tokens" data-offline-en="Split text into pieces">把文本切成块</a>
+      <a href="#queue" data-offline-en="Time a request">给一次请求计时</a>
+    </nav>
+    <noscript><p>纸上也能完成下面的例子。开启浏览器的 JavaScript 可调整实验条件。<span lang="en">You can work the examples on paper. Enable JavaScript to change the inputs.</span></p></noscript>
+    <section id="predict" data-primer-lab="predict" data-lesson="offline">
+      <h2>让一句话接着往下写 / Let a sentence grow</h2>
+      <p>把「我喜欢苹果。」写两遍、「我喜欢梨。」和「我看见云。」各写一遍。「我」后接「喜欢」三次、接「看见」一次。取次数多的一项，发送「我」就得到「我喜欢」。接着看「喜欢」之后，苹果占 2/3。</p>
+      <p lang="en">Write “I like apples.” twice, “I like pears.” once, and “I see clouds.” once. “I” is followed by “like” three times and “see” once. Choosing the most frequent produces “I like”. After “like”, apples occurs in two of three cases.</p>
+    </section>
+    <section id="tokens" data-primer-lab="tokens" data-lesson="offline">
+      <h2>把文本切成块 / Split text into pieces</h2>
+      <p>A 表用「苹果」7、「汁」8 表示「苹果汁」。B 表还收录了整串「苹果汁」12。每次取当前位置最长的一段，A 的结果为 7、8，B 为 12，两者都能还原原文。</p>
+      <p lang="en">A lists “apple” as 7 and “ juice” as 8. B also lists “apple juice” as 12. The longest match at each position gives [7, 8] with A and [12] with B. Looking up the IDs restores the same text, including the space.</p>
+    </section>
+    <section id="queue" data-primer-lab="queue" data-lesson="offline">
+      <h2>给一次请求计时 / Time a request</h2>
+      <p>每位前面的人占窗口 2 秒，轮到你后每秒生成一块。前面 2 人，你要 3 块，先等 4 秒，第 5 秒看到第一块，第 7 秒看到完整回答。</p>
+      <p lang="en">Each person ahead uses the counter for 2 seconds, then one piece of your answer appears per second. With 2 people ahead and 3 pieces to generate, you wait 4 seconds. The first piece appears at 5 seconds, the whole answer at 7.</p>
+    </section>
+  </main>
+</body>
+</html>

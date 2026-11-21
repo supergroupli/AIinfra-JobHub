@@ -6,18 +6,19 @@
   <meta name="theme-color" content="#183c35">
   <meta name="description" content="__COURSE_DESCRIPTION__">
   <link rel="canonical" href="__COURSE_URL__">
-  <title>__COURSE_TITLE__ · __COURSE_DAYS__ 天实战 · 聘枢</title>
+  <title>__COURSE_TITLE__ · __GUIDE_LABEL__ · 聘枢</title>
   <link rel="icon" href="../../assets/logo-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../../styles.css?v=20261118-curricula">
   <link rel="stylesheet" href="../../learning-widgets.css">
   <link rel="stylesheet" href="../../learning-tools.css">
   <script src="../../backup.js?v=20261114-duration" defer></script>
-  <script src="../../course.js?v=20261121-bench" defer></script>
+  <script src="../../course.js?v=20261121-primer" defer></script>
   <script src="../../engineering-models.js?v=20261118-curricula" defer></script>
-  <script src="../../learning-widgets.js?v=20261118-curricula" defer></script>
+  <script src="../../learning-widgets.js?v=20261121-primer" defer></script>
+  __PRIMER_ASSETS__
   <link rel="stylesheet" href="../../github-star.css">
 </head>
-<body class="course-page">
+<body class="__BODY_CLASS__">
   <a class="skip-link" href="#course-reader" data-i18n="skip">跳到课程正文</a>
   <header class="site-header">
     <a class="brand" href="../../" aria-label="聘枢 · AI Infra JobHub home"><img class="brand-mark" src="../../assets/logo-mark.svg" width="40" height="40" alt=""><span class="brand-wordmark"><strong data-i18n="brandName">聘枢</strong><small data-i18n="brandTagline">AI Infra JobHub</small></span></a>
@@ -25,11 +26,11 @@
     <div class="header-actions"><a class="github-star-link" href="https://github.com/supergroupli/AIinfra-JobHub" target="_blank" rel="noopener noreferrer" aria-label="到 GitHub 为聘枢点 Star / Star AI Infra JobHub on GitHub" title="在 GitHub 打开仓库并点 Star / Open the repository to star it"><img src="../../assets/github-mark.svg" width="17" height="17" alt=""><span class="github-star-symbol" aria-hidden="true">☆</span><span class="github-star-wide">Star on GitHub</span><span class="github-star-short">Star</span></a><button id="course-language" class="language-button" type="button" aria-label="Switch to English">EN ↗</button></div>
   </header>
   <section class="course-hero section-shell" id="course-overview">__COURSE_HERO__</section>
-  <section class="section-shell course-study-tools" aria-label="Learning tools"><p data-i18n="studyToolsNote">先读原理，动手验证，再用练习检查理解。</p><div class="course-actions"><a class="text-link" href="__PRACTICE_URL__" data-i18n="practiceCourse">练习本课题目 / 重练错题 ↗</a><a class="text-link" href="../../knowledge/" data-i18n="knowledgeLibrary">原理与计算专题 ↗</a><a class="text-link" href="../../cases/" data-i18n="diagnosisLabs">故障诊断实验室 ↗</a>__BENCH_LINK__<a class="text-link" href="__SEARCH_URL__" data-i18n="searchCourse">搜索本课讲解与报错 ↗</a></div></section>
+  __COURSE_STUDY_TOOLS__
   <div class="course-layout section-shell">
     <aside class="course-sidebar">
       <details class="sidebar-panel" open>
-        <summary class="sidebar-heading" data-i18n="syllabus">__COURSE_DAYS__ 天学习目录</summary>
+        <summary class="sidebar-heading" data-i18n="syllabus">__CONTENTS_LABEL__</summary>
         <div class="course-progress-summary"><span data-i18n="yourProgress">我的进度</span><strong id="course-progress-count">0 / __COURSE_DAYS__</strong></div>
         <progress id="course-progress" max="__COURSE_DAYS__" value="0" aria-label="Learning progress">0 / __COURSE_DAYS__</progress>
         <nav class="day-nav" id="day-nav" aria-label="Course days">__COURSE_NAV__</nav>
@@ -38,7 +39,7 @@
     </aside>
     <main class="course-article" id="course-reader" tabindex="-1">__COURSE_CONTENT__</main>
   </div>
-  <section class="course-endcap section-shell"><div><div class="eyebrow" data-i18n="nextChapter">下一步 · 把学习变成作品</div><h2 data-i18n="nextTitle">让别人看见你解决问题的过程。</h2><p data-i18n="nextDescription">整理代码、实验记录和局限，带着作品认识同行或寻找工作。名片由你主动选择公开。</p></div><div class="course-actions"><a class="button primary" href="../../career/" data-i18n="careerPrep">结课自评与求职准备 ↗</a><a class="button outline" href="__PORTFOLIO_URL__" data-i18n="createPortfolio">制作作品档案 ↗</a><a class="button outline" href="__PROJECT_URL__" data-i18n="projects">实战项目</a><a class="text-link" href="../../#opportunities" data-i18n="findWork">寻找工作与合作</a></div></section>
+  __COURSE_NEXT_STEPS__
   <footer class="site-footer section-shell"><span data-i18n="footerNote">聘枢 · AI Infra JobHub，独立社区学习手册。</span><a class="text-link" href="mailto:career@yzinfra.com">career@yzinfra.com</a><a href="../../#learn" class="text-link" data-i18n="backLibrary">返回学习库 ↗</a></footer>
   <noscript><p class="notice section-shell">已显示完整中文学习文档。启用 JavaScript 可按天阅读、切换英文、记录学习进度。All Chinese lessons are available without JavaScript; enable it for English and progress tracking.</p></noscript>
   <script src="../../visitor-map.js?v=20261114-map" defer></script>

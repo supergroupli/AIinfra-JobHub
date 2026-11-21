@@ -1,0 +1,2166 @@
+{
+  "id": "inference-101",
+  "number": "00",
+  "format": "primer",
+  "category": "foundations",
+  "title": {
+    "zh": "从零认识 AI 推理",
+    "en": "AI inference from zero"
+  },
+  "subtitle": {
+    "zh": "从第一次按下发送，到能解释一条请求",
+    "en": "From pressing Send to explaining a request"
+  },
+  "description": {
+    "zh": "用聊天框里的一句「我喜欢苹果」认识 AI 基础设施。先亲手生成下一块文字，再试试为什么同一句话可以切成不同数量的 token、为什么多两个人会让回答等得更久。十个短课在浏览器里完成，最后写一张同学也能复算的实验卡。",
+    "en": "Start with a familiar chat box and the sentence “I like apples.” Generate the next piece of text yourself, change how a sentence is split into tokens, and investigate how two people in a queue change the wait. Finish ten short browser lessons with an experiment card a classmate can reproduce."
+  },
+  "level": "beginner",
+  "hoursPerDay": {
+    "zh": "每节约 5–10 分钟，可连着学，也可分次完成。",
+    "en": "About 5–10 minutes per lesson. Take several together or return for short sessions."
+  },
+  "prerequisites": {
+    "zh": "会打开网页、点按钮和做简单加法即可。第一次听说推理也可以从第 1 节开始。",
+    "en": "You can begin with a web browser, a button and simple addition. Start at lesson 1 if inference is a new word for you."
+  },
+  "hardware": {
+    "zh": "手机或电脑浏览器。互动练习在页面内运行，纸笔也能复算。",
+    "en": "A phone or computer with a browser. The activities run on the page and can also be worked through on paper."
+  },
+  "hardwareTier": "cpu",
+  "tags": [
+    "AI Infra",
+    "Inference",
+    "推理启蒙",
+    "零基础",
+    "Token",
+    "Serving",
+    "CPU",
+    "GPU"
+  ],
+  "roles": {
+    "zh": [
+      "第一次了解 AI Infra 的学生或转行者",
+      "对推理服务、性能或平台工程感兴趣的学习者"
+    ],
+    "en": [
+      "Students and career changers exploring AI infrastructure",
+      "Learners curious about serving, performance or platform engineering"
+    ]
+  },
+  "outcome": {
+    "zh": "保留一张自己填的实验卡，别人可按其中的输入复算你的结果。你可以从发送、排队、生成、返回四个动作讲清一条请求，与同学讨论一次等待来自哪儿。",
+    "en": "Keep your own experiment card with inputs another person can use to reproduce the result. Explain sending, queuing, generation and delivery, and discuss which step contributed to a user’s wait."
+  },
+  "lastVerified": "2026-11-21",
+  "resources": [
+    {
+      "title": "Google · 机器学习术语表中的推理",
+      "url": "https://developers.google.com/machine-learning/glossary?hl=zh-cn#inference"
+    },
+    {
+      "title": "Google · Machine Learning Glossary — inference",
+      "url": "https://developers.google.com/machine-learning/glossary#inference"
+    },
+    {
+      "title": "Hugging Face · Text generation and inference",
+      "url": "https://huggingface.co/learn/llm-course/chapter1/8"
+    },
+    {
+      "title": "Hugging Face · 分词器（中文版）",
+      "url": "https://huggingface.co/learn/llm-course/zh-CN/chapter2/4"
+    },
+    {
+      "title": "Hugging Face · Tokenizers",
+      "url": "https://huggingface.co/learn/llm-course/chapter2/4"
+    },
+    {
+      "title": "MDN · HTTP 概述（中文版）",
+      "url": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Guides/Overview"
+    },
+    {
+      "title": "MDN · Overview of HTTP",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview"
+    },
+    {
+      "title": "NVIDIA AIPerf · Streaming and request timing metrics",
+      "url": "https://docs.nvidia.com/aiperf/reference/ai-perf-metrics-reference"
+    },
+    {
+      "title": "Python · 将 Python 用作计算器（中文版）",
+      "url": "https://docs.python.org/zh-cn/3/tutorial/introduction.html#using-python-as-a-calculator"
+    },
+    {
+      "title": "Python · Using Python as a calculator",
+      "url": "https://docs.python.org/3/tutorial/introduction.html#using-python-as-a-calculator"
+    }
+  ],
+  "steps": [
+    {
+      "day": 1,
+      "title": {
+        "zh": "按下发送，谁在接着写？",
+        "en": "Who writes the next piece after you press Send?"
+      },
+      "lesson": {
+        "zh": "聊天框里只有一个开头「我」。把它交给一个已经从例子里学到规律的计算工具，请它接着写，这就是一次模型推理（inference）。试着让下面的小模型生成一块文字，看看它用了哪条规律。",
+        "en": "The text box starts with just “I”. A model is a tool that has learned a pattern from examples. Asking it to use that pattern on this new input is called inference. Generate one piece below and see which pattern it uses."
+      },
+      "task": {
+        "zh": "先猜「我」后面会出现什么，点「发送」看第一块，再点「生成下一块」，分别记下两次新出现的文字。",
+        "en": "Predict what follows “I”. Choose Send to reveal the first piece, then Generate the next piece. Record the text added at each step."
+      },
+      "evidence": {
+        "zh": "一行观察记录，例如「输入＝我，第一次新增＝喜欢，第二次新增＝苹果」，并用自己的话说出哪一次操作是推理。",
+        "en": "A line with the input, the first addition and the second addition, plus your own description of which operation was inference."
+      },
+      "checklist": {
+        "zh": [
+          "我能指出开头是谁给的、后面的文字是谁生成的。",
+          "我能用四个例子解释第一次选择，并说出运行聊天服务还需要有人完成的一件工作。"
+        ],
+        "en": [
+          "I can identify who supplied the opening and what generated the continuation.",
+          "I can explain the first choice from the four examples and name one job needed to serve a chat response."
+        ]
+      },
+      "noGpu": {
+        "zh": "在纸上把四句话分行写。用手指盖住「我」后面的内容，逐行揭开下一块并计数，也能复算。",
+        "en": "Write the four examples on separate lines. Cover the words after “I”, then uncover one piece on each line and count."
+      },
+      "reading": [
+        {
+          "title": "Google · 机器学习术语表中的推理",
+          "url": "https://developers.google.com/machine-learning/glossary?hl=zh-cn#inference"
+        },
+        {
+          "title": "Google · Machine Learning Glossary — inference",
+          "url": "https://developers.google.com/machine-learning/glossary#inference"
+        },
+        {
+          "title": "Hugging Face · Text generation and inference",
+          "url": "https://huggingface.co/learn/llm-course/chapter1/8"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "一块一块接下去",
+            "en": "Continue one piece at a time"
+          },
+          "body": {
+            "zh": "小模型看过四句材料。「我 喜欢 苹果 。」出现两次，「我 喜欢 梨 。」和「我 看见 云 。」各一次。空格标出了我们指定的文字块。程序看最后一块，找在材料里紧跟它最多次的那一块。每补一块，就把它接回输入再算。",
+            "en": "Our model learned from four lines. “I like apples .” occurs twice, “I like pears .” once and “I see clouds .” once. Here the spaces mark hand-picked pieces. For the last piece, the program picks the most frequent successor in those lines. It appends that piece and repeats."
+          }
+        },
+        {
+          "title": {
+            "zh": "谁让模型随时可用？",
+            "en": "Who keeps the model available?"
+          },
+          "body": {
+            "zh": "在一个真实聊天产品里，还要有机器放模型、程序接收消息、有人安排几百个用户先后使用机器，并把结果送回各自的屏幕。支撑这些工作的软硬件叫 AI 基础设施，英文常写作 AI Infra。 同样的基础设施也能接收一张新图片，请已训练好的模型判断它属于哪一类。",
+            "en": "A chat service also needs machines that hold the model, software that receives messages, a way to schedule hundreds of users, and a way to return the right answer to each screen. The hardware and software doing these jobs are AI infrastructure, often shortened to AI Infra. The same kinds of infrastructure can also take a new image and run a trained model to classify it."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "这句话是怎样长出来的？",
+          "en": "How does this sentence grow?"
+        },
+        "nodes": [
+          {
+            "zh": "你给开头「我」",
+            "en": "You supply “I”"
+          },
+          {
+            "zh": "查「我」的下一块",
+            "en": "Look up what follows “I”"
+          },
+          {
+            "zh": "接上「喜欢」",
+            "en": "Append “like”"
+          },
+          {
+            "zh": "查「喜欢」的下一块",
+            "en": "Look up what follows “like”"
+          }
+        ],
+        "caption": {
+          "zh": "每轮只新增一块。真实聊天模型能参考更长的上下文，用学到的数值参数算出下一块的分数。",
+          "en": "One piece is added per round. Real chat models can use a much longer context and compute scores with learned numerical parameters."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "只走一步",
+            "en": "Take one step"
+          },
+          "body": {
+            "zh": "保留原始四句，选择开头「我」。先在心里选「喜欢」或「看见」，再点「发送」核对自己的猜测。",
+            "en": "Use the original four lines and select the opening “I”. Pick “like” or “see” in your head, then choose Send to check your guess."
+          },
+          "expected": {
+            "zh": "新增「喜欢」。在四次「我」之后，它出现了三次。",
+            "en": "The new piece is “like”. It follows “I” in three of the four lines."
+          }
+        },
+        {
+          "title": {
+            "zh": "看第二步用了什么",
+            "en": "Trace the second choice"
+          },
+          "body": {
+            "zh": "保留刚才生成的文字，再生成一块。找出四句中含有「喜欢」的句子，在每一处往后看一块。",
+            "en": "Keep the generated text and advance once more. Find each occurrence of “like” in the examples and look one piece to its right."
+          },
+          "expected": {
+            "zh": "第二次新增「苹果」。跟在「喜欢」之后的三个候选记录中，苹果占两个，梨占一个。",
+            "en": "The second addition is “apples”. Of the three observations following “like”, two are “apples” and one is “pears”."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "我看到的是「云」。",
+            "en": "I got “clouds”."
+          },
+          "fix": {
+            "zh": "先看自己选的开头。如果末块是「看见」，四句里只有「云」接在它后面。重选「我」再走第一步。",
+            "en": "Check the opening you chose. If its last piece is “see”, the only observed successor is “clouds”. Select “I” again and take one step."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "有了句号，怎样再试一次？",
+            "en": "I reached the full stop. How do I try again?"
+          },
+          "fix": {
+            "zh": "句号是这个练习指定的停止信号。回到开头再生成，并观察第一步是否仍然相同。",
+            "en": "The full stop is the stopping signal for this exercise. Reset to the opening and watch whether the first step repeats."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "谁提供了输入「我」？",
+            "en": "Who supplies the initial “I”?"
+          },
+          "options": [
+            {
+              "zh": "选开头的人",
+              "en": "The person choosing the opening"
+            },
+            {
+              "zh": "负责排队的程序",
+              "en": "The queue manager"
+            },
+            {
+              "zh": "刚生成的句号",
+              "en": "The newly generated full stop"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "你提供开头，生成程序根据这个开头补上后续文字。输入和生成部分可以分别指出来。",
+            "en": "You provide the opening. The generator uses it to produce the continuation, so input and generated text can be identified separately."
+          }
+        },
+        {
+          "question": {
+            "zh": "100 人同时发来开头，哪项工作属于让这个模型服务大家？",
+            "en": "A hundred people submit openings at once. Which task helps serve them?"
+          },
+          "options": [
+            {
+              "zh": "把所有人的开头改成一样",
+              "en": "Change every opening to the same text"
+            },
+            {
+              "zh": "把请求安排到可用机器，记住结果该还给谁",
+              "en": "Schedule requests on available machines and track where each result goes"
+            },
+            {
+              "zh": "让每个回答都以「苹果」结尾",
+              "en": "Make every response end in “apples”"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "机器的时间需要分配，返回的结果也需要对应到各自的请求。这正是基础设施要解决的问题。",
+            "en": "Machine time must be allocated and results matched to the requests that produced them. Both are infrastructure jobs."
+          }
+        }
+      ],
+      "interactive": "primer-predict"
+    },
+    {
+      "day": 2,
+      "title": {
+        "zh": "换例子，模型为何改口？",
+        "en": "Why does changing the examples change the answer?"
+      },
+      "lesson": {
+        "zh": "上一节的小模型保留了一张表，表里是每块文字后面出现过什么、各出现几次。从例子算出这张表是它的训练。拿已经算好的表给一个开头续写，是它的推理。把开头固定成「我喜欢」，只改变用于训练的例子。",
+        "en": "The little model keeps a table of what followed each piece and how often. Building that table from examples is its training step. Using the finished table to continue an opening is its inference step. Keep the opening “I like” fixed and change the examples used to build the table."
+      },
+      "task": {
+        "zh": "从相同开头比较原始四句和另加两句「我喜欢梨。」的结果。把两次训练材料的数量和下一块的票数写在一起。",
+        "en": "Compare the original four lines with a version that includes two extra copies of “I like pears.” Use the same opening and record the number of examples and the successor counts for each run."
+      },
+      "evidence": {
+        "zh": "一张两行比较表，写出原材料、加例子后的材料、共同开头及各自预测的下一块。",
+        "en": "A two-row comparison with the original and expanded examples, the shared opening and each predicted next piece."
+      },
+      "checklist": {
+        "zh": [
+          "我能从四句和六句材料中分别数出「喜欢」后苹果和梨的次数。",
+          "我能举出一个只做推理的操作和一个重新训练小模型的操作。"
+        ],
+        "en": [
+          "I can count apples and pears after “like” in the four-line and six-line sets.",
+          "I can name one action that runs inference and one that retrains this little model."
+        ]
+      },
+      "noGpu": {
+        "zh": "把四句写在纸上做正字计数，再补两句「我喜欢梨。」重新统计。两次都从「喜欢」那一行读结果。",
+        "en": "Tally the four lines on paper, add two copies of “I like pears.” and tally again. Read the row after “like” for both results."
+      },
+      "reading": [
+        {
+          "title": "Google · What is machine learning?",
+          "url": "https://developers.google.com/machine-learning/intro-to-ml/what-is-ml"
+        },
+        {
+          "title": "Hugging Face · Text generation and inference",
+          "url": "https://huggingface.co/learn/llm-course/chapter1/8"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "开头相同，表可以不同",
+            "en": "Same opening, different table"
+          },
+          "body": {
+            "zh": "原始四句中「喜欢」出现三次，后面是苹果两次、梨一次。新增两句「我喜欢梨。」并重新统计后，苹果仍有两次，梨增至三次。用同一个开头能看清表的变化。",
+            "en": "“Like” occurs three times in the original set. Apples follows twice and pears once. After adding two pear lines and recounting, apples still follows twice while pears follows three times. Holding the opening fixed makes the change visible."
+          }
+        },
+        {
+          "title": {
+            "zh": "将学到的东西留下来",
+            "en": "Retain what training learned"
+          },
+          "body": {
+            "zh": "这里留下来的是小小的计数表。大型语言模型训练后保留大量数值，常称为权重。推理时，程序读取它们来处理当前输入。本实验反复生成只会读取同一张表。",
+            "en": "This exercise retains a tiny count table. A large language model retains many numbers from training, commonly called weights. The inference program reads them when processing the current input. Repeated generation in this exercise only reads the chosen table."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "把学习和使用分开画",
+          "en": "Draw learning and use as separate steps"
+        },
+        "nodes": [
+          {
+            "zh": "收集例句",
+            "en": "Collect example lines"
+          },
+          {
+            "zh": "统计相邻文字块",
+            "en": "Count adjacent pairs"
+          },
+          {
+            "zh": "保存计数表",
+            "en": "Keep the count table"
+          },
+          {
+            "zh": "用同一张表处理不同开头",
+            "en": "Use the table for new openings"
+          }
+        ],
+        "caption": {
+          "zh": "训练材料改变后，先重新统计，再拿新表预测。把当前开头换成「我看见」则可以直接用原表。",
+          "en": "After changing the examples, recount before predicting with the new table. A different opening such as “I see” can use the original table directly."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "固定开头与原表",
+            "en": "Fix the opening and the original table"
+          },
+          "body": {
+            "zh": "用原始四句，选「我喜欢」并生成下一块。回到同一开头，用同一份材料再做一次。",
+            "en": "Use the original four lines. Choose “I like” and generate one piece. Reset to the same opening and use the same examples again."
+          },
+          "expected": {
+            "zh": "两次都是苹果，票数都是 2/3。这个分母是紧跟「喜欢」的三个观察值。",
+            "en": "Both runs produce apples with 2/3 of the observations following “like”."
+          }
+        },
+        {
+          "title": {
+            "zh": "只更换训练材料",
+            "en": "Change only the training examples"
+          },
+          "body": {
+            "zh": "点「多加两句『我喜欢梨。』再训练」，程序会重算表里的次数。保留开头「我喜欢」，再次点「发送」，比较这一次和上一次的计数。",
+            "en": "Use the button that trains on two more “I like pears.” examples. It rebuilds the counts. Keep the opening “I like” and choose Send again. Compare the counts from the two runs."
+          },
+          "expected": {
+            "zh": "新表中梨为 3/5，苹果为 2/5。依照选最高次数的规则，下一块变成梨。",
+            "en": "The rebuilt table has pears at 3/5 and apples at 2/5. Picking the highest count now gives pears."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "材料有六句，为什么分母写五？",
+            "en": "There are six lines. Why is the denominator five?"
+          },
+          "fix": {
+            "zh": "逐行圈出「喜欢」，新增后的六句里有五句含它。「我看见云。」只给「看见」后的计数贡献了一次云。",
+            "en": "Circle “like” in the six lines. It occurs in five. “I see clouds.” contributes a cloud after “see”."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "加了梨，得到的还是「喜欢」。",
+            "en": "I added pear lines and still got “like”."
+          },
+          "fix": {
+            "zh": "检查当前开头的最后一块。若从「我」开始，第一步比较的是喜欢与看见。选「我喜欢」才会比较苹果与梨。",
+            "en": "Check the last piece of the opening. From “I”, the first choice is between “like” and “see”. Choose “I like” to compare apples and pears."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "为什么真实聊天软件有时会对同一句话给出不同回答？",
+            "en": "Why can a real chat app vary its answer to the same message?"
+          },
+          "fix": {
+            "zh": "本题每一步都选次数最多的块。有些生成程序会从多个候选里按概率抽取下一块。复查时可以记录完整输入、模型版本和选择下一块的设置，若要判断发生过训练，还要查看模型是否更新。",
+            "en": "This exercise always picks the most frequent successor. Some generators sample the next token from a set of candidates. For a comparison, record the full input, model version and generation settings. To establish that training took place, look for an update to the model itself."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "保持原表，把开头从「我喜欢」换成「我看见」并续写，这次做了什么？",
+            "en": "You keep the original table and switch from “I like” to “I see” before continuing. What did you do?"
+          },
+          "options": [
+            {
+              "zh": "重新训练计数表",
+              "en": "Retrained the table"
+            },
+            {
+              "zh": "把云加进训练集",
+              "en": "Added a cloud to the examples"
+            },
+            {
+              "zh": "用同一个模型处理另一个输入",
+              "en": "Used the same model on another input"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "输入变了，保存的计数继续沿用。这次操作是推理。",
+            "en": "The input changed while the stored counts stayed fixed. This operation is inference."
+          }
+        },
+        {
+          "question": {
+            "zh": "新增两句梨后，用「喜欢」后面的例子预测。哪一项和计数表一致？",
+            "en": "After the extra pear lines, which counts apply after “like”?"
+          },
+          "options": [
+            {
+              "zh": "梨 3，苹果 2",
+              "en": "Pears 3, apples 2"
+            },
+            {
+              "zh": "梨 5，苹果 0",
+              "en": "Pears 5, apples 0"
+            },
+            {
+              "zh": "梨 2，苹果 3",
+              "en": "Pears 2, apples 3"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "原有梨一次，加两次得到三次。原有两次苹果仍然保留。",
+            "en": "One original pear plus two new pears gives three. Both original apple examples remain."
+          }
+        }
+      ],
+      "interactive": "primer-predict"
+    },
+    {
+      "day": 3,
+      "title": {
+        "zh": "「苹果汁」算几个 token？",
+        "en": "How many tokens are in “apple juice”?"
+      },
+      "lesson": {
+        "zh": "模型接收的是一串数字。把文字切成小块、再给每块查编号的工具叫分词器（tokenizer），每个这样的单位叫 token。把「苹果汁」分别交给两本小词表，先猜它们会给出几个编号。",
+        "en": "A model receives a sequence of numbers. A tokenizer splits text into pieces and looks up an ID for each piece. Each such unit is a token. Try “apple juice” with two small vocabularies and predict how many IDs each will produce."
+      },
+      "task": {
+        "zh": "保留同一句文字，比较两本小词表切出的文字块、编号和块数，再用各自的词表把编号读回来。",
+        "en": "Keep the text fixed. Compare the pieces, IDs and number of pieces under the two vocabularies, then decode each sequence with its own vocabulary."
+      },
+      "evidence": {
+        "zh": "两行对照，包括原文、词表、文字块、编号和 token 数。",
+        "en": "Two rows recording the text, vocabulary, pieces, IDs and token count."
+      },
+      "checklist": {
+        "zh": [
+          "我能从两串不同的编号恢复同一句文字。",
+          "遇到「这段话有多少 token」时，我知道要先确认哪件事。"
+        ],
+        "en": [
+          "I can recover the same text from the two different ID sequences.",
+          "When asked for a token count, I know what to establish first."
+        ]
+      },
+      "noGpu": {
+        "zh": "画两列。左列把 7 和 8 连回「苹果」与「汁」，右列把 12 连回「苹果汁」，再比较两列各用了几条连线。",
+        "en": "Draw two columns. In the first, match 7 to “apple” and 8 to the space plus “juice”. In the second, match 12 to “apple juice”. Count the matches in each column."
+      },
+      "reading": [
+        {
+          "title": "Hugging Face · 分词器（中文版）",
+          "url": "https://huggingface.co/learn/llm-course/zh-CN/chapter2/4"
+        },
+        {
+          "title": "Hugging Face · Tokenizers",
+          "url": "https://huggingface.co/learn/llm-course/chapter2/4"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "给每块查一个编号",
+            "en": "Look up one ID per piece"
+          },
+          "body": {
+            "zh": "第一本教学词表收有「苹果」和「汁」，编号分别为 7 和 8。第二本收有整个「苹果汁」，编号为 12。实验按当前词表可匹配的长块切分。同样三个汉字可以产生两个编号，也可以产生一个。",
+            "en": "The first teaching vocabulary has “apple” with ID 7 and the space plus “juice” with ID 8. The second has the whole phrase “apple juice” with ID 12. The exercise matches the available longer piece. The same text can produce two IDs or one."
+          }
+        },
+        {
+          "title": {
+            "zh": "换工具时一起换词表",
+            "en": "Keep the vocabulary with the model"
+          },
+          "body": {
+            "zh": "编号只在相应词表中有约定的含义。真实模型训练时使用特定分词规则和词表。要估算一条请求占用多少输入位置，先找这款模型配套的分词器，再数它给出的 token。",
+            "en": "An ID gets its meaning from its vocabulary. A real model is trained with specific tokenization rules and a vocabulary. To estimate the input positions a request uses, count the tokens returned by the tokenizer for that model."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "一行文字怎样变成输入？",
+          "en": "How does a line of text become model input?"
+        },
+        "nodes": [
+          {
+            "zh": "文字「苹果汁」",
+            "en": "Text “apple juice”"
+          },
+          {
+            "zh": "按当前词表切分",
+            "en": "Split using the selected vocabulary"
+          },
+          {
+            "zh": "查每一块的编号",
+            "en": "Look up each piece’s ID"
+          },
+          {
+            "zh": "按顺序送入编号",
+            "en": "Send the sequence of IDs"
+          }
+        ],
+        "caption": {
+          "zh": "7 和 8 是两个独立编号。按第一本词表依次解码，得到的仍是「苹果汁」。",
+          "en": "7 and 8 are separate IDs. Decoding them in order with the first vocabulary yields “apple juice” again."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "先用分开的词条",
+            "en": "Start with separate entries"
+          },
+          "body": {
+            "zh": "选把「苹果」和「汁」分开的词表，数一下输入编号有几项。手写编号时中间留一个逗号。",
+            "en": "Choose the vocabulary with separate entries for “apple” and the space plus “juice”. Count the IDs and put a comma between them when writing them down."
+          },
+          "expected": {
+            "zh": "编号 [7, 8]，共 2 个 token。",
+            "en": "The sequence is [7, 8], containing 2 tokens."
+          }
+        },
+        {
+          "title": {
+            "zh": "再用完整词条",
+            "en": "Try the whole-phrase entry"
+          },
+          "body": {
+            "zh": "切换到收有整词「苹果汁」的词表。检查原文、拆分和编号里哪几项变了，把两组编号分别还原。",
+            "en": "Switch to the vocabulary containing the whole phrase. Identify which of the original text, split and IDs changed, then decode both sequences."
+          },
+          "expected": {
+            "zh": "编号 [12]，共 1 个 token。原文与还原后的文字相同。",
+            "en": "The sequence is [12], containing 1 token. Both sequences decode to the same original text."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "我把 [7, 8] 读成了七十八。",
+            "en": "I read [7, 8] as seventy-eight."
+          },
+          "fix": {
+            "zh": "用手指分别指向 7、8。逗号在分隔两次查表操作，可以先读「编号七」，再读「编号八」。",
+            "en": "Point first at 7 and then at 8. The comma separates two lookups. Read them as “ID seven” and “ID eight”."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "用别的模型得到了不同的 token 数。",
+            "en": "Another model gives a different token count."
+          },
+          "fix": {
+            "zh": "记下那款模型和分词器的名称。本练习的 7、8、12 都是教学编号。请用同一分词器和同一段原文复查那款模型的结果。",
+            "en": "Record the model and tokenizer you used. The IDs 7, 8 and 12 belong to this exercise. Recheck that model with the same tokenizer and exact input, including spaces."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "第一本词表输出 [7, 8]。它交给模型几个 token？",
+            "en": "The first vocabulary returns [7, 8]. How many tokens go to the model?"
+          },
+          "options": [
+            {
+              "zh": "15 个",
+              "en": "15"
+            },
+            {
+              "zh": "2 个",
+              "en": "2"
+            },
+            {
+              "zh": "78 个",
+              "en": "78"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "逐项计数，一项对应一个文字块。编号的和与 token 数无关。",
+            "en": "Count the entries. Each labels one piece, regardless of the numerical value of its ID."
+          }
+        },
+        {
+          "question": {
+            "zh": "想复算另一款模型的 token 数，最需要保留哪些信息？",
+            "en": "What would you keep to reproduce another model’s token count?"
+          },
+          "options": [
+            {
+              "zh": "字体和屏幕宽度",
+              "en": "The font and screen width"
+            },
+            {
+              "zh": "手机拍照时间",
+              "en": "When you took the screenshot"
+            },
+            {
+              "zh": "原文和它使用的分词器版本或配置",
+              "en": "The exact input and the tokenizer version or configuration"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "分词规则、词表和输入决定拆分结果。空格也可能影响切分。",
+            "en": "The input, vocabulary and splitting rules determine the pieces. Even a space can change the result."
+          }
+        }
+      ],
+      "interactive": "primer-tokens"
+    },
+    {
+      "day": 4,
+      "title": {
+        "zh": "追踪一条消息的来回",
+        "en": "Follow a message from screen to service and back"
+      },
+      "lesson": {
+        "zh": "把发送给聊天服务的一次任务叫作请求，把服务交还的内容叫作响应。设想你在学校的网页助手里输入「今天食堂开门吗」。只看屏幕上转动的圆圈，你还不知道消息已经走到哪儿。今天当一次值班同学，靠四张带时间的记录卡还原经过。",
+        "en": "A request is one task you send to a service. A response is what that service returns. Imagine asking your campus assistant whether the cafeteria is open. The spinner on screen says little about how far the message got. Take the role of the engineer on duty and reconstruct the trip from four timestamped records."
+      },
+      "task": {
+        "zh": "给同一条请求 A 的四张卡排序，在自己的草图上标出浏览器、服务、模型与返回路径，再圈出第一次能断定服务已经收到消息的卡。",
+        "en": "Sort four cards for request A. Label the browser, service, model and return path on a sketch, then circle the first record that confirms the service received the request."
+      },
+      "evidence": {
+        "zh": "一条带四个时刻的请求路线和一句观察，说明哪些时段还需要补记录。",
+        "en": "A four-event request route with one note about an interval that needs another observation."
+      },
+      "checklist": {
+        "zh": [
+          "我能区分用户设备上的浏览器、接单的服务程序和执行计算的模型。",
+          "我能从同一请求的四张卡算出 2 秒的返回与显示间隔。"
+        ],
+        "en": [
+          "I can distinguish the browser on the user’s device, the serving program and the model computation.",
+          "I can use the four records for one request to find the two seconds between producing and displaying the first piece."
+        ]
+      },
+      "noGpu": {
+        "zh": "把 0、1、2、4 秒写在四张纸上，各写发生了什么，再依次摆放。",
+        "en": "Write 0, 1, 2 and 4 seconds on separate slips, add the event at each time and put them in order."
+      },
+      "reading": [
+        {
+          "title": "MDN · HTTP 概述（中文版）",
+          "url": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Guides/Overview"
+        },
+        {
+          "title": "MDN · Overview of HTTP",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview"
+        },
+        {
+          "title": "vLLM · Architecture overview",
+          "url": "https://docs.vllm.ai/en/latest/design/arch_overview/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "浏览器负责收发，服务负责接单",
+            "en": "The browser sends and displays, the service accepts work"
+          },
+          "body": {
+            "zh": "浏览器把输入作为请求经网络送给服务程序。服务程序检查消息能否处理，安排机器运行模型，把产生的输出按对应的请求送回。模型权重是模型计算时读取的数值，一般由服务端加载供请求使用。",
+            "en": "The browser sends input over the network to a serving program. The program checks whether it can handle the message, arranges model computation and routes output back to the matching request. Model weights are the learned numbers used during computation. A serving system typically loads them for use across requests."
+          }
+        },
+        {
+          "title": {
+            "zh": "让各处记录指向同一次发送",
+            "en": "Match records for one send"
+          },
+          "body": {
+            "zh": "A 是这次请求的编号。我们给浏览器和服务写下的记录都带上 A，才能知道它们讲的是同一条消息。这里所有时刻都用同一个教学时钟。",
+            "en": "A is the identifier for this request. Labeling both browser and server records A lets us match the same message across locations. All times in this example share one teaching clock."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "请求 A 的四张记录卡",
+          "en": "Four records for request A"
+        },
+        "nodes": [
+          {
+            "zh": "0 秒，浏览器发送 A",
+            "en": "0 s, browser sends A"
+          },
+          {
+            "zh": "1 秒，服务接到 A",
+            "en": "1 s, service accepts A"
+          },
+          {
+            "zh": "2 秒，模型产出 A 的首块",
+            "en": "2 s, model produces A’s first piece"
+          },
+          {
+            "zh": "4 秒，浏览器显示 A 的首块",
+            "en": "4 s, browser displays A’s first piece"
+          }
+        ],
+        "caption": {
+          "zh": "相邻卡之间可以有其他工作。最后两张卡只给出从产生到显示共过了多久。",
+          "en": "Other work may occur between adjacent records. The last pair gives the whole interval from first production to display."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "按同一编号排好记录",
+            "en": "Order the records for one ID"
+          },
+          "body": {
+            "zh": "按图给出的四张卡，写下「谁做了什么」。假设另有一张写着「B 在 3 秒收到」，先把它另归一组。",
+            "en": "Use the four cards to write down who did what. Suppose another card says “B accepted at 3 s”. Set it aside in a separate group."
+          },
+          "expected": {
+            "zh": "A 的顺序是发送、服务接收、模型产出首块、浏览器显示首块。服务接收这一张在第 1 秒。",
+            "en": "For A the order is send, accept, produce and display. The accept record at 1 s confirms arrival at the service."
+          }
+        },
+        {
+          "title": {
+            "zh": "算得到的间隔，再补一个观测点",
+            "en": "Compute one interval and propose another observation"
+          },
+          "body": {
+            "zh": "从第 4 秒减去第 2 秒。想查清这段时间花在哪儿，可以在「浏览器收到首块」时再记一笔，和「浏览器显示首块」对照。",
+            "en": "Subtract 2 s from 4 s. To narrow down that interval, add a timestamp when the browser receives the first piece and compare it with the display time."
+          },
+          "expected": {
+            "zh": "产出到显示共 2 秒。加上浏览器接收时刻，就能拆出接收之前用时和接收到显示的用时。",
+            "en": "Production to display takes 2 s. A receive timestamp separates time before reception from time between reception and display."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "看见屏幕转圈，我就写成「模型正在算」。",
+            "en": "I labeled the spinner “the model is computing”."
+          },
+          "fix": {
+            "zh": "在图上找能指认模型的记录。此例第 2 秒才有模型产出首块的证据，单凭转圈无法定位消息。",
+            "en": "Find the record that actually refers to model work. This example has evidence of first output at 2 s. A spinner alone does not locate the request."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "我把另一个人的回复也画上去了。",
+            "en": "I included someone else’s response in the sketch."
+          },
+          "fix": {
+            "zh": "给草图上每个事件写一个请求编号，只保留 A，再按同一时钟排序。",
+            "en": "Write the request ID beside each event. Keep the A records and order them on the shared clock."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "哪张卡能直接证明 A 已经到达服务？",
+            "en": "Which record directly confirms that A reached the service?"
+          },
+          "options": [
+            {
+              "zh": "浏览器开始转圈",
+              "en": "Browser shows a spinner"
+            },
+            {
+              "zh": "服务在第 1 秒接到 A",
+              "en": "Service accepts A at 1 s"
+            },
+            {
+              "zh": "用户刚写完问题",
+              "en": "User finishes typing"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "接收事件是在服务侧记录的，而且含有 A 的编号。",
+            "en": "The accept event is recorded on the service side and carries A’s ID."
+          }
+        },
+        {
+          "question": {
+            "zh": "第 2 秒模型产出首块，第 4 秒才显示。现有记录能确定什么？",
+            "en": "The model produces its first piece at 2 s and the browser displays it at 4 s. What can you determine?"
+          },
+          "options": [
+            {
+              "zh": "模型本身计算了 4 秒",
+              "en": "The model computed for 4 s"
+            },
+            {
+              "zh": "网络传输了整整 2 秒",
+              "en": "Network transfer alone took exactly 2 s"
+            },
+            {
+              "zh": "产出到显示的整个间隔是 2 秒",
+              "en": "The full production-to-display interval is 2 s"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "两端相减得到 2 秒。要区分传输、缓冲和绘制，还要在中途增加观测点。",
+            "en": "Subtract the endpoint times to get 2 s. Separating transfer, buffering and rendering requires intermediate observations."
+          }
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": {
+        "zh": "前面多两个人，第一块要等多久？",
+        "en": "How does a queue change the wait for the first piece?"
+      },
+      "lesson": {
+        "zh": "你和同学同时找同一位助教答题。即使轮到你后只要一秒就能听到第一句话，排在前面的人也会让你等。把这件事搬到聊天服务里，先用一个只有一位服务员的教学时钟，区分「等待开工」和「看到开头」。",
+        "en": "You and your classmates ask one tutor for help. Even if the tutor needs just one second to say the first word once it is your turn, earlier students can keep you waiting. Use a teaching clock with one worker to separate waiting for a turn from seeing the first piece."
+      },
+      "task": {
+        "zh": "先固定自己的回答为 3 块。比较前面有 0 人和 2 人两种设置，分别记录发送到首块、发送到收齐的时间。",
+        "en": "Keep your answer at 3 pieces. Compare 0 and 2 people ahead. Record the time from sending to first output and from sending to the complete answer for each run."
+      },
+      "evidence": {
+        "zh": "两行条件与结果，写明前方人数、回答块数，以及首块和收齐各是几秒。",
+        "en": "Two rows with people ahead, answer length and both elapsed times in seconds."
+      },
+      "checklist": {
+        "zh": [
+          "我能指出前方两人占了 4 个教学秒。",
+          "我能用一句话解释为什么回答同样长，首块会晚 4 秒。"
+        ],
+        "en": [
+          "I can account for the four teaching seconds used by the two people ahead.",
+          "I can explain why the same-length answer starts four seconds later."
+        ]
+      },
+      "noGpu": {
+        "zh": "画 7 格，每格 1 秒。前 4 格分给前面两个人，后 3 格各放自己的一个输出块。",
+        "en": "Draw seven one-second boxes. Give the first four to the two people ahead and put one of your pieces in each of the last three."
+      },
+      "reading": [
+        {
+          "title": "NVIDIA AIPerf · Streaming and request timing metrics",
+          "url": "https://docs.nvidia.com/aiperf/reference/ai-perf-metrics-reference"
+        },
+        {
+          "title": "vLLM · Production metrics",
+          "url": "https://docs.vllm.ai/en/latest/usage/metrics/"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "先约定时钟规则",
+            "en": "Establish the clock rules"
+          },
+          "body": {
+            "zh": "所有请求在第 0 秒排好，一次只服务一人。前面每人占用 2 秒。轮到自己后每过 1 秒产生并显示一块，第一块也需要这 1 秒。题目把网络耗时设为零。",
+            "en": "The queue is fixed at time zero and one worker serves one person at a time. Each person ahead occupies the worker for 2 seconds. Once your turn starts, one piece is produced and displayed per second, including the first one. Network delay is set to zero."
+          }
+        },
+        {
+          "title": {
+            "zh": "两次读数都从发送开始",
+            "en": "Start both clocks when you send"
+          },
+          "body": {
+            "zh": "在这项练习里，首块等待记录从发送到第一个内容块出现的时间。收齐时间记录从发送到最后一块出现的时间。工程师看到一个等待数字，会先问它对应哪两个事件。",
+            "en": "Here, time to first piece runs from sending to the first visible content. Time to completion runs from sending to the last piece. When an engineer sees a waiting time, the first question is which two events it spans."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "两人在前时的时间线",
+          "en": "The timeline with two people ahead"
+        },
+        "nodes": [
+          {
+            "zh": "0–2 秒，前一人",
+            "en": "0–2 s, first person ahead"
+          },
+          {
+            "zh": "2–4 秒，前方第二人",
+            "en": "2–4 s, second person ahead"
+          },
+          {
+            "zh": "5 秒，我的首块",
+            "en": "5 s, my first piece"
+          },
+          {
+            "zh": "7 秒，我收齐 3 块",
+            "en": "7 s, I have all 3 pieces"
+          }
+        ],
+        "caption": {
+          "zh": "第 4 秒轮到自己。切换到前面 0 人时，从第 0 秒就可开始自己的计算。",
+          "en": "Your turn starts at 4 s. With nobody ahead, your computation starts at 0 s."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "先测空队伍",
+            "en": "Start with an empty queue"
+          },
+          "body": {
+            "zh": "将前方人数设为 0，回答设为 3 块。先数「一、二、三」，再读两个显示值。",
+            "en": "Set people ahead to 0 and answer length to 3. Count “one, two, three” before reading the two results."
+          },
+          "expected": {
+            "zh": "首块 1 秒，收齐 3 秒。第一块在第 1 秒末出现。",
+            "en": "First piece at 1 s, complete at 3 s. The first piece appears at the end of the first second."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改前方人数",
+            "en": "Change only the people ahead"
+          },
+          "body": {
+            "zh": "把前方人数改为 2，仍然生成 3 块。先将 2 × 2 这个等候时间加到两次读数，再与画面核对。",
+            "en": "Choose 2 people ahead and keep the 3-piece answer. Add the wait of 2 × 2 seconds to both previous readings, then compare with the display."
+          },
+          "expected": {
+            "zh": "首块 5 秒，收齐 7 秒。两次读数各增加 4 秒。",
+            "en": "First piece at 5 s, complete at 7 s. Both readings increase by 4 s."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "我算出了首块 4 秒。",
+            "en": "I got 4 s for the first piece."
+          },
+          "fix": {
+            "zh": "4 秒时刚刚轮到自己。再经过 1 秒，自己的第一块才产生。",
+            "en": "At 4 s your turn has just started. Your first piece takes one more second."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "我用手机秒表得到了另一组数字。",
+            "en": "My phone stopwatch shows different times."
+          },
+          "fix": {
+            "zh": "读面板里的教学时钟。它按题设算虚拟秒数，点击按钮和手机绘制页面花的时间另计。",
+            "en": "Read the teaching clock inside the panel. It computes virtual seconds from the stated rules. The time spent tapping and rendering the page is separate."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "如果只有 1 人排在前面，自己的首块在第几秒出现？",
+            "en": "With one person ahead, when does your first piece appear?"
+          },
+          "options": [
+            {
+              "zh": "第 1 秒",
+              "en": "At 1 s"
+            },
+            {
+              "zh": "第 2 秒",
+              "en": "At 2 s"
+            },
+            {
+              "zh": "第 3 秒",
+              "en": "At 3 s"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "前面的人用 2 秒，自己产生首块用 1 秒，相加得 3。",
+            "en": "The earlier person uses 2 seconds and your first piece takes 1 more, for 3 seconds total."
+          }
+        },
+        {
+          "question": {
+            "zh": "回答保持 3 块，前方从 0 人变为 2 人。哪一段增加了？",
+            "en": "The answer stays at 3 pieces and the queue grows from zero to two people ahead. Which interval increases?"
+          },
+          "options": [
+            {
+              "zh": "发送后等待轮到自己的时间",
+              "en": "Waiting from send until your turn"
+            },
+            {
+              "zh": "自己产生每一块需要的秒数",
+              "en": "Seconds of your own work per piece"
+            },
+            {
+              "zh": "回答中所需的块数",
+              "en": "Number of pieces in the answer"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "题目把每块耗时固定为 1 秒，多出来的 4 秒全部落在自己开工之前。",
+            "en": "The clock fixes each piece at 1 second. All four added seconds occur before your own work begins."
+          }
+        }
+      ],
+      "interactive": "primer-queue"
+    },
+    {
+      "day": 6,
+      "title": {
+        "zh": "看见第一块，回答就完成了吗？",
+        "en": "When the first piece appears, is the answer finished?"
+      },
+      "lesson": {
+        "zh": "有的聊天框边算边显示，有的等整段准备好才显示。边产生边交付叫流式返回。用上一节的时钟把回答从 3 块拉长到 5 块，观察最先看见文字和最后读完整句的时刻。",
+        "en": "Some chat boxes display an answer as it is produced. Others wait for the full response before showing text. Sending available pieces as they are produced is called streaming. Use the previous clock to grow a response from 3 to 5 pieces and observe the first and last visible times."
+      },
+      "task": {
+        "zh": "保持前方 2 人，分别生成 3 块和 5 块。把这两次的首块时间、收齐时间写成两列，再想象界面把 5 块攒齐才显示。",
+        "en": "Keep 2 people ahead and compare answers of 3 and 5 pieces. Make columns for first visible and complete. Then imagine a screen that holds back all five pieces until the full reply is ready."
+      },
+      "evidence": {
+        "zh": "一行结论，可以用「在前面人数相同时，回答加长让____从____变成____，首块____」开头。",
+        "en": "One observation beginning “With the same queue, a longer answer changed ___ from ___ to ___, while the first piece ___.”"
+      },
+      "checklist": {
+        "zh": [
+          "我能画出 5 块回答各自出现的 5 个时刻。",
+          "我能区分后台已经产生首块与用户看到首块这两个事件。"
+        ],
+        "en": [
+          "I can mark all five appearance times for the five-piece answer.",
+          "I can distinguish the first piece produced in the service from the first piece visible on screen."
+        ]
+      },
+      "noGpu": {
+        "zh": "在 5、6、7、8、9 秒下面各写一个方块。先逐块揭开，再用纸盖住它们直到第 9 秒才揭开。",
+        "en": "Put one square under each of 5, 6, 7, 8 and 9 seconds. Reveal them one at a time, then try covering them all until 9 s."
+      },
+      "reading": [
+        {
+          "title": "NVIDIA AIPerf · Streaming and request timing metrics",
+          "url": "https://docs.nvidia.com/aiperf/reference/ai-perf-metrics-reference"
+        },
+        {
+          "title": "Hugging Face · Text generation and inference",
+          "url": "https://huggingface.co/learn/llm-course/chapter1/8"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "回答被分次送到屏幕",
+            "en": "A response can arrive in installments"
+          },
+          "body": {
+            "zh": "在这个时钟中，每产生一个教学文字块就马上显示一次。真实服务一次传来的数据片可能装有一个或多个 token。描述真实测量时，应说明自己记的是第一个有文字的数据片、最后一片，还是全部显示完。",
+            "en": "In this clock each teaching piece is displayed immediately. A real service may put one or several tokens into a single delivered chunk. For a real measurement, say whether you observed the first content-bearing chunk, the last chunk, or the moment rendering finished."
+          }
+        },
+        {
+          "title": {
+            "zh": "把首块作为分界点",
+            "en": "Use the first piece as a dividing line"
+          },
+          "body": {
+            "zh": "前方 2 人时，自己的第一块在第 5 秒出现。要凑够 5 块，第一块之后还差 4 块，再用 4 秒。知道首块时间和还剩几块，才算得出这里的收齐时间。",
+            "en": "With two people ahead, your first visible piece appears at 5 s. A five-piece answer still needs four more pieces and four more seconds. The first-piece time plus the remaining work gives this example’s completion time."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "固定队伍，只加长回答",
+          "en": "Hold the queue fixed and lengthen the answer"
+        },
+        "nodes": [
+          {
+            "zh": "0 秒，发送",
+            "en": "0 s, send"
+          },
+          {
+            "zh": "5 秒，第 1 块",
+            "en": "5 s, piece 1"
+          },
+          {
+            "zh": "7 秒，第 3 块",
+            "en": "7 s, piece 3"
+          },
+          {
+            "zh": "9 秒，第 5 块",
+            "en": "9 s, piece 5"
+          }
+        ],
+        "caption": {
+          "zh": "3 块回答在第 7 秒收齐，5 块回答在第 9 秒收齐。两次第一个内容块在同一秒出现。",
+          "en": "The three-piece answer completes at 7 s. The five-piece answer completes at 9 s. The first content appears in the same second for both."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "让队伍保持不动",
+            "en": "Keep the queue fixed"
+          },
+          "body": {
+            "zh": "设前方 2 人、回答 3 块。记录两次读数。只把块数改成 5，先猜哪一项会变，再核对。",
+            "en": "Start with 2 people ahead and 3 pieces. Record both readings. Change only the length to 5, predict which reading will move and check."
+          },
+          "expected": {
+            "zh": "3 块时为 5、7 秒，5 块时为 5、9 秒。最后两块分别落在第 8、9 秒。",
+            "en": "The readings are 5 and 7 s for three pieces, and 5 and 9 s for five. Pieces four and five appear at 8 and 9 s."
+          }
+        },
+        {
+          "title": {
+            "zh": "在纸上改变显示时机",
+            "en": "Change just the display on paper"
+          },
+          "body": {
+            "zh": "保留 5 块这组计算，用纸遮住前四个输出，等第 9 秒才把整句给读者看。对比读者在两个界面第一次能读到内容的时刻。",
+            "en": "Keep the same five-piece computation. Hide the first four outputs on paper and show the reader everything at 9 s. Compare when the reader first sees any content under each display policy."
+          },
+          "expected": {
+            "zh": "逐块显示时首见是 5 秒。攒齐显示时首见是 9 秒。两种显示方法的计算都在第 9 秒结束。",
+            "en": "Showing each piece makes text visible at 5 s. Holding it back delays first visible text until 9 s. The computation ends at 9 s in both cases."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "我把 5 秒再加上 5 块，算到了 10 秒。",
+            "en": "I added five more seconds to 5 and got 10."
+          },
+          "fix": {
+            "zh": "第 5 秒手里已经有第 1 块。数剩余的 4 块，对照第 6、7、8、9 秒。",
+            "en": "At 5 s you already have piece 1. Count the four remaining pieces at 6, 7, 8 and 9 s."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "只有最终显示时刻，还能看出真实首块生成时间吗？",
+            "en": "I recorded only the final display. How do I find when the first piece was produced?"
+          },
+          "fix": {
+            "zh": "在服务上记录首块产生时刻，或在客户端记录首个有文字的数据片到达时刻，并标清观测位置。只有最终显示的时刻时，先保留这个已知值。",
+            "en": "Record when the service produces the first piece, or when the client receives the first content-bearing chunk. Label the observation point. If you only have the final display timestamp, record that as the known value."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "前方 2 人时，回答从 3 块延长到 5 块，逐块显示的首见时间是多少？",
+            "en": "With two people ahead, you grow the response from three pieces to five. When is text first visible under streaming?"
+          },
+          "options": [
+            {
+              "zh": "5 秒",
+              "en": "5 s"
+            },
+            {
+              "zh": "7 秒",
+              "en": "7 s"
+            },
+            {
+              "zh": "9 秒",
+              "en": "9 s"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "队伍用时和产生第一块的用时都保持原设置，所以首见仍在第 5 秒。",
+            "en": "Queue time and the work for the first piece are unchanged. First visible text is still at 5 s."
+          }
+        },
+        {
+          "question": {
+            "zh": "想分辨「开始得晚」和「回答需要很久才写完」，应该同时留哪两个读数？",
+            "en": "Which pair of readings helps distinguish a late start from a long continuation?"
+          },
+          "options": [
+            {
+              "zh": "按钮颜色和字体大小",
+              "en": "Button color and font size"
+            },
+            {
+              "zh": "发送到首个可见块，发送到完整回答",
+              "en": "Send to first visible content, and send to complete answer"
+            },
+            {
+              "zh": "输入框宽度和输出行数",
+              "en": "Input width and output line count"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "两项都从同一次发送开始。它们相减，可以得到首块出现后到结束还用了多久。",
+            "en": "Both start at the same send event. Their difference gives the additional time from the first visible content until completion."
+          }
+        }
+      ],
+      "interactive": "primer-queue"
+    },
+    {
+      "day": 7,
+      "title": {
+        "zh": "一份模型能放下，为什么两个人会卡住？",
+        "en": "The model fits. Will two requests fit too?"
+      },
+      "lesson": {
+        "zh": "模型工作时要有地方放学到的数值，也要有地方保存计算中的临时数据。把计算时用的这块空间称为内存，在独立显卡上常叫显存。假设一台机器分给服务的空间有 5.5 GiB，今天用加法判断能让几个人同时开始。",
+        "en": "A running model needs somewhere to keep its learned numbers and temporary data for each calculation. This working space is memory. Memory on a separate graphics card is often called GPU memory. Suppose a machine gives a service 5.5 GiB. Use addition to decide how many people can start together."
+      },
+      "task": {
+        "zh": "画出 5.5 GiB 的预算。依次放入模型、公共工作区和请求所需的空间，计算同时处理 1 人和 2 人分别需要多少。",
+        "en": "Draw a 5.5 GiB budget. Add the model, shared workspace and per-request space. Work out the totals for one and two active requests."
+      },
+      "evidence": {
+        "zh": "一张内存账单，写明总预算、固定占用、每条活跃请求新增的占用和可容纳的请求数。",
+        "en": "A memory budget listing the allowance, fixed use, extra use per active request and the number that fit."
+      },
+      "checklist": {
+        "zh": [
+          "我能说明 4 GiB、1 GiB、0.5 GiB 分别给谁使用。",
+          "我能算出 2 人同时执行会超出多少，并提出一种让两人都能完成的安排。"
+        ],
+        "en": [
+          "I can explain what the 4 GiB, 1 GiB and 0.5 GiB amounts represent.",
+          "I can compute the shortfall for two simultaneous requests and propose a schedule that lets both finish."
+        ]
+      },
+      "noGpu": {
+        "zh": "拿 11 个小格代表预算，每格 0.5 GiB，先涂 8 格模型、2 格公共工作区，看看还剩几格。",
+        "en": "Use 11 squares of 0.5 GiB each. Fill eight for the model and two for shared workspace. Count the squares left."
+      },
+      "reading": [
+        {
+          "title": "NVIDIA · CPU host and GPU device in the CUDA programming model",
+          "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/01-introduction/programming-model.html"
+        },
+        {
+          "title": "Hugging Face · How caching works",
+          "url": "https://huggingface.co/docs/transformers/en/cache_explanation"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "CPU 和 GPU 各做什么？",
+            "en": "What do CPUs and GPUs do?"
+          },
+          "body": {
+            "zh": "CPU 是电脑的通用处理器，能运行程序、收消息、安排任务，也能计算模型。GPU 有很多计算单元，适合并行处理大量相似的运算。真实服务器可以由 CPU 接收任务、由 GPU 进行适合的计算。",
+            "en": "A CPU is a computer’s general-purpose processor. It can run programs, receive requests, schedule work and compute model results. A GPU has many processing units for carrying out similar operations in parallel. A server might use its CPU to accept work and a GPU for suitable calculations."
+          }
+        },
+        {
+          "title": {
+            "zh": "为正在进行的回答留空间",
+            "en": "Leave room for answers in progress"
+          },
+          "body": {
+            "zh": "GiB 是容量单位，所有数字都用同一单位相加。账单约定模型数值固定占 4 GiB，公共工作区固定占 1 GiB。每个正在算的请求再需要 0.5 GiB 保存中间结果。这是给定的练习账单，实际占用要随机器、模型和请求长度检查。",
+            "en": "GiB is a unit of capacity. Use the same unit throughout the sum. In this budget, model data takes 4 GiB and shared workspace takes 1 GiB. Each active request takes another 0.5 GiB for intermediate results. These amounts belong to the exercise. Actual use depends on the machine, model and request length."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "5.5 GiB 可以怎样分配？",
+          "en": "How can we spend 5.5 GiB?"
+        },
+        "nodes": [
+          {
+            "zh": "总预算 5.5 GiB",
+            "en": "Budget 5.5 GiB"
+          },
+          {
+            "zh": "放入模型后余 1.5 GiB",
+            "en": "1.5 GiB after loading the model"
+          },
+          {
+            "zh": "分给公共工作区后余 0.5 GiB",
+            "en": "0.5 GiB after shared workspace"
+          },
+          {
+            "zh": "一条请求用完剩余 0.5 GiB",
+            "en": "One active request uses the last 0.5 GiB"
+          }
+        ],
+        "caption": {
+          "zh": "这个模型的权重在两条请求之间共享。每条正在计算的请求各自需要中间空间。",
+          "en": "The two requests share one set of model weights. Each active computation needs its own intermediate storage."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "给一个人算账",
+            "en": "Budget for one person"
+          },
+          "body": {
+            "zh": "把 4、1、0.5 相加。把总和与 5.5 比较，再说说还余多少空间。",
+            "en": "Add 4, 1 and 0.5. Compare the total with 5.5 and state how much room remains."
+          },
+          "expected": {
+            "zh": "一人共用 5.5 GiB，按这份教学账单恰好容纳，余量为 0。",
+            "en": "One request uses 5.5 GiB in this budget. It just fits, with zero headroom."
+          }
+        },
+        {
+          "title": {
+            "zh": "让第二人也能完成",
+            "en": "Make room for a second person"
+          },
+          "body": {
+            "zh": "想让两个人同时计算，就再加一份请求空间。若超过预算，可以让第二人先等候，等第一人的中间数据释放后再开始。",
+            "en": "For two active requests, add a second share of request memory. If the total exceeds the budget, let the second request wait and start it after the first releases its temporary data."
+          },
+          "expected": {
+            "zh": "两人同时算需要 6 GiB，比预算多 0.5 GiB。依次处理时，按题设每次只需 5.5 GiB，代价是第二人多等一会儿。",
+            "en": "Two active requests need 6 GiB, or 0.5 GiB above budget. Serving them in turn keeps modeled use at 5.5 GiB. The second person waits longer."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "我把 4 GiB 的模型复制了两份。",
+            "en": "I counted two copies of the 4 GiB model."
+          },
+          "fix": {
+            "zh": "看题设，两个请求使用同一个已加载的模型。固定部分只算一次，各自的临时数据按人数相加。",
+            "en": "Both requests use the same loaded model in this setup. Count the fixed part once and add temporary data for each person."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "容量算出来了，怎样换成回答需要的秒数？",
+            "en": "I know how many GiB fit. How do I get response seconds?"
+          },
+          "fix": {
+            "zh": "容量账单回答「能否放下」。要估计等待多久，还需知道每条请求的运算与排队时间，或者记录真实运行的时间点。",
+            "en": "The capacity budget tells you whether the data fits. Estimating elapsed time also requires compute and queue durations, or timing records from an actual run."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "按这份账单同时处理 2 条请求，需要多少空间？",
+            "en": "How much space do two active requests need in this budget?"
+          },
+          "options": [
+            {
+              "zh": "5 GiB",
+              "en": "5 GiB"
+            },
+            {
+              "zh": "5.5 GiB",
+              "en": "5.5 GiB"
+            },
+            {
+              "zh": "6 GiB",
+              "en": "6 GiB"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "固定 4 + 1，再加两份 0.5，合计 6 GiB。",
+            "en": "The fixed 4 + 1 plus two lots of 0.5 totals 6 GiB."
+          }
+        },
+        {
+          "question": {
+            "zh": "如果预算仍是 5.5 GiB，哪种安排在本例中能让两人都完成？",
+            "en": "With the budget fixed at 5.5 GiB, which schedule lets both requests finish here?"
+          },
+          "options": [
+            {
+              "zh": "前一个完成并释放临时空间后，再开始下一个",
+              "en": "Start the next one after the first finishes and releases its temporary space"
+            },
+            {
+              "zh": "两人同时开始，多出的空间以后再补",
+              "en": "Start both together and add the missing space later"
+            },
+            {
+              "zh": "把计量单位从 GiB 改写为秒",
+              "en": "Relabel the GiB as seconds"
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "同一时刻只保留一个请求的临时空间，内存可复用。排队把空间不足转化成等待。",
+            "en": "Only one request’s temporary storage is needed at a time, so it can be reused. Queuing trades simultaneous memory demand for waiting."
+          }
+        }
+      ]
+    },
+    {
+      "day": 8,
+      "title": {
+        "zh": "四个人发来消息，几个人拿到完整回答？",
+        "en": "Four users sent requests. How many got a full answer?"
+      },
+      "lesson": {
+        "zh": "值班同学收到四份来自浏览器的记录。A 在第 1 秒看到首块、第 3 秒收齐，B 一直没看到文字、第 4 秒停止等待，C 在第 2 秒看到首块、第 5 秒收齐，D 在第 1 秒看到首块、第 4 秒因到达等候期限而结束。每份记录都从自己发送时的第 0 秒计时。",
+        "en": "The engineer on duty has four browser records, each timed from its own send at 0 s. A saw a first piece at 1 s and finished at 3 s. B saw no text and stopped waiting at its 4 s deadline. C saw a first piece at 2 s and finished at 5 s. D saw a first piece at 1 s but reached its deadline at 4 s."
+      },
+      "task": {
+        "zh": "写下 A、B、C、D 四行。给「见过首块」和「收到完整回答」各画一列，逐行填，再算完整回答占全部请求的比例。",
+        "en": "Write four rows labeled A through D. Add columns for “saw first content” and “received a complete answer”. Fill the rows and calculate the fraction of all requests that completed."
+      },
+      "evidence": {
+        "zh": "一张四行记录和一句给值班同学的话，写明分母、完成人数以及一条需要继续追查的请求编号。",
+        "en": "Four rows of observations and a sentence for the engineer on duty giving the denominator, completion count and an ID to investigate."
+      },
+      "checklist": {
+        "zh": [
+          "我给 B 的首块时刻写了「未观察到」，并给 D 保留了已看到的首块。",
+          "我能解释为什么看过首块的有 3 人、收齐的只有 2 人。"
+        ],
+        "en": [
+          "I marked B’s first-piece time as unobserved and retained D’s known first-piece time.",
+          "I can explain why three people saw a start and two received a full answer."
+        ]
+      },
+      "noGpu": {
+        "zh": "在纸上用两种符号分别标出见到首块和收到结束，两列各自求和。",
+        "en": "Use two columns of marks on paper for seeing first content and for receiving the complete answer. Total each column."
+      },
+      "reading": [
+        {
+          "title": "MDN · AbortSignal.timeout() and request deadlines",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static"
+        },
+        {
+          "title": "NVIDIA AIPerf · Streaming and request timing metrics",
+          "url": "https://docs.nvidia.com/aiperf/reference/ai-perf-metrics-reference"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "超时是哪一方看到的？",
+            "en": "Whose timeout is it?"
+          },
+          "body": {
+            "zh": "超时表示等待的一方达到约定期限。在这里它是浏览器观察到的结束状态。用户有时会在一句话写到一半时超时。要知道服务端是否也停了，可以按同一个请求编号去查服务端记录。",
+            "en": "A timeout means the party waiting reached its deadline. Here it is the final status observed by the browser. It can happen halfway through a response. To learn whether server-side work also stopped, look up that request ID in server records."
+          }
+        },
+        {
+          "title": {
+            "zh": "保留看不见的那几行",
+            "en": "Keep outcomes with missing content"
+          },
+          "body": {
+            "zh": "做成功率的分母时，数所有尝试过的人。算「成功请求平均多久收齐」时，只有确实收齐的请求有这个值。把缺少的首块时间标为「未观察到」，就能与真正的零秒区分开。",
+            "en": "For the completion rate, count every attempt in the denominator. For average time to a successful completion, only completed requests have that value. Mark missing first-content times as unobserved so they remain distinct from an actual observation at zero seconds."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "从四行原始记录到两个答案",
+          "en": "From four original rows to two different answers"
+        },
+        "nodes": [
+          {
+            "zh": "收到 4 次请求",
+            "en": "4 requests attempted"
+          },
+          {
+            "zh": "逐行查首块记录",
+            "en": "Check first content per row"
+          },
+          {
+            "zh": "逐行查最终状态",
+            "en": "Check the final status per row"
+          },
+          {
+            "zh": "分别汇总并写分母",
+            "en": "Total each column with its denominator"
+          }
+        ],
+        "caption": {
+          "zh": "D 会出现在「见过首块」这列。B 和 D 都计入全部尝试数。",
+          "en": "D contributes to the first-content count. Both B and D count in all attempts."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "先数看见开头的人",
+            "en": "Count who saw any content"
+          },
+          "body": {
+            "zh": "按四行记录圈出有首块时刻的编号，再单独圈出收齐的人。不要补猜缺少的时刻。",
+            "en": "Circle each ID with a first-content timestamp. On another line circle those that completed. Leave missing observations blank or explicitly unknown."
+          },
+          "expected": {
+            "zh": "见过首块的是 A、C、D，共 3/4。收齐的是 A、C，共 2/4，即 50%。",
+            "en": "A, C and D saw first content, or 3/4. A and C completed, or 2/4 = 50%."
+          }
+        },
+        {
+          "title": {
+            "zh": "给平均值加上范围",
+            "en": "State which requests an average covers"
+          },
+          "body": {
+            "zh": "只用成功收齐的两条，算 (3 + 5) ÷ 2。给结果写上单位和范围，再给 D 写一个值得追查的问题。",
+            "en": "For the two successful completions, calculate (3 + 5) ÷ 2. Label the result with its unit and scope. Write one follow-up question about D."
+          },
+          "expected": {
+            "zh": "可写「成功的 2 条平均 4 秒收齐，全体 4 条中有 2 条超时」。追查 D 时，可以先问服务最后一次发送数据是什么时候。",
+            "en": "One possible report is “The 2 successes averaged 4 s to completion. Of all 4 attempts, 2 timed out.” For D, ask when the service last sent data."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "B 的首块时间我填成了 0 秒。",
+            "en": "I filled in 0 s for B’s first piece."
+          },
+          "fix": {
+            "zh": "B 的记录里没有首块到达事件。填「未观察到」，0 秒表示确实在发送当时就看到了首块。",
+            "en": "B has no first-content event. Mark it unobserved. Zero seconds would claim it actually appeared at the instant of sending."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "我把 D 也算成了成功。",
+            "en": "I counted D as completed."
+          },
+          "fix": {
+            "zh": "分别看首块和结束这两栏。D 提供了首块时刻，结束栏却是超时，因此它只计入见过开头的人数。",
+            "en": "Examine first content and final status separately. D has a first-piece timestamp and a timeout as its final status. It counts toward seeing any content."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "四人中有 2 人收齐，完整回答率是多少？",
+            "en": "Two of four users completed. What is the completion rate?"
+          },
+          "options": [
+            {
+              "zh": "100%",
+              "en": "100%"
+            },
+            {
+              "zh": "50%",
+              "en": "50%"
+            },
+            {
+              "zh": "75%",
+              "en": "75%"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "分母是全部 4 次尝试，分子是收齐的 A、C 两次。",
+            "en": "The denominator is all four attempts. The numerator is the two completions, A and C."
+          }
+        },
+        {
+          "question": {
+            "zh": "哪一条记录适合用来研究「已经开始显示，后来却超时」？",
+            "en": "Which record would help investigate a response that started to display and then timed out?"
+          },
+          "options": [
+            {
+              "zh": "A",
+              "en": "A"
+            },
+            {
+              "zh": "B",
+              "en": "B"
+            },
+            {
+              "zh": "D",
+              "en": "D"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "D 在第 1 秒有首块，在第 4 秒因到达等待期限而结束。可以用 D 的编号对照服务端记录。",
+            "en": "D has first content at 1 s and a deadline at 4 s. Its ID can connect this browser observation to the service logs."
+          }
+        }
+      ]
+    },
+    {
+      "day": 9,
+      "title": {
+        "zh": "读懂自己的第一段推理实验代码",
+        "en": "Read your first inference experiment program"
+      },
+      "lesson": {
+        "zh": "把一道会手算的题写成代码，就是把已知数字起个名字，再按顺序写怎么算。这里用 ahead 表示前方人数，pieces 表示回答块数。先用下面的时钟替程序算一遍。读懂这五行后，你就知道改哪个输入能检验自己的猜想。",
+        "en": "Turn a calculation you already know into code by naming the inputs and writing the operations in order. Here, ahead means people in front of you and pieces means the length of your answer. Use the clock to do the calculation by hand. Once you can trace these five lines, you can choose an input to test your prediction."
+      },
+      "task": {
+        "zh": "先读 2 人、3 块对应的五行代码。用页面时钟重现结果，再只把 ahead 从 2 改到 1，核对自己的心算。",
+        "en": "Trace the five lines for 2 people ahead and 3 pieces. Reproduce the result in the page clock. Change only ahead from 2 to 1 and check your prediction."
+      },
+      "evidence": {
+        "zh": "记录原输入、你只改动的那个数、两行读数和一个解释。",
+        "en": "Record the original inputs, the one number you changed, both pairs of readings and one explanation."
+      },
+      "checklist": {
+        "zh": [
+          "我能说出 ahead = 2、乘号 * 和 print 各自让程序做什么。",
+          "只改前方人数后，我能在运行前算出首块和收齐时间。"
+        ],
+        "en": [
+          "I can explain what ahead = 2, the * sign and print each do.",
+          "After changing only the people ahead, I can calculate first and complete times before running the example."
+        ]
+      },
+      "noGpu": {
+        "zh": "把两个变量写在纸角。计算到一行就把该行的结果写在旁边，最后读出两列。页面时钟也能复核五行的结果。",
+        "en": "Write the two inputs at the top of a page. Work through the lines and jot down each result. The page clock can check your final pair."
+      },
+      "reading": [
+        {
+          "title": "Python · 将 Python 用作计算器（中文版）",
+          "url": "https://docs.python.org/zh-cn/3/tutorial/introduction.html#using-python-as-a-calculator"
+        },
+        {
+          "title": "Python · Using Python as a calculator",
+          "url": "https://docs.python.org/3/tutorial/introduction.html#using-python-as-a-calculator"
+        },
+        {
+          "title": "Python · 第一次开始编程 / Python for beginners",
+          "url": "https://www.python.org/about/gettingstarted/"
+        },
+        {
+          "title": "Python · IDLE 编辑器与运行菜单（中文版）",
+          "url": "https://docs.python.org/zh-cn/3/library/idle.html#run-menu-editor-window-only"
+        },
+        {
+          "title": "Python · Running a file in IDLE",
+          "url": "https://docs.python.org/3/library/idle.html#run-menu-editor-window-only"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "等号和星号怎么读？",
+            "en": "How do I read the equals sign and the star?"
+          },
+          "body": {
+            "zh": "在这段 Python 里，ahead = 2 是给名字 ahead 存入数值 2。星号 * 表示乘法。先乘后加，所以 ahead * 2 + 1 是「前方人数乘每人的 2 秒，再加自己产生首块的 1 秒」。",
+            "en": "In this Python snippet, ahead = 2 assigns the number 2 to the name ahead. The star * means multiply. Multiplication happens before addition, so ahead * 2 + 1 gives two seconds for each person ahead, plus one for your first piece."
+          }
+        },
+        {
+          "title": {
+            "zh": "让程序把两个结果写出来",
+            "en": "Ask the program to display the results"
+          },
+          "body": {
+            "zh": "first 存首块时间，full 存收齐时间。print(first, full) 按括号中的顺序把两个数显示出来。它们在本例中都以秒为单位。",
+            "en": "The name first holds time to the first piece, and full holds time to completion. print(first, full) displays those numbers in that order. Both are measured in teaching seconds here."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "把三个动作翻译成程序",
+          "en": "Translate three actions into a program"
+        },
+        "nodes": [
+          {
+            "zh": "给输入命名",
+            "en": "Name the inputs"
+          },
+          {
+            "zh": "代入两条算式",
+            "en": "Evaluate the two expressions"
+          },
+          {
+            "zh": "显示 first、full",
+            "en": "Display first, then full"
+          }
+        ],
+        "caption": {
+          "zh": "前方人数和回答块数是可更换的输入，每位前方用户 2 秒和每块 1 秒是本例固定规则。",
+          "en": "Queue length and answer length are inputs you can change. Two seconds per earlier person and one second per piece are fixed rules here."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "拿时钟核对原程序",
+            "en": "Check the original program against the clock"
+          },
+          "body": {
+            "zh": "设前方 2 人、回答 3 块。把这两个数代入 first 和 full 的算式，最后读出 print 要显示的两项。",
+            "en": "Set 2 people ahead and a 3-piece answer. Substitute those numbers in the expressions for first and full. Read off what print would display."
+          },
+          "expected": {
+            "zh": "first = 2 × 2 + 1 = 5，full = 2 × 2 + 3 = 7。显示顺序是 5、7。",
+            "en": "first = 2 × 2 + 1 = 5 and full = 2 × 2 + 3 = 7. The display order is 5, 7."
+          }
+        },
+        {
+          "title": {
+            "zh": "只改第一行的输入值",
+            "en": "Change just the input from line one"
+          },
+          "body": {
+            "zh": "在纸上把 ahead 改为 1，保留 pieces = 3，再在页面时钟选前方 1 人。比较两种方法得到的数。",
+            "en": "Change ahead to 1 on paper, keep pieces = 3 and select one person ahead in the page clock. Compare the two methods."
+          },
+          "expected": {
+            "zh": "first = 3，full = 5。前方少一人，两项都少了该人的 2 秒。",
+            "en": "first = 3 and full = 5. Removing one person saves that person’s 2 seconds in both readings."
+          }
+        },
+        {
+          "title": {
+            "zh": "选做 · 用电脑上的 Python 复算",
+            "en": "Optional — run the calculation with Python"
+          },
+          "body": {
+            "zh": "已能运行 Python 的同学可解压本课离线实验包，在含 lab.py 的文件夹打开终端，运行下面一行。只用手机时，在前两个步骤核对了 5 和 7 就可继续。",
+            "en": "If you already run Python, extract the course lab and open a terminal in the folder containing lab.py. Run the line below. On a phone, checking 5 and 7 in the preceding steps completes the exercise."
+          },
+          "command": "python3 lab.py --ahead 2 --pieces 3",
+          "expected": {
+            "zh": "首块 5 秒，收齐 7 秒。两个值分别对应短程序里的 first 和 full。",
+            "en": "First piece at 5 s, complete at 7 s. These readings correspond to first and full in the snippet."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "算出来 first 比 full 大。",
+            "en": "My first time is greater than my full time."
+          },
+          "fix": {
+            "zh": "检查 print 的顺序，以及两条算式是否用了同一个 ahead。本题至少输出一块，收齐时刻应当和首块相同或更晚。",
+            "en": "Check the order passed to print and whether the two expressions used the same ahead. Every answer has at least one piece, so completion is at or after the first piece."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "手机上找不到运行 Python 的地方。",
+            "en": "I can’t find where to run Python on my phone."
+          },
+          "fix": {
+            "zh": "在页面时钟中选择那两个数，就完成本节的复算。已有 Python 的同学也可以在电脑上运行下面的短代码。",
+            "en": "Choose the two inputs in the page clock to finish the exercise. If you already use Python, you can also run the short snippet on your computer."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "这是我的第一段代码，之后怎样真的运行它？",
+            "en": "This is my first snippet. How can I run it later?"
+          },
+          "fix": {
+            "zh": "有电脑时可按延伸阅读里的 Python 初学指南安装 Python 3。若安装附带了 IDLE，打开它，在 >>> 后输入 print(2 * 2 + 1) 并回车，会看到 5。再用 File 菜单新建文件，把五行贴进去，保存为 first.py，在 Run 菜单选 Run Module，窗口中会出现 5 7。",
+            "en": "On a computer, the Python for Beginners link in the readings can help you install Python 3. If your installation includes IDLE, open it, enter print(2 * 2 + 1) at the >>> prompt and press Enter to see 5. Create a new file from the File menu, paste in the five lines, save as first.py and choose Run Module in the Run menu. The shell will show 5 7."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "把 ahead 改为 0，pieces 保持 3，这段代码依次显示什么？",
+            "en": "If ahead becomes 0 while pieces stays 3, what does the code display in order?"
+          },
+          "options": [
+            {
+              "zh": "0、0",
+              "en": "0, 0"
+            },
+            {
+              "zh": "1、3",
+              "en": "1, 3"
+            },
+            {
+              "zh": "3、1",
+              "en": "3, 1"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "两条算式中的排队部分都变为 0。首块用 1 秒，3 块共用 3 秒。",
+            "en": "The queue term is zero in both expressions. The first piece takes 1 second and three pieces take 3 seconds."
+          }
+        },
+        {
+          "question": {
+            "zh": "想单独研究回答长度对收齐时间的影响，怎么改输入？",
+            "en": "To study how answer length affects completion in isolation, what should you change?"
+          },
+          "options": [
+            {
+              "zh": "同时改 ahead 和 pieces",
+              "en": "Change both ahead and pieces"
+            },
+            {
+              "zh": "修改两个结果的显示顺序",
+              "en": "Swap the order of the displayed outputs"
+            },
+            {
+              "zh": "保持 ahead 相同，只改 pieces",
+              "en": "Keep ahead fixed and change only pieces"
+            }
+          ],
+          "answer": 2,
+          "explanation": {
+            "zh": "固定前方人数，就保留了相同的等待时间。两次收齐时间的差来自新增或减少的回答块。",
+            "en": "Holding ahead fixed preserves the wait. Any completion-time difference then comes from the pieces added or removed."
+          }
+        }
+      ],
+      "interactive": "primer-queue",
+      "code": {
+        "language": "python",
+        "content": "ahead = 2\npieces = 3\nfirst = ahead * 2 + 1\nfull = ahead * 2 + pieces\nprint(first, full)",
+        "caption": {
+          "zh": "可以逐行手算的 Python 程序，两个输出都以秒为单位。",
+          "en": "A Python snippet you can trace by hand. Both outputs are in seconds."
+        }
+      }
+    },
+    {
+      "day": 10,
+      "title": {
+        "zh": "写一张别人能复算的实验卡",
+        "en": "Write an experiment card someone else can check"
+      },
+      "lesson": {
+        "zh": "一位组员问「为什么两次都回三块文字，第二次却等得更久？」今天你来回答。做两次时钟实验，留下条件和读数，再写清自己的解释。另一个人只看你的卡片，就应当能复现其中一次，并能指出这组练习的适用范围。",
+        "en": "A teammate asks why the second of two three-piece replies started later. Answer with two runs of the clock. Record the conditions, readings and your explanation. Someone reading your card should be able to reproduce one of the runs and identify where the exercise’s assumptions apply."
+      },
+      "task": {
+        "zh": "做一个对照。A 组前方 0 人、回答 3 块，B 组前方 2 人、回答仍为 3 块。把两组记录写进自己的实验卡，解释观察到的差异，再导出一份可以自己打开的文件。",
+        "en": "Run a comparison. In A, use 0 people ahead and 3 output pieces. In B, use 2 people ahead and the same 3 pieces. Record both runs in your experiment card, explain the difference and export a file you can open yourself."
+      },
+      "evidence": {
+        "zh": "一份自己填写的 Markdown 实验卡，包含问题、A 和 B 的设置与读数、自己的解释、教学假设及接下来想验证的一件事。",
+        "en": "Your own Markdown experiment card with the question, A and B settings and results, your explanation, the teaching assumptions and one follow-up you would like to test."
+      },
+      "checklist": {
+        "zh": [
+          "我能还原两组设置并重算其中一组，数字都有单位。",
+          "我用自己的话写了为什么多等了几秒，并指出在真实聊天服务上还要观察什么。"
+        ],
+        "en": [
+          "I can reconstruct both setups and recalculate one run, with units for every time.",
+          "I wrote why the wait changed in my own words and named one observation I would need from a live chat service."
+        ]
+      },
+      "noGpu": {
+        "zh": "给同学看两行设置，请对方用纸算出一行读数，再把自己的读数给他核对。也可以用纸笔完成整张实验卡。",
+        "en": "Show a classmate the two settings and ask them to calculate one result on paper before showing yours. You can also complete the whole card on paper."
+      },
+      "reading": [
+        {
+          "title": "NVIDIA AIPerf · Streaming and request timing metrics",
+          "url": "https://docs.nvidia.com/aiperf/reference/ai-perf-metrics-reference"
+        },
+        {
+          "title": "vLLM · Architecture overview",
+          "url": "https://docs.vllm.ai/en/latest/design/arch_overview/"
+        },
+        {
+          "title": "MDN · First steps in the command line",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Getting_started/Environment_setup/Command_line"
+        }
+      ],
+      "explanation": [
+        {
+          "title": {
+            "zh": "让别人看清你只改了哪一项",
+            "en": "Show which one thing you changed"
+          },
+          "body": {
+            "zh": "把每次的「前方人数、回答块数、首块秒数、收齐秒数」都保留，标题里写上「教学时钟」。前两项告诉别人该怎么设置，后两项告诉别人应该观察到什么。",
+            "en": "Keep four fields per run: people ahead, answer pieces, seconds to first piece and seconds to completion. Label the card “teaching clock”. The first two fields let another reader reproduce the setup. The other two tell them what to observe."
+          }
+        },
+        {
+          "title": {
+            "zh": "区分观察、解释与下一个问题",
+            "en": "Separate observation, explanation and next question"
+          },
+          "body": {
+            "zh": "「首块晚了几秒」是观察。「两人各占用两秒」是用本题规则解释观察。若同学想知道真实服务慢在哪儿，可以再问「服务接收后，到开始计算之间等了多久」，从请求记录找证据。",
+            "en": "How many seconds later the first piece appeared is an observation. Two earlier people using two seconds each is an explanation under the clock rules. To investigate a live service, ask how long a request waited between acceptance and the start of computation, then look for matching records."
+          }
+        }
+      ],
+      "diagram": {
+        "title": {
+          "zh": "让另一个人有办法复算",
+          "en": "Give another reader a way to reproduce your work"
+        },
+        "nodes": [
+          {
+            "zh": "写问题和共同条件",
+            "en": "State the question and common conditions"
+          },
+          {
+            "zh": "记录 A 和 B",
+            "en": "Record A and B"
+          },
+          {
+            "zh": "解释两项读数的变化",
+            "en": "Explain the change in both readings"
+          },
+          {
+            "zh": "标记教学假设和下一问",
+            "en": "State assumptions and a follow-up"
+          }
+        ],
+        "caption": {
+          "zh": "只给两个快慢数字，读者猜不到回答长度和队伍。把输入和输出放在一起，读者可以自己检查。",
+          "en": "With only two timing numbers, the reader has to guess the queue and answer lengths. Put inputs beside outputs so they can check them."
+        }
+      },
+      "walkthrough": [
+        {
+          "title": {
+            "zh": "把两次读数写进同一张卡",
+            "en": "Put both readings on one card"
+          },
+          "body": {
+            "zh": "设前方 0 人、回答 3 块，点「把本次条件和结果记入卡片」，作为 A。改为 2 人、3 块，再点一次记为 B。在卡片里给两组加上自己的解释，也可补一组新条件。",
+            "en": "Set 0 people ahead and 3 pieces. Use “Record this run on my card” for A. Change to 2 ahead and 3 pieces and record again for B. Add your own explanation beneath the two observations. You may also try a third setting."
+          },
+          "expected": {
+            "zh": "A 是首块 1 秒、收齐 3 秒。B 是首块 5 秒、收齐 7 秒。两项都晚了 4 秒。",
+            "en": "A has first at 1 s and completion at 3 s. B has first at 5 s and completion at 7 s. Both are 4 s later."
+          }
+        },
+        {
+          "title": {
+            "zh": "自己写理由，导出后再打开",
+            "en": "Explain the result, then open your export"
+          },
+          "body": {
+            "zh": "写出为什么两个读数都会变化，再补一个想在真实服务里查看的问题。点「下载我的实验卡」，用文本编辑器打开导出的 .md 文件。这种可直接阅读的文本格式叫 Markdown。",
+            "en": "Explain why both readings changed and add one question you would investigate in a live service. Choose “Download my experiment card”. Open the .md file with a text editor. Its readable text format is called Markdown."
+          },
+          "expected": {
+            "zh": "在文件里能找到自己写的 A、B、理由与当前时钟条件。把其中一组条件交给同学，同学能得到相同的两个读数。",
+            "en": "In the file, find your A and B notes, reasoning and current clock settings. A classmate who enters one of those setups should get the same two readings."
+          }
+        },
+        {
+          "title": {
+            "zh": "根据做题的体验选择下一课",
+            "en": "Choose the next lesson from your experience"
+          },
+          "body": {
+            "zh": "喜欢查请求为什么慢，可以接着读系统基础第 1 节和第 3 节。若还没运行过脚本，先跟着本课第 9 节的 Python 初学资料，让自己保存的 first.py 显示 5 7。练会从终端运行文件后，可以跟做系统基础的实验，再去 vLLM 第 1 节自检运行环境。",
+            "en": "If you enjoyed investigating a slow request, continue with Foundations lessons 1 and 3. If you have never run a script, use lesson 9’s beginner resources to save first.py and display 5 7. Once you can run a file from a terminal, follow the Foundations labs and then try the vLLM lesson 1 environment check."
+          },
+          "expected": {
+            "zh": "写下一步要完成的一个动作，例如「我会对一条请求标出发送、首块、结束三个事件」。",
+            "en": "Name one specific next action, such as labeling send, first content and completion for one request."
+          }
+        }
+      ],
+      "troubleshooting": [
+        {
+          "symptom": {
+            "zh": "实验卡里少了 A 组的条件。",
+            "en": "My card is missing the A setup."
+          },
+          "fix": {
+            "zh": "回到 0 人、3 块，再点一次记入卡片。对照两组输入，保留前方 0 人和前方 2 人各一行，写上自己的理由后下载。",
+            "en": "Return to 0 people ahead and 3 pieces and record that run. Check for one row with 0 ahead and one row with 2 ahead, add your own explanation, then download."
+          }
+        },
+        {
+          "symptom": {
+            "zh": "我想把「每多两个人就晚 4 秒」用于所有聊天产品。",
+            "en": "Can I apply “two more users cost four seconds” to every chat service?"
+          },
+          "fix": {
+            "zh": "先在卡片里写明本题的单窗口、每位前方用户 2 秒和每块 1 秒。真实服务可能同时处理多条请求，机器和输入也不同。下一次可以收集同一服务的到达、开工和结束时刻去验证。",
+            "en": "State this exercise’s rules on the card: one worker, two seconds per earlier person and one second per piece. A live service may process requests together on different hardware and inputs. Arrival, start and finish timestamps from that service would let you investigate."
+          }
+        }
+      ],
+      "quiz": [
+        {
+          "question": {
+            "zh": "下面哪条记录能让同学复算 B 组？",
+            "en": "Which record gives a classmate enough information to reproduce run B?"
+          },
+          "options": [
+            {
+              "zh": "单窗口教学时钟，前方 2 人每人 2 秒，回答 3 块每块 1 秒，首块 5 秒、收齐 7 秒",
+              "en": "Single-worker teaching clock, 2 people ahead at 2 s each, 3 pieces at 1 s each. First at 5 s, complete at 7 s."
+            },
+            {
+              "zh": "第二回很慢",
+              "en": "It felt slow the second time."
+            },
+            {
+              "zh": "手机屏幕上有三个绿块",
+              "en": "I saw three green boxes on my phone."
+            }
+          ],
+          "answer": 0,
+          "explanation": {
+            "zh": "这项把规则、输入、结果和单位都写清了。别人可以从 2 × 2 开始算。",
+            "en": "It gives the rules, inputs, results and units. A reader can start with 2 × 2 and derive both readings."
+          }
+        },
+        {
+          "question": {
+            "zh": "同学问「线上为什么等了 5 秒」，接下来最有用的证据是什么？",
+            "en": "A teammate asks why a live request took five seconds to start. What evidence would help most?"
+          },
+          "options": [
+            {
+              "zh": "把练习数字换一个单位",
+              "en": "Write the exercise numbers in another unit"
+            },
+            {
+              "zh": "这条真实请求的接收、开工和首块时刻，以及记录的位置",
+              "en": "Timestamps for acceptance, start of work and first content for that request, with their observation points"
+            },
+            {
+              "zh": "其他同学的猜想个数",
+              "en": "How many classmates guessed the cause"
+            }
+          ],
+          "answer": 1,
+          "explanation": {
+            "zh": "找同一条真实请求的记录，可以把等待分段。教学时钟提供了提问方式，具体耗时来自实际观测。",
+            "en": "Records for the same real request let us split the wait into intervals. The exercise supplies a question to ask. Live observations supply the timings."
+          }
+        }
+      ],
+      "interactive": "primer-queue"
+    }
+  ],
+  "lab": {
+    "path": "inference-101",
+    "title": {
+      "zh": "三个可以离线玩的浏览器实验",
+      "en": "Three browser experiments to try offline"
+    },
+    "description": {
+      "zh": "可直接使用课程页里的实验。想离线练习时，下载并完整解压实验包，用浏览器打开里面的 index.html，就能续写、切词和改变队伍长度。",
+      "en": "You can use the activities right on the course page. For offline practice, extract the optional lab archive and open index.html in a browser to generate text, switch vocabularies and change the queue."
+    }
+  }
+}

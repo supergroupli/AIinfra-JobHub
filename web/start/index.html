@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#183c35">
-  <meta name="description" content="根据目标方向、已有基础、设备与时间，找到 AI Infra 第一节课和首小时任务。普通 CPU 电脑也能开始。">
+  <meta name="description" content="第一次听说 AI 推理，可以直接打开浏览器启蒙课。有开发经验的读者可以自查基础，选择下一门工程课。">
   <title>从这里开始 · 聘枢 · AI Infra JobHub</title>
   <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../styles.css?v=20261113-growth">
-  <link rel="stylesheet" href="./start.css">
-  <script src="./start-model.js" defer></script>
-  <script src="./start.js" defer></script>
+  <link rel="stylesheet" href="./start.css?v=20261121-primer">
+  <script src="./start-model.js?v=20261121-primer" defer></script>
+  <script src="./start.js?v=20261121-primer" defer></script>
 <link rel="stylesheet" href="../github-star.css">
 </head>
 <body class="start-page">
@@ -22,12 +22,14 @@
   </header>
   <main id="main" class="section-shell start-main">
     <section class="start-hero">
-      <div><div class="eyebrow">YOUR FIRST STEP IN AI INFRA</div><h1 data-i18n="title">从你会的出发，找到下一步。</h1><p class="start-intro" data-i18n="intro">不用先学完所有技术。选一个方向，花两分钟自查，用手边的电脑做出第一份可以解释的作品。</p><div class="start-actions"><a class="button primary" href="#start-form" data-i18n="begin">找到我的起点 ↘</a><a id="hero-project" class="text-link" href="../projects/?project=serving-baseline" data-i18n="experienced">已有经验？直接挑战项目 ↗</a></div></div>
-      <aside class="start-map"><span class="mono">SMALL STEPS. REAL EVIDENCE.</span><ol><li><span>01</span><strong data-i18n="map1">说清起点</strong></li><li><span>02</span><strong data-i18n="map2">运行一个小实验</strong></li><li><span>03</span><strong data-i18n="map3">留下自己的解释</strong></li></ol><p data-i18n="mapNote">CPU 就能起步 · 建议附带原因 · 没有能力评分</p></aside>
+      <div><div class="eyebrow">YOUR FIRST STEP IN AI INFRA</div><h1 data-i18n="title">从你会的出发，找到下一步。</h1><p class="start-intro" data-i18n="intro">第一次听说“推理”，可以直接用手机或电脑给小模型发个开头，看它怎样接着写。已经做过实验，可以按现有基础选下一门课。</p><div class="start-actions"><a class="button primary" id="hero-primer" href="../learn/inference-101/?lang=zh#day-1" data-language-link="../learn/inference-101/#day-1" data-i18n="primerStart">我第一次听说推理，开始第一课</a><a class="button outline" href="#start-form" data-i18n="begin">按我的基础选课</a><a id="hero-project" class="text-link" href="../projects/?project=serving-baseline" data-i18n="experienced">已有经验？直接挑战项目 ↗</a></div></div>
+      <aside class="start-map"><h2 data-i18n="firstActivity">启蒙第一课会做什么？</h2><ol><li><span>01</span><strong data-i18n="map1">选一句开头，猜它会接哪个词</strong></li><li><span>02</span><strong data-i18n="map2">点“发送”，观察第一块文字</strong></li><li><span>03</span><strong data-i18n="map3">换个开头，解释结果有什么变化</strong></li></ol><p data-i18n="mapNote">手机或电脑都能做，第一课约 5–10 分钟。</p></aside>
     </section>
     <div class="start-layout">
       <form id="start-form" class="start-form">
         <div class="eyebrow">01 / YOUR STARTING POINT</div><h2 data-i18n="formTitle">按你的情况安排</h2>
+        <label for="start-inference-first" class="start-primer-choice"><input id="start-inference-first" name="newToInference" type="checkbox" aria-describedby="start-inference-help"><span data-i18n="inferenceFirst">我第一次接触模型推理，想从启蒙课开始</span></label>
+        <p id="start-inference-help" class="start-note" data-i18n="inferenceFirstHelp">会编程也可以勾选。</p>
         <label for="start-role" data-i18n="role">我想探索的方向</label><select id="start-role" name="role"></select>
         <div class="start-field-row"><div><label for="start-hardware" data-i18n="hardware">可用设备</label><select id="start-hardware" name="hardware"></select></div><div><label for="start-hours" data-i18n="hours">每周可用时间</label><select id="start-hours" name="hours"></select></div></div>
         <fieldset><legend data-i18n="basics">六项基础自查</legend><p class="start-note" data-i18n="basicsNote">按现在能独立做的选择。不确定就选“还没接触”；这只会帮助安排复习，不会限制浏览课程或项目。</p><div id="start-skills"></div></fieldset>
@@ -36,11 +38,11 @@
       </form>
       <section id="start-result" class="start-result" aria-labelledby="start-result-title" tabindex="-1"><div class="eyebrow">02 / A PLAN YOU CAN EXPLAIN</div><h2 id="start-result-title" data-i18n="resultTitle">你的起步建议</h2><p class="start-boundary" data-i18n="boundary">这里按明确规则选择资源，不打能力分、不决定录用。自述“能独立完成”不等于已验证；要用实际代码、结果与解释来检验。</p><div id="start-plan"></div></section>
     </div>
-    <section class="start-method"><h2 data-i18n="methodTitle">这些建议是怎样产生的？</h2><div class="start-method-grid"><p data-i18n="rule1">基础：每一项“还没接触”或“需要复习”对应具体课程日；同一课只列一次，并保留每条理由。</p><p data-i18n="rule2">方向：目标岗位决定后续三节课、项目和求职准备路线。它不声称完整覆盖该岗位，也不要求先修完所有课。</p><p data-i18n="rule3">设备与时间：CPU 路线始终开放；GPU 只增加可选实机实验。每周时间只调整节奏，课程里的 Day 不等于你必须一天完成。</p></div></section>
+    <section class="start-method"><h2 data-i18n="methodTitle">这些建议是怎样产生的？</h2><div class="start-method-grid"><p data-i18n="rule1">勾选“我第一次接触模型推理”，起步建议会优先安排启蒙课。如果终端和 Python 都选“还没接触”，同样从浏览器启蒙课开始。其他基础缺口会对应到具体练习。</p><p data-i18n="rule2">方向：目标岗位决定后续三节课、项目和求职准备路线。它不声称完整覆盖该岗位，也不要求先修完所有课。</p><p data-i18n="rule3">设备与时间：CPU 路线始终开放；GPU 只增加可选实机实验。每周时间只调整节奏，课程里的 Day 不等于你必须一天完成。</p></div></section>
     <p id="start-action-status" class="start-note" role="status"></p>
   </main>
   <footer class="site-footer section-shell"><span data-i18n="footer">聘枢 · 用可核查的贡献连接学习与工作。</span><div class="footer-links"><a href="../#learn" data-language-link="../#learn" data-i18n="learn">学习库</a><a href="mailto:career@yzinfra.com">career@yzinfra.com</a></div></footer>
-  <noscript><p class="notice section-shell">自查工具需要 JavaScript；可以直接开始 <a href="../learn/foundations/#day-1">系统基础 Day 1 / Foundations Day 1</a>，普通 CPU 电脑即可。Enable JavaScript for personalized suggestions.</p></noscript>
+  <noscript><p class="notice section-shell">直接阅读 <a href="../learn/inference-101/?lang=zh#day-1">从零认识 AI 推理</a>，可以跟着纸上算例学习。 <a href="../learn/inference-101/?lang=en#day-1">Read the inference primer with worked examples.</a></p></noscript>
   <script src="../visitor-map.js?v=20261114-map" defer></script>
 </body>
 </html>

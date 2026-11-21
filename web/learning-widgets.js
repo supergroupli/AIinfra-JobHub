@@ -122,7 +122,7 @@ if (typeof document !== "undefined") (() => {
         if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error("Clipboard unavailable");
         await navigator.clipboard.writeText(panel.querySelector("code").textContent);
         panel.dataset.copyState = "copied";
-        status.textContent = pick("已复制。请在实验目录中执行。", "Copied. Run it in the lab directory.");
+        status.textContent = pick("已复制代码。", "Code copied.");
       } catch {
         panel.dataset.copyState = "failed";
         status.textContent = pick("无法自动复制，请选中代码手动复制。", "Automatic copy is unavailable. Select and copy the code manually.");
@@ -143,7 +143,7 @@ if (typeof document !== "undefined") (() => {
     simulators.forEach(updateSimulation);
     quizzes.forEach(showQuizResult);
     document.querySelectorAll(".lesson-code[data-copy-state]").forEach(panel => {
-      panel.querySelector(".copy-status").textContent = panel.dataset.copyState === "copied" ? pick("已复制。请在实验目录中执行。", "Copied. Run it in the lab directory.") : pick("无法自动复制，请选中代码手动复制。", "Automatic copy is unavailable. Select and copy the code manually.");
+      panel.querySelector(".copy-status").textContent = panel.dataset.copyState === "copied" ? pick("已复制代码。", "Code copied.") : pick("无法自动复制，请选中代码手动复制。", "Automatic copy is unavailable. Select and copy the code manually.");
     });
   });
 })();

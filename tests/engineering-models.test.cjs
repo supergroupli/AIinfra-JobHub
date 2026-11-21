@@ -24,7 +24,7 @@ test("RSI repeated-test probability retains its independence assumption", () => 
   assert.throws(()=>models.rsiRetests(0,5),RangeError);
   assert.match(models.describe('rsi-retests',{trials:20,alpha:5},'en').summary,/independent/);
 });
-const { classify, daysFor } = require("../web/curriculum.js");
+const { classify, coursesForPath, daysFor } = require("../web/curriculum.js");
 const paths = require("../content/paths.json");
 
 test("roofline changes bottlenecks and ideal overlap is bounded by two", () => {
@@ -44,6 +44,21 @@ test("curriculum distinguishes common core, role core and optional study", () =>
   assert.equal(classify("triton", paths, "performance-engineer").kind, "required");
   assert.equal(classify("lmcache", paths).kind, "elective");
   assert.equal(classify("pytorch-distributed", paths, "inference-engineer").applicable, false);
+});
+
+test("the primer remains discoverable in all role catalogs without becoming a role requirement or elective", () => {
+  const primer = require("../content/courses/inference-101.json");
+  const courses = [{id:"foundations"}, {id:"pytorch-distributed"}, primer, {id:"sglang"}];
+  for (const role of ["", ...paths.map(path => path.id)]) {
+    assert.deepEqual(classify(primer, paths, role), {kind:"primer", common:false, requiredFor:[], applicable:true});
+    assert.deepEqual(coursesForPath(courses, paths, role, "primer").map(entry => entry.course), [primer]);
+    assert.ok(coursesForPath(courses, paths, role).some(entry => entry.course === primer));
+    for (const kind of ["required", "elective"]) {
+      assert.ok(coursesForPath(courses, paths, role, kind).every(entry => entry.course !== primer));
+    }
+  }
+  assert.deepEqual(coursesForPath(courses, paths, "inference-engineer").map(entry => entry.course.id),
+    ["inference-101", "foundations", "sglang"]);
 });
 
 test("path duration sums mixed course lengths instead of assuming ten days each", () => {

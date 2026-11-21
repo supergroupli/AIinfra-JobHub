@@ -10,7 +10,7 @@ const allComfortable=Object.fromEntries(model.skills.map(s=>[s.id,'comfortable']
 
 test('all three CPU routes point to existing role, CPU project and exact bilingual lesson titles',()=>{
   for(const role of Object.keys(model.roles))for(const lang of ['zh','en']){
-    const plan=model.recommend({role,hardware:'cpu'},lang);
+    const plan=model.recommend({role,hardware:'cpu',skills:{linux:'comfortable',python:'review'}},lang);
     assert.equal(plan.firstHour.cpuReady,true);
     assert.equal(plan.firstHour.course,'foundations');
     assert.ok(plan.firstHour.commands.includes('python3 lab.py day1'));
@@ -42,7 +42,7 @@ test('each reported gap has an explanation, deduplicated lessons preserve all re
 });
 
 test('hardware and time change guidance without gating the CPU starting task or resources',()=>{
-  const plans=['cpu','single','multi'].map(hardware=>model.recommend({hardware,role:'platform-engineer'}));
+  const plans=['cpu','single','multi'].map(hardware=>model.recommend({hardware,role:'platform-engineer',skills:allComfortable}));
   assert.deepEqual(plans.map(p=>p.firstHour.commands),Array(3).fill(plans[0].firstHour.commands));
   assert.deepEqual(plans[0].route,plans[2].route);assert.notEqual(plans[0].hardwareNote,plans[1].hardwareNote);
   assert.notEqual(model.recommend({hours:2}).pacing,model.recommend({hours:10}).pacing);
@@ -68,12 +68,61 @@ test('storage failure leaves recommendation usable and reset touches only this t
 
 test('Markdown retains selections, exact destinations, evidence limits and first-hour fallback in both languages',()=>{
   for(const lang of ['zh','en']){
-    const md=model.markdown({role:'performance-engineer',hardware:'cpu',hours:2},lang);
+    const md=model.markdown({role:'performance-engineer',hardware:'cpu',hours:2,skills:{python:'review'}},lang);
     assert.ok(md.includes(`career/?role=performance-engineer&lang=${lang}`));assert.ok(md.includes('project=distributed-training'));
     assert.ok(md.includes('artifacts/day01-timeline.json'));assert.ok(md.includes('python3 lab.py day1'));
     assert.ok(md.includes('https://supergroupli.github.io/AIinfra-JobHub/labs/foundations.zip'));
     assert.ok(md.includes(lang==='en'?'not a real performance benchmark':'不是实际性能测试'));
     assert.ok(md.includes(lang==='en'?'not submitted to a recruiter':'未向招聘方提交'));
+  }
+});
+
+test('a first-time visitor gets a browser lesson before any terminal work, across roles, languages and devices',()=>{
+  const course = require('../content/courses/inference-101.json');
+  for (const lang of ['zh','en']) {
+    for (const role of Object.keys(model.roles)) {
+      for (const hardware of Object.keys(model.hardware)) {
+        const input = {role,hardware};
+        const first = model.recommend(input,lang).firstHour;
+        assert.equal(first.title,course.title[lang]);
+        assert.equal(course.steps[0].day,first.day);
+        assert.equal(first.mode,'browser');
+        assert.equal(first.url,`../learn/inference-101/?lang=${lang}#day-1`);
+        assert.deepEqual(first.commands,[]);
+        assert.equal(first.download,undefined);
+        assert.equal(first.bridge.url,`../learn/foundations/?lang=${lang}#day-1`);
+        const markdown = model.markdown(input,lang);
+        const firstLink = markdown.match(/https:\/\/\S+/)[0];
+        assert.equal(firstLink,`https://supergroupli.github.io/AIinfra-JobHub/learn/inference-101/?lang=${lang}#day-1`);
+        assert.ok(markdown.includes(first.fallback) && markdown.includes(first.bridge.detail));
+        assert.ok(!markdown.includes('python3 lab.py day1'));
+      }
+    }
+  }
+  assert.equal(model.recommend(null).firstHour.mode,'browser');
+  for (const skill of ['linux','python']) {
+    const first = model.recommend({skills:{[skill]:'review'}}).firstHour;
+    assert.equal(first.course,'foundations');
+    assert.ok(first.commands.includes('python3 lab.py day1'));
+  }
+});
+
+test('choosing the primer overrides familiar programming tools and is preserved in a bilingual plan',()=>{
+  const input = {skills:allComfortable, newToInference:true};
+  for (const lang of ['zh','en']) {
+    const first = model.recommend(input,lang).firstHour;
+    assert.equal(first.mode,'browser');
+    assert.ok(first.reason.includes(lang==='zh'?'选择了从模型推理启蒙开始':'chose to start with model inference'));
+    assert.ok(model.markdown(input,lang).includes(first.reason));
+    assert.deepEqual(first.commands,[]);
+  }
+  const legacy = {version:1,skills:allComfortable,role:'platform-engineer'};
+  const stored = model.load({getItem:()=>JSON.stringify(legacy)});
+  assert.equal(stored.ok,true);
+  assert.equal(stored.state.newToInference,false);
+  assert.equal(model.recommend(stored.state).firstHour.mode,'terminal');
+  for (const value of [false,1,'true',null]) {
+    assert.equal(model.normalize({...input, newToInference:value}).newToInference,false);
   }
 });
 
@@ -123,6 +172,45 @@ function pageHarness({url='https://supergroupli.github.io/AIinfra-JobHub/start/?
   for(const file of ['start-model.js','start.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../web/start',file),'utf8'),context,{filename:file});
   return {document,values,calls,location,choose(id,value){document.getElementById(id).value=String(value);document.getElementById('start-form').dispatch('change',{target:document.getElementById(id)});},click(id){document.getElementById(id).click();},text(id){return document.getElementById(id).textContent;}};
 }
+
+test('the page opens the primer without a questionnaire and switches the first task with the learner’s background',()=>{
+  const page = pageHarness();
+  const firstLink = page.document.getElementById('hero-primer');
+  const plan = page.document.getElementById('start-plan');
+  assert.match(firstLink.href,/learn\/inference-101\/\?lang=en#day-1$/);
+  assert.equal(plan.children[0].children[0].textContent,'AI inference from zero');
+  assert.equal(plan.children[1].tagName,'DETAILS');
+  assert.ok(!plan.children[1].open);
+  assert.ok(!plan.children[0].textContent.includes('python3 lab.py'));
+  page.click('start-language');
+  assert.match(firstLink.href,/lang=zh#day-1$/);
+  assert.equal(plan.children[0].children[0].textContent,'从零认识 AI 推理');
+  page.choose('start-skill-python','comfortable');
+  assert.ok(plan.textContent.includes('python3 lab.py day1'));
+  page.click('start-reset');
+  assert.equal(plan.children[0].children[0].textContent,'从零认识 AI 推理');
+});
+
+test('the optional inference preference survives language changes and reloads for an experienced programmer',()=>{
+  const page = pageHarness({saved:{skills:allComfortable}});
+  const field = page.document.getElementById('start-inference-first');
+  assert.equal(field.checked,false);
+  field.checked = true;
+  page.document.getElementById('start-form').dispatch('change',{target:field});
+  assert.equal(JSON.parse(page.values.get(model.storageKey)).newToInference,true);
+  assert.ok(page.text('start-plan').includes('chose to start with model inference'));
+  page.click('start-language');
+  assert.equal(field.checked,true);
+  assert.ok(page.text('start-plan').includes('选择了从模型推理启蒙开始'));
+  const saved = JSON.parse(page.values.get(model.storageKey));
+  const reload = pageHarness({saved});
+  assert.equal(reload.document.getElementById('start-inference-first').checked,true);
+  assert.ok(reload.text('start-plan').includes('AI inference from zero'));
+  field.checked = false;
+  page.document.getElementById('start-form').dispatch('change',{target:field});
+  assert.ok(page.text('start-plan').includes('python3 lab.py day1'));
+  assert.equal(JSON.parse(page.values.get(model.storageKey)).newToInference,false);
+});
 
 test('actual page gives role URL priority, updates recommendations and destinations on form change, and submits accessibly',()=>{
   const page=pageHarness({url:'https://supergroupli.github.io/AIinfra-JobHub/start/?role=platform-engineer&lang=en',saved:{role:'performance-engineer'}});

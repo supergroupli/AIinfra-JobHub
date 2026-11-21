@@ -9,7 +9,15 @@ if __package__:
 else:
     from teaching_models import MODELS
 
-INTERACTIVE_KINDS = {"timeline", "kv-cache", "prefix-cache", *MODELS}
+PRIMER_EXAMPLES = {
+    "primer-predict": ("纸上也能试。四句话里，“我”之后三次是“喜欢”，一次是“看见”。选出现最多的一块，第一步写出“我喜欢”。",
+                       "Try it on paper. In four sentences, “I” is followed by “like” three times and “see” once. Choosing the most frequent next piece gives “I like”."),
+    "primer-tokens": ("同样的“苹果汁”，一份小词表把它读成“苹果”“汁”，编号为 7、8。另一份收录了整词，一个编号 12 就能表示它。",
+                      "One toy vocabulary reads “apple juice” as “apple” and “ juice”, with IDs 7 and 8. A vocabulary containing the whole phrase uses the single ID 12."),
+    "primer-queue": ("纸上算一次。如果前面有 2 人、每人用 2 秒，自己每秒生成 1 块，回答共 3 块，那么第 5 秒看见首块，第 7 秒看见完整回答。",
+                     "Work it out on paper. If two people ahead take two seconds each and your three pieces take one second each, the first appears at second 5 and the reply finishes at second 7.")
+}
+INTERACTIVE_KINDS = {"timeline", "kv-cache", "prefix-cache", *MODELS, *PRIMER_EXAMPLES}
 
 CATEGORIES = {
     "foundations": {"zh": "系统基础", "en": "Foundations"},
@@ -66,6 +74,8 @@ def source_links(resources):
 def course_hero(course):
     ident = course["id"]
     days = len(course["steps"])
+    if course.get("format") == "primer":
+        return primer_hero(course)
     facts = [
         (("每天投入", "Daily commitment"), course["hoursPerDay"]),
         (("先修知识", "Prerequisites"), course["prerequisites"]),
@@ -81,6 +91,8 @@ def course_hero(course):
         '<div class="course-kicker">' + localized("span", CATEGORIES[course["category"]]) + ' · ' +
         label("span", f"{days} 天实战学习", f"{days}-day practical guide") + ' · ' + localized("span", LEVELS[course["level"]]) + '</div>' +
         localized("h1", course["title"]) + localized("p", course["description"], 'class="course-summary"') +
+        (label("a", "第一次听说模型推理？先用浏览器上一节启蒙课", "New to inference? Try the first lesson in your browser",
+               'class="text-link" data-course-link href="../inference-101/#day-1"') if ident in ("foundations", "vllm") else "") +
         '<div class="course-facts">' + "".join('<div class="course-fact">' + label("small", *name) + localized("span", value) + '</div>' for name, value in facts) + '</div>' +
         '<p class="course-roles">' + label("strong", "关联方向：", "Related roles: ") + localized("span", roles) + '</p>' +
         '<div class="course-actions">' + label("a", f"下载 {days} 天学习文档 ↓", f"Download the {days}-day guide ↓", f'class="button primary" id="download-guide" href="./{ident}.zh.md" download') +
@@ -92,6 +104,60 @@ def course_hero(course):
         environment_card(course) + verification_card(course) +
         '<p id="storage-status" class="course-research-note" role="status" hidden></p><details id="backup-panel" class="backup-panel"></details>'
     )
+
+
+def primer_hero(course):
+    ident = esc(course["id"])
+    return ('<div class="breadcrumbs">' + label("a", "学习库", "Learning library", 'href="../../#learn" data-course-link') + ' / ' +
+            label("span", "零基础预备课", "First steps") + '</div>' + localized("h1", course["title"]) +
+            localized("p", course["description"], 'class="course-summary"') +
+            '<div class="primer-start">' + label("a", "开始第一节", "Start lesson one", 'class="button primary" href="#day-1"') +
+            localized("span", course["hoursPerDay"]) + '</div>' +
+            '<details class="primer-materials">' + label("summary", "离线学习与我的记录", "Offline materials and my learning record") +
+            '<div class="course-actions">' + label("a", "下载整门课的讲义", "Download the illustrated guide",
+                  f'id="download-guide" class="text-link" href="./{ident}.zh.md" download') +
+            label("a", "下载离线实验包", "Download the offline labs",
+                  f'class="text-link" href="../../labs/{ident}.zip" download') +
+            label("button", "导出我的学习记录", "Export my learning record", 'class="button outline" id="export-progress" type="button" disabled') +
+            '</div>' + label("p", "解压后打开 index.html 即可离线操作三个实验。", "To use the three labs offline, extract the ZIP and open index.html.") +
+            '<details id="backup-panel" class="backup-panel"></details></details>' +
+            '<p id="storage-status" class="course-research-note" role="status" hidden></p>')
+
+
+def course_study_tools(course, bench_case):
+    if course.get("format") == "primer":
+        return ""
+    ident = course["id"]
+    links = [
+        ("practiceCourse", "练习本课题目 / 重练错题 ↗", f"../../practice/?course={ident}"),
+        ("knowledgeLibrary", "原理与计算专题 ↗", "../../knowledge/"),
+        ("diagnosisLabs", "故障诊断实验室 ↗", "../../cases/")
+    ]
+    if bench_case:
+        links.append(("benchLab", "推理压测复盘台", f"../../bench/?case={bench_case}"))
+    links.append(("searchCourse", "搜索本课讲解与报错 ↗", f"../../search/?course={ident}&kind=lesson"))
+    return ('<section class="section-shell course-study-tools" aria-label="Learning tools">' +
+            '<p data-i18n="studyToolsNote">先读原理，动手验证，再用练习检查理解。</p><div class="course-actions">' +
+            "".join(f'<a class="text-link" href="{esc(url)}" data-i18n="{key}">{title}</a>' for key, title, url in links) +
+            '</div></section>')
+
+
+def course_next_steps(course, project_query):
+    if course.get("format") == "primer":
+        return ('<section class="course-endcap section-shell"><div>' +
+                label("h2", "想把第一个实验带到自己的电脑上？", "Ready to run the experiment on your own computer?") +
+                label("p", "第 9 节可以练习运行一个小脚本。会打开终端、运行 Python 文件后，进入系统基础，画出一条请求的时间线，再学 vLLM 怎样提供推理服务。",
+                      "Lesson 9 lets you try a small script. Once you can open a terminal and run a Python file, trace a request in Systems Foundations. Then explore how vLLM serves a model.") +
+                '</div><div class="course-actions">' + label("a", "回到第 9 节", "Revisit lesson 9", 'class="button outline" href="#day-9"') +
+                label("a", "打开系统基础第一天", "Open Foundations Day 1", 'class="button primary" data-course-link href="../foundations/#day-1"') +
+                label("a", "练习本课题目", "Practice the questions", f'class="text-link" data-course-link href="../../practice/?course={esc(course["id"])}"') +
+                '</div></section>')
+    return ('<section class="course-endcap section-shell"><div><div class="eyebrow" data-i18n="nextChapter">下一步 · 把学习变成作品</div>'
+            '<h2 data-i18n="nextTitle">让别人看见你解决问题的过程。</h2><p data-i18n="nextDescription">整理代码、实验记录和局限，带着作品认识同行或寻找工作。名片由你主动选择公开。</p></div>'
+            '<div class="course-actions"><a class="button primary" href="../../career/" data-i18n="careerPrep">结课自评与求职准备 ↗</a>'
+            f'<a class="button outline" href="../../portfolio/{esc(project_query)}" data-i18n="createPortfolio">制作作品档案 ↗</a>'
+            f'<a class="button outline" href="../../projects/{esc(project_query)}" data-i18n="projects">实战项目</a>'
+            '<a class="text-link" href="../../#opportunities" data-i18n="findWork">寻找工作与合作</a></div></section>')
 
 
 def verification_card(course):
@@ -130,7 +196,7 @@ def lab_download(course):
             label("p", "先下载并解压，按第 1 天说明进入实验目录。命令在你的电脑执行。", "Download and extract first, then enter the lab directory as shown on day 1. Run commands on your own computer.", 'class="lab-hint"') + '</aside>')
 
 
-def explanation_blocks(step):
+def explanation_blocks(step, include_interactive=True):
     chunks = []
     for item in step.get("explanation", []):
         chunks += ['<div class="explanation-block">', localized("h4", item["title"]), localized("p", item["body"]), '</div>']
@@ -140,7 +206,7 @@ def explanation_blocks(step):
         for index, node in enumerate(diagram["nodes"], 1):
             chunks += [f'<li><span class="diagram-number" aria-hidden="true">{index:02d}</span>', localized("span", node), '</li>']
         chunks += ['</ol>', localized("p", diagram["caption"], 'class="diagram-caption"'), '</figure>']
-    if step.get("interactive") in INTERACTIVE_KINDS:
+    if include_interactive and step.get("interactive") in INTERACTIVE_KINDS:
         chunks.append(interactive_panel(step["interactive"], step["day"]))
     return "".join(chunks)
 
@@ -154,6 +220,10 @@ def slider(widget_id, key, zh, en, value, minimum, maximum, increment=1):
 
 def interactive_panel(kind, day):
     widget_id = f"sim-{day}-{kind}"
+    if kind in PRIMER_EXAMPLES:
+        activity = kind.removeprefix("primer-")
+        return (f'<div data-primer-lab="{activity}" data-lesson="{day}">' +
+                label("p", *PRIMER_EXAMPLES[kind]) + '</div>')
     if kind in MODELS:
         model = MODELS[kind]
         chunks = [f'<section class="learning-simulator" data-simulator="{kind}">',
@@ -240,7 +310,7 @@ def walkthrough_blocks(step):
     return "".join(chunks)
 
 
-def feedback_blocks(step):
+def feedback_blocks(step, primer=False):
     chunks = []
     if step.get("troubleshooting"):
         chunks += ['<section class="troubleshooting-section">', label("h3", "遇到问题，从这里查", "Troubleshoot common problems")]
@@ -252,7 +322,8 @@ def feedback_blocks(step):
             '<section class="lesson-quiz">',
             label("div", "CHECK YOUR UNDERSTANDING", "CHECK YOUR UNDERSTANDING", 'class="lab-eyebrow"'),
             label("h3", "先想一想，再看解析", "Think first, then review the explanation"),
-            label("p", "答题帮助发现理解上的缺口；通过小测不等于完成实验或获得认证。答案不上传。", "Use these questions to spot gaps. Passing a quiz does not complete the lab or certify your skills. Answers are not uploaded.", 'class="quiz-note"')
+            (label("p", "先选一个答案。读完解析后，可以回到上面的例子再试一次。", "Try an answer. After reading the explanation you can revisit the example and try again.", 'class="quiz-note"') if primer else
+             label("p", "答题帮助发现理解上的缺口；通过小测不等于完成实验或获得认证。答案不上传。", "Use these questions to spot gaps. Passing a quiz does not complete the lab or certify your skills. Answers are not uploaded.", 'class="quiz-note"'))
         ]
         for index, item in enumerate(step["quiz"], 1):
             ident = f'q-{step["day"]}-{index}'
@@ -282,11 +353,68 @@ def feedback_blocks(step):
     return "".join(chunks)
 
 
+def primer_notes(day, capstone):
+    field = f'<textarea class="day-notes" id="notes-{day}" data-notes="{day}" rows="5" maxlength="10000" disabled></textarea>'
+    if not capstone:
+        return ('<details class="notes-panel">' + label("summary", "写一句我的发现", "Write down a discovery") +
+                label("label", "我改了什么，又看到了什么？", "What did I change and what happened?", f'for="notes-{day}"') +
+                field + '</details>')
+    return ('<section class="primer-card" aria-labelledby="card-title">' +
+            label("h3", "我的第一张推理实验卡", "My first inference experiment card", 'id="card-title"') +
+            label("p", "记下当前结果，再改变一个条件，记下第二次结果。最后写一句你会怎样向同学解释这个变化。草稿保存在这个浏览器。",
+                  "Record this result, change one setting and record the second result. Write how you would explain the change to a classmate. Your draft stays in this browser.") +
+            label("button", "把本次条件和结果记入卡片", "Record this run on my card", 'class="button outline" id="record-run" type="button" disabled') +
+            label("label", "两次观察和我的解释", "My observations and explanation", f'for="notes-{day}"') + field +
+            label("button", "下载我的实验卡", "Download my experiment card", 'class="button primary" id="download-card" type="button" disabled') +
+            '<p id="card-status" role="status"></p></section>')
+
+
+def primer_day(step, count):
+    day = step["day"]
+    final = day == count
+    parts = [
+        f'<section class="day-content" id="day-{day}" data-day="{day}" tabindex="-1">',
+        label("p", f"第 {day} 节，共 {count} 节", f"Lesson {day} of {count}", 'class="primer-position"'),
+        localized("h2", step["title"]), localized("p", step["lesson"], 'class="primer-intro"')
+    ]
+    if step.get("interactive"):
+        parts.append(interactive_panel(step["interactive"], day))
+    if final:
+        parts.append(primer_notes(day, capstone=True))
+    parts += [explanation_blocks(step, include_interactive=False),
+              '<div class="practice-block">', label("h3", "轮到你做", "Your turn"), localized("p", step["task"]), '</div>',
+              walkthrough_blocks(step)]
+    if step.get("code"):
+        code = step["code"]
+        parts.append(code_panel(code["content"], code["caption"], code["language"]))
+    parts += [feedback_blocks(step, primer=True), '<details class="primer-reference">', label("summary", "对照我的结果与延伸阅读", "Check my work and read further"),
+              localized("p", step["evidence"]), '<ul>']
+    for index in range(len(step["checklist"]["zh"])):
+        parts.append(localized("li", {lang: step["checklist"][lang][index] for lang in ("zh", "en")}))
+    parts += ['</ul>', localized("p", step["noGpu"]), source_links(step["reading"]), '</details>']
+    if not final:
+        parts.append(primer_notes(day, capstone=False))
+    parts += ['<div class="day-complete"><label>', f'<input type="checkbox" data-complete="{day}" disabled>',
+              label("span", "我能用自己的话解释这节课", "I can explain this lesson in my own words"), '</label></div>',
+              '<nav class="day-pagination" aria-label="课程导航 / Lessons">']
+    if day > 1:
+        parts.append(label("a", "上一节", "Previous lesson", f'class="button outline" href="#day-{day - 1}"'))
+    if final:
+        parts.append(label("a", "继续学系统基础", "Continue to systems foundations",
+                           'class="button primary" data-course-link href="../foundations/#day-1"'))
+    else:
+        parts.append(label("a", "下一节", "Next lesson", f'class="button primary" href="#day-{day + 1}"'))
+    return "".join(parts) + '</nav></section>'
+
+
 def course_body(course, repository=""):
     sections = []
     days = len(course["steps"])
     for step in course["steps"]:
         day = step["day"]
+        if course.get("format") == "primer":
+            sections.append(primer_day(step, days))
+            continue
         chunks = [f'<section class="day-content" id="day-{day}" data-day="{day}" tabindex="-1">',
                   label("div", f"第 {day:02d} 天 / 共 {days} 天", f"DAY {day:02d} / {days}", 'class="day-eyebrow"'),
                   localized("h2", step["title"])]
@@ -324,23 +452,29 @@ def course_body(course, repository=""):
                        label("a", "查看作品评审队列 ↗", "View the project review queue ↗", 'class="text-link" href="../../talent/#reviews"'), '</aside>']
         chunks.append('</section>')
         sections.append("".join(chunks))
-    meta = {"id": course["id"], "title": course["title"], "durationDays": days, "steps": [{"day": x["day"], "title": x["title"]} for x in course["steps"]]}
+    meta = {"id": course["id"], "title": course["title"], "durationDays": days, "format": course.get("format", "course"), "steps": [{"day": x["day"], "title": x["title"]} for x in course["steps"]]}
     safe_meta = json.dumps(meta, ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
     return "\n".join(sections) + f'<script type="application/json" id="course-meta">{safe_meta}</script>'
 
 
 def course_markdown(course, lang, site_url=None):
     english = lang == "en"
+    primer = course.get("format") == "primer"
     days = len(course["steps"])
     pick = lambda value: value[lang]
     labels = {"lesson": "Understand the idea" if english else "概念讲解", "task": "Practice" if english else "动手实践", "evidence": "Deliverable" if english else "交付物", "noGpu": "Without the required hardware" if english else "无对应硬件的替代路径"}
-    lines = [f'# {pick(course["title"])} · {str(days) + "-day guide" if english else str(days) + " 天实战学习"}', '', '聘枢 · AI Infra JobHub', '', pick(course["description"]), '']
-    for name, key in [("Daily commitment" if english else "每日投入", "hoursPerDay"), ("Prerequisites" if english else "先修知识", "prerequisites"), ("Hardware" if english else "实践环境", "hardware"), ("Final deliverable" if english else "结课作品", "outcome")]:
+    if primer:
+        labels["noGpu"] = "Work it out on paper" if english else "在纸上试一次"
+    guide = (f"{days} short lessons" if english else f"{days} 节启蒙课") if primer else (f"{days}-day guide" if english else f"{days} 天实战学习")
+    lines = [f'# {pick(course["title"])} · {guide}', '', '聘枢 · AI Infra JobHub', '', pick(course["description"]), '']
+    time_label = ("Time per lesson" if english else "每节用时") if primer else ("Daily commitment" if english else "每日投入")
+    for name, key in [(time_label, "hoursPerDay"), ("Prerequisites" if english else "先修知识", "prerequisites"), ("Hardware" if english else "实践环境", "hardware"), ("Final deliverable" if english else "结课作品", "outcome")]:
         lines += [f'**{name}:** {pick(course[key])}', '']
     if course.get("curriculum"):
         lines += [f'**{"Curriculum role" if english else "课程定位"}:** {pick(course["curriculum"]["label"])}', '']
-    lines += [f'{"Sources checked" if english else "资料核对"}: {course["lastVerified"]}.', '',
-              'Source review does not mean all hardware experiments were run here. Pin versions and label measured, simulated and planned work separately.' if english else '资料核对不代表所有硬件实验已由平台跑通。请固定版本，并区分实测、模拟与未执行的设计。', '']
+    lines += [f'{"Sources checked" if english else "资料核对"}: {course["lastVerified"]}.', '']
+    if not primer:
+        lines += ['Source review does not mean all hardware experiments were run here. Pin versions and label measured, simulated and planned work separately.' if english else '资料核对不代表所有硬件实验已由平台跑通。请固定版本，并区分实测、模拟与未执行的设计。', '']
     if course.get("environment"):
         for key, titles in ENVIRONMENT_FIELDS:
             lines += [f'**{titles[1 if english else 0]}:** {pick(course["environment"][key])}', '']
@@ -348,12 +482,16 @@ def course_markdown(course, lang, site_url=None):
         lab = course["lab"]
         lab_url = f'{site_url.rstrip("/")}/labs/{lab["path"]}.zip' if site_url else f'../../labs/{lab["path"]}.zip'
         lines += [f'**{pick(lab["title"])}**', '', pick(lab["description"]), '',
-                  f'[{"Download lab archive" if english else "下载实验包"}]({lab_url})', '',
-                  'Download the ZIP from the course page, extract it, then follow day 1 to enter the lab directory.' if english else '在课程网页下载 ZIP，解压后按照第 1 天说明进入实验目录。', '']
+                  f'[{"Download lab archive" if english else "下载实验包"}]({lab_url})', '']
+        if primer:
+            lines += ['Use the experiments directly on the course page. To work offline, extract the ZIP and open index.html.' if english else '打开课程网页就能操作实验。想离线学习时，解压实验包并打开 index.html。', '']
+        else:
+            lines += ['Download the ZIP from the course page, extract it, then follow day 1 to enter the lab directory.' if english else '在课程网页下载 ZIP，解压后按照第 1 天说明进入实验目录。', '']
         if site_url:
             lines += [f'[{"Course and interactive diagrams" if english else "课程网页与交互图解"}]({site_url.rstrip("/")}/learn/{course["id"]}/?lang={lang})', '']
     for step in course["steps"]:
-        lines += [f'## {"Day" if english else "第"} {step["day"]}{"" if english else " 天"} · {pick(step["title"])}', '']
+        heading = (f'Lesson {step["day"]}' if english else f'第 {step["day"]} 节') if primer else (f'Day {step["day"]}' if english else f'第 {step["day"]} 天')
+        lines += [f'## {heading} · {pick(step["title"])}', '']
         for key in ("lesson", "task", "evidence"):
             lines += [f'### {labels[key]}', '', pick(step[key]), '']
             if key == "lesson":
@@ -363,7 +501,10 @@ def course_markdown(course, lang, site_url=None):
                     diagram = step["diagram"]
                     lines += [f'#### {pick(diagram["title"])}', '', ' → '.join(pick(node) for node in diagram["nodes"]), '', pick(diagram["caption"]), '']
                 if step.get("interactive"):
-                    lines += ['Open the course webpage to adjust the interactive teaching model. Simulated values are not engine performance measurements.' if english else '在课程网页中可调整交互教学模型。模拟数值不代表引擎性能实测。', '']
+                    if step["interactive"] in PRIMER_EXAMPLES:
+                        lines += [PRIMER_EXAMPLES[step["interactive"]][int(english)], '']
+                    else:
+                        lines += ['Open the course webpage to adjust the interactive teaching model. Simulated values are not engine performance measurements.' if english else '在课程网页中可调整交互教学模型。模拟数值不代表引擎性能实测。', '']
             if key == "task":
                 for index, item in enumerate(step.get("walkthrough", []), 1):
                     lines += [f'#### {index}. {pick(item["title"])}', '', pick(item["body"]), '']
@@ -392,4 +533,9 @@ def course_markdown(course, lang, site_url=None):
         lines += ['', f'### {labels["noGpu"]}', '', pick(step["noGpu"]), '', '### ' + ('Official reading' if english else '官方阅读'), '']
         lines += [f'- [{item["title"]}]({item["url"]})' for item in step["reading"]]
         lines += ['']
+    if primer:
+        lines += (['## My first inference experiment card', '', 'Teaching queue simulation', '', '- First run and result:',
+                   '- Second run and result:', '- What I changed:', '- How I explain the difference:'] if english else
+                  ['## 我的第一张推理实验卡', '', '排队教学模拟', '', '- 第一次的条件和结果', '- 第二次的条件和结果', '- 我改变的条件', '- 我怎样解释这个差别'])
+        lines.append('')
     return "\n".join(lines) + "\n"

@@ -36,10 +36,62 @@ const StartModel = (() => {
   function normalize(input) {
     const data=input&&typeof input==="object"&&!Array.isArray(input)?input:{};
     const chosen=data.skills&&typeof data.skills==="object"&&!Array.isArray(data.skills)?data.skills:{};
-    return {version:1,role:typeof data.role==="string"&&own(roles,data.role)?data.role:"inference-engineer",hardware:typeof data.hardware==="string"&&own(hardware,data.hardware)?data.hardware:"cpu",hours:[2,5,10].includes(data.hours)?data.hours:5,skills:Object.fromEntries(skills.map(s=>[s.id,typeof chosen[s.id]==="string"&&own(levels,chosen[s.id])?chosen[s.id]:"unknown"]))};
+    return {version:1,newToInference:own(data,"newToInference") && data.newToInference === true,role:typeof data.role==="string"&&own(roles,data.role)?data.role:"inference-engineer",hardware:typeof data.hardware==="string"&&own(hardware,data.hardware)?data.hardware:"cpu",hours:[2,5,10].includes(data.hours)?data.hours:5,skills:Object.fromEntries(skills.map(s=>[s.id,typeof chosen[s.id]==="string"&&own(levels,chosen[s.id])?chosen[s.id]:"unknown"]))};
   }
   const langOf=lang=>lang==="en"?"en":"zh";
   const courseURL=(course,day,lang)=>`../learn/${course}/?lang=${langOf(lang)}#day-${day}`;
+  function firstSession(state, lang) {
+    const en = lang === "en";
+    const newToTools = state.skills.linux === "unknown" && state.skills.python === "unknown";
+    if (state.newToInference || newToTools) {
+      const reason = state.newToInference
+        ? {zh: "你选择了从模型推理启蒙开始。第一课会带你观察小模型如何接着写，再用自己的话解释它为什么选了这个词。", en: "You chose to start with model inference. Watch a tiny model continue a prompt, then explain its choice in your own words."}
+        : {zh: "如果刚接触终端和 Python，可以先用手机或电脑打开第一课，在浏览器里动手。", en: "If terminal use and Python are both new to you, open this first lesson on your phone or computer and try it in the browser."};
+      return {
+        mode: "browser",
+        course: "inference-101",
+        day: 1,
+        url: courseURL("inference-101", 1, lang),
+        cpuReady: true,
+        title: en ? "AI inference from zero" : "从零认识 AI 推理",
+        reason: reason[lang],
+        steps: en ? [
+          "Start with “I”. Guess which piece of text will come next, then press Send.",
+          "Count the training sentences where “I” is followed by “like”. Check your count against the model’s first choice.",
+          "Switch the prompt to “I see” and try again. Write down the two prompts, the next piece in each case and one reason they differ."
+        ] : [
+          "选“我”作开头。先猜它会接哪个词，再点发送。",
+          "在四句样例里数一数，“我”后面有几次是“喜欢”。把你的计数与模型的第一次选择对照。",
+          "换成“我看见”再试。记下两个开头、各自接出的文字，并写一句话解释结果为什么变了。"
+        ],
+        commands: [],
+        fallback: en
+          ? "Read the four sample sentences in the lesson. Circle the word after “I” each time, then repeat for “see”. Choose the most frequent next word for each prompt."
+          : "读课文里的四句样例，圈出每个“我”后面的词，再圈出“看见”后面的词。分别选出跟在它们后面次数最多的词。",
+        artifact: en
+          ? "Two prompt-and-output pairs and your explanation of how the model made its choice."
+          : "两组输入和输出，加上你对小模型如何做选择的一句解释。",
+        bridge: {
+          url: courseURL("foundations", 1, lang),
+          title: en ? "Continue to Foundations, day 1" : "学完启蒙后，进入系统基础第 1 天",
+          detail: en
+            ? "Keep using the browser for the ten short lessons. When you are ready to run code, use Foundations to turn the request journey into a Python experiment on your own computer."
+            : "十节短课都可以在浏览器完成。准备好尝试代码时，再上系统基础，把请求的过程变成一次能在自己电脑上运行的 Python 实验。"
+        }
+      };
+    }
+    return {mode:"terminal",course:"foundations",day:1,url:courseURL("foundations",1,lang),cpuReady:true,download:"../labs/foundations.zip",commands:["python3 --version","python3 lab.py day1"],title:en?"Make one request timeline visible":"让一条请求的时间线变得可见",steps:en?[
+      "0–10 min · Open Foundations Day 1, download and fully extract the lab ZIP. Python 3.9+ is required. No packages, GPU or API key are needed.",
+      "10–25 min · Open a terminal in the foundations folder containing lab.py. Run the commands below. On Windows, py -3 can replace python3.",
+      "25–45 min · Open artifacts/day01-timeline.json. Draw the five stages and explain why the synthetic first output is at 32 ms while completion is at 65 ms.",
+      "45–60 min · Write three sentences: what the script does, one possible failure stage, and why these numbers are not a real performance benchmark. Keep the JSON and your diagram."
+    ]:[
+      "0–10 分钟 · 打开系统基础 Day 1，下载并完整解压实验包。需要 Python 3.9+；无需安装第三方包、GPU 或 API key。",
+      "10–25 分钟 · 在含 lab.py 的 foundations 文件夹打开终端，执行下面两条命令。Windows 可用 py -3 替换 python3。",
+      "25–45 分钟 · 打开 artifacts/day01-timeline.json，画出五个阶段，解释模拟首输出为什么在 32 ms，而全部完成在 65 ms。",
+      "45–60 分钟 · 写三句话：脚本做了什么、哪一阶段可能失败、为什么这些数字不是实际性能测试。保存 JSON 和自己的图。"
+    ],fallback:en?"No Python yet or setup takes longer? Use the visible Day 1 walkthrough to calculate 32/65 ms and draw the flow by hand. Save the diagram as a first artifact; label the code run as not yet executed and resume setup later. One hour is a suggested timebox, not a completion guarantee.":"尚未安装 Python，或环境配置超时？先用 Day 1 页面里的算例手算 32/65 ms 并画流程图，保存第一份图解；代码执行标为尚未完成，之后再补环境。1 小时是建议时间盒，不保证每个人都能完成配置。",artifact:en?"Your annotated flow diagram, day01-timeline.json if executed, and a three-sentence explanation labelled ‘teaching simulation’.":"本人标注的流程图、实际运行后保存的 day01-timeline.json，以及标明“教学模拟”的三句说明。"};
+  }
   function recommend(input,language="zh") {
     const state=normalize(input),lang=langOf(language),en=lang==="en",role=roles[state.role];
     const gaps=skills.filter(s=>state.skills[s.id]!=="comfortable");
@@ -56,17 +108,7 @@ const StartModel = (() => {
       10:{zh:"每周约 10 小时：4 次 90 分钟实验 + 2 次 2 小时项目。预留排错时间，能解释结果再进入下一节。",en:"About 10 hours/week: four 90-minute labs and two 2-hour project sessions. Reserve debugging time; explain a result before moving on."}
     };
     const hardwareNote=state.hardware==="cpu"?(en?"Every recommendation starts with a CPU teaching route. You can produce useful code and evidence without a GPU; simulation output is not real model or GPU performance.":"所有建议均可先走 CPU 教学路线。没有 GPU 也能写代码和积累证据；模拟结果不代表真实模型或 GPU 性能。"):(en?"Your GPU is optional. Begin with the same CPU checks, then follow the course hardware notes to verify compatibility, memory and dependencies before a separate real-device experiment. GPU availability does not validate your results.":"GPU 是可选扩展。先跑相同的 CPU 验收，再按课程硬件说明核对兼容性、显存与依赖，单独开展真实设备实验；有 GPU 不代表结果已被验证。");
-    const firstHour={course:"foundations",day:1,url:courseURL("foundations",1,lang),cpuReady:true,download:"../labs/foundations.zip",commands:["python3 --version","python3 lab.py day1"],title:en?"Make one request timeline visible":"让一条请求的时间线变得可见",steps:en?[
-      "0–10 min · Open Foundations Day 1, download and fully extract the lab ZIP. Python 3.9+ is required. No packages, GPU or API key are needed.",
-      "10–25 min · Open a terminal in the foundations folder containing lab.py. Run the commands below. On Windows, py -3 can replace python3.",
-      "25–45 min · Open artifacts/day01-timeline.json. Draw the five stages and explain why the synthetic first output is at 32 ms while completion is at 65 ms.",
-      "45–60 min · Write three sentences: what the script does, one possible failure stage, and why these numbers are not a real performance benchmark. Keep the JSON and your diagram."
-    ]:[
-      "0–10 分钟 · 打开系统基础 Day 1，下载并完整解压实验包。需要 Python 3.9+；无需安装第三方包、GPU 或 API key。",
-      "10–25 分钟 · 在含 lab.py 的 foundations 文件夹打开终端，执行下面两条命令。Windows 可用 py -3 替换 python3。",
-      "25–45 分钟 · 打开 artifacts/day01-timeline.json，画出五个阶段，解释模拟首输出为什么在 32 ms，而全部完成在 65 ms。",
-      "45–60 分钟 · 写三句话：脚本做了什么、哪一阶段可能失败、为什么这些数字不是实际性能测试。保存 JSON 和自己的图。"
-    ],fallback:en?"No Python yet or setup takes longer? Use the visible Day 1 walkthrough to calculate 32/65 ms and draw the flow by hand. Save the diagram as a first artifact; label the code run as not yet executed and resume setup later. One hour is a suggested timebox, not a completion guarantee.":"尚未安装 Python，或环境配置超时？先用 Day 1 页面里的算例手算 32/65 ms 并画流程图，保存第一份图解；代码执行标为尚未完成，之后再补环境。1 小时是建议时间盒，不保证每个人都能完成配置。",artifact:en?"Your annotated flow diagram, day01-timeline.json if executed, and a three-sentence explanation labelled ‘teaching simulation’.":"本人标注的流程图、实际运行后保存的 day01-timeline.json，以及标明“教学模拟”的三句说明。"};
+    const firstHour = firstSession(state, lang);
     return {state,roleTitle:role.title[lang],reviews,route:role.lessons.map(([course,day])=>({course,day,title:lessons[`${course}:${day}`][lang],url:courseURL(course,day,lang)})),routeReason:role.reason[lang],pacing:pacing[state.hours][lang],hardwareNote,firstHour,experienced:gaps.length===0,careerURL:`../career/?role=${state.role}&lang=${lang}`,projectURL:`../projects/?project=${role.project}&lang=${lang}`,project:role.project};
   }
   function load(storage) {try{const raw=storage.getItem(storageKey);if(raw===null)return {state:normalize(null),ok:true};if(typeof raw!=="string"||raw.length>10000)throw new Error("Invalid record");const parsed=JSON.parse(raw);if(!parsed||parsed.version!==1)throw new Error("Unknown record version");return {state:normalize(parsed),ok:true};}catch{return {state:normalize(null),ok:false};}}
@@ -75,10 +117,45 @@ const StartModel = (() => {
   const absolute=url=>new URL(url.replace(/^\.\.\//,""),base).href;
   function markdown(input,language="zh") {
     const lang=langOf(language),en=lang==="en",plan=recommend(input,lang),state=plan.state;
-    const lines=[`# ${en?"My AI Infra starting plan":"我的 AI Infra 起步建议"}`,"",`${en?"Target role":"目标方向"}: ${plan.roleTitle}`,`${en?"Hardware":"设备"}: ${hardware[state.hardware][lang]}`,"",en?"Self-reported preferences only; not verified capability, certification or a hiring decision. These rules select learning resources, not a completion or employment promise.":"仅按本人自述选择学习资源，不是已验证能力、认证或录用判断，也不是完成时间或就业承诺。","",`## ${en?"My self-report":"我的自述"}`,"",...skills.map(s=>`- ${s.title[lang]}: ${levels[state.skills[s.id]][lang]}`),"",plan.pacing,plan.hardwareNote,"",`## ${en?"Review first, with reasons":"先补这些课，以及原因"}`,""];
-    if(!plan.reviews.length)lines.push(en?"No review lessons were added because every foundation was self-reported as independent. You can try the project immediately; this does not verify readiness.":"你自述各项基础均能独立完成，因此未追加复习课。可以直接尝试项目；这不表示能力已验证。","");
-    for(const r of plan.reviews)lines.push(`### ${r.course} · Day ${r.day} · ${r.title}`,"",...r.reasons.map(reason=>`- ${reason}`),absolute(r.url),"");
-    lines.push(`## ${en?"First hour — CPU route":"首小时 · CPU 路线"}`,"",...plan.firstHour.steps.map(s=>`- ${s}`),"","```bash",...plan.firstHour.commands,"```","",plan.firstHour.fallback,"",`${en?"Artifact":"产出"}: ${plan.firstHour.artifact}`,absolute(plan.firstHour.url),absolute(plan.firstHour.download),"",`## ${en?"Then follow your role":"再按目标方向前进"}`,"",plan.routeReason,"",...plan.route.map(r=>`- ${r.course} · Day ${r.day} · ${r.title}: ${absolute(r.url)}`),"",absolute(plan.careerURL),absolute(plan.projectURL),"",en?"These selections were stored only in this browser, not submitted to a recruiter. This Markdown is a readable copy; automatic import is not available.":"本工具仅在浏览器保存选择，未向招聘方提交。Markdown 是可阅读副本，暂不支持自动导入。","");
+    const first = plan.firstHour;
+    const browser = first.mode === "browser";
+    const firstBlock = [
+      "## " + (browser ? first.title : en ? "First hour — CPU route" : "首小时 · CPU 路线"), "",
+      absolute(first.url), ""
+    ];
+    if (first.reason) firstBlock.push(first.reason, "");
+    firstBlock.push(...first.steps.map(step => "- " + step), "");
+    if (first.commands.length) firstBlock.push("```bash", ...first.commands, "```", "");
+    firstBlock.push(first.fallback, "", "**" + (en ? "Artifact" : "产出") + "**  " + first.artifact, "");
+    if (first.download) firstBlock.push(absolute(first.download), "");
+    if (first.bridge) firstBlock.push(first.bridge.detail, "", "[" + first.bridge.title + "](" + absolute(first.bridge.url) + ")", "");
+
+    const lines = ["# " + (en ? "My AI Infra starting plan" : "我的 AI Infra 起步建议"), ""];
+    if (browser) lines.push(...firstBlock);
+    lines.push(
+      `${en?"Target role":"目标方向"}: ${plan.roleTitle}`,
+      `${en?"Hardware":"设备"}: ${hardware[state.hardware][lang]}`, "",
+      en ? "Self-reported preferences only; not verified capability, certification or a hiring decision. These rules select learning resources, not a completion or employment promise." : "仅按本人自述选择学习资源，不是已验证能力、认证或录用判断，也不是完成时间或就业承诺。", "",
+      "## " + (en ? "My self-report" : "我的自述"), "",
+      ...skills.map(s => `- ${s.title[lang]}: ${levels[state.skills[s.id]][lang]}`), "",
+      plan.pacing, plan.hardwareNote, "",
+      "## " + (browser ? (en ? "What to review after the primer" : "学完启蒙课，再补哪些基础") : (en ? "Review first, with reasons" : "先补这些课，以及原因")), ""
+    );
+    if (!plan.reviews.length) {
+      lines.push(browser
+        ? (en ? "You reported independence in all six technical basics. After the primer, try the project for your chosen role." : "你自述六项技术基础均能独立完成。学完启蒙后，可以尝试对应岗位的项目。")
+        : (en ? "No review lessons were added because every foundation was self-reported as independent. You can try the project immediately; this does not verify readiness." : "你自述各项基础均能独立完成，因此未追加复习课。可以直接尝试项目；这不表示能力已验证。"), "");
+    }
+    for (const r of plan.reviews) {
+      lines.push(`### ${r.course} · Day ${r.day} · ${r.title}`, "", ...r.reasons.map(reason => "- " + reason), absolute(r.url), "");
+    }
+    if (!browser) lines.push(...firstBlock);
+    lines.push(
+      "## " + (en ? "Then follow your role" : "再按目标方向前进"), "", plan.routeReason, "",
+      ...plan.route.map(r => `- ${r.course} · Day ${r.day} · ${r.title}: ${absolute(r.url)}`), "",
+      absolute(plan.careerURL), absolute(plan.projectURL), "",
+      en ? "These selections were stored only in this browser, not submitted to a recruiter. This Markdown is a readable copy; automatic import is not available." : "本工具仅在浏览器保存选择，未向招聘方提交。Markdown 是可阅读副本，暂不支持自动导入。", ""
+    );
     return lines.join("\n");
   }
   return {storageKey,roles,hardware,levels,skills,lessons,normalize,recommend,load,save,reset,markdown};

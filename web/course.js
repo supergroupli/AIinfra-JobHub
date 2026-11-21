@@ -3,6 +3,7 @@
 (() => {
   const meta = JSON.parse(document.getElementById("course-meta").textContent);
   const dayCount = meta.steps.length;
+  const primer = meta.format === "primer";
   const prefix = "infra-commons:";
   const progressKey = "course-progress-v2";
   const read = (key, fallback) => {
@@ -67,7 +68,8 @@
       const done = progress.has(`${meta.id}:${link.dataset.dayLink}`);
       link.classList.toggle("is-complete", done);
       link.querySelector(".day-status").textContent = done ? "✓" : "";
-      link.setAttribute("aria-label", `Day ${link.dataset.dayLink}: ${meta.steps[Number(link.dataset.dayLink) - 1].title[lang]} · ${text(done ? "complete" : "incomplete")}`);
+      const unit = primer ? (lang === "en" ? "Lesson " : "第 ") + link.dataset.dayLink + (lang === "zh" ? " 节" : "") : "Day " + link.dataset.dayLink;
+      link.setAttribute("aria-label", `${unit} · ${meta.steps[Number(link.dataset.dayLink) - 1].title[lang]} · ${text(done ? "complete" : "incomplete")}`);
     });
   }
 
@@ -75,7 +77,9 @@
     currentDay = Number.isInteger(day) && day >= 1 && day <= dayCount ? day : 1;
     document.querySelectorAll(".day-content").forEach(section => { section.hidden = Number(section.dataset.day) !== currentDay; });
     document.querySelectorAll("[data-day-link]").forEach(link => { link.setAttribute("aria-current", Number(link.dataset.dayLink) === currentDay ? "step" : "false"); });
-    document.querySelector(".sidebar-heading").textContent = `${text("syllabus")} · ${String(currentDay).padStart(2, "0")}`;
+    document.querySelector(".sidebar-heading").textContent = primer
+      ? (lang === "en" ? `Lessons · ${currentDay} / ${dayCount}` : `学习目录 · 第 ${currentDay} 节 / 共 ${dayCount} 节`)
+      : `${text("syllabus")} · ${String(currentDay).padStart(2, "0")}`;
     save(`last-day-v2:${meta.id}`, currentDay);
     if (navigate) {
       const section = document.getElementById(`day-${currentDay}`);
@@ -87,8 +91,16 @@
 
   function translate() {
     document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
-    document.title = `${meta.title[lang]} · ${lang === "zh" ? `${dayCount} 天实战 · 聘枢` : `${dayCount}-day guide · AI Infra JobHub`}`;
-    document.querySelectorAll("[data-zh][data-en]").forEach(el => { el.textContent = el.dataset[lang]; });
+    const format = primer ? (lang === "zh" ? `${dayCount} 节启蒙课` : `${dayCount} short lessons`) : (lang === "zh" ? `${dayCount} 天实战` : `${dayCount}-day guide`);
+    document.title = `${meta.title[lang]} · ${format} · ${lang === "zh" ? "聘枢" : "AI Infra JobHub"}`;
+    document.querySelectorAll("[data-zh][data-en]").forEach(el => {
+      el.textContent = el.dataset[lang];
+      if (el.hasAttribute("data-course-link")) {
+        const url = new URL(el.href);
+        url.searchParams.set("lang", lang);
+        el.href = url.href;
+      }
+    });
     document.querySelectorAll("[data-i18n]").forEach(el => {
       el.textContent = text(el.dataset.i18n);
       if (el.tagName === "A" && ["createPortfolio", "projects", "careerPrep", "practiceCourse", "knowledgeLibrary", "diagnosisLabs", "benchLab", "searchCourse"].includes(el.dataset.i18n)) {
@@ -139,7 +151,8 @@
   exportButton.addEventListener("click", () => {
     const lines = [`# ${meta.title[lang]} · ${text("record")}`, "", "聘枢 · AI Infra JobHub", "", text("selfReported"), "", `${text("exportDate")}: ${new Date().toISOString()}`, ""];
     for (const step of meta.steps) {
-      lines.push(`## Day ${step.day} · ${step.title[lang]}`, "", `- [${progress.has(`${meta.id}:${step.day}`) ? "x" : " "}] ${text("complete")}`, "", notes[step.day] || text("noNotes"), "");
+      const lesson = primer ? (lang === "zh" ? `第 ${step.day} 节` : `Lesson ${step.day}`) : `Day ${step.day}`;
+      lines.push(`## ${lesson} · ${step.title[lang]}`, "", `- [${progress.has(`${meta.id}:${step.day}`) ? "x" : " "}] ${text("complete")}`, "", notes[step.day] || text("noNotes"), "");
     }
     const url = URL.createObjectURL(new Blob([lines.join("\n")], {type: "text/markdown;charset=utf-8"}));
     const anchor = document.createElement("a");

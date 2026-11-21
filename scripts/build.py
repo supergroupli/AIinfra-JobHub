@@ -11,12 +11,12 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 if __package__:
-    from .learning import CATEGORIES, LEVELS, INTERACTIVE_KINDS, course_body, course_hero, course_markdown, course_nav, esc
+    from .learning import CATEGORIES, LEVELS, INTERACTIVE_KINDS, course_body, course_hero, course_markdown, course_nav, course_next_steps, course_study_tools, esc
     from .practice import build_practice
     from .search import build_search
     from .handbooks import validate_supplements, write_handbooks
 else:
-    from learning import CATEGORIES, LEVELS, INTERACTIVE_KINDS, course_body, course_hero, course_markdown, course_nav, esc
+    from learning import CATEGORIES, LEVELS, INTERACTIVE_KINDS, course_body, course_hero, course_markdown, course_nav, course_next_steps, course_study_tools, esc
     from practice import build_practice
     from search import build_search
     from handbooks import validate_supplements, write_handbooks
@@ -130,6 +130,7 @@ def validate_tracks(tracks):
         require(isinstance(item.get("tags"), list) and item["tags"] and all(nonempty(tag) for tag in item["tags"]), f"{ident}: invalid tags")
         require(item.get("category") in CATEGORIES, f"{ident}: invalid category")
         require(item.get("level") in LEVELS, f"{ident}: invalid level")
+        require(item.get("format", "course") in ("course", "primer"), f"{ident}: unknown course format")
         require(item.get("hardwareTier") in ("cpu", "gpu-optional", "gpu-required", "multi-gpu"), f"{ident}: invalid hardware tier")
         require(iso_date(item.get("lastVerified")) <= datetime.now(timezone.utc).date(), f"{ident}: future source check date")
         require(isinstance(item.get("roles"), dict) and all(isinstance(item["roles"].get(lang), list) and item["roles"][lang] and all(nonempty(role) for role in item["roles"][lang]) for lang in ("zh", "en")), f"{ident}: missing role mapping")
@@ -298,25 +299,28 @@ def write_course_pages(courses, out, repository, projects):
         folder.mkdir(parents=True)
         project = next((item for item in projects if any(ref["id"] == course["id"] for ref in item["prerequisites"])), None)
         project_query = f'?project={project["id"]}' if project else ""
-        bench_case = bench_cases.get(course["id"])
-        bench_link = (
-            f'<a class="text-link" href="../../bench/?case={bench_case}" data-i18n="benchLab">推理压测复盘台</a>'
-            if bench_case else ""
-        )
+        primer = course.get("format") == "primer"
+        days = len(course["steps"])
         replacements = {
             "__COURSE_TITLE__": esc(course["title"]["zh"]),
-            "__COURSE_DAYS__": str(len(course["steps"])),
+            "__COURSE_DAYS__": str(days),
+            "__GUIDE_LABEL__": f"{days} 节启蒙课" if primer else f"{days} 天实战",
+            "__CONTENTS_LABEL__": f"{days} 节学习目录" if primer else f"{days} 天学习目录",
+            "__BODY_CLASS__": "course-page primer-course" if primer else "course-page",
+            "__PRIMER_ASSETS__": (
+                '<link rel="stylesheet" href="../../primer-course.css">'
+                '<link rel="stylesheet" href="../../labs/inference-101/lab.css">'
+                '<script src="../../labs/inference-101/activities.js" defer></script>'
+                '<script src="../../primer-card.js" defer></script>' if primer else ""
+            ),
             "__COURSE_DESCRIPTION__": esc(course["description"]["zh"]),
             "__COURSE_URL__": esc(f"{base}learn/{course['id']}/"),
             "__REPO_URL__": esc(f"https://github.com/{repository}" if repository else "https://github.com"),
             "__COURSE_HERO__": course_hero(course),
             "__COURSE_NAV__": course_nav(course),
             "__COURSE_CONTENT__": course_body(course, repository),
-            "__PROJECT_URL__": esc(f"../../projects/{project_query}"),
-            "__PORTFOLIO_URL__": esc(f"../../portfolio/{project_query}"),
-            "__PRACTICE_URL__": esc(f"../../practice/?course={course['id']}"),
-            "__BENCH_LINK__": bench_link,
-            "__SEARCH_URL__": esc(f"../../search/?course={course['id']}&kind=lesson"),
+            "__COURSE_STUDY_TOOLS__": course_study_tools(course, bench_cases.get(course["id"])),
+            "__COURSE_NEXT_STEPS__": course_next_steps(course, project_query),
         }
         page = template
         for key, value in replacements.items():
@@ -352,6 +356,8 @@ def build():
                 "en": "Common core for every path" if common else ("Role core · " + " / ".join(path["title"]["en"] for path in required_for) if required_for else "Elective · choose for your project")
             }
         }
+        if course.get("format") == "primer":
+            course["curriculum"]["label"] = {"zh": "零基础预备课", "en": "First steps for beginners"}
     projects = validate_projects(read_json("web/projects/projects.json"), tracks)
     topics = read_json("web/knowledge/topics.json")["topics"]
     cases = read_json("web/cases/cases.json")["cases"]
